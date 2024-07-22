@@ -78,6 +78,10 @@ The limitation values are calculated based on the 1D interpolation of the limita
 
 Notation: this filter is not designed to enhance ride comfort. Its main purpose is to detect and remove abnormal values in the control outputs during the final stages of Autoware. If this filter is frequently active, it implies the control module may need tuning. If you're aiming to smoothen the signal via a low-pass filter or similar techniques, that should be handled in the control module. When the filter is activated, the topic `~/is_filter_activated` is published.
 
+Notation 2: If you use vehicles in which the driving force is controlled by the accelerator/brake pedal, the jerk limit, denoting the pedal rate limit, must be sufficiently relaxed at low speeds.
+Otherwise, quick pedal changes at start/stop will not be possible, resulting in slow starts and creep down on hills.
+This functionality for starting/stopping was embedded in the source code but was removed because it was complex and could be achieved by parameters.
+
 ## Assumptions / Known limits
 
 The parameter `check_external_emergency_heartbeat` (true by default) enables an emergency stop request from external modules.

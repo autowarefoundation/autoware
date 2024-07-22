@@ -607,7 +607,6 @@ Control VehicleCmdGate::filterControlCommand(const Control & in)
   const auto mode = current_operation_mode_;
   const auto current_status_cmd = getActualStatusAsCommand();
   const auto ego_is_stopped = vehicle_stop_checker_->isVehicleStopped(stop_check_duration_);
-  const auto input_cmd_is_stopping = in.longitudinal.acceleration < 0.0;
 
   filter_.setCurrentSpeed(current_kinematics_.twist.twist.linear.x);
   filter_on_transition_.setCurrentSpeed(current_kinematics_.twist.twist.linear.x);
@@ -618,23 +617,6 @@ Control VehicleCmdGate::filterControlCommand(const Control & in)
   if (mode.is_in_transition) {
     filter_on_transition_.filterAll(dt, current_steer_, out, is_filter_activated);
   } else {
-    // When ego is stopped and the input command is not stopping,
-    // use the higher of actual vehicle longitudinal state
-    // and previous longitudinal command for the filtering
-    // this is to prevent the jerk limits being applied and causing
-    // a delay when restarting the vehicle.
-
-    if (ego_is_stopped && !input_cmd_is_stopping) {
-      auto prev_cmd = filter_.getPrevCmd();
-      prev_cmd.longitudinal.acceleration =
-        std::max(prev_cmd.longitudinal.acceleration, current_status_cmd.longitudinal.acceleration);
-      // consider reverse driving
-      prev_cmd.longitudinal.velocity = std::fabs(prev_cmd.longitudinal.velocity) >
-                                           std::fabs(current_status_cmd.longitudinal.velocity)
-                                         ? prev_cmd.longitudinal.velocity
-                                         : current_status_cmd.longitudinal.velocity;
-      filter_.setPrevCmd(prev_cmd);
-    }
     filter_.filterAll(dt, current_steer_, out, is_filter_activated);
   }
 

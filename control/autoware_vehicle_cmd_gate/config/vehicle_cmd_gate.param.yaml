@@ -16,14 +16,14 @@
     stop_check_duration: 1.0
     nominal:
       vel_lim: 25.0
-      reference_speed_points: [20.0, 30.0]
-      steer_lim: [1.0, 0.8]
-      steer_rate_lim: [1.0, 0.8]
-      lon_acc_lim: [5.0, 4.0]
-      lon_jerk_lim: [5.0, 4.0]
-      lat_acc_lim: [5.0, 4.0]
-      lat_jerk_lim: [7.0, 6.0]
-      actual_steer_diff_lim: [1.0, 0.8]
+      reference_speed_points: [0.1, 0.3, 20.0, 30.0]
+      steer_lim: [1.0, 1.0, 1.0, 0.8]
+      steer_rate_lim: [1.0, 1.0, 1.0, 0.8]
+      lon_acc_lim: [5.0, 5.0, 5.0, 4.0]
+      lon_jerk_lim: [80.0, 5.0, 5.0, 4.0] # The first element is required for quick pedal changes when stopping and starting.
+      lat_acc_lim: [5.0, 5.0, 5.0, 4.0]
+      lat_jerk_lim: [7.0, 7.0, 7.0, 6.0]
+      actual_steer_diff_lim: [1.0, 1.0, 1.0, 0.8]
     on_transition:
       vel_lim: 50.0
       reference_speed_points: [20.0, 30.0]
