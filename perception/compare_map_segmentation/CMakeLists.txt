@@ -31,7 +31,7 @@ add_library(${PROJECT_NAME} SHARED
 )
 
 target_link_libraries(${PROJECT_NAME}
-  pointcloud_preprocessor::pointcloud_preprocessor_filter_base
+  autoware_pointcloud_preprocessor::pointcloud_preprocessor_filter_base
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES}

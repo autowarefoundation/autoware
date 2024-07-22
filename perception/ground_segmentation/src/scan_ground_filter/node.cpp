@@ -25,15 +25,15 @@
 
 namespace autoware::ground_segmentation
 {
+using autoware::pointcloud_preprocessor::get_param;
 using autoware::universe_utils::calcDistance3d;
 using autoware::universe_utils::deg2rad;
 using autoware::universe_utils::normalizeDegree;
 using autoware::universe_utils::normalizeRadian;
 using autoware::vehicle_info_utils::VehicleInfoUtils;
-using pointcloud_preprocessor::get_param;
 
 ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions & options)
-: pointcloud_preprocessor::Filter("ScanGroundFilter", options)
+: autoware::pointcloud_preprocessor::Filter("ScanGroundFilter", options)
 {
   // set initial parameters
   {
@@ -582,7 +582,7 @@ void ScanGroundFilterComponent::extractObjectPoints(
 void ScanGroundFilterComponent::faster_filter(
   const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output,
-  [[maybe_unused]] const pointcloud_preprocessor::TransformInfo & transform_info)
+  [[maybe_unused]] const autoware::pointcloud_preprocessor::TransformInfo & transform_info)
 {
   std::scoped_lock lock(mutex_);
   stop_watch_ptr_->toc("processing_time", true);

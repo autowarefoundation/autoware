@@ -31,7 +31,7 @@ def get_downsample_filter_node(setting: dict) -> ComposableNode:
     voxel_size = setting["voxel_size"]
     node_name = setting["node_name"]
     return ComposableNode(
-        package="pointcloud_preprocessor",
+        package="autoware_pointcloud_preprocessor",
         plugin=plugin_str,
         name=node_name,
         remappings=[
@@ -51,14 +51,14 @@ def get_downsample_filter_node(setting: dict) -> ComposableNode:
 
 def get_downsample_preprocess_nodes(voxel_size: float) -> list:
     raw_settings = {
-        "plugin": "pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent",
+        "plugin": "autoware::pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent",
         "node_name": "raw_pc_downsample_filter",
         "input_topic": LaunchConfiguration("input/raw_pointcloud"),
         "output_topic": "raw/downsample/pointcloud",
         "voxel_size": voxel_size,
     }
     obstacle_settings = {
-        "plugin": "pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent",
+        "plugin": "autoware::pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent",
         "node_name": "obstacle_pc_downsample_filter",
         "input_topic": LaunchConfiguration("input/obstacle_pointcloud"),
         "output_topic": "obstacle/downsample/pointcloud",

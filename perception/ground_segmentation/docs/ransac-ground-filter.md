@@ -10,13 +10,13 @@ Apply the input points to the plane, and set the points at a certain distance fr
 
 ## Inputs / Outputs
 
-This implementation inherits `pointcloud_preprocessor::Filter` class, please refer [README](../README.md).
+This implementation inherits `autoware::pointcloud_preprocessor::Filter` class, please refer [README](../README.md).
 
 ## Parameters
 
 ### Node Parameters
 
-This implementation inherits `pointcloud_preprocessor::Filter` class, please refer [README](../README.md).
+This implementation inherits `autoware::pointcloud_preprocessor::Filter` class, please refer [README](../README.md).
 
 #### Core Parameters
 

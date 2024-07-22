@@ -15,7 +15,7 @@
 #ifndef COMPARE_ELEVATION_MAP_FILTER__NODE_HPP_
 #define COMPARE_ELEVATION_MAP_FILTER__NODE_HPP_
 
-#include "pointcloud_preprocessor/filter.hpp"
+#include "autoware/pointcloud_preprocessor/filter.hpp"
 
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_cv/grid_map_cv.hpp>
@@ -31,7 +31,7 @@
 #include <vector>
 namespace autoware::compare_map_segmentation
 {
-class CompareElevationMapFilterComponent : public pointcloud_preprocessor::Filter
+class CompareElevationMapFilterComponent : public autoware::pointcloud_preprocessor::Filter
 {
 protected:
   void filter(

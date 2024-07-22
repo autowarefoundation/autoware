@@ -15,9 +15,9 @@
 #ifndef SCAN_GROUND_FILTER__NODE_HPP_
 #define SCAN_GROUND_FILTER__NODE_HPP_
 
+#include "autoware/pointcloud_preprocessor/filter.hpp"
+#include "autoware/pointcloud_preprocessor/transform_info.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info.hpp"
-#include "pointcloud_preprocessor/filter.hpp"
-#include "pointcloud_preprocessor/transform_info.hpp"
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -44,7 +44,7 @@ namespace autoware::ground_segmentation
 {
 using autoware::vehicle_info_utils::VehicleInfo;
 
-class ScanGroundFilterComponent : public pointcloud_preprocessor::Filter
+class ScanGroundFilterComponent : public autoware::pointcloud_preprocessor::Filter
 {
 private:
   // classified point label
@@ -152,7 +152,7 @@ private:
   // conform to new API
   virtual void faster_filter(
     const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output,
-    const pointcloud_preprocessor::TransformInfo & transform_info);
+    const autoware::pointcloud_preprocessor::TransformInfo & transform_info);
 
   tf2_ros::Buffer tf_buffer_{get_clock()};
   tf2_ros::TransformListener tf_listener_{tf_buffer_};

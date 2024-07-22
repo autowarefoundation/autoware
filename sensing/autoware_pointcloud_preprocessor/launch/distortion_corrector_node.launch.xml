@@ -1,0 +1,16 @@
+<launch>
+  <arg name="input/pointcloud" default="/sensing/lidar/top/mirror_cropped/pointcloud_ex"/>
+  <arg name="input/twist" default="/sensing/vehicle_velocity_converter/twist_with_covariance"/>
+  <arg name="input/imu" default="/sensing/imu/imu_data"/>
+  <arg name="output/pointcloud" default="/sensing/lidar/top/rectified/pointcloud_ex"/>
+
+  <!-- Parameter -->
+  <arg name="param_file" default="$(find-pkg-share autoware_pointcloud_preprocessor)/config/distortion_corrector_node.param.yaml"/>
+  <node pkg="autoware_pointcloud_preprocessor" exec="distortion_corrector_node" name="distortion_corrector_node" output="screen">
+    <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
+    <remap from="~/input/twist" to="$(var input/twist)"/>
+    <remap from="~/input/imu" to="$(var input/imu)"/>
+    <remap from="~/output/pointcloud" to="$(var output/pointcloud)"/>
+    <param from="$(var param_file)"/>
+  </node>
+</launch>

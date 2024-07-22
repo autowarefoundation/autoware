@@ -16,7 +16,7 @@
 #define VOXEL_BASED_APPROXIMATE_COMPARE_MAP_FILTER__NODE_HPP_  // NOLINT
 
 #include "../voxel_grid_map_loader/voxel_grid_map_loader.hpp"
-#include "pointcloud_preprocessor/filter.hpp"
+#include "autoware/pointcloud_preprocessor/filter.hpp"
 
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/search/pcl_search.h>
@@ -56,7 +56,8 @@ public:
   bool is_close_to_map(const pcl::PointXYZ & point, const double distance_threshold) override;
 };
 
-class VoxelBasedApproximateCompareMapFilterComponent : public pointcloud_preprocessor::Filter
+class VoxelBasedApproximateCompareMapFilterComponent
+: public autoware::pointcloud_preprocessor::Filter
 {
 protected:
   virtual void filter(

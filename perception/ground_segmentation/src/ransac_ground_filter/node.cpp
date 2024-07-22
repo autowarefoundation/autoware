@@ -80,7 +80,7 @@ PlaneBasis getPlaneBasis(const Eigen::Vector3d & plane_normal)
   return basis;
 }
 
-using pointcloud_preprocessor::get_param;
+using autoware::pointcloud_preprocessor::get_param;
 
 RANSACGroundFilterComponent::RANSACGroundFilterComponent(const rclcpp::NodeOptions & options)
 : Filter("RANSACGroundFilter", options)

@@ -91,8 +91,8 @@ class GroundSegmentationPipeline:
         components = []
         components.append(
             ComposableNode(
-                package="pointcloud_preprocessor",
-                plugin="pointcloud_preprocessor::CropBoxFilterComponent",
+                package="autoware_pointcloud_preprocessor",
+                plugin="autoware::pointcloud_preprocessor::CropBoxFilterComponent",
                 name=f"{lidar_name}_crop_box_filter",
                 remappings=[
                     ("input", f"/sensing/lidar/{lidar_name}/pointcloud"),
@@ -137,8 +137,8 @@ class GroundSegmentationPipeline:
         components = []
         components.append(
             ComposableNode(
-                package="pointcloud_preprocessor",
-                plugin="pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
+                package="autoware_pointcloud_preprocessor",
+                plugin="autoware::pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
                 name="concatenate_data",
                 namespace="plane_fitting",
                 remappings=[
@@ -161,8 +161,8 @@ class GroundSegmentationPipeline:
 
         components.append(
             ComposableNode(
-                package="pointcloud_preprocessor",
-                plugin="pointcloud_preprocessor::CropBoxFilterComponent",
+                package="autoware_pointcloud_preprocessor",
+                plugin="autoware::pointcloud_preprocessor::CropBoxFilterComponent",
                 name="short_height_obstacle_detection_area_filter",
                 namespace="plane_fitting",
                 remappings=[
@@ -186,8 +186,8 @@ class GroundSegmentationPipeline:
 
         components.append(
             ComposableNode(
-                package="pointcloud_preprocessor",
-                plugin="pointcloud_preprocessor::Lanelet2MapFilterComponent",
+                package="autoware_pointcloud_preprocessor",
+                plugin="autoware::pointcloud_preprocessor::Lanelet2MapFilterComponent",
                 name="vector_map_filter",
                 namespace="plane_fitting",
                 remappings=[
@@ -243,8 +243,8 @@ class GroundSegmentationPipeline:
         components = []
         components.append(
             ComposableNode(
-                package="pointcloud_preprocessor",
-                plugin="pointcloud_preprocessor::CropBoxFilterComponent",
+                package="autoware_pointcloud_preprocessor",
+                plugin="autoware::pointcloud_preprocessor::CropBoxFilterComponent",
                 name="crop_box_filter",
                 remappings=[
                     ("input", input_topic),
@@ -416,8 +416,8 @@ class GroundSegmentationPipeline:
 
         components.append(
             ComposableNode(
-                package="pointcloud_preprocessor",
-                plugin="pointcloud_preprocessor::VoxelGridDownsampleFilterComponent",
+                package="autoware_pointcloud_preprocessor",
+                plugin="autoware::pointcloud_preprocessor::VoxelGridDownsampleFilterComponent",
                 name="voxel_grid_filter",
                 namespace="elevation_map",
                 remappings=[
@@ -441,8 +441,8 @@ class GroundSegmentationPipeline:
 
         components.append(
             ComposableNode(
-                package="pointcloud_preprocessor",
-                plugin="pointcloud_preprocessor::VoxelGridOutlierFilterComponent",
+                package="autoware_pointcloud_preprocessor",
+                plugin="autoware::pointcloud_preprocessor::VoxelGridOutlierFilterComponent",
                 name="voxel_grid_outlier_filter",
                 namespace="elevation_map",
                 remappings=[
@@ -468,8 +468,8 @@ class GroundSegmentationPipeline:
     @staticmethod
     def get_additional_lidars_concatenated_component(input_topics, output_topic):
         return ComposableNode(
-            package="pointcloud_preprocessor",
-            plugin="pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
+            package="autoware_pointcloud_preprocessor",
+            plugin="autoware::pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
             name="concatenate_data",
             remappings=[
                 ("~/input/odom", "/localization/kinematic_state"),
@@ -488,8 +488,8 @@ class GroundSegmentationPipeline:
     @staticmethod
     def get_single_frame_obstacle_segmentation_concatenated_component(input_topics, output_topic):
         return ComposableNode(
-            package="pointcloud_preprocessor",
-            plugin="pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
+            package="autoware_pointcloud_preprocessor",
+            plugin="autoware::pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
             name="concatenate_no_ground_data",
             remappings=[
                 ("~/input/odom", "/localization/kinematic_state"),

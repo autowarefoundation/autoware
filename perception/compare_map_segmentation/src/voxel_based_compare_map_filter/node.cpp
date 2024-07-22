@@ -26,7 +26,7 @@
 
 namespace autoware::compare_map_segmentation
 {
-using pointcloud_preprocessor::get_param;
+using autoware::pointcloud_preprocessor::get_param;
 
 VoxelBasedCompareMapFilterComponent::VoxelBasedCompareMapFilterComponent(
   const rclcpp::NodeOptions & options)

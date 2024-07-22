@@ -19,11 +19,11 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_pointcloud_preprocessor</depend>
   <depend>autoware_vehicle_info_utils</depend>
   <depend>libopencv-dev</depend>
   <depend>pcl_conversions</depend>
   <depend>pcl_ros</depend>
-  <depend>pointcloud_preprocessor</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>

@@ -1,0 +1,18 @@
+<launch>
+  <arg name="input_topic_name" default="pointcloud_raw_ex"/>
+  <arg name="output_topic_name" default="blockage_diag/pointcloud"/>
+  <arg name="horizontal_ring_id" default="18"/>
+  <arg name="angle_range" default="[0.0, 360.0]"/>
+  <arg name="vertical_bins" default="40"/>
+  <arg name="is_channel_order_top2down" default="true"/>
+  <arg name="blockage_diagnostics_param_file" default="$(find-pkg-share autoware_pointcloud_preprocessor)/config/blockage_diagnostics_param_file.yaml"/>
+  <node pkg="autoware_pointcloud_preprocessor" exec="blockage_diag_node" name="blockage_diag">
+    <remap from="input" to="$(var input_topic_name)"/>
+    <remap from="output" to="$(var output_topic_name)"/>
+    <param name="horizontal_ring_id" value="$(var horizontal_ring_id)"/>
+    <param name="angle_range" value="$(var angle_range)"/>
+    <param name="vertical_bins" value="$(var vertical_bins)"/>
+    <param name="is_channel_order_top2down" value="$(var is_channel_order_top2down)"/>
+    <param from="$(var blockage_diagnostics_param_file)"/>
+  </node>
+</launch>

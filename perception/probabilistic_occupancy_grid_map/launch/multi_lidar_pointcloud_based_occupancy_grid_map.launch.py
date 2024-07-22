@@ -98,7 +98,7 @@ def get_downsample_filter_node(setting: dict) -> ComposableNode:
     voxel_size = setting["voxel_size"]
     node_name = setting["node_name"]
     return ComposableNode(
-        package="pointcloud_preprocessor",
+        package="autoware_pointcloud_preprocessor",
         plugin=plugin_str,
         name=node_name,
         remappings=[
@@ -125,7 +125,7 @@ def get_downsample_preprocess_nodes(voxel_size: float, raw_pointcloud_topics: li
         ]  # `/sensing/lidar/top/pointcloud` -> `top
         processed_pointcloud_topic: str = frame_name + "/raw/downsample/pointcloud"
         raw_settings = {
-            "plugin": "pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent",
+            "plugin": "autoware::pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent",
             "node_name": "raw_pc_downsample_filter_" + frame_name,
             "input_topic": raw_pointcloud_topic,
             "output_topic": processed_pointcloud_topic,
@@ -133,7 +133,7 @@ def get_downsample_preprocess_nodes(voxel_size: float, raw_pointcloud_topics: li
         }
         nodes.append(get_downsample_filter_node(raw_settings))
     obstacle_settings = {
-        "plugin": "pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent",
+        "plugin": "autoware::pointcloud_preprocessor::PickupBasedVoxelGridDownsampleFilterComponent",
         "node_name": "obstacle_pc_downsample_filter",
         "input_topic": LaunchConfiguration("input/obstacle_pointcloud"),
         "output_topic": "/perception/occupancy_grid_map/obstacle/downsample/pointcloud",

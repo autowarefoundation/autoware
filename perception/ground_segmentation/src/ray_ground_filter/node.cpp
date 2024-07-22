@@ -36,7 +36,7 @@
 
 namespace autoware::ground_segmentation
 {
-using pointcloud_preprocessor::get_param;
+using autoware::pointcloud_preprocessor::get_param;
 
 RayGroundFilterComponent::RayGroundFilterComponent(const rclcpp::NodeOptions & options)
 : Filter("RayGroundFilter", options)
