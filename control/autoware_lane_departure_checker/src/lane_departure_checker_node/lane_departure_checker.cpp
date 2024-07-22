@@ -329,15 +329,15 @@ LaneDepartureChecker::getFusedLaneletPolygonForPath(
   const auto lanelets_distance_pair = getLaneletsFromPath(lanelet_map_ptr, path);
   auto to_polygon2d =
     [](const lanelet::BasicPolygon2d & poly) -> autoware::universe_utils::Polygon2d {
-    autoware::universe_utils::Polygon2d p;
-    auto & outer = p.outer();
+    autoware::universe_utils::Polygon2d polygon;
+    auto & outer = polygon.outer();
 
     for (const auto & p : poly) {
       autoware::universe_utils::Point2d p2d(p.x(), p.y());
       outer.push_back(p2d);
     }
-    boost::geometry::correct(p);
-    return p;
+    boost::geometry::correct(polygon);
+    return polygon;
   };
 
   // Fuse lanelets into a single BasicPolygon2d
