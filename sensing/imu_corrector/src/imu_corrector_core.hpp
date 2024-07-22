@@ -37,7 +37,7 @@ public:
   explicit ImuCorrector(const rclcpp::NodeOptions & options);
 
 private:
-  void callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_msg_ptr);
+  void callback_imu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_msg_ptr);
 
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
 

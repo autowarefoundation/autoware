@@ -31,7 +31,7 @@ public:
   void update_bias(
     const std::vector<geometry_msgs::msg::PoseStamped> & pose_list,
     const std::vector<geometry_msgs::msg::Vector3Stamped> & gyro_list);
-  geometry_msgs::msg::Vector3 get_bias_base_link() const;
+  [[nodiscard]] geometry_msgs::msg::Vector3 get_bias_base_link() const;
 
 private:
   std::pair<geometry_msgs::msg::Vector3, geometry_msgs::msg::Vector3> gyro_bias_pair_;

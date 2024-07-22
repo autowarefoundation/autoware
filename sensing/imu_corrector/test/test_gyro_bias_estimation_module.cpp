@@ -63,7 +63,9 @@ TEST_F(GyroBiasEstimationModuleTest, GetBiasEstimationWhenVehicleStopped)
 
 TEST_F(GyroBiasEstimationModuleTest, GetInsufficientDataException)
 {
-  ASSERT_THROW(module.get_bias_base_link(), std::runtime_error);
+  // for the case of method with [[nodiscard]] attribute
+  geometry_msgs::msg::Vector3 bias_base_link;
+  ASSERT_THROW(bias_base_link = module.get_bias_base_link(), std::runtime_error);
 }
 
 TEST_F(GyroBiasEstimationModuleTest, GetInsufficientDataExceptionWhenVehicleMoving)
