@@ -253,7 +253,7 @@ void apply_edits(FileConfig & config)
   config.links = std::move(filtered_links);
 }
 
-void topological_sort(FileConfig & config)
+void topological_sort(const FileConfig & config)
 {
   std::unordered_map<UnitConfig *, int> degrees;
   std::deque<UnitConfig *> units;
