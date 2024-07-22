@@ -35,15 +35,17 @@ void VoxelGeneratorTest::SetUp()
   delta_pointcloud_x_ = 1.0;
   points_per_pointcloud_ = 300;
 
+  cloud_capacity_ = 2000000;
   voxels_num_ = std::vector<int64_t>{5000, 30000, 60000};
   point_cloud_range_ = std::vector<double>{-76.8, -76.8, -3.0, 76.8, 76.8, 5.0};
   voxel_size_ = std::vector<double>{0.3, 0.3, 8.0};
+  num_proposals_ = 500;
   score_threshold_ = 0.2f;
   circle_nms_dist_threshold_ = 0.5f;
   yaw_norm_thresholds_ = std::vector<double>{0.5, 0.5, 0.5};
   config_ptr_ = std::make_unique<TransfusionConfig>(
-    voxels_num_, point_cloud_range_, voxel_size_, circle_nms_dist_threshold_, yaw_norm_thresholds_,
-    score_threshold_);
+    cloud_capacity_, voxels_num_, point_cloud_range_, voxel_size_, num_proposals_,
+    circle_nms_dist_threshold_, yaw_norm_thresholds_, score_threshold_);
 
   cloud1_ = std::make_unique<sensor_msgs::msg::PointCloud2>();
   cloud2_ = std::make_unique<sensor_msgs::msg::PointCloud2>();

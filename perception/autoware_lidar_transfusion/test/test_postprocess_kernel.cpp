@@ -26,15 +26,17 @@ void PostprocessKernelTest::SetUp()
 {
   cudaStreamCreate(&stream_);
 
+  auto cloud_capacity = 2000000;
   auto voxels_num = std::vector<int64_t>{1, 3, 5};
   auto point_cloud_range = std::vector<double>{-76.8, -76.8, -3.0, 76.8, 76.8, 5.0};
   auto voxel_size = std::vector<double>{0.3, 0.3, 8.0};
+  auto num_proposals = 500;
   auto score_threshold = 0.2f;
   auto circle_nms_dist_threshold = 0.5f;
   auto yaw_norm_thresholds = std::vector<double>{0.5, 0.5, 0.5};
   config_ptr_ = std::make_unique<TransfusionConfig>(
-    voxels_num, point_cloud_range, voxel_size, circle_nms_dist_threshold, yaw_norm_thresholds,
-    score_threshold);
+    cloud_capacity, voxels_num, point_cloud_range, voxel_size, num_proposals,
+    circle_nms_dist_threshold, yaw_norm_thresholds, score_threshold);
   post_ptr_ = std::make_unique<PostprocessCuda>(*config_ptr_, stream_);
 
   cls_size_ = config_ptr_->num_proposals_ * config_ptr_->num_classes_;
