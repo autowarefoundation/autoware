@@ -40,12 +40,6 @@ GridMapFusionNode::GridMapFusionNode(const rclcpp::NodeOptions & node_options)
       throw std::runtime_error("The number of input topics must larger than 0.");
     }
     num_input_topics_ = input_topics_.size();
-    if (num_input_topics_ < 1) {
-      RCLCPP_WARN(
-        this->get_logger(), "minimum num_input_topics_ is 1. current num_input_topics_ is %zu",
-        num_input_topics_);
-      num_input_topics_ = 1;
-    }
     if (num_input_topics_ > 12) {
       RCLCPP_WARN(
         this->get_logger(), "maximum num_input_topics_ is 12. current num_input_topics_ is %zu",
