@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(euclidean_cluster)
+project(autoware_euclidean_cluster)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()

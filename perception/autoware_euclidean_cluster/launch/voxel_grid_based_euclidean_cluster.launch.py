@@ -32,7 +32,7 @@ def launch_setup(context, *args, **kwargs):
             return yaml.safe_load(f)["/**"]["ros__parameters"]
 
     ns = ""
-    pkg = "euclidean_cluster"
+    pkg = "autoware_euclidean_cluster"
 
     low_height_cropbox_filter_component = ComposableNode(
         package="pointcloud_preprocessor",

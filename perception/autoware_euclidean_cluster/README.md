@@ -1,8 +1,8 @@
-# euclidean_cluster
+# autoware_euclidean_cluster
 
 ## Purpose
 
-euclidean_cluster is a package for clustering points into smaller parts to classify objects.
+autoware_euclidean_cluster is a package for clustering points into smaller parts to classify objects.
 
 This package has two clustering methods: `euclidean_cluster` and `voxel_grid_based_euclidean_cluster`.
 

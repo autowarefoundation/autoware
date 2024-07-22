@@ -16,11 +16,11 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_euclidean_cluster</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_point_types</depend>
   <depend>autoware_universe_utils</depend>
   <depend>cv_bridge</depend>
-  <depend>euclidean_cluster</depend>
   <depend>image_geometry</depend>
   <depend>image_transport</depend>
   <depend>lidar_centerpoint</depend>

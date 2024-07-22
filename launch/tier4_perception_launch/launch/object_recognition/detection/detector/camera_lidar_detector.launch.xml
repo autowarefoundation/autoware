@@ -112,7 +112,7 @@
       <let name="euclidean_cluster_input" value="/perception/object_recognition/detection/segmentation_based_filtered/pointcloud" if="$(var use_image_segmentation_based_filter)"/>
       <let name="euclidean_cluster_output" value="euclidean_cluster/clusters" if="$(var use_roi_based_cluster)"/>
       <let name="euclidean_cluster_output" value="clusters" unless="$(var use_roi_based_cluster)"/>
-      <include file="$(find-pkg-share euclidean_cluster)/launch/voxel_grid_based_euclidean_cluster.launch.xml">
+      <include file="$(find-pkg-share autoware_euclidean_cluster)/launch/voxel_grid_based_euclidean_cluster.launch.xml">
         <arg name="input_pointcloud" value="$(var euclidean_cluster_input)"/>
         <arg name="output_clusters" value="$(var euclidean_cluster_output)"/>
         <arg name="use_low_height_cropbox" value="$(var use_low_height_cropbox)"/>
