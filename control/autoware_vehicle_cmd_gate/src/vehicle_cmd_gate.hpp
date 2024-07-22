@@ -223,7 +223,7 @@ private:
   rclcpp::TimerBase::SharedPtr timer_pub_status_;
 
   void onTimer();
-  void publishControlCommands(const Commands & input_msg);
+  void publishControlCommands(const Commands & commands);
   void publishEmergencyStopControlCommands();
   void publishStatus();
 
@@ -243,7 +243,7 @@ private:
   Control getActualStatusAsCommand();
 
   VehicleCmdFilter filter_;
-  Control filterControlCommand(const Control & msg);
+  Control filterControlCommand(const Control & in);
 
   // filtering on transition
   OperationModeState current_operation_mode_;
