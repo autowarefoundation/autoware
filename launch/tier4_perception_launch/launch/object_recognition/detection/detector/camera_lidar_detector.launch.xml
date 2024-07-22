@@ -229,7 +229,7 @@
       </group>
       <!-- convert DynamicObjectsWithFeatureArray to DynamicObjects -->
       <group>
-        <include file="$(find-pkg-share detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
+        <include file="$(find-pkg-share autoware_detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
           <arg name="input" value="objects_with_feature"/>
           <arg name="output" value="$(var output/rule_detector/objects)"/>
         </include>

@@ -1,8 +1,8 @@
-# detected_object_feature_remover
+# autoware_detected_object_feature_remover
 
 ## Purpose
 
-The `detected_object_feature_remover` is a package to convert topic-type from `DetectedObjectWithFeatureArray` to `DetectedObjects`.
+The `autoware_detected_object_feature_remover` is a package to convert topic-type from `DetectedObjectWithFeatureArray` to `DetectedObjects`.
 
 ## Inner-workings / Algorithms
 
