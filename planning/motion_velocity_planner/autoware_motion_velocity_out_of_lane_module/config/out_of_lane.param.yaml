@@ -19,6 +19,7 @@
         predicted_path_min_confidence : 0.1  # when using predicted paths, ignore the ones whose confidence is lower than this value.
         distance_buffer: 1.0 # [m] distance buffer used to determine if a collision will occur in the other lane
         cut_predicted_paths_beyond_red_lights: true # if true, predicted paths are cut beyond the stop line of red traffic lights
+        ignore_behind_ego: true # if true, objects behind the ego vehicle are ignored
 
       overlap:
         minimum_distance: 0.0  # [m] minimum distance inside a lanelet for an overlap to be considered

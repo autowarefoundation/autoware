@@ -36,7 +36,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace autoware::motion_velocity_planner
@@ -85,6 +84,8 @@ void OutOfLaneModule::init_parameters(rclcpp::Node & node)
   pp.objects_dist_buffer = getOrDeclareParameter<double>(node, ns_ + ".objects.distance_buffer");
   pp.objects_cut_predicted_paths_beyond_red_lights =
     getOrDeclareParameter<bool>(node, ns_ + ".objects.cut_predicted_paths_beyond_red_lights");
+  pp.objects_ignore_behind_ego =
+    getOrDeclareParameter<bool>(node, ns_ + ".objects.ignore_behind_ego");
 
   pp.overlap_min_dist = getOrDeclareParameter<double>(node, ns_ + ".overlap.minimum_distance");
   pp.overlap_extra_length = getOrDeclareParameter<double>(node, ns_ + ".overlap.extra_length");
@@ -132,7 +133,7 @@ void OutOfLaneModule::update_parameters(const std::vector<rclcpp::Parameter> & p
   updateParam(
     parameters, ns_ + ".objects.cut_predicted_paths_beyond_red_lights",
     pp.objects_cut_predicted_paths_beyond_red_lights);
-
+  updateParam(parameters, ns_ + ".objects.ignore_behind_ego", pp.objects_ignore_behind_ego);
   updateParam(parameters, ns_ + ".overlap.minimum_distance", pp.overlap_min_dist);
   updateParam(parameters, ns_ + ".overlap.extra_length", pp.overlap_extra_length);
 

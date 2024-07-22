@@ -418,7 +418,7 @@ rcl_interfaces::msg::SetParametersResult MotionVelocityPlannerNode::on_set_param
   updateParam(parameters, "ego_nearest_dist_threshold", planner_data_.ego_nearest_dist_threshold);
   updateParam(parameters, "ego_nearest_yaw_threshold", planner_data_.ego_nearest_yaw_threshold);
 
-  set_velocity_smoother_params();
+  // set_velocity_smoother_params(); TODO(Maxime): fix update parameters of the velocity smoother
 
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;
