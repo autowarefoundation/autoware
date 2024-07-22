@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>image_diagnostics</name>
+  <name>autoware_image_diagnostics</name>
   <version>0.1.0</version>
-  <description>The image_diagnostics_package</description>
+  <description>The autoware_image_diagnostics package</description>
   <maintainer email="dai.nguyen@tier4.jp">Dai Nguyen</maintainer>
   <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>
   <license>Apache License 2.0</license>

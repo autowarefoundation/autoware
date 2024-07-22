@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(image_diagnostics)
+project(autoware_image_diagnostics)
 
 ### Compile options
 if(NOT CMAKE_CXX_STANDARD)
