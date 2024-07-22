@@ -17,10 +17,10 @@
   <!-- TransFusion -->
   <group if="$(eval &quot;'$(var lidar_detection_model)'=='transfusion'&quot;)">
     <push-ros-namespace namespace="transfusion"/>
-    <arg name="lidar_model_param_path" default="$(find-pkg-share lidar_transfusion)/config"/>
+    <arg name="lidar_model_param_path" default="$(find-pkg-share autoware_lidar_transfusion)/config"/>
 
     <group>
-      <include file="$(find-pkg-share lidar_transfusion)/launch/lidar_transfusion.launch.xml">
+      <include file="$(find-pkg-share autoware_lidar_transfusion)/launch/lidar_transfusion.launch.xml">
         <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
         <arg name="output/objects" value="$(var output/objects)"/>
         <arg name="model_name" value="$(var transfusion_model_name)"/>
