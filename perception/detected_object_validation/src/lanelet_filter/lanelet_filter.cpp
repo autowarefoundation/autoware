@@ -23,6 +23,8 @@
 #include <boost/geometry/algorithms/disjoint.hpp>
 #include <boost/geometry/algorithms/intersects.hpp>
 
+#include <lanelet2_core/geometry/BoundingBox.h>
+#include <lanelet2_core/geometry/LaneletMap.h>
 #include <lanelet2_core/geometry/Polygon.h>
 
 namespace autoware::detected_object_validation
@@ -76,9 +78,6 @@ void ObjectLaneletFilterNode::mapCallback(
   lanelet_frame_id_ = map_msg->header.frame_id;
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::fromBinMsg(*map_msg, lanelet_map_ptr_);
-  const lanelet::ConstLanelets all_lanelets = lanelet::utils::query::laneletLayer(lanelet_map_ptr_);
-  road_lanelets_ = lanelet::utils::query::roadLanelets(all_lanelets);
-  shoulder_lanelets_ = lanelet::utils::query::shoulderLanelets(all_lanelets);
 }
 
 void ObjectLaneletFilterNode::objectCallback(
@@ -103,19 +102,15 @@ void ObjectLaneletFilterNode::objectCallback(
 
   // calculate convex hull
   const auto convex_hull = getConvexHull(transformed_objects);
+
   // get intersected lanelets
-  lanelet::ConstLanelets intersected_road_lanelets =
-    getIntersectedLanelets(convex_hull, road_lanelets_);
-  lanelet::ConstLanelets intersected_shoulder_lanelets =
-    getIntersectedLanelets(convex_hull, shoulder_lanelets_);
+  lanelet::ConstLanelets intersected_lanelets = getIntersectedLanelets(convex_hull);
 
   // filtering process
   for (size_t index = 0; index < transformed_objects.objects.size(); ++index) {
     const auto & transformed_object = transformed_objects.objects.at(index);
     const auto & input_object = input_msg->objects.at(index);
-    filterObject(
-      transformed_object, input_object, intersected_road_lanelets, intersected_shoulder_lanelets,
-      output_object_msg);
+    filterObject(transformed_object, input_object, intersected_lanelets, output_object_msg);
   }
   object_pub_->publish(output_object_msg);
   published_time_publisher_->publish_if_subscribed(object_pub_, output_object_msg.header.stamp);
@@ -133,8 +128,7 @@ void ObjectLaneletFilterNode::objectCallback(
 bool ObjectLaneletFilterNode::filterObject(
   const autoware_perception_msgs::msg::DetectedObject & transformed_object,
   const autoware_perception_msgs::msg::DetectedObject & input_object,
-  const lanelet::ConstLanelets & intersected_road_lanelets,
-  const lanelet::ConstLanelets & intersected_shoulder_lanelets,
+  const lanelet::ConstLanelets & intersected_lanelets,
   autoware_perception_msgs::msg::DetectedObjects & output_object_msg)
 {
   const auto & label = transformed_object.classification.front().label;
@@ -143,8 +137,7 @@ bool ObjectLaneletFilterNode::filterObject(
     // 1. is polygon overlap with road lanelets or shoulder lanelets
     if (filter_settings_.polygon_overlap_filter) {
       const bool is_polygon_overlap =
-        isObjectOverlapLanelets(transformed_object, intersected_road_lanelets) ||
-        isObjectOverlapLanelets(transformed_object, intersected_shoulder_lanelets);
+        isObjectOverlapLanelets(transformed_object, intersected_lanelets);
       filter_pass = filter_pass && is_polygon_overlap;
     }
 
@@ -154,8 +147,7 @@ bool ObjectLaneletFilterNode::filterObject(
       autoware_perception_msgs::msg::TrackedObjectKinematics::UNAVAILABLE;
     if (filter_settings_.lanelet_direction_filter && !orientation_not_available) {
       const bool is_same_direction =
-        isSameDirectionWithLanelets(intersected_road_lanelets, transformed_object) ||
-        isSameDirectionWithLanelets(intersected_shoulder_lanelets, transformed_object);
+        isSameDirectionWithLanelets(intersected_lanelets, transformed_object);
       filter_pass = filter_pass && is_same_direction;
     }
 
@@ -214,18 +206,40 @@ LinearRing2d ObjectLaneletFilterNode::getConvexHull(
   return convex_hull;
 }
 
+// fetch the intersected candidate lanelets with bounding box and then
+// check the intersections among the lanelets and the convex hull
 lanelet::ConstLanelets ObjectLaneletFilterNode::getIntersectedLanelets(
-  const LinearRing2d & convex_hull, const lanelet::ConstLanelets & road_lanelets)
+  const LinearRing2d & convex_hull)
 {
+  namespace bg = boost::geometry;
+
   lanelet::ConstLanelets intersected_lanelets;
 
-  // WARNING: This implementation currently iterate all lanelets, which could degrade performance
-  // when handling large sized map.
-  for (const auto & road_lanelet : road_lanelets) {
-    if (boost::geometry::intersects(convex_hull, road_lanelet.polygon2d().basicPolygon())) {
-      intersected_lanelets.emplace_back(road_lanelet);
+  // convert convex_hull to a 2D bounding box for searching in the LaneletMap
+  bg::model::box<bg::model::d2::point_xy<double>> bbox2d_convex_hull;
+  bg::envelope(convex_hull, bbox2d_convex_hull);
+  lanelet::BoundingBox2d bbox2d(
+    lanelet::BasicPoint2d(
+      bg::get<bg::min_corner, 0>(bbox2d_convex_hull),
+      bg::get<bg::min_corner, 1>(bbox2d_convex_hull)),
+    lanelet::BasicPoint2d(
+      bg::get<bg::max_corner, 0>(bbox2d_convex_hull),
+      bg::get<bg::max_corner, 1>(bbox2d_convex_hull)));
+
+  lanelet::Lanelets candidates_lanelets = lanelet_map_ptr_->laneletLayer.search(bbox2d);
+  for (const auto & lanelet : candidates_lanelets) {
+    // only check the road lanelets and road shoulder lanelets
+    if (
+      lanelet.hasAttribute(lanelet::AttributeName::Subtype) &&
+      (lanelet.attribute(lanelet::AttributeName::Subtype).value() ==
+         lanelet::AttributeValueString::Road ||
+       lanelet.attribute(lanelet::AttributeName::Subtype).value() == "road_shoulder")) {
+      if (boost::geometry::intersects(convex_hull, lanelet.polygon2d().basicPolygon())) {
+        intersected_lanelets.emplace_back(lanelet);
+      }
     }
   }
+
   return intersected_lanelets;
 }
 

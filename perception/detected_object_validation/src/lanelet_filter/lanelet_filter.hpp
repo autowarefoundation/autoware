@@ -57,8 +57,6 @@ private:
   std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_{nullptr};
 
   lanelet::LaneletMapPtr lanelet_map_ptr_;
-  lanelet::ConstLanelets road_lanelets_;
-  lanelet::ConstLanelets shoulder_lanelets_;
   std::string lanelet_frame_id_;
 
   tf2_ros::Buffer tf_buffer_;
@@ -76,12 +74,10 @@ private:
   bool filterObject(
     const autoware_perception_msgs::msg::DetectedObject & transformed_object,
     const autoware_perception_msgs::msg::DetectedObject & input_object,
-    const lanelet::ConstLanelets & intersected_road_lanelets,
-    const lanelet::ConstLanelets & intersected_shoulder_lanelets,
+    const lanelet::ConstLanelets & intersected_lanelets,
     autoware_perception_msgs::msg::DetectedObjects & output_object_msg);
   LinearRing2d getConvexHull(const autoware_perception_msgs::msg::DetectedObjects &);
-  lanelet::ConstLanelets getIntersectedLanelets(
-    const LinearRing2d &, const lanelet::ConstLanelets &);
+  lanelet::ConstLanelets getIntersectedLanelets(const LinearRing2d &);
   bool isObjectOverlapLanelets(
     const autoware_perception_msgs::msg::DetectedObject & object,
     const lanelet::ConstLanelets & intersected_lanelets);
