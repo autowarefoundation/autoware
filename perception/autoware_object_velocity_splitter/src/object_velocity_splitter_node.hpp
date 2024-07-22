@@ -46,9 +46,6 @@ private:
   // Callback
   void onObjects(const DetectedObjects::ConstSharedPtr msg);
 
-  // Data Buffer
-  DetectedObjects::ConstSharedPtr objects_data_{};
-
   // Publisher
   rclcpp::Publisher<DetectedObjects>::SharedPtr pub_high_speed_objects_{};
   rclcpp::Publisher<DetectedObjects>::SharedPtr pub_low_speed_objects_{};

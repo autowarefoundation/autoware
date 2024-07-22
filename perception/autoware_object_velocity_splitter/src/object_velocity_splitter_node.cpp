@@ -65,14 +65,14 @@ ObjectVelocitySplitterNode::ObjectVelocitySplitterNode(const rclcpp::NodeOptions
   pub_low_speed_objects_ = create_publisher<DetectedObjects>("~/output/low_speed_objects", 1);
 }
 
-void ObjectVelocitySplitterNode::onObjects(const DetectedObjects::ConstSharedPtr objects_data_)
+void ObjectVelocitySplitterNode::onObjects(const DetectedObjects::ConstSharedPtr msg)
 {
   DetectedObjects high_speed_objects;
   DetectedObjects low_speed_objects;
-  high_speed_objects.header = objects_data_->header;
-  low_speed_objects.header = objects_data_->header;
+  high_speed_objects.header = msg->header;
+  low_speed_objects.header = msg->header;
 
-  for (const auto & object : objects_data_->objects) {
+  for (const auto & object : msg->objects) {
     if (
       std::abs(autoware::universe_utils::calcNorm(
         object.kinematics.twist_with_covariance.twist.linear)) < node_param_.velocity_threshold) {
