@@ -183,17 +183,17 @@ void RRTStar::extend()
     // This cannot be inside if(is_reached){...} because we must update this anytime after rewiring
     // takes place
     double cost_min = inf;
-    NodeSharedPtr node_best_parent;
+    NodeSharedPtr reached_node_best_parent;
     for (const auto & node : reached_nodes_) {
       const double cost = *(node->cost_from_start) + *(node->cost_to_goal);
       if (cost < cost_min) {
         cost_min = cost;
-        node_best_parent = node;
+        reached_node_best_parent = node;
       }
     }
     node_goal_->cost_from_start = cost_min;
-    node_goal_->parent = node_best_parent;
-    node_goal_->cost_to_parent = node_best_parent->cost_to_goal;
+    node_goal_->parent = reached_node_best_parent;
+    node_goal_->cost_to_parent = reached_node_best_parent->cost_to_goal;
   }
 }
 
