@@ -1079,7 +1079,7 @@ bool VelocitySmootherNode::isReverse(const TrajectoryPoints & points) const
   if (points.empty()) return true;
 
   return std::any_of(
-    points.begin(), points.end(), [](auto & pt) { return pt.longitudinal_velocity_mps < 0; });
+    points.begin(), points.end(), [](const auto & pt) { return pt.longitudinal_velocity_mps < 0; });
 }
 void VelocitySmootherNode::flipVelocity(TrajectoryPoints & points) const
 {
