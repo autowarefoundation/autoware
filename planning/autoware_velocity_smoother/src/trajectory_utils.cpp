@@ -229,7 +229,7 @@ void setZeroVelocity(TrajectoryPoints & trajectory)
 double getMaxVelocity(const TrajectoryPoints & trajectory)
 {
   double max_vel = 0.0;
-  for (auto & tp : trajectory) {
+  for (const auto & tp : trajectory) {
     if (tp.longitudinal_velocity_mps > max_vel) {
       max_vel = tp.longitudinal_velocity_mps;
     }
@@ -240,7 +240,7 @@ double getMaxVelocity(const TrajectoryPoints & trajectory)
 double getMaxAbsVelocity(const TrajectoryPoints & trajectory)
 {
   double max_vel = 0.0;
-  for (auto & tp : trajectory) {
+  for (const auto & tp : trajectory) {
     double abs_vel = std::fabs(tp.longitudinal_velocity_mps);
     if (abs_vel > max_vel) {
       max_vel = abs_vel;
@@ -434,7 +434,7 @@ std::optional<TrajectoryPoints> applyDecelFilterWithJerkConstraint(
   const std::map<double, double> & jerk_profile)
 {
   double t_total{0.0};
-  for (auto & it : jerk_profile) {
+  for (const auto & it : jerk_profile) {
     t_total += it.second;
   }
 
@@ -544,7 +544,7 @@ std::optional<std::tuple<double, double, double, double>> updateStateWithJerkCon
   double x{0.0};
   double t_sum{0.0};
 
-  for (auto & it : jerk_profile) {
+  for (const auto & it : jerk_profile) {
     j = it.first;
     t_sum += it.second;
     if (t > t_sum) {
