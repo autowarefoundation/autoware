@@ -34,8 +34,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef TENSORRT_CLASSIFIER__CALIBRATOR_HPP_
-#define TENSORRT_CLASSIFIER__CALIBRATOR_HPP_
+#ifndef AUTOWARE__TENSORRT_CLASSIFIER__CALIBRATOR_HPP_
+#define AUTOWARE__TENSORRT_CLASSIFIER__CALIBRATOR_HPP_
 #include "cuda_utils/cuda_check_error.hpp"
 #include "cuda_utils/cuda_unique_ptr.hpp"
 
@@ -52,7 +52,7 @@
 #include <string>
 #include <vector>
 
-namespace tensorrt_classifier
+namespace autoware::tensorrt_classifier
 {
 class ImageStream
 {
@@ -524,6 +524,6 @@ private:
   // std for preprocessing
   std::vector<float> m_std;
 };
-}  // namespace tensorrt_classifier
+}  // namespace autoware::tensorrt_classifier
 
-#endif  // TENSORRT_CLASSIFIER__CALIBRATOR_HPP_
+#endif  // AUTOWARE__TENSORRT_CLASSIFIER__CALIBRATOR_HPP_

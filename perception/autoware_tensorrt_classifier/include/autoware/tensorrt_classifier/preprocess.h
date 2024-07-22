@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TENSORRT_CLASSIFIER__PREPROCESS_H_
-#define TENSORRT_CLASSIFIER__PREPROCESS_H_
+#ifndef AUTOWARE__TENSORRT_CLASSIFIER__PREPROCESS_H_
+#define AUTOWARE__TENSORRT_CLASSIFIER__PREPROCESS_H_
 
 #include <cublas_v2.h>
 #include <cuda.h>
@@ -178,4 +178,4 @@ extern void multi_scale_resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
   float * dst, unsigned char * src, int d_w, int d_h, int d_c, Roi * d_roi, int s_w, int s_h,
   int s_c, int batch, float norm, cudaStream_t stream);
 
-#endif  // TENSORRT_CLASSIFIER__PREPROCESS_H_
+#endif  // AUTOWARE__TENSORRT_CLASSIFIER__PREPROCESS_H_

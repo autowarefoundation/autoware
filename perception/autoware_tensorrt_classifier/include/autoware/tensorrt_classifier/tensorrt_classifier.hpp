@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TENSORRT_CLASSIFIER__TENSORRT_CLASSIFIER_HPP_
-#define TENSORRT_CLASSIFIER__TENSORRT_CLASSIFIER_HPP_
+#ifndef AUTOWARE__TENSORRT_CLASSIFIER__TENSORRT_CLASSIFIER_HPP_
+#define AUTOWARE__TENSORRT_CLASSIFIER__TENSORRT_CLASSIFIER_HPP_
 
 #include <cuda_utils/cuda_check_error.hpp>
 #include <cuda_utils/cuda_unique_ptr.hpp>
@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace tensorrt_classifier
+namespace autoware::tensorrt_classifier
 {
 using cuda_utils::CudaUniquePtr;
 using cuda_utils::CudaUniquePtrHost;
@@ -129,6 +129,6 @@ private:
   int batch_size_;
   CudaUniquePtrHost<float[]> out_prob_h_;
 };
-}  // namespace tensorrt_classifier
+}  // namespace autoware::tensorrt_classifier
 
-#endif  // TENSORRT_CLASSIFIER__TENSORRT_CLASSIFIER_HPP_
+#endif  // AUTOWARE__TENSORRT_CLASSIFIER__TENSORRT_CLASSIFIER_HPP_

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <tensorrt_classifier/calibrator.hpp>
-#include <tensorrt_classifier/tensorrt_classifier.hpp>
+#include <autoware/tensorrt_classifier/calibrator.hpp>
+#include <autoware/tensorrt_classifier/tensorrt_classifier.hpp>
 
+#include <autoware/tensorrt_classifier/preprocess.h>
 #include <omp.h>
-#include <tensorrt_classifier/preprocess.h>
 
 #include <algorithm>
 #include <functional>
@@ -95,7 +95,7 @@ std::vector<std::string> loadImageList(const std::string & filename, const std::
   return fileList;
 }
 
-namespace tensorrt_classifier
+namespace autoware::tensorrt_classifier
 {
 TrtClassifier::TrtClassifier(
   const std::string & model_path, const std::string & precision,
@@ -120,7 +120,8 @@ TrtClassifier::TrtClassifier(
     if (calibration_image_list_path != "") {
       calibration_images = loadImageList(calibration_image_list_path, "");
     }
-    tensorrt_classifier::ImageStream stream(max_batch_size, input_dims, calibration_images);
+    autoware::tensorrt_classifier::ImageStream stream(
+      max_batch_size, input_dims, calibration_images);
     fs::path calibration_table{model_path};
     std::string calibName = "";
     std::string ext = "";
@@ -140,17 +141,17 @@ TrtClassifier::TrtClassifier(
 
     std::unique_ptr<nvinfer1::IInt8Calibrator> calibrator;
     if (build_config.calib_type_str == "Entropy") {
-      calibrator.reset(
-        new tensorrt_classifier::Int8EntropyCalibrator(stream, calibration_table, mean_, std_));
+      calibrator.reset(new autoware::tensorrt_classifier::Int8EntropyCalibrator(
+        stream, calibration_table, mean_, std_));
     } else if (
       build_config.calib_type_str == "Legacy" || build_config.calib_type_str == "Percentile") {
       double quantile = 0.999999;
       double cutoff = 0.999999;
-      calibrator.reset(new tensorrt_classifier::Int8LegacyCalibrator(
+      calibrator.reset(new autoware::tensorrt_classifier::Int8LegacyCalibrator(
         stream, calibration_table, histogram_table, mean_, std_, true, quantile, cutoff));
     } else {
-      calibrator.reset(
-        new tensorrt_classifier::Int8MinMaxCalibrator(stream, calibration_table, mean_, std_));
+      calibrator.reset(new autoware::tensorrt_classifier::Int8MinMaxCalibrator(
+        stream, calibration_table, mean_, std_));
     }
     trt_common_ = std::make_unique<tensorrt_common::TrtCommon>(
       model_path, precision, std::move(calibrator), batch_config, max_workspace_size, build_config);
@@ -384,4 +385,4 @@ bool TrtClassifier::feedforwardAndDecode(
   }
   return true;
 }
-}  // namespace tensorrt_classifier
+}  // namespace autoware::tensorrt_classifier

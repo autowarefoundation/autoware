@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>tensorrt_classifier</name>
+  <name>autoware_tensorrt_classifier</name>
   <version>0.0.1</version>
   <description>tensorrt classifier wrapper</description>
 
   <author email="dan.umeda@tier4.jp">Dan Umeda</author>
-  <author email="mingyu.li@tier4.jp">Mingyu Li</author>
   <maintainer email="kotaro.uetake@tier4.jp">Kotaro Uetake</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
 
