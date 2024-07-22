@@ -175,7 +175,7 @@ DetectedObjects RadarTracksMsgsConverterNode::convertTrackedObjectsToDetectedObj
   DetectedObjects detected_objects;
   detected_objects.header = objects.header;
 
-  for (auto & object : objects.objects) {
+  for (const auto & object : objects.objects) {
     DetectedObject detected_object;
     detected_object.existence_probability = 1.0;
     detected_object.shape = object.shape;
@@ -224,7 +224,7 @@ TrackedObjects RadarTracksMsgsConverterNode::convertRadarTrackToTrackedObjects()
   tracked_objects.header = radar_data_->header;
   tracked_objects.header.frame_id = node_param_.new_frame_id;
 
-  for (auto & radar_track : radar_data_->tracks) {
+  for (const auto & radar_track : radar_data_->tracks) {
     TrackedObject tracked_object;
 
     tracked_object.object_id = radar_track.uuid;
