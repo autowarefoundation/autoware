@@ -340,7 +340,7 @@ private:
         }
 
         if (rtc.second->isTerminated(uuid_map_.at(rtc.first))) {
-          return true;
+          return false;
         }
 
         return rtc.second->isActivated(uuid_map_.at(rtc.first));
