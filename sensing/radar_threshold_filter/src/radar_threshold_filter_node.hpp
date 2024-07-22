@@ -55,7 +55,7 @@ private:
   rclcpp::Subscription<RadarScan>::SharedPtr sub_radar_{};
 
   // Callback
-  void onData(const RadarScan::ConstSharedPtr msg);
+  void onData(const RadarScan::ConstSharedPtr radar_msg);
 
   // Publisher
   rclcpp::Publisher<RadarScan>::SharedPtr pub_radar_{};
