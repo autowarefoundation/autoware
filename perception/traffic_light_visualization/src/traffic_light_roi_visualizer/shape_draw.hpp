@@ -23,6 +23,8 @@
 #include <map>
 #include <string>
 
+namespace autoware::traffic_light::visualization
+{
 struct DrawFunctionParams
 {
   cv::Mat & image;
@@ -49,3 +51,5 @@ void drawUnknown(const DrawFunctionParams & params);
 void drawTrafficLightShape(
   cv::Mat & image, const std::string & shape, const cv::Point & position, const cv::Scalar & color,
   int size, float probability);
+
+}  // namespace autoware::traffic_light::visualization

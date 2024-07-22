@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef TRAFFIC_LIGHT_VISUALIZATION__TRAFFIC_LIGHT_ROI_VISUALIZER__NODELET_HPP_
-#define TRAFFIC_LIGHT_VISUALIZATION__TRAFFIC_LIGHT_ROI_VISUALIZER__NODELET_HPP_
+#ifndef TRAFFIC_LIGHT_ROI_VISUALIZER__NODE_HPP_
+#define TRAFFIC_LIGHT_ROI_VISUALIZER__NODE_HPP_
 
 #include <image_transport/image_transport.hpp>
 #include <image_transport/subscriber_filter.hpp>
@@ -38,7 +38,7 @@
 #include <mutex>
 #include <string>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 struct ClassificationResult
 {
@@ -46,10 +46,10 @@ struct ClassificationResult
   std::string label;
 };
 
-class TrafficLightRoiVisualizerNodelet : public rclcpp::Node
+class TrafficLightRoiVisualizerNode : public rclcpp::Node
 {
 public:
-  explicit TrafficLightRoiVisualizerNodelet(const rclcpp::NodeOptions & options);
+  explicit TrafficLightRoiVisualizerNode(const rclcpp::NodeOptions & options);
   void connectCb();
 
   void imageRoiCallback(
@@ -138,6 +138,6 @@ private:
   bool enable_fine_detection_;
 };
 
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
-#endif  // TRAFFIC_LIGHT_VISUALIZATION__TRAFFIC_LIGHT_ROI_VISUALIZER__NODELET_HPP_
+#endif  // TRAFFIC_LIGHT_ROI_VISUALIZER__NODE_HPP_

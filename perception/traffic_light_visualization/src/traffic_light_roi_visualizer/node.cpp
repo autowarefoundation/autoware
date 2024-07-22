@@ -12,21 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "traffic_light_visualization/traffic_light_roi_visualizer/nodelet.hpp"  // NOLINT(whitespace/line_length)
+#include "node.hpp"
 
-#include "traffic_light_visualization/traffic_light_roi_visualizer/shape_draw.hpp"  // NOLINT(whitespace/line_length)
+#include "shape_draw.hpp"
 
 #include <rclcpp/rclcpp.hpp>
-#include <rclcpp_components/register_node_macro.hpp>
 
 #include <memory>
 #include <string>
 #include <utility>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
-TrafficLightRoiVisualizerNodelet::TrafficLightRoiVisualizerNodelet(
-  const rclcpp::NodeOptions & options)
+TrafficLightRoiVisualizerNode::TrafficLightRoiVisualizerNode(const rclcpp::NodeOptions & options)
 : Node("traffic_light_roi_visualizer_node", options)
 {
   using std::placeholders::_1;
@@ -39,22 +37,22 @@ TrafficLightRoiVisualizerNodelet::TrafficLightRoiVisualizerNodelet(
     sync_with_rough_roi_.reset(new SyncWithRoughRoi(
       SyncPolicyWithRoughRoi(10), image_sub_, roi_sub_, rough_roi_sub_, traffic_signals_sub_));
     sync_with_rough_roi_->registerCallback(
-      std::bind(&TrafficLightRoiVisualizerNodelet::imageRoughRoiCallback, this, _1, _2, _3, _4));
+      std::bind(&TrafficLightRoiVisualizerNode::imageRoughRoiCallback, this, _1, _2, _3, _4));
   } else {
     sync_.reset(new Sync(SyncPolicy(10), image_sub_, roi_sub_, traffic_signals_sub_));
     sync_->registerCallback(
-      std::bind(&TrafficLightRoiVisualizerNodelet::imageRoiCallback, this, _1, _2, _3));
+      std::bind(&TrafficLightRoiVisualizerNode::imageRoiCallback, this, _1, _2, _3));
   }
 
   using std::chrono_literals::operator""ms;
   timer_ = rclcpp::create_timer(
-    this, get_clock(), 100ms, std::bind(&TrafficLightRoiVisualizerNodelet::connectCb, this));
+    this, get_clock(), 100ms, std::bind(&TrafficLightRoiVisualizerNode::connectCb, this));
 
   image_pub_ =
     image_transport::create_publisher(this, "~/output/image", rclcpp::QoS{1}.get_rmw_qos_profile());
 }
 
-void TrafficLightRoiVisualizerNodelet::connectCb()
+void TrafficLightRoiVisualizerNode::connectCb()
 {
   if (image_pub_.getNumSubscribers() == 0) {
     image_sub_.unsubscribe();
@@ -74,7 +72,7 @@ void TrafficLightRoiVisualizerNodelet::connectCb()
   }
 }
 
-bool TrafficLightRoiVisualizerNodelet::createRect(
+bool TrafficLightRoiVisualizerNode::createRect(
   cv::Mat & image, const tier4_perception_msgs::msg::TrafficLightRoi & tl_roi,
   const cv::Scalar & color)
 {
@@ -89,7 +87,7 @@ bool TrafficLightRoiVisualizerNodelet::createRect(
   return true;
 }
 
-bool TrafficLightRoiVisualizerNodelet::createRect(
+bool TrafficLightRoiVisualizerNode::createRect(
   cv::Mat & image, const tier4_perception_msgs::msg::TrafficLightRoi & tl_roi,
   const ClassificationResult & result)
 {
@@ -111,13 +109,13 @@ bool TrafficLightRoiVisualizerNodelet::createRect(
 
   std::string shape_name = extractShapeName(result.label);
 
-  drawTrafficLightShape(
+  visualization::drawTrafficLightShape(
     image, shape_name, cv::Point(tl_roi.roi.x_offset, tl_roi.roi.y_offset), color, 16, result.prob);
 
   return true;
 }
 
-void TrafficLightRoiVisualizerNodelet::imageRoiCallback(
+void TrafficLightRoiVisualizerNode::imageRoiCallback(
   const sensor_msgs::msg::Image::ConstSharedPtr & input_image_msg,
   const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & input_tl_roi_msg,
   [[maybe_unused]] const tier4_perception_msgs::msg::TrafficLightArray::ConstSharedPtr &
@@ -148,7 +146,7 @@ void TrafficLightRoiVisualizerNodelet::imageRoiCallback(
   image_pub_.publish(cv_ptr->toImageMsg());
 }
 
-bool TrafficLightRoiVisualizerNodelet::getClassificationResult(
+bool TrafficLightRoiVisualizerNode::getClassificationResult(
   int id, const tier4_perception_msgs::msg::TrafficLightArray & traffic_signals,
   ClassificationResult & result)
 {
@@ -171,7 +169,7 @@ bool TrafficLightRoiVisualizerNodelet::getClassificationResult(
   return has_correspond_traffic_signal;
 }
 
-bool TrafficLightRoiVisualizerNodelet::getRoiFromId(
+bool TrafficLightRoiVisualizerNode::getRoiFromId(
   int id, const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & rois,
   tier4_perception_msgs::msg::TrafficLightRoi & correspond_roi)
 {
@@ -184,7 +182,7 @@ bool TrafficLightRoiVisualizerNodelet::getRoiFromId(
   return false;
 }
 
-void TrafficLightRoiVisualizerNodelet::imageRoughRoiCallback(
+void TrafficLightRoiVisualizerNode::imageRoughRoiCallback(
   const sensor_msgs::msg::Image::ConstSharedPtr & input_image_msg,
   const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & input_tl_roi_msg,
   const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & input_tl_rough_roi_msg,
@@ -225,6 +223,7 @@ void TrafficLightRoiVisualizerNodelet::imageRoughRoiCallback(
   image_pub_.publish(cv_ptr->toImageMsg());
 }
 
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
-RCLCPP_COMPONENTS_REGISTER_NODE(traffic_light::TrafficLightRoiVisualizerNodelet)
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::traffic_light::TrafficLightRoiVisualizerNode)

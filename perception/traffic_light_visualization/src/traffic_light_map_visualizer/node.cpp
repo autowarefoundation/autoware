@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "traffic_light_visualization/traffic_light_map_visualizer/node.hpp"
+#include "node.hpp"
 
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <autoware_lanelet2_extension/utility/query.hpp>
@@ -25,8 +25,6 @@
 
 #include <string>
 #include <vector>
-
-using std::placeholders::_1;
 
 namespace
 {
@@ -105,12 +103,14 @@ void lightAsMarker(
 }
 }  // namespace
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 TrafficLightMapVisualizerNode::TrafficLightMapVisualizerNode(
-  const std::string & node_name, const rclcpp::NodeOptions & node_options)
-: rclcpp::Node(node_name, node_options)
+  const rclcpp::NodeOptions & node_options)
+: rclcpp::Node("traffic_light_map_visualizer_node", node_options)
 {
+  using std::placeholders::_1;
+
   light_marker_pub_ =
     create_publisher<visualization_msgs::msg::MarkerArray>("~/output/traffic_light", 1);
   tl_state_sub_ = create_subscription<autoware_perception_msgs::msg::TrafficLightGroupArray>(
@@ -209,4 +209,7 @@ void TrafficLightMapVisualizerNode::binMapCallback(
   lanelet::ConstLanelets all_lanelets = lanelet::utils::query::laneletLayer(viz_lanelet_map);
   aw_tl_reg_elems_ = lanelet::utils::query::autowareTrafficLights(all_lanelets);
 }
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::traffic_light::TrafficLightMapVisualizerNode)

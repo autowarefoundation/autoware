@@ -11,12 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "traffic_light_visualization/traffic_light_roi_visualizer/shape_draw.hpp"
+#include "shape_draw.hpp"
 
 #include "opencv2/core/types.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 
+namespace autoware::traffic_light::visualization
+{
 void drawShape(
   const DrawFunctionParams & params, const std::string & filename, bool flipHorizontally,
   bool flipVertically, int x_offset, int y_offset, double scale_factor)
@@ -171,3 +173,5 @@ void drawTrafficLightShape(
     std::cerr << "Unknown shape: " << shape << std::endl;
   }
 }
+
+}  // namespace autoware::traffic_light::visualization

@@ -86,7 +86,7 @@ def launch_setup(context, *args, **kwargs):
             ),
             ComposableNode(
                 package="traffic_light_visualization",
-                plugin="traffic_light::TrafficLightRoiVisualizerNodelet",
+                plugin="autoware::traffic_light::TrafficLightRoiVisualizerNode",
                 name="traffic_light_roi_visualizer",
                 parameters=[create_parameter_dict("enable_fine_detection")],
                 remappings=[

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAFFIC_LIGHT_VISUALIZATION__TRAFFIC_LIGHT_MAP_VISUALIZER__NODE_HPP_
-#define TRAFFIC_LIGHT_VISUALIZATION__TRAFFIC_LIGHT_MAP_VISUALIZER__NODE_HPP_
+#ifndef TRAFFIC_LIGHT_MAP_VISUALIZER__NODE_HPP_
+#define TRAFFIC_LIGHT_MAP_VISUALIZER__NODE_HPP_
 
 #include <autoware_lanelet2_extension/regulatory_elements/autoware_traffic_light.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -26,12 +26,12 @@
 #include <string>
 #include <vector>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 class TrafficLightMapVisualizerNode : public rclcpp::Node
 {
 public:
-  TrafficLightMapVisualizerNode(const std::string & node_name, const rclcpp::NodeOptions & options);
+  explicit TrafficLightMapVisualizerNode(const rclcpp::NodeOptions & options);
   ~TrafficLightMapVisualizerNode() = default;
   void trafficSignalsCallback(
     const autoware_perception_msgs::msg::TrafficLightGroupArray::ConstSharedPtr
@@ -47,6 +47,6 @@ private:
   std::vector<lanelet::AutowareTrafficLightConstPtr> aw_tl_reg_elems_;
 };
 
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
-#endif  // TRAFFIC_LIGHT_VISUALIZATION__TRAFFIC_LIGHT_MAP_VISUALIZER__NODE_HPP_
+#endif  // TRAFFIC_LIGHT_MAP_VISUALIZER__NODE_HPP_
