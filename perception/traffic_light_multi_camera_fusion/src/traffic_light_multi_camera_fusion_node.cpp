@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "traffic_light_multi_camera_fusion/node.hpp"
+#include "traffic_light_multi_camera_fusion_node.hpp"
 
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <autoware_lanelet2_extension/utility/query.hpp>
@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace
@@ -39,7 +40,7 @@ bool isUnknown(const tier4_perception_msgs::msg::TrafficLight & signal)
  * @param record    fusion record
  * @return 0 if traffic light is truncated, otherwise 1
  */
-int calVisibleScore(const traffic_light::FusionRecord & record)
+int calVisibleScore(const autoware::traffic_light::FusionRecord & record)
 {
   const uint32_t boundary = 5;
   uint32_t x1 = record.roi.roi.x_offset;
@@ -55,7 +56,9 @@ int calVisibleScore(const traffic_light::FusionRecord & record)
   }
 }
 
-int compareRecord(const traffic_light::FusionRecord & r1, const traffic_light::FusionRecord & r2)
+int compareRecord(
+  const autoware::traffic_light::FusionRecord & r1,
+  const autoware::traffic_light::FusionRecord & r2)
 {
   /*
   if both records are from the same sensor but different stamp, trust the latest one
@@ -133,7 +136,7 @@ autoware_perception_msgs::msg::TrafficLightElement convert(
 
 }  // namespace
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 
 MultiCameraFusion::MultiCameraFusion(const rclcpp::NodeOptions & node_options)
@@ -319,7 +322,7 @@ void MultiCameraFusion::groupFusion(
   }
 }
 
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(traffic_light::MultiCameraFusion)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::traffic_light::MultiCameraFusion)

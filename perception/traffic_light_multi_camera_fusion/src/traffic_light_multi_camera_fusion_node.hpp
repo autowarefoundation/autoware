@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAFFIC_LIGHT_MULTI_CAMERA_FUSION__NODE_HPP_
-#define TRAFFIC_LIGHT_MULTI_CAMERA_FUSION__NODE_HPP_
+#ifndef TRAFFIC_LIGHT_MULTI_CAMERA_FUSION_NODE_HPP_
+#define TRAFFIC_LIGHT_MULTI_CAMERA_FUSION_NODE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -36,7 +36,7 @@
 #include <utility>
 #include <vector>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 
 namespace mf = message_filters;
@@ -125,5 +125,5 @@ private:
   */
   double message_lifespan_;
 };
-}  // namespace traffic_light
-#endif  // TRAFFIC_LIGHT_MULTI_CAMERA_FUSION__NODE_HPP_
+}  // namespace autoware::traffic_light
+#endif  // TRAFFIC_LIGHT_MULTI_CAMERA_FUSION_NODE_HPP_
