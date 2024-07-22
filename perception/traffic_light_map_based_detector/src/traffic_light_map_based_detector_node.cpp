@@ -12,8 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "traffic_light_map_based_detector/node.hpp"
+#define EIGEN_MPL2_ONLY
 
+#include "traffic_light_map_based_detector_node.hpp"
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <autoware/universe_utils/math/normalization.hpp>
 #include <autoware/universe_utils/math/unit_conversion.hpp>
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
@@ -26,10 +30,6 @@
 #include <lanelet2_routing/RoutingGraphContainer.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Transform.h>
-
-#define EIGEN_MPL2_ONLY
-#include <Eigen/Core>
-#include <Eigen/Geometry>
 
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -118,7 +118,7 @@ tf2::Vector3 getTrafficLightCenter(const lanelet::ConstLineString3d & traffic_li
 
 }  // namespace
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 MapBasedDetector::MapBasedDetector(const rclcpp::NodeOptions & node_options)
 : Node("traffic_light_map_based_detector", node_options),
@@ -605,7 +605,7 @@ void MapBasedDetector::publishVisibleTrafficLights(
   }
   pub->publish(output_msg);
 }
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(traffic_light::MapBasedDetector)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::traffic_light::MapBasedDetector)

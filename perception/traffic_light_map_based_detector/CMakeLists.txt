@@ -11,12 +11,12 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
-ament_auto_add_library(traffic_light_map_based_detector SHARED
-  src/node.cpp
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  src/traffic_light_map_based_detector_node.cpp
 )
 
-rclcpp_components_register_node(traffic_light_map_based_detector
-  PLUGIN "traffic_light::MapBasedDetector"
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "autoware::traffic_light::MapBasedDetector"
   EXECUTABLE traffic_light_map_based_detector_node
 )
 

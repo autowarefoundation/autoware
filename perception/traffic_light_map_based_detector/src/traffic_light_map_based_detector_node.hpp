@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAFFIC_LIGHT_MAP_BASED_DETECTOR__NODE_HPP_
-#define TRAFFIC_LIGHT_MAP_BASED_DETECTOR__NODE_HPP_
+#ifndef TRAFFIC_LIGHT_MAP_BASED_DETECTOR_NODE_HPP_
+#define TRAFFIC_LIGHT_MAP_BASED_DETECTOR_NODE_HPP_
 
 #include <autoware_lanelet2_extension/regulatory_elements/autoware_traffic_light.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -44,7 +44,7 @@
 #include <string>
 #include <vector>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 class MapBasedDetector : public rclcpp::Node
 {
@@ -196,5 +196,5 @@ private:
     const std::vector<lanelet::ConstLineString3d> & visible_traffic_lights,
     const rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub);
 };
-}  // namespace traffic_light
-#endif  // TRAFFIC_LIGHT_MAP_BASED_DETECTOR__NODE_HPP_
+}  // namespace autoware::traffic_light
+#endif  // TRAFFIC_LIGHT_MAP_BASED_DETECTOR_NODE_HPP_
