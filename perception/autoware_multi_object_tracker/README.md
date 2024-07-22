@@ -65,16 +65,16 @@ Multiple inputs are pre-defined in the input channel parameters (described below
 
 ### Input Channel parameters
 
-{{ json_to_markdown("perception/multi_object_tracker/schema/input_channels.schema.json") }}
+{{ json_to_markdown("perception/autoware_multi_object_tracker/schema/input_channels.schema.json") }}
 
 ### Core Parameters
 
-{{ json_to_markdown("perception/multi_object_tracker/schema/multi_object_tracker_node.schema.json") }}
-{{ json_to_markdown("perception/multi_object_tracker/schema/data_association_matrix.schema.json") }}
+{{ json_to_markdown("perception/autoware_multi_object_tracker/schema/multi_object_tracker_node.schema.json") }}
+{{ json_to_markdown("perception/autoware_multi_object_tracker/schema/data_association_matrix.schema.json") }}
 
 #### Simulation parameters
 
-{{ json_to_markdown("perception/multi_object_tracker/schema/simulation_tracker.schema.json") }}
+{{ json_to_markdown("perception/autoware_multi_object_tracker/schema/simulation_tracker.schema.json") }}
 
 ## Assumptions / Known limits
 
