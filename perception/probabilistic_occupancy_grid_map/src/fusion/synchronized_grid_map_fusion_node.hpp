@@ -61,7 +61,7 @@ public:
 private:
   void onGridMap(
     const nav_msgs::msg::OccupancyGrid::ConstSharedPtr & occupancy_grid_msg,
-    const std::string & input_topic);
+    const std::string & topic_name);
   nav_msgs::msg::OccupancyGrid::UniquePtr OccupancyGridMapToMsgPtr(
     const std::string & frame_id, const builtin_interfaces::msg::Time & stamp,
     const float & robot_pose_z, const nav2_costmap_2d::Costmap2D & occupancy_grid_map);
