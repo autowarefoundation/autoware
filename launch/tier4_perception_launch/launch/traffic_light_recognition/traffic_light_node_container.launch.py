@@ -137,7 +137,7 @@ def launch_setup(context, *args, **kwargs):
         composable_node_descriptions=[
             ComposableNode(
                 package="traffic_light_fine_detector",
-                plugin="traffic_light::TrafficLightFineDetectorNodelet",
+                plugin="autoware::traffic_light::TrafficLightFineDetectorNode",
                 name="traffic_light_fine_detector",
                 namespace="detection",
                 parameters=[fine_detector_model_param],

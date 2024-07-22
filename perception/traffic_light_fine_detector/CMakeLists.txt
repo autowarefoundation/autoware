@@ -75,15 +75,15 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     ${CUDA_INCLUDE_DIRS}
   )
 
-  ament_auto_add_library(traffic_light_fine_detector_nodelet SHARED
-    src/nodelet.cpp
+  ament_auto_add_library(${PROJECT_NAME} SHARED
+    src/traffic_light_fine_detector_node.cpp
   )
 
-  target_include_directories(traffic_light_fine_detector_nodelet PUBLIC
+  target_include_directories(${PROJECT_NAME} PUBLIC
     lib/include
   )
 
-  target_link_libraries(traffic_light_fine_detector_nodelet
+  target_link_libraries(${PROJECT_NAME}
     ${NVINFER}
     ${NVONNXPARSER}
     ${NVINFER_PLUGIN}
@@ -94,8 +94,8 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     stdc++fs
   )
 
-  rclcpp_components_register_node(traffic_light_fine_detector_nodelet
-    PLUGIN "traffic_light::TrafficLightFineDetectorNodelet"
+  rclcpp_components_register_node(${PROJECT_NAME}
+    PLUGIN "autoware::traffic_light::TrafficLightFineDetectorNode"
     EXECUTABLE traffic_light_fine_detector_node
   )
 

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAFFIC_LIGHT_FINE_DETECTOR__NODELET_HPP_
-#define TRAFFIC_LIGHT_FINE_DETECTOR__NODELET_HPP_
+#ifndef TRAFFIC_LIGHT_FINE_DETECTOR_NODE_HPP_
+#define TRAFFIC_LIGHT_FINE_DETECTOR_NODE_HPP_
 
 #include <image_transport/image_transport.hpp>
 #include <image_transport/subscriber_filter.hpp>
@@ -50,15 +50,15 @@ typedef struct Detection
   float x, y, w, h, prob;
 } Detection;
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
-class TrafficLightFineDetectorNodelet : public rclcpp::Node
+class TrafficLightFineDetectorNode : public rclcpp::Node
 {
   using TrafficLightRoi = tier4_perception_msgs::msg::TrafficLightRoi;
   using TrafficLightRoiArray = tier4_perception_msgs::msg::TrafficLightRoiArray;
 
 public:
-  explicit TrafficLightFineDetectorNodelet(const rclcpp::NodeOptions & options);
+  explicit TrafficLightFineDetectorNode(const rclcpp::NodeOptions & options);
   void connectCb();
   /**
    * @brief main process function.
@@ -168,8 +168,8 @@ private:
 
   int batch_size_;
   std::unique_ptr<tensorrt_yolox::TrtYoloX> trt_yolox_;
-};  // TrafficLightFineDetectorNodelet
+};  // TrafficLightFineDetectorNode
 
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
-#endif  // TRAFFIC_LIGHT_FINE_DETECTOR__NODELET_HPP_
+#endif  // TRAFFIC_LIGHT_FINE_DETECTOR_NODE_HPP_
