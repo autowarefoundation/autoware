@@ -79,9 +79,9 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   )
 
   ament_auto_add_library(traffic_light_classifier_nodelet SHARED
-    src/color_classifier.cpp
-    src/cnn_classifier.cpp
-    src/nodelet.cpp
+    src/classifier/color_classifier.cpp
+    src/classifier/cnn_classifier.cpp
+    src/traffic_light_classifier_node.cpp
   )
   target_link_libraries(traffic_light_classifier_nodelet
     ${OpenCV_LIBRARIES}
@@ -94,14 +94,14 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     stdc++fs
   )
   rclcpp_components_register_node(traffic_light_classifier_nodelet
-    PLUGIN "traffic_light::TrafficLightClassifierNodelet"
+    PLUGIN "autoware::traffic_light::TrafficLightClassifierNodelet"
     EXECUTABLE traffic_light_classifier_node
   )
 
   ament_auto_add_library(single_image_debug_inference_node SHARED
-    src/cnn_classifier.cpp
-    src/color_classifier.cpp
-    src/nodelet.cpp
+    src/classifier/cnn_classifier.cpp
+    src/classifier/color_classifier.cpp
+    src/traffic_light_classifier_node.cpp
     src/single_image_debug_inference_node.cpp
   )
   target_link_libraries(single_image_debug_inference_node
@@ -117,7 +117,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     opencv_highgui
   )
   rclcpp_components_register_node(single_image_debug_inference_node
-    PLUGIN "traffic_light::SingleImageDebugInferenceNode"
+    PLUGIN "autoware::traffic_light::SingleImageDebugInferenceNode"
     EXECUTABLE single_image_debug_inference
   )
 
@@ -133,16 +133,16 @@ else()
     ${OpenCV_INCLUDE_DIRS}
   )
 
-  ament_auto_add_library(traffic_light_classifier_nodelet SHARED
-    src/color_classifier.cpp
-    src/nodelet.cpp
+  ament_auto_add_library(${PROJECT_NAME} SHARED
+    src/classifier/color_classifier.cpp
+    src/traffic_light_classifier_node.cpp
   )
-  target_link_libraries(traffic_light_classifier_nodelet
+  target_link_libraries(${PROJECT_NAME}
     ${OpenCV_LIBRARIES}
   )
 
-  rclcpp_components_register_node(traffic_light_classifier_nodelet
-    PLUGIN "traffic_light::TrafficLightClassifierNodelet"
+  rclcpp_components_register_node(${PROJECT_NAME}
+    PLUGIN "autoware::traffic_light::TrafficLightClassifierNodelet"
     EXECUTABLE traffic_light_classifier_node
   )
 

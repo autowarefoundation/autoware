@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAFFIC_LIGHT_CLASSIFIER__COLOR_CLASSIFIER_HPP_
-#define TRAFFIC_LIGHT_CLASSIFIER__COLOR_CLASSIFIER_HPP_
+#ifndef CLASSIFIER__COLOR_CLASSIFIER_HPP_
+#define CLASSIFIER__COLOR_CLASSIFIER_HPP_
 
-#include "traffic_light_classifier/classifier_interface.hpp"
+#include "classifier_interface.hpp"
 
 #include <image_transport/image_transport.hpp>
 #include <opencv2/core/core.hpp>
@@ -32,7 +32,7 @@
 
 #include <vector>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 struct HSVConfig
 {
@@ -93,6 +93,6 @@ private:
   cv::Scalar max_hsv_red_;
 };
 
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
-#endif  // TRAFFIC_LIGHT_CLASSIFIER__COLOR_CLASSIFIER_HPP_
+#endif  // CLASSIFIER__COLOR_CLASSIFIER_HPP_

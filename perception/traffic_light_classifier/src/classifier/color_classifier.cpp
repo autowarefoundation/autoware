@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "traffic_light_classifier/color_classifier.hpp"
+#include "color_classifier.hpp"
 
 #include <opencv2/imgproc/imgproc_c.h>
 
@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 ColorClassifier::ColorClassifier(rclcpp::Node * node_ptr) : node_ptr_(node_ptr)
 {
@@ -255,4 +255,4 @@ rcl_interfaces::msg::SetParametersResult ColorClassifier::parametersCallback(
   return result;
 }
 
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light

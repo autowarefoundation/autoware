@@ -15,11 +15,11 @@
 #include <rclcpp/rclcpp.hpp>
 
 #if ENABLE_GPU
-#include <traffic_light_classifier/cnn_classifier.hpp>
+#include "classifier/cnn_classifier.hpp"
 #endif
 
-#include <traffic_light_classifier/color_classifier.hpp>
-#include <traffic_light_classifier/nodelet.hpp>
+#include "classifier/color_classifier.hpp"
+#include "traffic_light_classifier_node.hpp"
 
 #include <memory>
 #include <string>
@@ -60,7 +60,7 @@ std::string toString(const uint8_t state)
 }
 }  // namespace
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 class SingleImageDebugInferenceNode : public rclcpp::Node
 {
@@ -159,7 +159,7 @@ private:
   cv::Mat image_;
   std::unique_ptr<ClassifierInterface> classifier_ptr_;
 };
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(traffic_light::SingleImageDebugInferenceNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::traffic_light::SingleImageDebugInferenceNode)

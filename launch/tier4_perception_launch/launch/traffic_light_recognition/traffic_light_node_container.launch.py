@@ -56,7 +56,7 @@ def launch_setup(context, *args, **kwargs):
         composable_node_descriptions=[
             ComposableNode(
                 package="traffic_light_classifier",
-                plugin="traffic_light::TrafficLightClassifierNodelet",
+                plugin="autoware::traffic_light::TrafficLightClassifierNodelet",
                 name="car_traffic_light_classifier",
                 namespace="classification",
                 parameters=[car_traffic_light_classifier_model_param],
@@ -71,7 +71,7 @@ def launch_setup(context, *args, **kwargs):
             ),
             ComposableNode(
                 package="traffic_light_classifier",
-                plugin="traffic_light::TrafficLightClassifierNodelet",
+                plugin="autoware::traffic_light::TrafficLightClassifierNodelet",
                 name="pedestrian_traffic_light_classifier",
                 namespace="classification",
                 parameters=[pedestrian_traffic_light_classifier_model_param],

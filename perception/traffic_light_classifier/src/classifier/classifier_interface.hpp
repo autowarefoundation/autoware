@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAFFIC_LIGHT_CLASSIFIER__CLASSIFIER_INTERFACE_HPP_
-#define TRAFFIC_LIGHT_CLASSIFIER__CLASSIFIER_INTERFACE_HPP_
+#ifndef CLASSIFIER__CLASSIFIER_INTERFACE_HPP_
+#define CLASSIFIER__CLASSIFIER_INTERFACE_HPP_
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -22,7 +22,7 @@
 
 #include <vector>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 class ClassifierInterface
 {
@@ -31,6 +31,6 @@ public:
     const std::vector<cv::Mat> & input_image,
     tier4_perception_msgs::msg::TrafficLightArray & traffic_signals) = 0;
 };
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
-#endif  // TRAFFIC_LIGHT_CLASSIFIER__CLASSIFIER_INTERFACE_HPP_
+#endif  // CLASSIFIER__CLASSIFIER_INTERFACE_HPP_

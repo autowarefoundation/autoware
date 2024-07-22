@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "traffic_light_classifier/nodelet.hpp"
+#include "traffic_light_classifier_node.hpp"
 
 #include <tier4_perception_msgs/msg/traffic_light_element.hpp>
 
@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 TrafficLightClassifierNodelet::TrafficLightClassifierNodelet(const rclcpp::NodeOptions & options)
 : Node("traffic_light_classifier_node", options)
@@ -169,8 +169,8 @@ bool TrafficLightClassifierNodelet::is_harsh_backlight(const cv::Mat & img) cons
   return backlight_threshold_ <= intensity;
 }
 
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
 
 #include <rclcpp_components/register_node_macro.hpp>
 
-RCLCPP_COMPONENTS_REGISTER_NODE(traffic_light::TrafficLightClassifierNodelet)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::traffic_light::TrafficLightClassifierNodelet)

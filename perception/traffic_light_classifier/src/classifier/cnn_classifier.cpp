@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "traffic_light_classifier/cnn_classifier.hpp"
+#include "cnn_classifier.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace traffic_light
+namespace autoware::traffic_light
 {
 CNNClassifier::CNNClassifier(rclcpp::Node * node_ptr) : node_ptr_(node_ptr)
 {
@@ -207,4 +208,4 @@ bool CNNClassifier::isColorLabel(const std::string label)
   return false;
 }
 
-}  // namespace traffic_light
+}  // namespace autoware::traffic_light
