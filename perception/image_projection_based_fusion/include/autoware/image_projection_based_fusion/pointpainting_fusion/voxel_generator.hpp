@@ -16,8 +16,8 @@
 #define AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__VOXEL_GENERATOR_HPP_
 
 #include <autoware/image_projection_based_fusion/pointpainting_fusion/pointcloud_densification.hpp>
-#include <lidar_centerpoint/preprocess/pointcloud_densification.hpp>
-#include <lidar_centerpoint/preprocess/voxel_generator.hpp>
+#include <autoware/lidar_centerpoint/preprocess/pointcloud_densification.hpp>
+#include <autoware/lidar_centerpoint/preprocess/voxel_generator.hpp>
 
 #include <bitset>
 #include <memory>
@@ -30,7 +30,8 @@ class VoxelGenerator
 {
 public:
   explicit VoxelGenerator(
-    const centerpoint::DensificationParam & param, const centerpoint::CenterPointConfig & config);
+    const autoware::lidar_centerpoint::DensificationParam & param,
+    const autoware::lidar_centerpoint::CenterPointConfig & config);
 
   bool enqueuePointCloud(
     const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer);
@@ -40,7 +41,7 @@ public:
 protected:
   std::unique_ptr<PointCloudDensification> pd_ptr_{nullptr};
 
-  centerpoint::CenterPointConfig config_;
+  autoware::lidar_centerpoint::CenterPointConfig config_;
   std::array<float, 6> range_;
   std::array<int, 3> grid_size_;
   std::array<float, 3> recip_voxel_size_;

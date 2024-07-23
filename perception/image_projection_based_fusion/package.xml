@@ -17,13 +17,13 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_euclidean_cluster</depend>
+  <depend>autoware_lidar_centerpoint</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_point_types</depend>
   <depend>autoware_universe_utils</depend>
   <depend>cv_bridge</depend>
   <depend>image_geometry</depend>
   <depend>image_transport</depend>
-  <depend>lidar_centerpoint</depend>
   <depend>message_filters</depend>
   <depend>object_recognition_utils</depend>
   <depend>rclcpp</depend>

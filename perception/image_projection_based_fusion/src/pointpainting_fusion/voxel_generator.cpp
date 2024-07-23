@@ -20,7 +20,8 @@ namespace autoware::image_projection_based_fusion
 {
 
 VoxelGenerator::VoxelGenerator(
-  const centerpoint::DensificationParam & param, const centerpoint::CenterPointConfig & config)
+  const autoware::lidar_centerpoint::DensificationParam & param,
+  const autoware::lidar_centerpoint::CenterPointConfig & config)
 : config_(config)
 {
   pd_ptr_ = std::make_unique<PointCloudDensification>(param);

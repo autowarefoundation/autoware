@@ -16,22 +16,23 @@
 #define AUTOWARE__IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__POINTPAINTING_TRT_HPP_
 
 #include <autoware/image_projection_based_fusion/pointpainting_fusion/voxel_generator.hpp>
-#include <lidar_centerpoint/centerpoint_trt.hpp>
+#include <autoware/lidar_centerpoint/centerpoint_trt.hpp>
 
 #include <memory>
 #include <string>
 
 namespace autoware::image_projection_based_fusion
 {
-class PointPaintingTRT : public centerpoint::CenterPointTRT
+class PointPaintingTRT : public autoware::lidar_centerpoint::CenterPointTRT
 {
 public:
-  using centerpoint::CenterPointTRT::CenterPointTRT;
+  using autoware::lidar_centerpoint::CenterPointTRT::CenterPointTRT;
 
   explicit PointPaintingTRT(
-    const centerpoint::NetworkParam & encoder_param, const centerpoint::NetworkParam & head_param,
-    const centerpoint::DensificationParam & densification_param,
-    const centerpoint::CenterPointConfig & config);
+    const autoware::lidar_centerpoint::NetworkParam & encoder_param,
+    const autoware::lidar_centerpoint::NetworkParam & head_param,
+    const autoware::lidar_centerpoint::DensificationParam & densification_param,
+    const autoware::lidar_centerpoint::CenterPointConfig & config);
 
 protected:
   bool preprocess(

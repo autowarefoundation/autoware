@@ -23,7 +23,7 @@
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 #endif
 
-#include <lidar_centerpoint/preprocess/pointcloud_densification.hpp>
+#include <autoware/lidar_centerpoint/preprocess/pointcloud_densification.hpp>
 
 #include <list>
 #include <string>
@@ -40,7 +40,7 @@ struct PointCloudWithTransform
 class PointCloudDensification
 {
 public:
-  explicit PointCloudDensification(const centerpoint::DensificationParam & param);
+  explicit PointCloudDensification(const autoware::lidar_centerpoint::DensificationParam & param);
 
   bool enqueuePointCloud(
     const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer);
@@ -61,7 +61,7 @@ private:
   void enqueue(const sensor_msgs::msg::PointCloud2 & msg, const Eigen::Affine3f & affine);
   void dequeue();
 
-  centerpoint::DensificationParam param_;
+  autoware::lidar_centerpoint::DensificationParam param_;
   double current_timestamp_{0.0};
   Eigen::Affine3f affine_world2current_;
   std::list<PointCloudWithTransform> pointcloud_cache_;
