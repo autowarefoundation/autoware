@@ -24,7 +24,7 @@
         <param name="publish_ground_truth" value="true"/>
         <remap from="output/debug/ground_truth_objects" to="debug/ground_truth_objects"/>
       </node>
-      <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
+      <include file="$(find-pkg-share autoware_shape_estimation)/launch/shape_estimation.launch.xml">
         <arg name="input/objects" value="/perception/object_recognition/detection/labeled_clusters"/>
         <arg name="output/objects" value="/perception/object_recognition/detection/objects_with_feature"/>
       </include>

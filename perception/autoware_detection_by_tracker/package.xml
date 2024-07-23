@@ -14,12 +14,12 @@
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
   <depend>autoware_euclidean_cluster</depend>
+  <depend>autoware_shape_estimation</depend>
   <depend>autoware_universe_utils</depend>
   <depend>eigen</depend>
   <depend>object_recognition_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>shape_estimation</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>

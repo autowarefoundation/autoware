@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>shape_estimation</name>
+  <name>autoware_shape_estimation</name>
   <version>0.1.0</version>
   <description>This package implements a shape estimation algorithm as a ROS 2 node</description>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>

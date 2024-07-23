@@ -21,7 +21,7 @@
     </group>
 
     <group>
-      <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
+      <include file="$(find-pkg-share autoware_shape_estimation)/launch/shape_estimation.launch.xml">
         <arg name="input/objects" value="clusters"/>
         <arg name="output/objects" value="objects_with_feature"/>
       </include>

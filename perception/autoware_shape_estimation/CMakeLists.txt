@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(shape_estimation)
+project(autoware_shape_estimation)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -54,7 +54,7 @@ target_include_directories(${PROJECT_NAME}
 ament_target_dependencies(${PROJECT_NAME} ${SHAPE_ESTIMATION_DEPENDENCIES})
 
 target_link_libraries(${PROJECT_NAME}
-  shape_estimation_lib
+  ${PROJECT_NAME}_lib
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
