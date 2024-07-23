@@ -38,7 +38,7 @@
   files:
     - source: .github/workflows/clang-tidy-differential.yaml
       pre-commands: |
-        sd 'container: ros:(\w+)' 'container: ghcr.io/autowarefoundation/autoware:latest-prebuilt-cuda' {source}
+        sd 'container: ros:(\w+)' 'container: ghcr.io/autowarefoundation/autoware:latest-autoware-universe-cuda' {source}
     - source: .github/workflows/check-build-depends.yaml
     - source: .github/workflows/clang-tidy-pr-comments.yaml
     - source: .github/workflows/clang-tidy-pr-comments-manually.yaml
