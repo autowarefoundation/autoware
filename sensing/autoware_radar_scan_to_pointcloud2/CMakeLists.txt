@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(radar_scan_to_pointcloud2)
+project(autoware_radar_scan_to_pointcloud2)
 
 # Dependencies
 find_package(autoware_cmake REQUIRED)

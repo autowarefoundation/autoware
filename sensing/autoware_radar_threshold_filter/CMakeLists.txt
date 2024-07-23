@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(radar_threshold_filter)
+project(autoware_radar_threshold_filter)
 
 # Dependencies
 find_package(autoware_cmake REQUIRED)

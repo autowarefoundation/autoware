@@ -29,5 +29,5 @@
 ### How to launch
 
 ```sh
-ros2 launch radar_scan_to_pointcloud2 radar_scan_to_pointcloud2.launch.xml
+ros2 launch autoware_radar_scan_to_pointcloud2 radar_scan_to_pointcloud2.launch.xml
 ```

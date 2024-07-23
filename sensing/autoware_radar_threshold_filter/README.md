@@ -44,5 +44,5 @@ Calculation cost is O(n). `n` is the number of radar return.
 ### How to launch
 
 ```sh
-ros2 launch radar_threshold_filter radar_threshold_filter.launch.xml
+ros2 launch autoware_radar_threshold_filter radar_threshold_filter.launch.xml
 ```

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>radar_static_pointcloud_filter</name>
+  <name>autoware_radar_scan_to_pointcloud2</name>
   <version>0.1.0</version>
-  <description>radar_static_pointcloud_filter</description>
+  <description>autoware_radar_scan_to_pointcloud2</description>
   <maintainer email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
   <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>
@@ -14,12 +14,12 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <depend>autoware_universe_utils</depend>
-  <depend>message_filters</depend>
-  <depend>nav_msgs</depend>
+  <depend>libpcl-common</depend>
+  <depend>pcl_conversions</depend>
   <depend>radar_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>sensor_msgs</depend>
 
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_lint_auto</test_depend>

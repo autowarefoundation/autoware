@@ -4,9 +4,9 @@
   <arg name="output/static_radar_scan" default="output/static_radar_scan"/>
   <arg name="output/dynamic_radar_scan" default="output/dynamic_radar_scan"/>
   <!-- Parameter -->
-  <arg name="config_file" default="$(find-pkg-share radar_static_pointcloud_filter)/config/radar_static_pointcloud_filter.param.yaml"/>
+  <arg name="config_file" default="$(find-pkg-share autoware_radar_static_pointcloud_filter)/config/radar_static_pointcloud_filter.param.yaml"/>
 
-  <node pkg="radar_static_pointcloud_filter" exec="radar_static_pointcloud_filter_node" name="radar_static_pointcloud_filter" output="screen">
+  <node pkg="autoware_radar_static_pointcloud_filter" exec="radar_static_pointcloud_filter_node" name="radar_static_pointcloud_filter" output="screen">
     <remap from="~/input/radar" to="$(var input/radar)"/>
     <remap from="~/input/odometry" to="$(var input/odometry)"/>
     <remap from="~/output/static_radar_scan" to="$(var output/static_radar_scan)"/>

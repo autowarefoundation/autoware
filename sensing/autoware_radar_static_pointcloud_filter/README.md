@@ -28,7 +28,7 @@ Calculation cost is O(n). `n` is the number of radar pointcloud.
 ### How to launch
 
 ```sh
-ros2 launch radar_static_pointcloud_filter radar_static_pointcloud_filter.launch
+ros2 launch autoware_radar_static_pointcloud_filter radar_static_pointcloud_filter.launch.xml
 ```
 
 ### Algorithm
