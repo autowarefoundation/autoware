@@ -34,12 +34,12 @@ void Debugger::publishColoredPointCloud(
 {
   using autoware_perception_msgs::msg::ObjectClassification;
   pcl::PointCloud<pcl::PointXYZRGB> colored_pointcloud;
-  for (size_t i = 0; i < input.feature_objects.size(); i++) {
+  for (const auto & feature_object : input.feature_objects) {
     pcl::PointCloud<pcl::PointXYZI> object_pointcloud;
-    pcl::fromROSMsg(input.feature_objects.at(i).feature.cluster, object_pointcloud);
+    pcl::fromROSMsg(feature_object.feature.cluster, object_pointcloud);
 
     int red = 0, green = 0, blue = 0;
-    switch (input.feature_objects.at(i).object.classification.front().label) {
+    switch (feature_object.object.classification.front().label) {
       case ObjectClassification::CAR: {
         red = 255;
         green = 0;
@@ -84,11 +84,11 @@ void Debugger::publishColoredPointCloud(
       }
     }
 
-    for (size_t i = 0; i < object_pointcloud.size(); i++) {
+    for (const auto & point : object_pointcloud) {
       pcl::PointXYZRGB colored_point;
-      colored_point.x = object_pointcloud[i].x;
-      colored_point.y = object_pointcloud[i].y;
-      colored_point.z = object_pointcloud[i].z;
+      colored_point.x = point.x;
+      colored_point.y = point.y;
+      colored_point.z = point.z;
       colored_point.r = red;
       colored_point.g = green;
       colored_point.b = blue;
