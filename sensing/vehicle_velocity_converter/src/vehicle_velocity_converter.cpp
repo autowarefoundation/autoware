@@ -25,13 +25,13 @@ VehicleVelocityConverter::VehicleVelocityConverter(const rclcpp::NodeOptions & o
 
   vehicle_report_sub_ = create_subscription<autoware_vehicle_msgs::msg::VelocityReport>(
     "velocity_status", rclcpp::QoS{100},
-    std::bind(&VehicleVelocityConverter::callbackVelocityReport, this, std::placeholders::_1));
+    std::bind(&VehicleVelocityConverter::callback_velocity_report, this, std::placeholders::_1));
 
   twist_with_covariance_pub_ = create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>(
     "twist_with_covariance", rclcpp::QoS{10});
 }
 
-void VehicleVelocityConverter::callbackVelocityReport(
+void VehicleVelocityConverter::callback_velocity_report(
   const autoware_vehicle_msgs::msg::VelocityReport::SharedPtr msg)
 {
   if (msg->header.frame_id != frame_id_) {

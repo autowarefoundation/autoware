@@ -29,10 +29,9 @@ class VehicleVelocityConverter : public rclcpp::Node
 {
 public:
   explicit VehicleVelocityConverter(const rclcpp::NodeOptions & options);
-  ~VehicleVelocityConverter() = default;
 
 private:
-  void callbackVelocityReport(const autoware_vehicle_msgs::msg::VelocityReport::SharedPtr msg);
+  void callback_velocity_report(const autoware_vehicle_msgs::msg::VelocityReport::SharedPtr msg);
 
   rclcpp::Subscription<autoware_vehicle_msgs::msg::VelocityReport>::SharedPtr vehicle_report_sub_;
 
@@ -43,7 +42,6 @@ private:
   double stddev_vx_;
   double stddev_wz_;
   double speed_scale_factor_;
-  std::array<double, 36> twist_covariance_;
 };
 
 #endif  // VEHICLE_VELOCITY_CONVERTER__VEHICLE_VELOCITY_CONVERTER_HPP_
