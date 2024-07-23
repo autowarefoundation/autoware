@@ -148,7 +148,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install development tools and artifacts
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module dev-tools --download-artifacts openadkit \
+  ./setup-dev-env.sh -y --module dev-tools openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
