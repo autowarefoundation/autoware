@@ -1,4 +1,4 @@
-// Copyright 2022 The Autoware Contributors
+// Copyright 2024 The Autoware Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,22 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POSE_INITIALIZER__YABLOC_MODULE_HPP_
-#define POSE_INITIALIZER__YABLOC_MODULE_HPP_
+#ifndef POSE_INITIALIZER__LOCALIZATION_MODULE_HPP_
+#define POSE_INITIALIZER__LOCALIZATION_MODULE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <tier4_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 
-class YabLocModule
+#include <string>
+
+class LocalizationModule
 {
 private:
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
   using RequestPoseAlignment = tier4_localization_msgs::srv::PoseWithCovarianceStamped;
 
 public:
-  explicit YabLocModule(rclcpp::Node * node);
+  LocalizationModule(rclcpp::Node * node, const std::string & service_name);
   PoseWithCovarianceStamped align_pose(const PoseWithCovarianceStamped & pose);
 
 private:
@@ -35,4 +37,4 @@ private:
   rclcpp::Client<RequestPoseAlignment>::SharedPtr cli_align_;
 };
 
-#endif  // POSE_INITIALIZER__YABLOC_MODULE_HPP_
+#endif  // POSE_INITIALIZER__LOCALIZATION_MODULE_HPP_

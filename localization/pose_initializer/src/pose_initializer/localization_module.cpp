@@ -1,4 +1,4 @@
-// Copyright 2022 The Autoware Contributors
+// Copyright 2024 The Autoware Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,38 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ndt_module.hpp"
+#include "localization_module.hpp"
 
 #include <component_interface_specs/localization.hpp>
 #include <component_interface_utils/rclcpp/exceptions.hpp>
 
 #include <memory>
+#include <string>
 
 using ServiceException = component_interface_utils::ServiceException;
 using Initialize = localization_interface::Initialize;
 using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
 
-NdtModule::NdtModule(rclcpp::Node * node)
-: logger_(node->get_logger()), cli_align_(node->create_client<RequestPoseAlignment>("ndt_align"))
+LocalizationModule::LocalizationModule(rclcpp::Node * node, const std::string & service_name)
+: logger_(node->get_logger())
 {
+  cli_align_ = node->create_client<RequestPoseAlignment>(service_name);
 }
 
-PoseWithCovarianceStamped NdtModule::align_pose(const PoseWithCovarianceStamped & pose)
+PoseWithCovarianceStamped LocalizationModule::align_pose(const PoseWithCovarianceStamped & pose)
 {
   const auto req = std::make_shared<RequestPoseAlignment::Request>();
   req->pose_with_covariance = pose;
 
   if (!cli_align_->service_is_ready()) {
-    throw component_interface_utils::ServiceUnready("NDT align server is not ready.");
+    throw component_interface_utils::ServiceUnready("align server is not ready.");
   }
 
-  RCLCPP_INFO(logger_, "Call NDT align server.");
+  RCLCPP_INFO(logger_, "Call align server.");
   const auto res = cli_align_->async_send_request(req).get();
   if (!res->success) {
-    throw ServiceException(
-      Initialize::Service::Response::ERROR_ESTIMATION, "NDT align server failed.");
+    throw ServiceException(Initialize::Service::Response::ERROR_ESTIMATION, "align server failed.");
   }
-  RCLCPP_INFO(logger_, "NDT align server succeeded.");
+  RCLCPP_INFO(logger_, "align server succeeded.");
 
   // Overwrite the covariance.
   return res->pose_with_covariance;
