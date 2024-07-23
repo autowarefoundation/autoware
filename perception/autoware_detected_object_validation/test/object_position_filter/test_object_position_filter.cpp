@@ -36,7 +36,7 @@ std::shared_ptr<ObjectPositionFilterNode> generateNode()
 {
   auto node_options = rclcpp::NodeOptions{};
   const auto detected_object_validation_dir =
-    ament_index_cpp::get_package_share_directory("detected_object_validation");
+    ament_index_cpp::get_package_share_directory("autoware_detected_object_validation");
   node_options.arguments(
     {"--ros-args", "--params-file",
      detected_object_validation_dir + "/config/object_position_filter.param.yaml"});

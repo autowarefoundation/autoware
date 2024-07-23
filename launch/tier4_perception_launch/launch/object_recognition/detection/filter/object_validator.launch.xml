@@ -10,7 +10,7 @@
 
   <!-- Validator -->
   <group if="$(eval &quot;'$(var objects_validation_method)'=='obstacle_pointcloud'&quot;)">
-    <include file="$(find-pkg-share detected_object_validation)/launch/obstacle_pointcloud_based_validator.launch.xml">
+    <include file="$(find-pkg-share autoware_detected_object_validation)/launch/obstacle_pointcloud_based_validator.launch.xml">
       <arg name="input/detected_objects" value="$(var input/objects)"/>
       <arg name="input/obstacle_pointcloud" value="$(var input/obstacle_pointcloud)"/>
       <arg name="output/objects" value="$(var output/objects)"/>
@@ -18,7 +18,7 @@
     </include>
   </group>
   <group if="$(eval &quot;'$(var objects_validation_method)'=='occupancy_grid'&quot;)">
-    <include file="$(find-pkg-share detected_object_validation)/launch/occupancy_grid_based_validator.launch.xml">
+    <include file="$(find-pkg-share autoware_detected_object_validation)/launch/occupancy_grid_based_validator.launch.xml">
       <arg name="input/detected_objects" value="$(var input/objects)"/>
       <arg name="output/objects" value="$(var output/objects)"/>
     </include>

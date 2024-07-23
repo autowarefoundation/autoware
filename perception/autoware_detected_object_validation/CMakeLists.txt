@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(detected_object_validation)
+project(autoware_detected_object_validation)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
