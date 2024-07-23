@@ -804,8 +804,10 @@ Trajectory MPC::calculatePredictedTrajectory(
     const auto frenet = m_vehicle_model_ptr->calculatePredictedTrajectoryInFrenetCoordinate(
       mpc_matrix.Aex, mpc_matrix.Bex, mpc_matrix.Cex, mpc_matrix.Wex, x0, Uex, reference_trajectory,
       dt);
-    const auto frenet_clipped = MPCUtils::convertToAutowareTrajectory(
+    auto frenet_clipped = MPCUtils::convertToAutowareTrajectory(
       MPCUtils::clipTrajectoryByLength(frenet, predicted_length));
+    frenet_clipped.header.stamp = m_clock->now();
+    frenet_clipped.header.frame_id = "map";
     m_debug_frenet_predicted_trajectory_pub->publish(frenet_clipped);
   }
 
