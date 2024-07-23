@@ -2495,6 +2495,7 @@ private:
 
       // unlikely that this evaluates to true
       if (ROBIN_HOOD_UNLIKELY(mNumElements >= mMaxNumElementsAllowed)) {
+        increase_size();
         continue;
       }
 
