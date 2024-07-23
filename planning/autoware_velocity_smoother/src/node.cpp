@@ -76,7 +76,7 @@ VelocitySmootherNode::VelocitySmootherNode(const rclcpp::NodeOptions & node_opti
   debug_closest_acc_ = create_publisher<Float32Stamped>("~/closest_acceleration", 1);
   debug_closest_jerk_ = create_publisher<Float32Stamped>("~/closest_jerk", 1);
   debug_closest_max_velocity_ = create_publisher<Float32Stamped>("~/closest_max_velocity", 1);
-  debug_calculation_time_ = create_publisher<Float32Stamped>("~/debug/processing_time_ms", 1);
+  debug_calculation_time_ = create_publisher<Float64Stamped>("~/debug/processing_time_ms", 1);
   pub_trajectory_raw_ = create_publisher<Trajectory>("~/debug/trajectory_raw", 1);
   pub_trajectory_vel_lim_ =
     create_publisher<Trajectory>("~/debug/trajectory_external_velocity_limited", 1);
@@ -1090,7 +1090,7 @@ void VelocitySmootherNode::flipVelocity(TrajectoryPoints & points) const
 
 void VelocitySmootherNode::publishStopWatchTime()
 {
-  Float32Stamped calculation_time_data{};
+  Float64Stamped calculation_time_data{};
   calculation_time_data.stamp = this->now();
   calculation_time_data.data = stop_watch_.toc();
   debug_calculation_time_->publish(calculation_time_data);

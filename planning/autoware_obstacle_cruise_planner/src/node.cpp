@@ -425,7 +425,7 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
     "~/output/clear_velocity_limit", rclcpp::QoS{1}.transient_local());
 
   // debug publisher
-  debug_calculation_time_pub_ = create_publisher<Float32Stamped>("~/debug/processing_time_ms", 1);
+  debug_calculation_time_pub_ = create_publisher<Float64Stamped>("~/debug/processing_time_ms", 1);
   debug_cruise_wall_marker_pub_ = create_publisher<MarkerArray>("~/debug/cruise/virtual_wall", 1);
   debug_stop_wall_marker_pub_ = create_publisher<MarkerArray>("~/virtual_wall", 1);
   debug_slow_down_wall_marker_pub_ =
@@ -1977,7 +1977,7 @@ void ObstacleCruisePlannerNode::publishDebugInfo() const
 
 void ObstacleCruisePlannerNode::publishCalculationTime(const double calculation_time) const
 {
-  Float32Stamped calculation_time_msg;
+  Float64Stamped calculation_time_msg;
   calculation_time_msg.stamp = now();
   calculation_time_msg.data = calculation_time;
   debug_calculation_time_pub_->publish(calculation_time_msg);

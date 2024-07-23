@@ -159,7 +159,7 @@ private:
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_stop_planning_info_pub_;
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_cruise_planning_info_pub_;
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_slow_down_planning_info_pub_;
-  rclcpp::Publisher<Float32Stamped>::SharedPtr debug_calculation_time_pub_;
+  rclcpp::Publisher<Float64Stamped>::SharedPtr debug_calculation_time_pub_;
 
   // subscriber
   rclcpp::Subscription<Trajectory>::SharedPtr traj_sub_;
