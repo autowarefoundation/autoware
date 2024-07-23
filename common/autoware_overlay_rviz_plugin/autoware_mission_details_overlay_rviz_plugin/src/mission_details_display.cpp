@@ -39,6 +39,12 @@ MissionDetailsDisplay::MissionDetailsDisplay()
     "Right", 10, "Margin from the right border", this, SLOT(update_size()));
   property_top_ = new rviz_common::properties::IntProperty(
     "Top", 10, "Margin from the top border", this, SLOT(update_size()));
+  property_bg_alpha_ = new rviz_common::properties::FloatProperty(
+    "Background Alpha", 0.3, "Background Alpha", this, SLOT(update_size()));
+  property_bg_color_ = new rviz_common::properties::ColorProperty(
+    "Background Color", QColor(0, 0, 0), "Background Color", this, SLOT(update_size()));
+  property_text_color_ = new rviz_common::properties::ColorProperty(
+    "Text Color", QColor(194, 194, 194), "Text Color", this, SLOT(update_size()));
 
   // Initialize the component displays
   remaining_distance_time_display_ = std::make_unique<RemainingDistanceTimeDisplay>();
@@ -154,7 +160,8 @@ void MissionDetailsDisplay::draw_widget(QImage & hud)
   draw_rounded_rect(painter, backgroundRect);
 
   if (remaining_distance_time_display_) {
-    remaining_distance_time_display_->drawRemainingDistanceTimeDisplay(painter, backgroundRect);
+    remaining_distance_time_display_->drawRemainingDistanceTimeDisplay(
+      painter, backgroundRect, property_text_color_->getColor());
   }
 
   painter.end();
@@ -164,8 +171,10 @@ void MissionDetailsDisplay::draw_rounded_rect(QPainter & painter, const QRectF &
 {
   painter.setRenderHint(QPainter::Antialiasing, true);
   QColor colorFromHSV;
-  colorFromHSV.setHsv(0, 0, 29);
-  colorFromHSV.setAlphaF(0.60);
+  colorFromHSV.setHsv(
+    property_bg_color_->getColor().hue(), property_bg_color_->getColor().saturation(),
+    property_bg_color_->getColor().value());
+  colorFromHSV.setAlphaF(property_bg_alpha_->getFloat());
 
   painter.setBrush(colorFromHSV);
 

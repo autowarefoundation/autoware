@@ -37,14 +37,16 @@ class SpeedLimitDisplay
 {
 public:
   SpeedLimitDisplay();
-  void drawSpeedLimitIndicator(QPainter & painter, const QRectF & backgroundRect);
+  void drawSpeedLimitIndicator(
+    QPainter & painter, const QRectF & backgroundRect, const QColor & color,
+    const QColor & light_color, const QColor & dark_color, const QColor & bg_color,
+    const float bg_alpha);
   void updateSpeedLimitData(const tier4_planning_msgs::msg::VelocityLimit::ConstSharedPtr msg);
   void updateSpeedData(const autoware_vehicle_msgs::msg::VelocityReport::ConstSharedPtr & msg);
 
 private:
   float current_limit;   // Internal variable to store current gear
   float current_speed_;  // Internal variable to store current speed
-  QColor gray = QColor(194, 194, 194);
 };
 
 }  // namespace autoware_overlay_rviz_plugin

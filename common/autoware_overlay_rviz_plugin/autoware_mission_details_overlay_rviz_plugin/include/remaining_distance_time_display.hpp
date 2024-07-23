@@ -36,15 +36,14 @@ class RemainingDistanceTimeDisplay
 {
 public:
   RemainingDistanceTimeDisplay();
-  void drawRemainingDistanceTimeDisplay(QPainter & painter, const QRectF & backgroundRect);
+  void drawRemainingDistanceTimeDisplay(
+    QPainter & painter, const QRectF & backgroundRect, const QColor & text_color);
   void updateRemainingDistanceTimeData(
     const autoware_internal_msgs::msg::MissionRemainingDistanceTime::ConstSharedPtr & msg);
 
 private:
   double remaining_distance_;  // Internal variable to store remaining distance
   double remaining_time_;      // Internal variable to store remaining time
-
-  QColor gray = QColor(194, 194, 194);
 
   QImage icon_dist_;
   QImage icon_dist_scaled_;

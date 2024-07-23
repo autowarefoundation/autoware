@@ -77,6 +77,12 @@ private:
   rviz_common::properties::IntProperty * property_top_;
   rviz_common::properties::ColorProperty * property_signal_color_;
   rviz_common::properties::FloatProperty * property_handle_angle_scale_;
+  rviz_common::properties::ColorProperty * property_background_color_;
+  rviz_common::properties::FloatProperty * property_background_alpha_;
+  rviz_common::properties::ColorProperty * property_primary_color_;
+  rviz_common::properties::ColorProperty * property_light_limit_color_;
+  rviz_common::properties::ColorProperty * property_dark_limit_color_;
+
   std::unique_ptr<rviz_common::properties::RosTopicProperty> steering_topic_property_;
   std::unique_ptr<rviz_common::properties::RosTopicProperty> gear_topic_property_;
   std::unique_ptr<rviz_common::properties::RosTopicProperty> speed_topic_property_;

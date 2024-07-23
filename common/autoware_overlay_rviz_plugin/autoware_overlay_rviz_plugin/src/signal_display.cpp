@@ -52,6 +52,20 @@ SignalDisplay::SignalDisplay()
   property_handle_angle_scale_ = new rviz_common::properties::FloatProperty(
     "Handle Angle Scale", 17.0, "Scale of the steering wheel handle angle", this,
     SLOT(updateOverlaySize()));
+  property_background_color_ = new rviz_common::properties::ColorProperty(
+    "Background Color", QColor(0, 0, 0), "Color of the signal arrows", this,
+    SLOT(updateOverlayColor()));
+  property_background_alpha_ = new rviz_common::properties::FloatProperty(
+    "Background Alpha", 0.3, "Background Color Alpha", this, SLOT(updateOverlayColor()));
+  property_primary_color_ = new rviz_common::properties::ColorProperty(
+    "Primary Color", QColor(174, 174, 174), "Color of the signal arrows", this,
+    SLOT(updateOverlayColor()));
+  property_light_limit_color_ = new rviz_common::properties::ColorProperty(
+    "Light Traffic Color", QColor(255, 153, 153), "Color of the signal arrows", this,
+    SLOT(updateOverlayColor()));
+  property_dark_limit_color_ = new rviz_common::properties::ColorProperty(
+    "Dark Traffic Color", QColor(255, 51, 51), "Color of the signal arrows", this,
+    SLOT(updateOverlayColor()));
 
   // Initialize the component displays
   steering_wheel_display_ = std::make_unique<SteeringWheelDisplay>();
@@ -280,12 +294,14 @@ void SignalDisplay::drawWidget(QImage & hud)
   QPainter painter(&hud);
   painter.setRenderHint(QPainter::Antialiasing, true);
 
-  QRectF backgroundRect(0, 0, 550, hud.height());
+  QRectF backgroundRect(0, 0, hud.width(), hud.height());
   drawHorizontalRoundedRectangle(painter, backgroundRect);
 
   // Draw components
   if (gear_display_) {
-    gear_display_->drawGearIndicator(painter, backgroundRect);
+    gear_display_->drawGearIndicator(
+      painter, backgroundRect, property_primary_color_->getColor(),
+      property_background_color_->getColor());
   }
 
   if (steering_wheel_display_) {
@@ -294,7 +310,7 @@ void SignalDisplay::drawWidget(QImage & hud)
   }
 
   if (speed_display_) {
-    speed_display_->drawSpeedDisplay(painter, backgroundRect);
+    speed_display_->drawSpeedDisplay(painter, backgroundRect, property_primary_color_->getColor());
   }
   if (turn_signals_display_) {
     turn_signals_display_->drawArrows(painter, backgroundRect, property_signal_color_->getColor());
@@ -305,7 +321,10 @@ void SignalDisplay::drawWidget(QImage & hud)
   }
 
   if (speed_limit_display_) {
-    speed_limit_display_->drawSpeedLimitIndicator(painter, backgroundRect);
+    speed_limit_display_->drawSpeedLimitIndicator(
+      painter, backgroundRect, property_primary_color_->getColor(),
+      property_light_limit_color_->getColor(), property_dark_limit_color_->getColor(),
+      property_background_color_->getColor(), property_background_alpha_->getFloat());
   }
 
   painter.end();
@@ -316,9 +335,11 @@ void SignalDisplay::drawHorizontalRoundedRectangle(
 {
   painter.setRenderHint(QPainter::Antialiasing, true);
   QColor colorFromHSV;
-  colorFromHSV.setHsv(0, 0, 29);  // Hue, Saturation, Value
-  colorFromHSV.setAlphaF(0.60);   // Transparency
-
+  colorFromHSV.setHsv(
+    property_background_color_->getColor().hue(),
+    property_background_color_->getColor().saturation(),
+    property_background_color_->getColor().value());
+  colorFromHSV.setAlphaF(property_background_alpha_->getFloat());
   painter.setBrush(colorFromHSV);
 
   painter.setPen(Qt::NoPen);
@@ -329,8 +350,11 @@ void SignalDisplay::drawVerticalRoundedRectangle(QPainter & painter, const QRect
 {
   painter.setRenderHint(QPainter::Antialiasing, true);
   QColor colorFromHSV;
-  colorFromHSV.setHsv(0, 0, 0);  // Hue, Saturation, Value
-  colorFromHSV.setAlphaF(0.65);  // Transparency
+  colorFromHSV.setHsv(
+    property_background_color_->getColor().hue(),
+    property_background_color_->getColor().saturation(),
+    property_background_color_->getColor().value());
+  colorFromHSV.setAlphaF(property_background_alpha_->getFloat());
 
   painter.setBrush(colorFromHSV);
 

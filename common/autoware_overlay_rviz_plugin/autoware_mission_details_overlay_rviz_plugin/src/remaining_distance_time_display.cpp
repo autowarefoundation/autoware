@@ -60,7 +60,7 @@ void RemainingDistanceTimeDisplay::updateRemainingDistanceTimeData(
 }
 
 void RemainingDistanceTimeDisplay::drawRemainingDistanceTimeDisplay(
-  QPainter & painter, const QRectF & backgroundRect)
+  QPainter & painter, const QRectF & backgroundRect, const QColor & text_color)
 {
   const QFont font("Quicksand", 15, QFont::Bold);
   painter.setFont(font);
@@ -107,7 +107,7 @@ void RemainingDistanceTimeDisplay::drawRemainingDistanceTimeDisplay(
     QRectF rect_text_unit(
       rect.topRight().x() - unit_width, rect.topRight().y(), unit_width, rect.height());
 
-    painter.setPen(gray);
+    painter.setPen(text_color);
     painter.drawText(rect_text_unit, Qt::AlignLeft | Qt::AlignVCenter, str_unit);
 
     // place the value text

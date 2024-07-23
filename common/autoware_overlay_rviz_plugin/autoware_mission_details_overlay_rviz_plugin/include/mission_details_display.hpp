@@ -61,6 +61,10 @@ private:
   rviz_common::properties::IntProperty * property_height_;
   rviz_common::properties::IntProperty * property_right_;
   rviz_common::properties::IntProperty * property_top_;
+  rviz_common::properties::ColorProperty * property_bg_color_;
+  rviz_common::properties::FloatProperty * property_bg_alpha_;
+  rviz_common::properties::ColorProperty * property_text_color_;
+
   std::unique_ptr<rviz_common::properties::RosTopicProperty>
     remaining_distance_time_topic_property_;
 

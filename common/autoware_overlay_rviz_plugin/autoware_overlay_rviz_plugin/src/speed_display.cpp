@@ -76,7 +76,8 @@ void SpeedDisplay::updateSpeedData(
 //     }
 // }
 
-void SpeedDisplay::drawSpeedDisplay(QPainter & painter, const QRectF & backgroundRect)
+void SpeedDisplay::drawSpeedDisplay(
+  QPainter & painter, const QRectF & backgroundRect, const QColor & color)
 {
   QFont referenceFont("Quicksand", 80, QFont::Bold);
   painter.setFont(referenceFont);
@@ -96,7 +97,7 @@ void SpeedDisplay::drawSpeedDisplay(QPainter & painter, const QRectF & backgroun
   QPointF speedPos(
     backgroundRect.center().x() - speedNumberRect.width() / 2,
     backgroundRect.center().y() + speedNumberRect.bottom());
-  painter.setPen(gray);
+  painter.setPen(color);
   painter.drawText(speedPos, speedNumber);
 
   QFont unitFont("Quicksand", 8, QFont::DemiBold);

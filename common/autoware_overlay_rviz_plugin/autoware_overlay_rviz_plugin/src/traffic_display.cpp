@@ -65,7 +65,7 @@ void TrafficDisplay::drawTrafficLightIndicator(QPainter & painter, const QRectF 
   QRectF circleRect = QRectF(50, 50, 50, 50);
   circleRect.moveTopRight(QPointF(
     backgroundRect.right() - circleRect.width() - 75,
-    backgroundRect.top() + circleRect.height() / 2));
+    backgroundRect.height() / 2 - circleRect.height() / 2));
   painter.drawEllipse(circleRect);
 
   if (!current_traffic_.elements.empty()) {

@@ -54,7 +54,8 @@ void GearDisplay::updateGearData(const autoware_vehicle_msgs::msg::GearReport::C
   current_gear_ = msg->report;  // Assuming msg->report contains the gear information
 }
 
-void GearDisplay::drawGearIndicator(QPainter & painter, const QRectF & backgroundRect)
+void GearDisplay::drawGearIndicator(
+  QPainter & painter, const QRectF & backgroundRect, const QColor & color, const QColor & bg_color)
 {
   // we deal with the different gears here
   std::string gearString;
@@ -90,9 +91,9 @@ void GearDisplay::drawGearIndicator(QPainter & painter, const QRectF & backgroun
   double gearX = backgroundRect.left() + 54;
   double gearY = backgroundRect.height() / 2 - gearBoxSize / 2;
   QRect gearRect(gearX, gearY, gearBoxSize, gearBoxSize);
-  painter.setBrush(gray);
+  painter.setBrush(color);
   painter.drawRoundedRect(gearRect, 10, 10);
-  painter.setPen(Qt::black);
+  painter.setPen(bg_color);
   painter.drawText(gearRect, Qt::AlignCenter, QString::fromStdString(gearString));
 }
 

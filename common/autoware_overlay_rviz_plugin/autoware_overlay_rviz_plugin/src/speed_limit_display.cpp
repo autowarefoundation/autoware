@@ -68,41 +68,41 @@ void SpeedLimitDisplay::updateSpeedData(
   }
 }
 
-void SpeedLimitDisplay::drawSpeedLimitIndicator(QPainter & painter, const QRectF & backgroundRect)
+void SpeedLimitDisplay::drawSpeedLimitIndicator(
+  QPainter & painter, const QRectF & backgroundRect, const QColor & color,
+  const QColor & light_color, const QColor & dark_color, const QColor & bg_color,
+  const float bg_alpha)
 {
   // Enable Antialiasing for smoother drawing
   painter.setRenderHint(QPainter::Antialiasing, true);
   painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
-  const double color_s_min = 0.4;
-  const double color_s_max = 0.8;
-  QColor colorMin;
-  colorMin.setHsvF(0.0, color_s_min, 1.0);
-  QColor colorMax;
-  colorMax.setHsvF(0.0, color_s_max, 1.0);
+  QColor borderColor = light_color;
 
-  QColor borderColor = colorMin;
   if (current_limit > 0.0) {
     double speed_to_limit_ratio = current_speed_ / current_limit;
     const double speed_to_limit_ratio_min = 0.6;
     const double speed_to_limit_ratio_max = 0.9;
 
     if (speed_to_limit_ratio >= speed_to_limit_ratio_max) {
-      borderColor = colorMax;
+      borderColor = dark_color;
     } else if (speed_to_limit_ratio > speed_to_limit_ratio_min) {
       double interpolation_factor = (speed_to_limit_ratio - speed_to_limit_ratio_min) /
                                     (speed_to_limit_ratio_max - speed_to_limit_ratio_min);
-      // Interpolate between colorMin and colorMax
-      double saturation = color_s_min + (color_s_max - color_s_min) * interpolation_factor;
-
-      borderColor.setHsvF(0.0, saturation, 1.0);
+      // Interpolate between light_color and dark_color
+      int red = light_color.red() + (dark_color.red() - light_color.red()) * interpolation_factor;
+      int green =
+        light_color.green() + (dark_color.green() - light_color.green()) * interpolation_factor;
+      int blue =
+        light_color.blue() + (dark_color.blue() - light_color.blue()) * interpolation_factor;
+      borderColor = QColor(red, green, blue);
     }
   }
 
   // Define the area for the outer circle
   QRectF outerCircleRect = QRectF(45, 45, 45, 45);
-  outerCircleRect.moveTopRight(
-    QPointF(backgroundRect.right() - 44, backgroundRect.top() + outerCircleRect.height() / 2 + 5));
+  outerCircleRect.moveTopRight(QPointF(
+    backgroundRect.right() - 44, backgroundRect.height() / 2 - outerCircleRect.height() / 2));
 
   // Now use borderColor for drawing
   painter.setPen(QPen(borderColor, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -120,8 +120,8 @@ void SpeedLimitDisplay::drawSpeedLimitIndicator(QPainter & painter, const QRectF
 
   painter.setRenderHint(QPainter::Antialiasing, true);
   QColor colorFromHSV;
-  colorFromHSV.setHsv(0, 0, 29);  // Hue, Saturation, Value
-  colorFromHSV.setAlphaF(0.60);   // Transparency
+  colorFromHSV.setHsv(bg_color.hue(), bg_color.saturation(), bg_color.value());
+  colorFromHSV.setAlphaF(bg_alpha);
   painter.setBrush(colorFromHSV);
   painter.drawEllipse(innerCircleRect);
 
@@ -138,8 +138,7 @@ void SpeedLimitDisplay::drawSpeedLimitIndicator(QPainter & painter, const QRectF
   QFont font = QFont("Quicksand", 16, QFont::Bold);
 
   painter.setFont(font);
-  // #C2C2C2
-  painter.setPen(QPen(gray, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+  painter.setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
   // Draw the text in the center of the circle
   painter.drawText(innerCircleRect, Qt::AlignCenter, text);
