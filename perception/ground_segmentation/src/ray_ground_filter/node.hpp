@@ -186,8 +186,7 @@ private:
    */
   void ExtractPointsIndices(
     const PointCloud2::ConstSharedPtr in_cloud_ptr, const pcl::PointIndices & in_indices,
-    PointCloud2::SharedPtr out_only_indices_cloud_ptr,
-    PointCloud2::SharedPtr out_removed_indices_cloud_ptr);
+    PointCloud2::SharedPtr ground_cloud_msg_ptr, PointCloud2::SharedPtr no_ground_cloud_msg_ptr);
 
   boost::optional<float> calcPointVehicleIntersection(const Point & point);
 
