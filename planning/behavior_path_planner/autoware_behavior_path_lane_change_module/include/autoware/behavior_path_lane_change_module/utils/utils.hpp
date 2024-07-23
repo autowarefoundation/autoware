@@ -178,10 +178,10 @@ bool isParkedObject(
   const ExtendedPredictedObject & object, const double buffer_to_bound,
   const double ratio_threshold);
 
-bool passParkedObject(
+bool passed_parked_objects(
   const CommonDataPtr & common_data_ptr, const LaneChangePath & lane_change_path,
   const std::vector<ExtendedPredictedObject> & objects, const double minimum_lane_change_length,
-  const bool is_goal_in_route, CollisionCheckDebugMap & object_debug);
+  CollisionCheckDebugMap & object_debug);
 
 std::optional<size_t> getLeadingStaticObjectIdx(
   const RouteHandler & route_handler, const LaneChangePath & lane_change_path,

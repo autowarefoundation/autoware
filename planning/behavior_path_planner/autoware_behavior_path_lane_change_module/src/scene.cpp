@@ -1628,10 +1628,9 @@ bool NormalLaneChange::getLaneChangePaths(
         candidate_paths->push_back(*candidate_path);
 
         if (
-          !is_stuck &&
-          utils::lane_change::passParkedObject(
-            common_data_ptr_, *candidate_path, filtered_objects.target_lane, lane_change_buffer,
-            is_goal_in_route, lane_change_debug_.collision_check_objects)) {
+          !is_stuck && !utils::lane_change::passed_parked_objects(
+                         common_data_ptr_, *candidate_path, filtered_objects.target_lane,
+                         lane_change_buffer, lane_change_debug_.collision_check_objects)) {
           debug_print_lat(
             "Reject: parking vehicle exists in the target lane, and the ego is not in stuck. Skip "
             "lane change.");
@@ -1815,6 +1814,19 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
   const auto target_objects = getTargetObjects(filtered_objects, current_lanes);
 
   CollisionCheckDebugMap debug_data;
+
+  const auto min_lc_length = utils::lane_change::calcMinimumLaneChangeLength(
+    *lane_change_parameters_,
+    common_data_ptr_->route_handler_ptr->getLateralIntervalsToPreferredLane(current_lanes.back()));
+
+  const auto has_passed_parked_objects = utils::lane_change::passed_parked_objects(
+    common_data_ptr_, path, filtered_objects.target_lane, min_lc_length, debug_data);
+
+  if (!has_passed_parked_objects) {
+    RCLCPP_DEBUG(logger_, "Lane change has been delayed.");
+    return {false, false};
+  }
+
   const auto safety_status = isLaneChangePathSafe(
     path, target_objects, lane_change_parameters_->rss_params_for_abort, debug_data);
   {

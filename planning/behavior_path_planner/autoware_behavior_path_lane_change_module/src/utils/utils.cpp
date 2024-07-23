@@ -968,10 +968,10 @@ bool isParkedObject(
   return clamped_ratio > ratio_threshold;
 }
 
-bool passParkedObject(
+bool passed_parked_objects(
   const CommonDataPtr & common_data_ptr, const LaneChangePath & lane_change_path,
   const std::vector<ExtendedPredictedObject> & objects, const double minimum_lane_change_length,
-  const bool is_goal_in_route, CollisionCheckDebugMap & object_debug)
+  CollisionCheckDebugMap & object_debug)
 {
   const auto route_handler = *common_data_ptr->route_handler_ptr;
   const auto lane_change_parameters = *common_data_ptr->lc_param_ptr;
@@ -979,20 +979,19 @@ bool passParkedObject(
     lane_change_parameters.object_check_min_road_shoulder_width;
   const auto & object_shiftable_ratio_threshold =
     lane_change_parameters.object_shiftable_ratio_threshold;
-  const auto & path = lane_change_path.path;
   const auto & current_lanes = common_data_ptr->lanes_ptr->current;
   const auto current_lane_path =
     route_handler.getCenterLinePath(current_lanes, 0.0, std::numeric_limits<double>::max());
 
-  if (objects.empty() || path.points.empty() || current_lane_path.points.empty()) {
-    return false;
+  if (objects.empty() || lane_change_path.path.points.empty() || current_lane_path.points.empty()) {
+    return true;
   }
 
   const auto leading_obj_idx = getLeadingStaticObjectIdx(
     route_handler, lane_change_path, objects, object_check_min_road_shoulder_width,
     object_shiftable_ratio_threshold);
   if (!leading_obj_idx) {
-    return false;
+    return true;
   }
 
   const auto & leading_obj = objects.at(*leading_obj_idx);
@@ -1000,11 +999,13 @@ bool passParkedObject(
   const auto leading_obj_poly =
     autoware::universe_utils::toPolygon2d(leading_obj.initial_pose.pose, leading_obj.shape);
   if (leading_obj_poly.outer().empty()) {
-    return false;
+    return true;
   }
 
   const auto & current_path_end = current_lane_path.points.back().point.pose.position;
   double min_dist_to_end_of_current_lane = std::numeric_limits<double>::max();
+  const auto & target_lanes = common_data_ptr->lanes_ptr->target;
+  const auto is_goal_in_route = route_handler.isInGoalRouteSection(target_lanes.back());
   for (const auto & point : leading_obj_poly.outer()) {
     const auto obj_p = autoware::universe_utils::createPoint(point.x(), point.y(), 0.0);
     const double dist = autoware::motion_utils::calcSignedArcLength(
@@ -1022,10 +1023,10 @@ bool passParkedObject(
   if (min_dist_to_end_of_current_lane > minimum_lane_change_length) {
     debug.second.unsafe_reason = "delay lane change";
     utils::path_safety_checker::updateCollisionCheckDebugMap(object_debug, debug, false);
-    return true;
+    return false;
   }
 
-  return false;
+  return true;
 }
 
 std::optional<size_t> getLeadingStaticObjectIdx(
