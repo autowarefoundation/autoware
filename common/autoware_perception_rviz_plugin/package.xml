@@ -5,7 +5,6 @@
   <version>1.0.0</version>
   <description>Contains plugins to visualize object detection outputs</description>
   <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
-  <maintainer email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</maintainer>
   <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
   <maintainer email="takeshi.miura@tier4.jp">Takeshi Miura</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
