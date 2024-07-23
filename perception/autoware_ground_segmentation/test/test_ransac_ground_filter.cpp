@@ -134,7 +134,8 @@ void convertPCL2PointCloud2(
 
 TEST_F(RansacGroundFilterTestSuite, TestCase1)
 {
-  const auto share_dir = ament_index_cpp::get_package_share_directory("ground_segmentation");
+  const auto share_dir =
+    ament_index_cpp::get_package_share_directory("autoware_ground_segmentation");
   const auto config_path = share_dir + "/config/ransac_ground_filter.param.yaml";
   YAML::Node config = YAML::LoadFile(config_path);
   auto params = config["/**"]["ros__parameters"];

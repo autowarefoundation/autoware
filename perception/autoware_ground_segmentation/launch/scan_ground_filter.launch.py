@@ -35,7 +35,7 @@ def launch_setup(context, *args, **kwargs):
 
     nodes = [
         ComposableNode(
-            package="ground_segmentation",
+            package="autoware_ground_segmentation",
             plugin="autoware::ground_segmentation::ScanGroundFilterComponent",
             name="scan_ground_filter",
             remappings=[

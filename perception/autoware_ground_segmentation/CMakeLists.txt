@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(ground_segmentation)
+project(autoware_ground_segmentation)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -104,7 +104,7 @@ if(BUILD_TESTING)
     test/test_ransac_ground_filter.cpp
   )
   target_link_libraries(test_ransac_ground_filter
-    ground_segmentation
+    autoware_ground_segmentation
     ${YAML_CPP_LIBRARIES})
 
 endif()

@@ -1,8 +1,8 @@
-# ground_segmentation
+# autoware_ground_segmentation
 
 ## Purpose
 
-The `ground_segmentation` is a node that remove the ground points from the input pointcloud.
+The `autoware_ground_segmentation` is a node that remove the ground points from the input pointcloud.
 
 ## Inner-workings / Algorithms
 

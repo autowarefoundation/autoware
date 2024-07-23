@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="ground_segmentation_param_file" default="$(find-pkg-share ground_segmentation)/config/scan_ground_filter.param.yaml"/>
+  <arg name="ground_segmentation_param_file" default="$(find-pkg-share autoware_ground_segmentation)/config/scan_ground_filter.param.yaml"/>
 
   <!-- vehicle info -->
   <arg name="vehicle_info_param_file" default="$(find-pkg-share autoware_vehicle_info_utils)/config/vehicle_info.param.yaml"/>
   <arg name="input/pointcloud" default="/sensing/lidar/concatenated/pointcloud"/>
   <arg name="output/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
-  <node pkg="ground_segmentation" exec="scan_ground_filter_node" name="scan_ground_filter_node" output="screen">
+  <node pkg="autoware_ground_segmentation" exec="scan_ground_filter_node" name="scan_ground_filter_node" output="screen">
     <remap from="input" to="$(var input/pointcloud)"/>
     <remap from="output" to="$(var output/pointcloud)"/>
     <param from="$(var ground_segmentation_param_file)"/>
