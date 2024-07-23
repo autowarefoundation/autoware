@@ -37,7 +37,7 @@ runs:
     - name: Cache ccache
       uses: actions/cache@v4
       if: ${{ inputs.name == 'no-cuda' && github.ref == 'refs/heads/main' }}
-      id: cache-ccahce
+      id: cache-ccache
       with:
         path: |
           root-ccache
@@ -105,4 +105,3 @@ runs:
         push: false
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.name }}-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}
-        cache-to: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.name }}-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }},mode=max
