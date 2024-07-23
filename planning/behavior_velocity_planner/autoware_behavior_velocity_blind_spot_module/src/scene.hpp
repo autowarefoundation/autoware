@@ -168,7 +168,7 @@ private:
     tier4_planning_msgs::msg::PathWithLaneId * path) const;
 
   std::optional<OverPassJudge> isOverPassJudge(
-    const tier4_planning_msgs::msg::PathWithLaneId & path,
+    const tier4_planning_msgs::msg::PathWithLaneId & input_path,
     const geometry_msgs::msg::Pose & stop_point_pose) const;
 
   double computeTimeToPassStopLine(
@@ -215,7 +215,7 @@ private:
   std::optional<lanelet::CompoundPolygon3d> generateBlindSpotPolygons(
     const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
     const lanelet::ConstLanelets & blind_spot_lanelets,
-    const geometry_msgs::msg::Pose & pose) const;
+    const geometry_msgs::msg::Pose & stop_line_pose) const;
 
   /**
    * @brief Check if object is belong to targeted classes
@@ -231,7 +231,8 @@ private:
    */
   autoware_perception_msgs::msg::PredictedObject cutPredictPathWithDuration(
     const std_msgs::msg::Header & header,
-    const autoware_perception_msgs::msg::PredictedObject & object, const double time_thr) const;
+    const autoware_perception_msgs::msg::PredictedObject & object_original,
+    const double time_thr) const;
 
   StateMachine state_machine_;  //! for state
 
