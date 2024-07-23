@@ -105,4 +105,3 @@ runs:
         push: false
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.name }}-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}
-        cache-to: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.name }}-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }},mode=max
