@@ -223,6 +223,7 @@ void PathOptimizer::resetPreviousData()
 void PathOptimizer::onPath(const Path::ConstSharedPtr path_ptr)
 {
   time_keeper_->start_track(__func__);
+  stop_watch_.tic();
 
   // check if input path is valid
   if (!checkInputPath(*path_ptr, *get_clock())) {
@@ -270,12 +271,7 @@ void PathOptimizer::onPath(const Path::ConstSharedPtr path_ptr)
 
   // publish calculation_time
   // NOTE: This function must be called after measuring onPath calculation time
-  /*
-  const auto calculation_time_msg = createStringStamped(now(), time_keeper_ptr_->getLog());
-  debug_calculation_time_str_pub_->publish(calculation_time_msg);
-  debug_calculation_time_float_pub_->publish(
-    createFloat64Stamped(now(), time_keeper_ptr_->getAccumulatedTime()));
-  */
+  debug_calculation_time_float_pub_->publish(createFloat64Stamped(now(), stop_watch_.toc()));
 
   const auto output_traj_msg =
     autoware::motion_utils::convertToTrajectory(full_traj_points, path_ptr->header);

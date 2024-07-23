@@ -22,6 +22,7 @@
 #include "autoware/path_optimizer/type_alias.hpp"
 #include "autoware/universe_utils/ros/logger_level_configure.hpp"
 #include "autoware/universe_utils/ros/polling_subscriber.hpp"
+#include "autoware/universe_utils/system/stop_watch.hpp"
 #include "autoware/universe_utils/system/time_keeper.hpp"
 #include "autoware_vehicle_info_utils/vehicle_info_utils.hpp"
 
@@ -143,6 +144,8 @@ private:
   std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
 
   std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
+
+  autoware::universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
 };
 }  // namespace autoware::path_optimizer
 
