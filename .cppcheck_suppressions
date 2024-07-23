@@ -2,7 +2,6 @@
 
 checkersReport
 constParameterReference
-constVariableReference
 funcArgNamesDifferent
 functionConst
 functionStatic
