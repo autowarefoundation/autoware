@@ -18,8 +18,8 @@
   <arg name="input/camera_info7" default="/camera_info7"/>
   <arg name="input/objects" default="objects"/>
   <arg name="output/objects" default="fused_objects"/>
-  <arg name="param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_detected_object_fusion.param.yaml"/>
-  <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/fusion_common.param.yaml"/>
+  <arg name="param_path" default="$(find-pkg-share autoware_image_projection_based_fusion)/config/roi_detected_object_fusion.param.yaml"/>
+  <arg name="sync_param_path" default="$(find-pkg-share autoware_image_projection_based_fusion)/config/fusion_common.param.yaml"/>
 
   <!-- for eval variable-->
   <arg name="input_rois_number" default="$(var input/rois_number)"/>
@@ -35,7 +35,7 @@
   <arg name="input/image7" default="/image_raw7"/>
 
   <group>
-    <node pkg="image_projection_based_fusion" exec="roi_detected_object_fusion_node" name="roi_detected_object_fusion" output="screen">
+    <node pkg="autoware_image_projection_based_fusion" exec="roi_detected_object_fusion_node" name="roi_detected_object_fusion" output="screen">
       <param name="rois_number" value="$(var input/rois_number)"/>
       <param from="$(var sync_param_path)"/>
       <param from="$(var param_path)"/>

@@ -21,10 +21,10 @@
   <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
   <arg name="model_name" default="pointpainting" description="options: `pointpainting`"/>
   <arg name="model_path" default="$(var data_path)/image_projection_based_fusion"/>
-  <arg name="model_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/pointpainting.param.yaml"/>
+  <arg name="model_param_path" default="$(find-pkg-share autoware_image_projection_based_fusion)/config/pointpainting.param.yaml"/>
   <arg name="ml_package_param_path" default="$(var model_path)/$(var model_name)_ml_package.param.yaml"/>
   <arg name="class_remapper_param_path" default="$(var model_path)/detection_class_remapper.param.yaml"/>
-  <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/fusion_common.param.yaml"/>
+  <arg name="sync_param_path" default="$(find-pkg-share autoware_image_projection_based_fusion)/config/fusion_common.param.yaml"/>
   <arg name="build_only" default="false" description="shutdown node after TensorRT engine file is built"/>
 
   <arg name="use_pointcloud_container" default="false" description="use pointcloud_container"/>
@@ -45,7 +45,7 @@
 
   <group if="$(var use_pointcloud_container)">
     <load_composable_node target="$(var pointcloud_container_name)">
-      <composable_node pkg="image_projection_based_fusion" plugin="autoware::image_projection_based_fusion::PointPaintingFusionNode" name="pointpainting">
+      <composable_node pkg="autoware_image_projection_based_fusion" plugin="autoware::image_projection_based_fusion::PointPaintingFusionNode" name="pointpainting">
         <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
         <remap from="~/output/objects" to="$(var output/objects)"/>
         <param from="$(var model_param_path)" allow_substs="true"/>
@@ -87,7 +87,7 @@
     </load_composable_node>
   </group>
   <group unless="$(var use_pointcloud_container)">
-    <node pkg="image_projection_based_fusion" exec="pointpainting_fusion_node" name="pointpainting" output="screen">
+    <node pkg="autoware_image_projection_based_fusion" exec="pointpainting_fusion_node" name="pointpainting" output="screen">
       <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
       <remap from="~/output/objects" to="$(var output/objects)"/>
       <param from="$(var model_param_path)" allow_substs="true"/>

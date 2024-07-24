@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(image_projection_based_fusion)
+project(autoware_image_projection_based_fusion)
 # add_compile_options(-Wno-unknown-pragmas)
 add_compile_options(-Wno-unknown-pragmas -fopenmp)
 

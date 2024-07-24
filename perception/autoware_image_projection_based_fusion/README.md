@@ -1,8 +1,8 @@
-# image_projection_based_fusion
+# autoware_image_projection_based_fusion
 
 ## Purpose
 
-The `image_projection_based_fusion` is a package to fuse detected obstacles (bounding box or segmentation) from image and 3d pointcloud or obstacles (bounding box, cluster or segmentation).
+The `autoware_image_projection_based_fusion` is a package to fuse detected obstacles (bounding box or segmentation) from image and 3d pointcloud or obstacles (bounding box, cluster or segmentation).
 
 ## Inner-workings / Algorithms
 
@@ -59,7 +59,7 @@ The `pointpainting_fusion` node has `build_only` option to build the TensorRT en
 Although it is preferred to move all the ROS parameters in `.param.yaml` file in Autoware Universe, the `build_only` option is not moved to the `.param.yaml` file for now, because it may be used as a flag to execute the build as a pre-task. You can execute with the following command:
 
 ```bash
-ros2 launch image_projection_based_fusion pointpainting_fusion.launch.xml model_name:=pointpainting model_path:=/home/autoware/autoware_data/image_projection_based_fusion model_param_path:=$(ros2 pkg prefix image_projection_based_fusion --share)/config/pointpainting.param.yaml build_only:=true
+ros2 launch autoware_image_projection_based_fusion pointpainting_fusion.launch.xml model_name:=pointpainting model_path:=/home/autoware/autoware_data/image_projection_based_fusion model_param_path:=$(ros2 pkg prefix autoware_image_projection_based_fusion --share)/config/pointpainting.param.yaml build_only:=true
 ```
 
 #### Known Limits

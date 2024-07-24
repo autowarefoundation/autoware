@@ -75,7 +75,7 @@
 
   <!-- Camera ROI fusion -->
   <group>
-    <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_detected_object_fusion.launch.xml">
+    <include file="$(find-pkg-share autoware_image_projection_based_fusion)/launch/roi_detected_object_fusion.launch.xml">
       <arg name="input/rois_number" value="$(var number_of_cameras)"/>
       <arg name="input/rois0" value="$(var input/camera0/rois)"/>
       <arg name="input/rois1" value="$(var input/camera1/rois)"/>

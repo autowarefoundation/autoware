@@ -57,7 +57,7 @@
   <!-- PointPainting -->
   <group if="$(eval &quot;'$(var lidar_detection_model)'=='pointpainting'&quot;)">
     <push-ros-namespace namespace="pointpainting"/>
-    <include file="$(find-pkg-share image_projection_based_fusion)/launch/pointpainting_fusion.launch.xml">
+    <include file="$(find-pkg-share autoware_image_projection_based_fusion)/launch/pointpainting_fusion.launch.xml">
       <arg name="input/rois_number" value="$(var number_of_cameras)"/>
       <arg name="input/rois0" value="$(var input/camera0/rois)"/>
       <arg name="input/rois1" value="$(var input/camera1/rois)"/>
@@ -98,7 +98,7 @@
 
   <!-- Image_segmentation based filter, apply for camera0 only-->
   <group>
-    <include file="$(find-pkg-share image_projection_based_fusion)/launch/segmentation_pointcloud_fusion.launch.xml" if="$(var use_image_segmentation_based_filter)">
+    <include file="$(find-pkg-share autoware_image_projection_based_fusion)/launch/segmentation_pointcloud_fusion.launch.xml" if="$(var use_image_segmentation_based_filter)">
       <arg name="input/pointcloud" value="$(var input/pointcloud_map/pointcloud)"/>
       <arg name="output/pointcloud" value="/perception/object_recognition/detection/segmentation_based_filtered/pointcloud"/>
     </include>
@@ -123,7 +123,7 @@
     <group>
       <push-ros-namespace namespace="roi_cluster"/>
       <group>
-        <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_pointcloud_fusion.launch.xml" if="$(var use_roi_based_cluster)">
+        <include file="$(find-pkg-share autoware_image_projection_based_fusion)/launch/roi_pointcloud_fusion.launch.xml" if="$(var use_roi_based_cluster)">
           <arg name="input/rois_number" value="$(var number_of_cameras)"/>
           <arg name="input/rois0" value="$(var input/camera0/rois)"/>
           <arg name="input/rois1" value="$(var input/camera1/rois)"/>
@@ -179,7 +179,7 @@
 
       <!-- euclidean clustering -->
       <group>
-        <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_cluster_fusion.launch.xml">
+        <include file="$(find-pkg-share autoware_image_projection_based_fusion)/launch/roi_cluster_fusion.launch.xml">
           <arg name="input/rois_number" value="$(var number_of_cameras)"/>
           <arg name="input/rois0" value="$(var input/camera0/rois)"/>
           <arg name="input/rois1" value="$(var input/camera1/rois)"/>
