@@ -60,26 +60,26 @@ private:
       return true;
     }
 
-    autoware_map_msgs::msg::PointCloudMapCellWithID pcd_map_cell_with_id;
-    pcd_map_cell_with_id.cell_id = "0";
+    autoware_map_msgs::msg::PointCloudMapCellWithMetaData pcd_map_cell;
+    pcd_map_cell.metadata.cell_id = "0";
     pcl::PointCloud<pcl::PointXYZ> cloud = make_sample_half_cubic_pcd();
     for (auto & point : cloud.points) {
       point.x += offset_x;
       point.y += offset_y;
     }
-    pcd_map_cell_with_id.metadata.min_x = std::numeric_limits<float>::max();
-    pcd_map_cell_with_id.metadata.min_y = std::numeric_limits<float>::max();
-    pcd_map_cell_with_id.metadata.max_x = std::numeric_limits<float>::lowest();
-    pcd_map_cell_with_id.metadata.max_y = std::numeric_limits<float>::lowest();
+    pcd_map_cell.metadata.min_x = std::numeric_limits<float>::max();
+    pcd_map_cell.metadata.min_y = std::numeric_limits<float>::max();
+    pcd_map_cell.metadata.max_x = std::numeric_limits<float>::lowest();
+    pcd_map_cell.metadata.max_y = std::numeric_limits<float>::lowest();
     for (const auto & point : cloud.points) {
-      pcd_map_cell_with_id.metadata.min_x = std::min(pcd_map_cell_with_id.metadata.min_x, point.x);
-      pcd_map_cell_with_id.metadata.min_y = std::min(pcd_map_cell_with_id.metadata.min_y, point.y);
-      pcd_map_cell_with_id.metadata.max_x = std::max(pcd_map_cell_with_id.metadata.max_x, point.x);
-      pcd_map_cell_with_id.metadata.max_y = std::max(pcd_map_cell_with_id.metadata.max_y, point.y);
+      pcd_map_cell.metadata.min_x = std::min(pcd_map_cell.metadata.min_x, point.x);
+      pcd_map_cell.metadata.min_y = std::min(pcd_map_cell.metadata.min_y, point.y);
+      pcd_map_cell.metadata.max_x = std::max(pcd_map_cell.metadata.max_x, point.x);
+      pcd_map_cell.metadata.max_y = std::max(pcd_map_cell.metadata.max_y, point.y);
     }
     RCLCPP_INFO_STREAM(get_logger(), "cloud size: " << cloud.size());
-    pcl::toROSMsg(cloud, pcd_map_cell_with_id.pointcloud);
-    res->new_pointcloud_with_ids.push_back(pcd_map_cell_with_id);
+    pcl::toROSMsg(cloud, pcd_map_cell.pointcloud);
+    res->new_pointcloud_cells.push_back(pcd_map_cell);
     res->header.frame_id = "map";
     return true;
   }

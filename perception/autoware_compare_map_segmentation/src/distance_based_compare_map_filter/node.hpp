@@ -64,7 +64,7 @@ public:
   bool is_close_to_map(const pcl::PointXYZ & point, const double distance_threshold) override;
 
   inline void addMapCellAndFilter(
-    const autoware_map_msgs::msg::PointCloudMapCellWithID & map_cell_to_add) override
+    const autoware_map_msgs::msg::PointCloudMapCellWithMetaData & map_cell_to_add) override
   {
     map_grid_size_x_ = map_cell_to_add.metadata.max_x - map_cell_to_add.metadata.min_x;
     map_grid_size_y_ = map_cell_to_add.metadata.max_y - map_cell_to_add.metadata.min_y;
@@ -95,7 +95,8 @@ public:
 
     // add
     (*mutex_ptr_).lock();
-    current_voxel_grid_dict_.insert({map_cell_to_add.cell_id, current_voxel_grid_list_item});
+    current_voxel_grid_dict_.insert(
+      {map_cell_to_add.metadata.cell_id, current_voxel_grid_list_item});
     (*mutex_ptr_).unlock();
   }
 };

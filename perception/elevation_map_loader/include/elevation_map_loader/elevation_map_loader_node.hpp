@@ -82,7 +82,7 @@ private:
   void receiveMap();
   void concatenatePointCloudMaps(
     sensor_msgs::msg::PointCloud2 & pointcloud_map,
-    const std::vector<autoware_map_msgs::msg::PointCloudMapCellWithID> & new_pointcloud_with_ids)
+    const std::vector<autoware_map_msgs::msg::PointCloudMapCellWithMetaData> & new_pointcloud_cells)
     const;
   std::vector<std::string> getRequestIDs(const unsigned int map_id_counter) const;
   void publish();

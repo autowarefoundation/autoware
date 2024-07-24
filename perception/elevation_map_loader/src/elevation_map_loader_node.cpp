@@ -283,7 +283,7 @@ void ElevationMapLoaderNode::receiveMap()
     }
 
     // concatenate maps
-    concatenatePointCloudMaps(pointcloud_map, result.get()->new_pointcloud_with_ids);
+    concatenatePointCloudMaps(pointcloud_map, result.get()->new_pointcloud_cells);
   }
   RCLCPP_DEBUG(this->get_logger(), "finish receiving");
   pcl::PointCloud<pcl::PointXYZ> map_pcl;
@@ -293,18 +293,18 @@ void ElevationMapLoaderNode::receiveMap()
 
 void ElevationMapLoaderNode::concatenatePointCloudMaps(
   sensor_msgs::msg::PointCloud2 & pointcloud_map,
-  const std::vector<autoware_map_msgs::msg::PointCloudMapCellWithID> & new_pointcloud_with_ids)
+  const std::vector<autoware_map_msgs::msg::PointCloudMapCellWithMetaData> & new_pointcloud_cells)
   const
 {
-  for (const auto & new_pointcloud_with_id : new_pointcloud_with_ids) {
+  for (const auto & new_pointcloud_cell : new_pointcloud_cells) {
     if (pointcloud_map.width == 0) {
-      pointcloud_map = new_pointcloud_with_id.pointcloud;
+      pointcloud_map = new_pointcloud_cell.pointcloud;
     } else {
-      pointcloud_map.width += new_pointcloud_with_id.pointcloud.width;
-      pointcloud_map.row_step += new_pointcloud_with_id.pointcloud.row_step;
+      pointcloud_map.width += new_pointcloud_cell.pointcloud.width;
+      pointcloud_map.row_step += new_pointcloud_cell.pointcloud.row_step;
       pointcloud_map.data.insert(
-        pointcloud_map.data.end(), new_pointcloud_with_id.pointcloud.data.begin(),
-        new_pointcloud_with_id.pointcloud.data.end());
+        pointcloud_map.data.end(), new_pointcloud_cell.pointcloud.data.begin(),
+        new_pointcloud_cell.pointcloud.data.end());
     }
   }
 }
