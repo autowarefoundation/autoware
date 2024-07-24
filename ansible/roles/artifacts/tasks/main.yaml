@@ -129,7 +129,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_voxel_encoder_centerpoint_sigma.onnx
     dest: "{{ data_dir }}/lidar_centerpoint/pts_voxel_encoder_centerpoint_sigma.onnx"
     mode: "644"
-    checksum: sha256:18e8fca2921383e01674538f843481cc6f71c3cd6def061db4e7ca48ffe39866 
+    checksum: sha256:18e8fca2921383e01674538f843481cc6f71c3cd6def061db4e7ca48ffe39866
 - name: Download lidar_centerpoint/pts_backbone_neck_head_centerpoint_sigma.onnx
   become: true
   ansible.builtin.get_url:
