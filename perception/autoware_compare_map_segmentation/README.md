@@ -1,8 +1,8 @@
-# compare_map_segmentation
+# autoware_compare_map_segmentation
 
 ## Purpose
 
-The `compare_map_segmentation` is a node that filters the ground points from the input pointcloud by using map info (e.g. pcd, elevation map or split map pointcloud from map_loader interface).
+The `autoware_compare_map_segmentation` is a package that filters the ground points from the input pointcloud by using map info (e.g. pcd, elevation map or split map pointcloud from map_loader interface).
 
 ## Inner-workings / Algorithms
 

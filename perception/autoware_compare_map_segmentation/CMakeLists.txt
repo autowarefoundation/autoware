@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(compare_map_segmentation)
+project(autoware_compare_map_segmentation)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()

@@ -390,7 +390,7 @@ class GroundSegmentationPipeline:
 
         components.append(
             ComposableNode(
-                package="compare_map_segmentation",
+                package="autoware_compare_map_segmentation",
                 plugin="autoware::compare_map_segmentation::CompareElevationMapFilterComponent",
                 name="compare_elevation_map_filter",
                 namespace="elevation_map",

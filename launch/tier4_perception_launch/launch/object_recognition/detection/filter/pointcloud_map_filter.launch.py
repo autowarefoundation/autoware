@@ -105,7 +105,7 @@ class PointcloudMapFilterPipeline:
         )
         components.append(
             ComposableNode(
-                package="compare_map_segmentation",
+                package="autoware_compare_map_segmentation",
                 plugin="autoware::compare_map_segmentation::VoxelBasedCompareMapFilterComponent",
                 name="voxel_based_compare_map_filter",
                 remappings=[

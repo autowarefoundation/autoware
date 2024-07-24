@@ -261,7 +261,7 @@
     <!-- use pointcloud container -->
     <load_composable_node target="$(var pointcloud_container_name)">
       <composable_node
-        pkg="compare_map_segmentation"
+        pkg="autoware_compare_map_segmentation"
         plugin="autoware::compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent"
         name="voxel_distance_based_compare_map_filter_node"
         namespace=""
