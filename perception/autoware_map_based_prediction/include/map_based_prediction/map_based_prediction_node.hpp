@@ -26,6 +26,7 @@
 #include <autoware/universe_utils/ros/transform_listener.hpp>
 #include <autoware/universe_utils/ros/uuid_helper.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
+#include <autoware/universe_utils/system/time_keeper.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
@@ -222,6 +223,9 @@ private:
   bool remember_lost_crosswalk_users_;
 
   std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
+  rclcpp::Publisher<autoware::universe_utils::ProcessingTimeDetail>::SharedPtr
+    detailed_processing_time_publisher_;
+  mutable autoware::universe_utils::TimeKeeper time_keeper_;
 
   // Member Functions
   void mapCallback(const LaneletMapBin::ConstSharedPtr msg);
