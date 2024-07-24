@@ -104,15 +104,15 @@ private:
     const DetectedObject & object, const std::shared_ptr<std::vector<RadarInput>> & radars);
   TwistWithCovariance convertDopplerToTwist(
     const DetectedObject & object, const TwistWithCovariance & twist_with_covariance);
-  bool isYawCorrect(
+  static bool isYawCorrect(
     const DetectedObject & object, const TwistWithCovariance & twist_with_covariance,
     const double & yaw_threshold);
-  bool hasTwistCovariance(const TwistWithCovariance & twist_with_covariance);
-  Eigen::Vector2d toVector2d(const TwistWithCovariance & twist_with_covariance);
-  TwistWithCovariance toTwistWithCovariance(const Eigen::Vector2d & vector2d);
+  static bool hasTwistCovariance(const TwistWithCovariance & twist_with_covariance);
+  static Eigen::Vector2d toVector2d(const TwistWithCovariance & twist_with_covariance);
+  static TwistWithCovariance toTwistWithCovariance(const Eigen::Vector2d & vector2d);
 
-  double getTwistNorm(const Twist & twist);
-  LinearRing2d createObject2dWithMargin(const Point2d object_size, const double margin);
+  static double getTwistNorm(const Twist & twist);
+  static LinearRing2d createObject2dWithMargin(const Point2d object_size, const double margin);
 };
 }  // namespace autoware::radar_fusion_to_detected_object
 
