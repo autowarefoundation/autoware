@@ -160,6 +160,7 @@ Eigen::VectorXd SimModelActuationCmd::calcModel(
   using autoware_vehicle_msgs::msg::GearCommand;
 
   const double vel = std::clamp(state(IDX::VX), -vx_lim_, vx_lim_);
+  const double acc = std::clamp(state(IDX::ACCX), -vx_rate_lim_, vx_rate_lim_);
   const double yaw = state(IDX::YAW);
   const double steer = state(IDX::STEER);
 
@@ -168,7 +169,7 @@ Eigen::VectorXd SimModelActuationCmd::calcModel(
   const auto gear = input(IDX_U::GEAR);
 
   // 1) calculate acceleration by accel and brake command
-  const double acc_des = std::clamp(
+  const double acc_des_wo_slope = std::clamp(
     std::invoke([&]() -> double {
       // Select the non-zero value between accel and brake and calculate the acceleration
       if (convert_accel_cmd_ && accel > 0.0) {
@@ -185,13 +186,13 @@ Eigen::VectorXd SimModelActuationCmd::calcModel(
     -vx_rate_lim_, vx_rate_lim_);
   // add slope acceleration considering the gear state
   const double acc_by_slope = input(IDX_U::SLOPE_ACCX);
-  const double acc = std::invoke([&]() -> double {
+  const double acc_des = std::invoke([&]() -> double {
     if (gear == GearCommand::NONE || gear == GearCommand::PARK) {
       return 0.0;
     } else if (gear == GearCommand::REVERSE || gear == GearCommand::REVERSE_2) {
-      return -acc_des + acc_by_slope;
+      return -acc_des_wo_slope + acc_by_slope;
     }
-    return acc_des + acc_by_slope;
+    return acc_des_wo_slope + acc_by_slope;
   });
   const double acc_time_constant = accel > 0.0 ? accel_time_constant_ : brake_time_constant_;
 
