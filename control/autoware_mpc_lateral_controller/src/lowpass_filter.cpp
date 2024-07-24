@@ -63,11 +63,9 @@ void Butterworth2dFilter::filt_vector(const std::vector<double> & t, std::vector
   double y2 = t.at(0);
   double u2 = t.at(0);
   double u1 = t.at(0);
-  double y0 = 0.0;
-  double u0 = 0.0;
   for (size_t i = 0; i < t.size(); ++i) {
-    u0 = t.at(i);
-    y0 = m_b2 * u2 + m_b1 * u1 + m_b0 * u0 + m_a2 * y2 + m_a1 * y1;
+    const double u0 = t.at(i);
+    const double y0 = m_b2 * u2 + m_b1 * u1 + m_b0 * u0 + m_a2 * y2 + m_a1 * y1;
     y2 = y1;
     y1 = y0;
     u2 = u1;

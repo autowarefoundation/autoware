@@ -581,11 +581,12 @@ rcl_interfaces::msg::SetParametersResult MpcLateralController::paramCallback(
 
   // strong exception safety wrt MPCParam
   MPCParam param = m_mpc->m_param;
-  auto & nw = param.nominal_weight;
-  auto & lcw = param.low_curvature_weight;
 
   using MPCUtils::update_param;
   try {
+    auto & nw = param.nominal_weight;
+    auto & lcw = param.low_curvature_weight;
+
     update_param(parameters, "mpc_prediction_horizon", param.prediction_horizon);
     update_param(parameters, "mpc_prediction_dt", param.prediction_dt);
 
