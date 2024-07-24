@@ -35,7 +35,7 @@ install(
     DESTINATION share/${PROJECT_NAME}/images
 )
 
-ament_auto_package(
-  INSTALL_TO_SHARE
+ament_auto_package(INSTALL_TO_SHARE
+  config
   launch
 )

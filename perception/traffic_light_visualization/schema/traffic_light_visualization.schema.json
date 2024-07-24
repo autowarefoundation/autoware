@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for traffic_light_visualization",
+  "type": "object",
+  "definitions": {
+    "traffic_light_visualization": {
+      "type": "object",
+      "properties": {
+        "enable_fine_detection": {
+          "type": "boolean",
+          "description": "whether to visualize result of the traffic light fine detection",
+          "default": "false"
+        }
+      },
+      "required": ["enable_fine_detection"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/traffic_light_visualization"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

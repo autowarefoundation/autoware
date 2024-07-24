@@ -55,9 +55,7 @@ None
 
 #### Node Parameters
 
-| Name                    | Type | Default Value | Description                                                     |
-| ----------------------- | ---- | ------------- | --------------------------------------------------------------- |
-| `enable_fine_detection` | bool | false         | whether to visualize result of the traffic light fine detection |
+{{json_to_markdown("perception/traffic_light_visualization/schema/traffic_light_visualization.schema.json")}}
 
 ## Assumptions / Known limits
 
