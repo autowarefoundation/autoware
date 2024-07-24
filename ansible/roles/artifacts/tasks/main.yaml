@@ -123,6 +123,20 @@
     dest: "{{ data_dir }}/lidar_centerpoint/pts_backbone_neck_head_centerpoint_tiny.onnx"
     mode: "644"
     checksum: sha256:9bb0b634f3664bd098ce7d6a3d8a9fb7cc8d9b8252b27f302c71e43316bab551
+- name: Download lidar_centerpoint/pts_voxel_encoder_centerpoint_sigma.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_voxel_encoder_centerpoint_sigma.onnx
+    dest: "{{ data_dir }}/lidar_centerpoint/pts_voxel_encoder_centerpoint_sigma.onnx"
+    mode: "644"
+    checksum: sha256:18e8fca2921383e01674538f843481cc6f71c3cd6def061db4e7ca48ffe39866 
+- name: Download lidar_centerpoint/pts_backbone_neck_head_centerpoint_sigma.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_backbone_neck_head_centerpoint_sigma.onnx
+    dest: "{{ data_dir }}/lidar_centerpoint/pts_backbone_neck_head_centerpoint_sigma.onnx"
+    mode: "644"
+    checksum: sha256:cf26d50e75bf9f34da384abf3bfae86353d3b972d6b10185ba3996867df4e2c1
 - name: Download lidar_centerpoint/centerpoint_ml_package.param.yaml
   become: true
   ansible.builtin.get_url:
@@ -143,7 +157,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/centerpoint_sigma_ml_package.param.yaml
     dest: "{{ data_dir }}/lidar_centerpoint/centerpoint_sigma_ml_package.param.yaml"
     mode: "644"
-    checksum: sha256:9946b342a6f457b19fdfe9f02041dbd3cf0b9cefe052663e04e241ec2b6e9c76
+    checksum: sha256:65d4499eea9f7849c5b38e8753aa1eaa0959ab24c73d142687ae0a0728ced333
 - name: Download lidar_centerpoint/detection_class_remapper.param.yaml
   become: true
   ansible.builtin.get_url:
