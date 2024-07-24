@@ -14,9 +14,11 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__DISJOINT_SET_HPP_
-#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__DISJOINT_SET_HPP_
+#ifndef AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__DISJOINT_SET_HPP_
+#define AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__DISJOINT_SET_HPP_
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 template <class T>
@@ -74,5 +76,5 @@ void DisjointSetUnion(T * x, T * y)
   }
 }
 }  // namespace lidar_apollo_instance_segmentation
-
-#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__DISJOINT_SET_HPP_
+}  // namespace autoware
+#endif  // AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__DISJOINT_SET_HPP_

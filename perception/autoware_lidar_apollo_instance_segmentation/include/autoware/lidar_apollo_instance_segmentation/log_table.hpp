@@ -12,37 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "lidar_apollo_instance_segmentation/log_table.hpp"
+#ifndef AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__LOG_TABLE_HPP_
+#define AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__LOG_TABLE_HPP_
 
-#include <cmath>
-#include <string>
-#include <vector>
-
-namespace
+namespace autoware
 {
-struct LogTable
-{
-  std::vector<float> data;
-  LogTable()
-  {
-    data.resize(256 * 10);
-    for (size_t i = 0; i < data.size(); ++i) {
-      data[i] = std::log1p(static_cast<float>(i / 10.0));
-    }
-  }
-};
-}  // namespace
-
-static ::LogTable log_table;
-
 namespace lidar_apollo_instance_segmentation
 {
-float calcApproximateLog(float num)
-{
-  int integer_num = static_cast<int>(num * 10.0);
-  if (integer_num < static_cast<int>(log_table.data.size())) {
-    return log_table.data[integer_num];
-  }
-  return std::log(static_cast<float>(1.0 + num));
-}
+float calcApproximateLog(float num);
 }  // namespace lidar_apollo_instance_segmentation
+}  // namespace autoware
+#endif  // AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__LOG_TABLE_HPP_

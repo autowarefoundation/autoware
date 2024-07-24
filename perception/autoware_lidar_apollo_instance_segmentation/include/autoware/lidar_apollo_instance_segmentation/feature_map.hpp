@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_MAP_HPP_
-#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_MAP_HPP_
+#ifndef AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_MAP_HPP_
+#define AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_MAP_HPP_
 
 #include <memory>
 #include <vector>
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 struct FeatureMapInterface
@@ -69,5 +71,5 @@ struct FeatureMapWithConstantAndIntensity : public FeatureMapInterface
   void resetMap(std::vector<float> & map) override;
 };
 }  // namespace lidar_apollo_instance_segmentation
-
-#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_MAP_HPP_
+}  // namespace autoware
+#endif  // AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_MAP_HPP_

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__DETECTOR_HPP_
-#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__DETECTOR_HPP_
+#ifndef AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__DETECTOR_HPP_
+#define AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__DETECTOR_HPP_
 
-#include "cluster2d.hpp"
-#include "feature_generator.hpp"
-#include "lidar_apollo_instance_segmentation/node.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/cluster2d.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/feature_generator.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/node.hpp"
 
 #include <autoware/universe_utils/transform/transforms.hpp>
 #include <cuda_utils/cuda_unique_ptr.hpp>
@@ -31,6 +31,8 @@
 #include <memory>
 #include <string>
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 using cuda_utils::CudaUniquePtr;
@@ -72,5 +74,6 @@ private:
   StreamUniquePtr stream_{makeCudaStream()};
 };
 }  // namespace lidar_apollo_instance_segmentation
+}  // namespace autoware
 
-#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__DETECTOR_HPP_
+#endif  // AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__DETECTOR_HPP_

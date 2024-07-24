@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_GENERATOR_HPP_
-#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_GENERATOR_HPP_
+#ifndef AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_GENERATOR_HPP_
+#define AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_GENERATOR_HPP_
 
-#include "lidar_apollo_instance_segmentation/feature_map.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/feature_map.hpp"
 #include "util.hpp"
 
 #include <pcl/point_cloud.h>
@@ -23,6 +23,8 @@
 
 #include <memory>
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 class FeatureGenerator
@@ -44,5 +46,5 @@ public:
     const pcl::PointCloud<pcl::PointXYZI>::Ptr & pc_ptr);
 };
 }  // namespace lidar_apollo_instance_segmentation
-
-#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_GENERATOR_HPP_
+}  // namespace autoware
+#endif  // AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_GENERATOR_HPP_

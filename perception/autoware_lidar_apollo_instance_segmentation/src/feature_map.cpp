@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "lidar_apollo_instance_segmentation/feature_map.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/feature_map.hpp"
 
-#include "lidar_apollo_instance_segmentation/util.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/util.hpp"
 
 #include <cmath>
+#include <vector>
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 FeatureMapInterface::FeatureMapInterface(
@@ -169,3 +172,4 @@ void FeatureMapWithConstantAndIntensity::resetMap([[maybe_unused]] std::vector<f
   }
 }
 }  // namespace lidar_apollo_instance_segmentation
+}  // namespace autoware

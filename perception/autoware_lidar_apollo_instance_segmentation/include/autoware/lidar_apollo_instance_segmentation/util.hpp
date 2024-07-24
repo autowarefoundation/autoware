@@ -28,12 +28,13 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__UTIL_HPP_
-#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__UTIL_HPP_
+#ifndef AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__UTIL_HPP_
+#define AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__UTIL_HPP_
 
 #include <cmath>
-#include <string>
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 // project point cloud to 2d map. calc in which grid point is.
@@ -58,5 +59,5 @@ inline float Pixel2Pc(int in_pixel, float in_size, float out_range)
   return out_range - (static_cast<float>(in_pixel) + 0.5f) * res;
 }
 }  // namespace lidar_apollo_instance_segmentation
-
-#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__UTIL_HPP_
+}  // namespace autoware
+#endif  // AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__UTIL_HPP_

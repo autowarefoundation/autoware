@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "lidar_apollo_instance_segmentation/debugger.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/debugger.hpp"
 
 #include <autoware_perception_msgs/msg/object_classification.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -21,6 +21,8 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 Debugger::Debugger(rclcpp::Node * node)
@@ -101,3 +103,4 @@ void Debugger::publishColoredPointCloud(
   instance_pointcloud_pub_->publish(output_msg);
 }
 }  // namespace lidar_apollo_instance_segmentation
+}  // namespace autoware

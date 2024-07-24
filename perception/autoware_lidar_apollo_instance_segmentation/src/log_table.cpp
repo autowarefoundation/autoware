@@ -12,26 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__DEBUGGER_HPP_
-#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__DEBUGGER_HPP_
+#include "autoware/lidar_apollo_instance_segmentation/log_table.hpp"
 
-#include <rclcpp/rclcpp.hpp>
+#include <cmath>
+#include <vector>
 
-#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
+namespace
+{
+struct LogTable
+{
+  std::vector<float> data;
+  LogTable()
+  {
+    data.resize(256 * 10);
+    for (size_t i = 0; i < data.size(); ++i) {
+      data[i] = std::log1p(static_cast<float>(i / 10.0));
+    }
+  }
+};
+}  // namespace
 
+static ::LogTable log_table;
+
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
-class Debugger
+float calcApproximateLog(float num)
 {
-public:
-  explicit Debugger(rclcpp::Node * node);
-  ~Debugger() {}
-  void publishColoredPointCloud(
-    const tier4_perception_msgs::msg::DetectedObjectsWithFeature & input);
-
-private:
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr instance_pointcloud_pub_;
-};
+  int integer_num = static_cast<int>(num * 10.0);
+  if (integer_num < static_cast<int>(log_table.data.size())) {
+    return log_table.data[integer_num];
+  }
+  return std::log(static_cast<float>(1.0 + num));
+}
 }  // namespace lidar_apollo_instance_segmentation
-
-#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__DEBUGGER_HPP_
+}  // namespace autoware

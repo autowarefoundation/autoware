@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__NODE_HPP_
-#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__NODE_HPP_
+#ifndef AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__NODE_HPP_
+#define AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__NODE_HPP_
 
-#include "lidar_apollo_instance_segmentation/debugger.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/debugger.hpp"
 
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
@@ -26,6 +26,8 @@
 
 #include <memory>
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 class LidarInstanceSegmentationInterface
@@ -54,5 +56,5 @@ public:
   explicit LidarInstanceSegmentationNode(const rclcpp::NodeOptions & node_options);
 };
 }  // namespace lidar_apollo_instance_segmentation
-
-#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__NODE_HPP_
+}  // namespace autoware
+#endif  // AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__NODE_HPP_

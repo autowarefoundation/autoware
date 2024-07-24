@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "lidar_apollo_instance_segmentation/node.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/node.hpp"
 
-#include "lidar_apollo_instance_segmentation/detector.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/detector.hpp"
 
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 LidarInstanceSegmentationNode::LidarInstanceSegmentationNode(
@@ -65,6 +67,8 @@ void LidarInstanceSegmentationNode::pointCloudCallback(
   }
 }
 }  // namespace lidar_apollo_instance_segmentation
+}  // namespace autoware
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(lidar_apollo_instance_segmentation::LidarInstanceSegmentationNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  autoware::lidar_apollo_instance_segmentation::LidarInstanceSegmentationNode)

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
-project(lidar_apollo_instance_segmentation)
+project(autoware_lidar_apollo_instance_segmentation)
 
 find_package(ament_cmake REQUIRED)
 find_package(autoware_perception_msgs REQUIRED)
@@ -74,7 +74,7 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "lidar_apollo_instance_segmentation::LidarInstanceSegmentationNode"
+  PLUGIN "autoware::lidar_apollo_instance_segmentation::LidarInstanceSegmentationNode"
   EXECUTABLE ${PROJECT_NAME}_node
 )
 

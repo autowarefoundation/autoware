@@ -126,7 +126,9 @@ perception/elevation_map_loader/** kosuke.takeuchi@tier4.jp shintaro.tomie@tier4
 perception/autoware_euclidean_cluster/** dai.nguyen@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_ground_segmentation/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_image_projection_based_fusion/** dai.nguyen@tier4.jp koji.minoda@tier4.jp kotaro.uetake@tier4.jp shunsuke.miura@tier4.jp tao.zhong@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
-perception/lidar_apollo_instance_segmentation/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
+perception/autowar_lidar_apollo_instance_segmentation/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
+perception/lidar_apollo_segmentation_tvm/** ambroise.vincent@arm.com yoshi.ri@tier4.jp
+perception/lidar_apollo_segmentation_tvm_nodes/** ambroise.vincent@arm.com yoshi.ri@tier4.jp
 perception/autoware_lidar_centerpoint/** kenzo.lobos@tier4.jp koji.minoda@tier4.jp
 perception/occupancy_grid_map_outlier_filter/** abrahammonrroy@yahoo.com yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/probabilistic_occupancy_grid_map/** mamoru.sobue@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp

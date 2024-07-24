@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "lidar_apollo_instance_segmentation/feature_generator.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/feature_generator.hpp"
 
-#include "lidar_apollo_instance_segmentation/log_table.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/log_table.hpp"
+
+#include <cmath>
 
 namespace
 {
@@ -24,6 +26,8 @@ inline float normalizeIntensity(float intensity)
 }
 }  // namespace
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 FeatureGenerator::FeatureGenerator(
@@ -99,3 +103,4 @@ std::shared_ptr<FeatureMapInterface> FeatureGenerator::generate(
   return map_ptr_;
 }
 }  // namespace lidar_apollo_instance_segmentation
+}  // namespace autoware

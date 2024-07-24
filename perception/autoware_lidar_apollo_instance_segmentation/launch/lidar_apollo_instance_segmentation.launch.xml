@@ -10,14 +10,14 @@
 
   <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
   <arg name="trained_onnx_file" default="$(var data_path)/lidar_apollo_instance_segmentation/$(var base_name).onnx"/>
-  <arg name="param_file" default="$(find-pkg-share lidar_apollo_instance_segmentation)/config/$(var base_name).param.yaml"/>
+  <arg name="param_file" default="$(find-pkg-share autoware_lidar_apollo_instance_segmentation)/config/$(var base_name).param.yaml"/>
 
   <arg name="target_frame" default="base_link"/>
   <arg name="z_offset" default="-2.0"/>
 
   <arg name="precision" default="fp32"/>
 
-  <node pkg="lidar_apollo_instance_segmentation" exec="lidar_apollo_instance_segmentation_node" name="lidar_apollo_instance_segmentation" output="screen">
+  <node pkg="autoware_lidar_apollo_instance_segmentation" exec="autoware_lidar_apollo_instance_segmentation_node" name="lidar_apollo_instance_segmentation" output="screen">
     <remap from="input/pointcloud" to="$(var input/pointcloud)"/>
     <remap from="output/labeled_clusters" to="$(var output/objects)"/>
     <param name="onnx_file" value="$(var trained_onnx_file)"/>

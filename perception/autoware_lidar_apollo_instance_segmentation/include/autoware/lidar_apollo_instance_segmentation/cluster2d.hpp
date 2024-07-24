@@ -43,8 +43,8 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__CLUSTER2D_HPP_
-#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__CLUSTER2D_HPP_
+#ifndef AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__CLUSTER2D_HPP_
+#define AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__CLUSTER2D_HPP_
 
 #include "disjoint_set.hpp"
 #include "util.hpp"
@@ -60,6 +60,8 @@
 #include <memory>
 #include <vector>
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 enum MetaType {
@@ -161,5 +163,6 @@ private:
   void traverse(Node * x);
 };
 }  // namespace lidar_apollo_instance_segmentation
+}  // namespace autoware
 
-#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__CLUSTER2D_HPP_
+#endif  // AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__CLUSTER2D_HPP_

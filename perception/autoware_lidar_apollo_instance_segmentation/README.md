@@ -1,4 +1,4 @@
-# lidar_apollo_instance_segmentation
+# autoware_lidar_apollo_instance_segmentation
 
 ![Peek 2020-04-07 00-17](https://user-images.githubusercontent.com/8327598/78574862-92507d80-7865-11ea-9a2d-56d3453bdb7a.gif)
 

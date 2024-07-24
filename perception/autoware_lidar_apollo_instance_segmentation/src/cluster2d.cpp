@@ -44,7 +44,7 @@
  * limitations under the License.
  *****************************************************************************/
 
-#include "lidar_apollo_instance_segmentation/cluster2d.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/cluster2d.hpp"
 
 #include <autoware_perception_msgs/msg/detected_object_kinematics.hpp>
 #include <autoware_perception_msgs/msg/object_classification.hpp>
@@ -54,8 +54,15 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
 #endif
 
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 geometry_msgs::msg::Quaternion getQuaternionFromRPY(const double r, const double p, const double y)
@@ -377,3 +384,4 @@ void Cluster2D::getObjects(
   objects.header = in_header;
 }
 }  // namespace lidar_apollo_instance_segmentation
+}  // namespace autoware

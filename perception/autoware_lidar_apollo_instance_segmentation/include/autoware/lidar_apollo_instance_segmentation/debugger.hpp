@@ -12,12 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__LOG_TABLE_HPP_
-#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__LOG_TABLE_HPP_
+#ifndef AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__DEBUGGER_HPP_
+#define AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__DEBUGGER_HPP_
 
+#include <rclcpp/rclcpp.hpp>
+
+#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
+
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
-float calcApproximateLog(float num);
-}  // namespace lidar_apollo_instance_segmentation
+class Debugger
+{
+public:
+  explicit Debugger(rclcpp::Node * node);
+  ~Debugger() {}
+  void publishColoredPointCloud(
+    const tier4_perception_msgs::msg::DetectedObjectsWithFeature & input);
 
-#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__LOG_TABLE_HPP_
+private:
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr instance_pointcloud_pub_;
+};
+}  // namespace lidar_apollo_instance_segmentation
+}  // namespace autoware
+
+#endif  // AUTOWARE__LIDAR_APOLLO_INSTANCE_SEGMENTATION__DEBUGGER_HPP_

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "lidar_apollo_instance_segmentation/detector.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/detector.hpp"
 
-#include "lidar_apollo_instance_segmentation/feature_map.hpp"
+#include "autoware/lidar_apollo_instance_segmentation/feature_map.hpp"
 
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
@@ -22,6 +22,12 @@
 #include <NvInfer.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+#include <numeric>
+#include <string>
+#include <vector>
+
+namespace autoware
+{
 namespace lidar_apollo_instance_segmentation
 {
 LidarApolloInstanceSegmentation::LidarApolloInstanceSegmentation(rclcpp::Node * node)
@@ -191,3 +197,4 @@ bool LidarApolloInstanceSegmentation::detectDynamicObjects(
   return true;
 }
 }  // namespace lidar_apollo_instance_segmentation
+}  // namespace autoware

@@ -59,7 +59,7 @@
   <group if="$(eval &quot;'$(var lidar_detection_model)'=='apollo'&quot;)">
     <push-ros-namespace namespace="apollo"/>
     <group>
-      <include file="$(find-pkg-share lidar_apollo_instance_segmentation)/launch/lidar_apollo_instance_segmentation.launch.xml">
+      <include file="$(find-pkg-share autoware_lidar_apollo_instance_segmentation)/launch/lidar_apollo_instance_segmentation.launch.xml">
         <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
         <arg name="output/objects" value="labeled_clusters"/>
       </include>
