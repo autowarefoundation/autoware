@@ -32,7 +32,15 @@ public:
 
   void maximizeLinearAssignment(
     const std::vector<std::vector<double>> & cost, std::unordered_map<int, int> * direct_assignment,
-    std::unordered_map<int, int> * reverse_assignment) override;
+    std::unordered_map<int, int> * reverse_assignment) override
+  {
+    const bool sparse_cost = true;
+    maximizeLinearAssignment(cost, direct_assignment, reverse_assignment, sparse_cost);
+  }
+
+  void maximizeLinearAssignment(
+    const std::vector<std::vector<double>> & cost, std::unordered_map<int, int> * direct_assignment,
+    std::unordered_map<int, int> * reverse_assignment, const bool sparse_cost = true);
 };
 
 }  // namespace gnn_solver

@@ -45,12 +45,8 @@ struct ResidualEdge
 
 void SSP::maximizeLinearAssignment(
   const std::vector<std::vector<double>> & cost, std::unordered_map<int, int> * direct_assignment,
-  std::unordered_map<int, int> * reverse_assignment)
+  std::unordered_map<int, int> * reverse_assignment, const bool sparse_cost)
 {
-  // NOTE: Need to set as default arguments
-  bool sparse_cost = true;
-  // bool sparse_cost = false;
-
   // Hyperparameters
   // double MAX_COST = 6;
   const double MAX_COST = 10;
