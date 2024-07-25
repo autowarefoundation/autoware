@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BYTETRACK__BYTETRACK_NODE_HPP_
-#define BYTETRACK__BYTETRACK_NODE_HPP_
+#ifndef AUTOWARE__BYTETRACK__BYTETRACK_NODE_HPP_
+#define AUTOWARE__BYTETRACK__BYTETRACK_NODE_HPP_
 
-#include <bytetrack/bytetrack.hpp>
+#include <autoware/bytetrack/bytetrack.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-namespace bytetrack
+namespace autoware::bytetrack
 {
 using LabelMap = std::map<int, std::string>;
 
@@ -55,9 +55,9 @@ private:
 
   rclcpp::TimerBase::SharedPtr timer_;
 
-  std::unique_ptr<bytetrack::ByteTrack> bytetrack_;
+  std::unique_ptr<autoware::bytetrack::ByteTrack> bytetrack_;
 };
 
-}  // namespace bytetrack
+}  // namespace autoware::bytetrack
 
-#endif  // BYTETRACK__BYTETRACK_NODE_HPP_
+#endif  // AUTOWARE__BYTETRACK__BYTETRACK_NODE_HPP_

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "bytetrack/bytetrack_visualizer_node.hpp"
+#include "autoware/bytetrack/bytetrack_visualizer_node.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -26,7 +26,7 @@
 #include <chrono>
 #include <string>
 
-namespace bytetrack
+namespace autoware::bytetrack
 {
 
 ByteTrackVisualizerNode::ByteTrackVisualizerNode(const rclcpp::NodeOptions & node_options)
@@ -190,7 +190,7 @@ void ByteTrackVisualizerNode::draw(
   }
 }
 
-}  // namespace bytetrack
+}  // namespace autoware::bytetrack
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(bytetrack::ByteTrackVisualizerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::bytetrack::ByteTrackVisualizerNode)

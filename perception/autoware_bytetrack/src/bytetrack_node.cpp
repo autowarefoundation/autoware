@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "bytetrack/bytetrack.hpp"
-
-#include <bytetrack/bytetrack_node.hpp>
+#include <autoware/bytetrack/bytetrack.hpp>
+#include <autoware/bytetrack/bytetrack_node.hpp>
 #include <rclcpp/qos.hpp>
 
 #include "autoware_perception_msgs/msg/object_classification.hpp"
@@ -24,7 +23,7 @@
 #include <utility>
 #include <vector>
 
-namespace bytetrack
+namespace autoware::bytetrack
 {
 ByteTrackNode::ByteTrackNode(const rclcpp::NodeOptions & node_options)
 : Node("bytetrack", node_options)
@@ -34,7 +33,7 @@ ByteTrackNode::ByteTrackNode(const rclcpp::NodeOptions & node_options)
 
   int track_buffer_length = declare_parameter("track_buffer_length", 30);
 
-  this->bytetrack_ = std::make_unique<bytetrack::ByteTrack>(track_buffer_length);
+  this->bytetrack_ = std::make_unique<autoware::bytetrack::ByteTrack>(track_buffer_length);
 
   timer_ =
     rclcpp::create_timer(this, get_clock(), 100ms, std::bind(&ByteTrackNode::on_connect, this));
@@ -80,7 +79,7 @@ void ByteTrackNode::on_rect(
     object_array.emplace_back(obj);
   }
 
-  bytetrack::ObjectArray objects = bytetrack_->update_tracker(object_array);
+  autoware::bytetrack::ObjectArray objects = bytetrack_->update_tracker(object_array);
   for (const auto & tracked_object : objects) {
     tier4_perception_msgs::msg::DetectedObjectWithFeature object;
     // fit xy offset to 0 if roi is outside of image
@@ -115,7 +114,7 @@ void ByteTrackNode::on_rect(
   out_objects_uuid.header = msg->header;
   objects_uuid_pub_->publish(out_objects_uuid);
 }
-}  // namespace bytetrack
+}  // namespace autoware::bytetrack
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(bytetrack::ByteTrackNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::bytetrack::ByteTrackNode)

@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <bytetrack/bytetrack.hpp>
+#include <autoware/bytetrack/bytetrack.hpp>
 
 #include <algorithm>
 #include <fstream>
 #include <functional>
 
-namespace bytetrack
+namespace autoware::bytetrack
 {
 ByteTrack::ByteTrack(const int track_buffer_length)
 {
@@ -66,4 +66,4 @@ ObjectArray ByteTrack::update_tracker(ObjectArray & input_objects)
   do_inference(input_objects);
   return latest_objects_;
 }
-}  // namespace bytetrack
+}  // namespace autoware::bytetrack

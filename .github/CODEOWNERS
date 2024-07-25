@@ -116,7 +116,7 @@ perception/autoware_radar_fusion_to_detected_object/** satoshi.tanaka@tier4.jp s
 perception/autoware_radar_object_clustering/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
 perception/autoware_radar_object_tracker/** taekjin.lee@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_tracking_object_merger/** taekjin.lee@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
-perception/bytetrack/** manato.hirabayashi@tier4.jp yoshi.ri@tier4.jp
+perception/autoware_bytetrack/** manato.hirabayashi@tier4.jp yoshi.ri@tier4.jp
 perception/autoware_cluster_merger/** dai.nguyen@tier4.jp shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_compare_map_segmentation/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_detected_object_feature_remover/** tomoya.kimura@tier4.jp

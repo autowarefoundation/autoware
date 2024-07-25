@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BYTETRACK__BYTETRACK_HPP_
-#define BYTETRACK__BYTETRACK_HPP_
+#ifndef AUTOWARE__BYTETRACK__BYTETRACK_HPP_
+#define AUTOWARE__BYTETRACK__BYTETRACK_HPP_
 
 #include "byte_tracker.h"
 #include "strack.h"
@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace bytetrack
+namespace autoware::bytetrack
 {
 struct Object
 {
@@ -57,6 +57,6 @@ private:
   ObjectArray latest_objects_;
 };
 
-}  // namespace bytetrack
+}  // namespace autoware::bytetrack
 
-#endif  // BYTETRACK__BYTETRACK_HPP_
+#endif  // AUTOWARE__BYTETRACK__BYTETRACK_HPP_

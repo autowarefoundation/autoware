@@ -70,7 +70,7 @@ STrack::STrack(std::vector<float> input_tlwh, float score, int label)
 
   // load static kf parameters: initialized once in program
   const std::string package_share_directory =
-    ament_index_cpp::get_package_share_directory("bytetrack");
+    ament_index_cpp::get_package_share_directory("autoware_bytetrack");
   const std::string default_config_path =
     package_share_directory + "/config/kalman_filter.param.yaml";
   if (!_parameters_loaded) {
