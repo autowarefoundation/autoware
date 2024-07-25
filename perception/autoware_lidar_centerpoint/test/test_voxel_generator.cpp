@@ -31,6 +31,7 @@ void VoxelGeneratorTest::SetUp()
 
   class_size_ = 5;
   point_feature_size_ = 4;
+  cloud_capacity_ = 2000000;
   max_voxel_size_ = 100000000;
   point_cloud_range_ = std::vector<double>{-76.8, -76.8, -4.0, 76.8, 76.8, 6.0};
   voxel_size_ = std::vector<double>{0.32, 0.32, 10.0};
@@ -110,9 +111,9 @@ TEST_F(VoxelGeneratorTest, SingleFrame)
   autoware::lidar_centerpoint::DensificationParam param(world_frame_, num_past_frames);
 
   autoware::lidar_centerpoint::CenterPointConfig config(
-    class_size_, point_feature_size_, max_voxel_size_, point_cloud_range_, voxel_size_,
-    downsample_factor_, encoder_in_feature_size_, score_threshold_, circle_nms_dist_threshold_,
-    yaw_norm_thresholds_, has_variance_);
+    class_size_, point_feature_size_, cloud_capacity_, max_voxel_size_, point_cloud_range_,
+    voxel_size_, downsample_factor_, encoder_in_feature_size_, score_threshold_,
+    circle_nms_dist_threshold_, yaw_norm_thresholds_, has_variance_);
 
   autoware::lidar_centerpoint::VoxelGenerator voxel_generator(param, config);
   std::vector<float> points;
@@ -157,9 +158,9 @@ TEST_F(VoxelGeneratorTest, TwoFramesNoTf)
   autoware::lidar_centerpoint::DensificationParam param(world_frame_, num_past_frames);
 
   autoware::lidar_centerpoint::CenterPointConfig config(
-    class_size_, point_feature_size_, max_voxel_size_, point_cloud_range_, voxel_size_,
-    downsample_factor_, encoder_in_feature_size_, score_threshold_, circle_nms_dist_threshold_,
-    yaw_norm_thresholds_, has_variance_);
+    class_size_, point_feature_size_, cloud_capacity_, max_voxel_size_, point_cloud_range_,
+    voxel_size_, downsample_factor_, encoder_in_feature_size_, score_threshold_,
+    circle_nms_dist_threshold_, yaw_norm_thresholds_, has_variance_);
 
   autoware::lidar_centerpoint::VoxelGenerator voxel_generator(param, config);
   std::vector<float> points;
@@ -191,9 +192,9 @@ TEST_F(VoxelGeneratorTest, TwoFrames)
   autoware::lidar_centerpoint::DensificationParam param(world_frame_, num_past_frames);
 
   autoware::lidar_centerpoint::CenterPointConfig config(
-    class_size_, point_feature_size_, max_voxel_size_, point_cloud_range_, voxel_size_,
-    downsample_factor_, encoder_in_feature_size_, score_threshold_, circle_nms_dist_threshold_,
-    yaw_norm_thresholds_, has_variance_);
+    class_size_, point_feature_size_, cloud_capacity_, max_voxel_size_, point_cloud_range_,
+    voxel_size_, downsample_factor_, encoder_in_feature_size_, score_threshold_,
+    circle_nms_dist_threshold_, yaw_norm_thresholds_, has_variance_);
 
   autoware::lidar_centerpoint::VoxelGenerator voxel_generator(param, config);
   std::vector<float> points;

@@ -51,6 +51,7 @@ public:
 
   std::size_t class_size_{};
   float point_feature_size_{};
+  std::size_t cloud_capacity_{};
   std::size_t max_voxel_size_{};
 
   std::vector<double> point_cloud_range_{};
