@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>elevation_map_loader</name>
+  <name>autoware_elevation_map_loader</name>
   <version>0.1.0</version>
-  <description>The map_loader package</description>
+  <description>The autoware_elevation_map_loader package</description>
   <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
   <maintainer email="taichi.higashide@tier4.jp">Taichi Higashide</maintainer>
   <maintainer email="shintaro.tomie@tier4.jp">Shintaro Tomie</maintainer>
@@ -24,8 +24,6 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>rosbag2_storage_default_plugins</depend>
-  <depend>tf2_geometry_msgs</depend>
-  <depend>tf2_ros</depend>
   <depend>tier4_external_api_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

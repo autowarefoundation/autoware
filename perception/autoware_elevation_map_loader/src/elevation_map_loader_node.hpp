@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ELEVATION_MAP_LOADER__ELEVATION_MAP_LOADER_NODE_HPP_
-#define ELEVATION_MAP_LOADER__ELEVATION_MAP_LOADER_NODE_HPP_
+#ifndef ELEVATION_MAP_LOADER_NODE_HPP_
+#define ELEVATION_MAP_LOADER_NODE_HPP_
 
-#include <autoware/universe_utils/geometry/boost_geometry.hpp>
+#include "autoware/universe_utils/geometry/boost_geometry.hpp"
+
 #include <filters/filter_chain.hpp>
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_pcl/GridMapPclLoader.hpp>
@@ -36,6 +37,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+
+namespace autoware::elevation_map_loader
+{
 
 class DataManager
 {
@@ -117,4 +121,5 @@ private:
   LaneFilter lane_filter_;
 };
 
-#endif  // ELEVATION_MAP_LOADER__ELEVATION_MAP_LOADER_NODE_HPP_
+}  // namespace autoware::elevation_map_loader
+#endif  // ELEVATION_MAP_LOADER_NODE_HPP_

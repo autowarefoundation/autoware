@@ -122,7 +122,7 @@ perception/autoware_compare_map_segmentation/** abrahammonrroy@yahoo.com dai.ngu
 perception/autoware_detected_object_feature_remover/** tomoya.kimura@tier4.jp
 perception/autoware_detected_object_validation/** dai.nguyen@tier4.jp shintaro.tomie@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_detection_by_tracker/** taekjin.lee@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
-perception/elevation_map_loader/** kosuke.takeuchi@tier4.jp shintaro.tomie@tier4.jp taichi.higashide@tier4.jp
+perception/autoware_elevation_map_loader/** kosuke.takeuchi@tier4.jp shintaro.tomie@tier4.jp taichi.higashide@tier4.jp
 perception/autoware_euclidean_cluster/** dai.nguyen@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_ground_segmentation/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_image_projection_based_fusion/** dai.nguyen@tier4.jp koji.minoda@tier4.jp kotaro.uetake@tier4.jp shunsuke.miura@tier4.jp tao.zhong@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp

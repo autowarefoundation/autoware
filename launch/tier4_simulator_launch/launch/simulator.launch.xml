@@ -106,7 +106,7 @@
 
       <group if="$(var perception/enable_elevation_map)">
         <push-ros-namespace namespace="obstacle_segmentation/elevation_map"/>
-        <node pkg="elevation_map_loader" exec="elevation_map_loader" name="elevation_map_loader" output="screen">
+        <node pkg="autoware_elevation_map_loader" exec="elevation_map_loader" name="elevation_map_loader" output="screen">
           <remap from="output/elevation_map" to="map"/>
           <remap from="input/pointcloud_map" to="/map/pointcloud_map"/>
           <remap from="input/vector_map" to="/map/vector_map"/>
@@ -114,7 +114,7 @@
           <param name="use_inpaint" value="true"/>
           <param name="inpaint_radius" value="1.0"/>
           <param name="param_file_path" value="$(var obstacle_segmentation_ground_segmentation_elevation_map_param_path)"/>
-          <param name="elevation_map_directory" value="$(find-pkg-share elevation_map_loader)/data/elevation_maps"/>
+          <param name="elevation_map_directory" value="$(find-pkg-share autoware_elevation_map_loader)/data/elevation_maps"/>
           <param name="use_elevation_map_cloud_publisher" value="false"/>
         </node>
       </group>

@@ -1,13 +1,13 @@
 <launch>
-  <arg name="elevation_map_directory" default="$(find-pkg-share elevation_map_loader)/data/elevation_maps"/>
-  <arg name="param_file_path" default="$(find-pkg-share elevation_map_loader)/config/elevation_map_parameters.yaml"/>
+  <arg name="elevation_map_directory" default="$(find-pkg-share autoware_elevation_map_loader)/data/elevation_maps"/>
+  <arg name="param_file_path" default="$(find-pkg-share autoware_elevation_map_loader)/config/elevation_map_parameters.yaml"/>
   <arg name="use_lane_filter" default="false"/>
   <arg name="use_sequential_load" default="false"/>
   <arg name="sequential_map_load_num" default="1"/>
   <arg name="use_inpaint" default="true"/>
   <arg name="inpaint_radius" default="1.0"/>
 
-  <node pkg="elevation_map_loader" exec="elevation_map_loader" name="elevation_map_loader" output="screen">
+  <node pkg="autoware_elevation_map_loader" exec="elevation_map_loader_node" name="elevation_map_loader" output="screen">
     <remap from="output/elevation_map" to="/map/elevation_map"/>
     <remap from="input/pointcloud_map" to="/map/pointcloud_map"/>
     <remap from="input/pointcloud_map_metadata" to="/map/pointcloud_map_metadata"/>

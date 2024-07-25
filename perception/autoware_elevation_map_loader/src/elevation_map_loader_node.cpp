@@ -12,9 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "elevation_map_loader/elevation_map_loader_node.hpp"
+#define EIGEN_MPL2_ONLY
 
-#include <autoware_grid_map_utils/polygon_iterator.hpp>
+#include "elevation_map_loader_node.hpp"
+
+#include "autoware_grid_map_utils/polygon_iterator.hpp"
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <autoware_lanelet2_extension/utility/query.hpp>
 #include <grid_map_core/GridMap.hpp>
@@ -45,15 +50,14 @@
 #include <utility>
 #include <vector>
 
-#define EIGEN_MPL2_ONLY
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
 #if __has_include(<rosbag2_storage_sqlite3/sqlite_statement_wrapper.hpp>)
 #include <rosbag2_storage_sqlite3/sqlite_statement_wrapper.hpp>
 #else
 #include <rosbag2_storage_default_plugins/sqlite/sqlite_statement_wrapper.hpp>
 #endif
+
+namespace autoware::elevation_map_loader
+{
 
 ElevationMapLoaderNode::ElevationMapLoaderNode(const rclcpp::NodeOptions & options)
 : Node("elevation_map_loader", options)
@@ -445,6 +449,7 @@ void ElevationMapLoaderNode::saveElevationMap()
   RCLCPP_INFO_STREAM(
     this->get_logger(), "Saving elevation map successful: " << std::boolalpha << saving_successful);
 }
+}  // namespace autoware::elevation_map_loader
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(ElevationMapLoaderNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::elevation_map_loader::ElevationMapLoaderNode)
