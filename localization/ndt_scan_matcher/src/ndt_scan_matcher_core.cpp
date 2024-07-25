@@ -51,18 +51,6 @@ tier4_debug_msgs::msg::Int32Stamped make_int32_stamped(
   return tier4_debug_msgs::build<T>().stamp(stamp).data(data);
 }
 
-Eigen::Matrix2d find_rotation_matrix_aligning_covariance_to_principal_axes(
-  const Eigen::Matrix2d & matrix)
-{
-  const Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> eigensolver(matrix);
-  if (eigensolver.info() == Eigen::Success) {
-    const Eigen::Vector2d eigen_vec = eigensolver.eigenvectors().col(0);
-    const double th = std::atan2(eigen_vec.y(), eigen_vec.x());
-    return Eigen::Rotation2Dd(th).toRotationMatrix();
-  }
-  throw std::runtime_error("Eigen solver failed. Return output_pose_covariance value.");
-}
-
 std::array<double, 36> rotate_covariance(
   const std::array<double, 36> & src_covariance, const Eigen::Matrix3d & rotation)
 {
@@ -586,8 +574,10 @@ bool NDTScanMatcher::callback_sensor_points_main(
       estimate_covariance(ndt_result, initial_pose_matrix, sensor_ros_time);
     const Eigen::Matrix2d estimated_covariance_2d_scaled =
       estimated_covariance_2d * param_.covariance.covariance_estimation.scale_factor;
+    const double default_cov_xx = param_.covariance.output_pose_covariance[0];
+    const double default_cov_yy = param_.covariance.output_pose_covariance[7];
     const Eigen::Matrix2d estimated_covariance_2d_adj = pclomp::adjust_diagonal_covariance(
-      estimated_covariance_2d_scaled, ndt_result.pose, 0.0225, 0.0225);
+      estimated_covariance_2d_scaled, ndt_result.pose, default_cov_xx, default_cov_yy);
     ndt_covariance[0 + 6 * 0] = estimated_covariance_2d_adj(0, 0);
     ndt_covariance[1 + 6 * 1] = estimated_covariance_2d_adj(1, 1);
     ndt_covariance[1 + 6 * 0] = estimated_covariance_2d_adj(1, 0);
@@ -832,17 +822,6 @@ Eigen::Matrix2d NDTScanMatcher::estimate_covariance(
   const pclomp::NdtResult & ndt_result, const Eigen::Matrix4f & initial_pose_matrix,
   const rclcpp::Time & sensor_ros_time)
 {
-  Eigen::Matrix2d rot = Eigen::Matrix2d::Identity();
-  try {
-    rot = find_rotation_matrix_aligning_covariance_to_principal_axes(
-      ndt_result.hessian.inverse().block(0, 0, 2, 2));
-  } catch (const std::exception & e) {
-    std::stringstream message;
-    message << "Error in Eigen solver: " << e.what();
-    RCLCPP_WARN_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 1000, message.str());
-    return Eigen::Matrix2d::Identity() * param_.covariance.output_pose_covariance[0 + 6 * 0];
-  }
-
   geometry_msgs::msg::PoseArray multi_ndt_result_msg;
   geometry_msgs::msg::PoseArray multi_initial_pose_msg;
   multi_ndt_result_msg.header.stamp = sensor_ros_time;
