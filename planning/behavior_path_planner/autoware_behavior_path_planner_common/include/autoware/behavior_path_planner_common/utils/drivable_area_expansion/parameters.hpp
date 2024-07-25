@@ -58,6 +58,7 @@ struct DrivableAreaExpansionParameters
   static constexpr auto SMOOTHING_ARC_LENGTH_RANGE_PARAM =
     "dynamic_expansion.smoothing.arc_length_range";
   static constexpr auto PRINT_RUNTIME_PARAM = "dynamic_expansion.print_runtime";
+  static constexpr auto MIN_BOUND_INTERVAL = "dynamic_expansion.min_bound_interval";
 
   // static expansion
   double drivable_area_right_bound_offset{};
@@ -80,6 +81,7 @@ struct DrivableAreaExpansionParameters
   double resample_interval{};
   double arc_length_range{};
   double max_reuse_deviation{};
+  double min_bound_interval{};
   bool avoid_dynamic_objects{};
   bool print_runtime{};
   std::vector<std::string> avoid_linestring_types{};
@@ -119,6 +121,7 @@ struct DrivableAreaExpansionParameters
       node.declare_parameter<std::vector<std::string>>(AVOID_LINESTRING_TYPES_PARAM);
     avoid_dynamic_objects = node.declare_parameter<bool>(AVOID_DYN_OBJECTS_PARAM);
     avoid_linestring_dist = node.declare_parameter<double>(AVOID_LINESTRING_DIST_PARAM);
+    min_bound_interval = node.declare_parameter<double>(MIN_BOUND_INTERVAL);
     print_runtime = node.declare_parameter<bool>(PRINT_RUNTIME_PARAM);
 
     vehicle_info = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();

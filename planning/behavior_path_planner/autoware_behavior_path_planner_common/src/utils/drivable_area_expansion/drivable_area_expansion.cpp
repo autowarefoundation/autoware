@@ -1,4 +1,4 @@
-// Copyright 2023 TIER IV, Inc.
+// Copyright 2023-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@
 #include <autoware/motion_utils/resample/resample.hpp>
 #include <autoware/motion_utils/trajectory/interpolation.hpp>
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
 #include <interpolation/linear_interpolation.hpp>
 
@@ -276,7 +278,13 @@ void expand_bound(
       const auto projection = point_to_linestring_projection(bound_p, path_ls);
       const auto expansion_ratio = (expansions[idx] + projection.distance) / projection.distance;
       const auto & path_p = projection.projected_point;
-      const auto expanded_p = lerp_point(path_p, bound_p, expansion_ratio);
+      auto expanded_p = lerp_point(path_p, bound_p, expansion_ratio);
+      // push the bound again if it got too close to another part of the path
+      const auto new_projection = point_to_linestring_projection(expanded_p, path_ls);
+      if (new_projection.distance < projection.distance) {
+        const auto new_expansion_ratio = (projection.distance) / new_projection.distance;
+        expanded_p = lerp_point(new_projection.projected_point, expanded_p, new_expansion_ratio);
+      }
       bound[idx].x = expanded_p.x();
       bound[idx].y = expanded_p.y();
     }
@@ -291,8 +299,8 @@ void expand_bound(
         bound[idx - 1], bound[idx], bound[succ_idx - 1], bound[succ_idx]);
       if (
         intersection &&
-        autoware::universe_utils::calcDistance2d(*intersection, bound[idx - 1]) < 1e-3 &&
-        autoware::universe_utils::calcDistance2d(*intersection, bound[idx]) < 1e-3) {
+        autoware::universe_utils::calcDistance2d(*intersection, bound[idx - 1]) > 1e-3 &&
+        autoware::universe_utils::calcDistance2d(*intersection, bound[idx]) > 1e-3) {
         idx = succ_idx;
         is_intersecting = true;
       }
@@ -360,6 +368,42 @@ void calculate_expansion_distances(
   }
 }
 
+void add_bound_point(std::vector<Point> & bound, const Pose & pose, const double min_bound_interval)
+{
+  const auto p = convert_point(pose.position);
+  PointDistance nearest_projection;
+  nearest_projection.distance = std::numeric_limits<double>::infinity();
+  size_t nearest_idx = 0UL;
+  for (auto i = 0UL; i + 1 < bound.size(); ++i) {
+    const auto prev_p = convert_point(bound[i]);
+    const auto next_p = convert_point(bound[i + 1]);
+    const auto projection = point_to_segment_projection(p, prev_p, next_p);
+    if (projection.distance < nearest_projection.distance) {
+      nearest_projection = projection;
+      nearest_idx = i;
+    }
+  }
+  Point new_point;
+  new_point.x = nearest_projection.point.x();
+  new_point.y = nearest_projection.point.y();
+  new_point.z = bound[nearest_idx].z;
+  if (
+    universe_utils::calcDistance2d(new_point, bound[nearest_idx]) > min_bound_interval &&
+    universe_utils::calcDistance2d(new_point, bound[nearest_idx + 1]) > min_bound_interval) {
+    bound.insert(bound.begin() + nearest_idx + 1, new_point);
+  }
+}
+
+void add_bound_points(
+  std::vector<Point> & left_bound, std::vector<Point> & right_bound,
+  const std::vector<Pose> & path_poses, const double min_bound_interval)
+{
+  for (const auto & p : path_poses) {
+    add_bound_point(left_bound, p, min_bound_interval);
+    add_bound_point(right_bound, p, min_bound_interval);
+  }
+}
+
 void expand_drivable_area(
   PathWithLaneId & path,
   const std::shared_ptr<const autoware::behavior_path_planner::PlannerData> planner_data)
@@ -375,7 +419,6 @@ void expand_drivable_area(
     *route_handler.getLaneletMapPtr(), planner_data->self_odometry->pose.pose.position, params);
   const auto uncrossable_polygons = create_object_footprints(*planner_data->dynamic_object, params);
   const auto preprocessing_ms = stop_watch.toc("preprocessing");
-
   stop_watch.tic("crop");
   std::vector<Pose> path_poses = planner_data->drivable_area_expansion_prev_path_poses;
   std::vector<double> curvatures = planner_data->drivable_area_expansion_prev_curvatures;
@@ -383,6 +426,7 @@ void expand_drivable_area(
   reuse_previous_poses(
     path, path_poses, curvatures, planner_data->self_odometry->pose.pose.position, params);
   const auto crop_ms = stop_watch.toc("crop");
+  add_bound_points(path.left_bound, path.right_bound, path_poses, params.min_bound_interval);
 
   stop_watch.tic("curvatures_expansion");
   // Only add curvatures for the new points. Curvatures of reused path points are not updated.

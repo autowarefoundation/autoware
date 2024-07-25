@@ -1,4 +1,4 @@
-// Copyright 2023 TIER IV, Inc.
+// Copyright 2023-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -264,13 +264,11 @@ TEST(DrivableAreaExpansionProjection, expand_drivable_area)
   autoware::behavior_path_planner::drivable_area_expansion::expand_drivable_area(
     path, std::make_shared<autoware::behavior_path_planner::PlannerData>(planner_data));
   // expanded left bound
-  ASSERT_EQ(path.left_bound.size(), 3ul);
-  EXPECT_GT(path.left_bound[0].y, 1.0);
-  EXPECT_GT(path.left_bound[1].y, 1.0);
-  EXPECT_GT(path.left_bound[2].y, 1.0);
+  for (const auto & p : path.left_bound) {
+    EXPECT_GT(p.y, 1.0);
+  }
   // expanded right bound
-  ASSERT_EQ(path.right_bound.size(), 3ul);
-  EXPECT_LT(path.right_bound[0].y, -1.0);
-  EXPECT_LT(path.right_bound[1].y, -1.0);
-  EXPECT_LT(path.right_bound[2].y, -1.0);
+  for (const auto & p : path.right_bound) {
+    EXPECT_LT(p.y, -1.0);
+  }
 }

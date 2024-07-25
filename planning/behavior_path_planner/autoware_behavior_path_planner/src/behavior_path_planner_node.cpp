@@ -14,8 +14,6 @@
 
 #include "autoware/behavior_path_planner/behavior_path_planner_node.hpp"
 
-#include "autoware/behavior_path_planner_common/marker_utils/utils.hpp"
-#include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "autoware/behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware/motion_utils/trajectory/conversion.hpp"
 
@@ -910,6 +908,9 @@ SetParametersResult BehaviorPathPlannerNode::onSetParam(
     updateParam(
       parameters, DrivableAreaExpansionParameters::SMOOTHING_ARC_LENGTH_RANGE_PARAM,
       planner_data_->drivable_area_expansion_parameters.arc_length_range);
+    updateParam(
+      parameters, DrivableAreaExpansionParameters::MIN_BOUND_INTERVAL,
+      planner_data_->drivable_area_expansion_parameters.min_bound_interval);
     updateParam(
       parameters, DrivableAreaExpansionParameters::PRINT_RUNTIME_PARAM,
       planner_data_->drivable_area_expansion_parameters.print_runtime);
