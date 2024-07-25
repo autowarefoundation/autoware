@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tensorrt_yolox/tensorrt_yolox_node.hpp"
+#include "autoware/tensorrt_yolox/tensorrt_yolox_node.hpp"
 
 #include "object_recognition_utils/object_classification.hpp"
 
@@ -24,7 +24,7 @@
 #include <utility>
 #include <vector>
 
-namespace tensorrt_yolox
+namespace autoware::tensorrt_yolox
 {
 TrtYoloXNode::TrtYoloXNode(const rclcpp::NodeOptions & node_options)
 : Node("tensorrt_yolox", node_options)
@@ -281,7 +281,7 @@ void TrtYoloXNode::overlapSegmentByRoi(
                        .rowRange(roi_y_offset, roi_y_offset + roi_height));
 }
 
-}  // namespace tensorrt_yolox
+}  // namespace autoware::tensorrt_yolox
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(tensorrt_yolox::TrtYoloXNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::tensorrt_yolox::TrtYoloXNode)

@@ -26,42 +26,42 @@
   <arg name="image_number" default="1"/>
   <arg name="output_topic" default="rois"/>
 
-  <include if="$(eval &quot;'$(var image_number)'>='1'&quot;)" file="$(find-pkg-share tensorrt_yolox)/launch/yolox.launch.xml">
+  <include if="$(eval &quot;'$(var image_number)'>='1'&quot;)" file="$(find-pkg-share autoware_tensorrt_yolox)/launch/yolox.launch.xml">
     <arg name="input/image" value="$(var image_raw0)"/>
     <arg name="output/objects" value="rois0"/>
     <arg name="gpu_id" value="$(var gpu_id_image_raw0)"/>
   </include>
-  <include if="$(eval &quot;'$(var image_number)'>='2'&quot;)" file="$(find-pkg-share tensorrt_yolox)/launch/yolox.launch.xml">
+  <include if="$(eval &quot;'$(var image_number)'>='2'&quot;)" file="$(find-pkg-share autoware_tensorrt_yolox)/launch/yolox.launch.xml">
     <arg name="input/image" value="$(var image_raw1)"/>
     <arg name="output/objects" value="rois1"/>
     <arg name="gpu_id" value="$(var gpu_id_image_raw1)"/>
   </include>
-  <include if="$(eval &quot;'$(var image_number)'>='3'&quot;)" file="$(find-pkg-share tensorrt_yolox)/launch/yolox.launch.xml">
+  <include if="$(eval &quot;'$(var image_number)'>='3'&quot;)" file="$(find-pkg-share autoware_tensorrt_yolox)/launch/yolox.launch.xml">
     <arg name="input/image" value="$(var image_raw2)"/>
     <arg name="output/objects" value="rois2"/>
     <arg name="gpu_id" value="$(var gpu_id_image_raw2)"/>
   </include>
-  <include if="$(eval &quot;'$(var image_number)'>='4'&quot;)" file="$(find-pkg-share tensorrt_yolox)/launch/yolox.launch.xml">
+  <include if="$(eval &quot;'$(var image_number)'>='4'&quot;)" file="$(find-pkg-share autoware_tensorrt_yolox)/launch/yolox.launch.xml">
     <arg name="input/image" value="$(var image_raw3)"/>
     <arg name="output/objects" value="rois3"/>
     <arg name="gpu_id" value="$(var gpu_id_image_raw3)"/>
   </include>
-  <include if="$(eval &quot;'$(var image_number)'>='5'&quot;)" file="$(find-pkg-share tensorrt_yolox)/launch/yolox.launch.xml">
+  <include if="$(eval &quot;'$(var image_number)'>='5'&quot;)" file="$(find-pkg-share autoware_tensorrt_yolox)/launch/yolox.launch.xml">
     <arg name="input/image" value="$(var image_raw4)"/>
     <arg name="output/objects" value="rois4"/>
     <arg name="gpu_id" value="$(var gpu_id_image_raw4)"/>
   </include>
-  <include if="$(eval &quot;'$(var image_number)'>='6'&quot;)" file="$(find-pkg-share tensorrt_yolox)/launch/yolox.launch.xml">
+  <include if="$(eval &quot;'$(var image_number)'>='6'&quot;)" file="$(find-pkg-share autoware_tensorrt_yolox)/launch/yolox.launch.xml">
     <arg name="input/image" value="$(var image_raw5)"/>
     <arg name="output/objects" value="rois5"/>
     <arg name="gpu_id" value="$(var gpu_id_image_raw5)"/>
   </include>
-  <include if="$(eval &quot;'$(var image_number)'>='7'&quot;)" file="$(find-pkg-share tensorrt_yolox)/launch/yolox.launch.xml">
+  <include if="$(eval &quot;'$(var image_number)'>='7'&quot;)" file="$(find-pkg-share autoware_tensorrt_yolox)/launch/yolox.launch.xml">
     <arg name="input/image" value="$(var image_raw6)"/>
     <arg name="output/objects" value="rois6"/>
     <arg name="gpu_id" value="$(var gpu_id_image_raw6)"/>
   </include>
-  <include if="$(eval &quot;'$(var image_number)'>='8'&quot;)" file="$(find-pkg-share tensorrt_yolox)/launch/yolox.launch.xml">
+  <include if="$(eval &quot;'$(var image_number)'>='8'&quot;)" file="$(find-pkg-share autoware_tensorrt_yolox)/launch/yolox.launch.xml">
     <arg name="input/image" value="$(var image_raw7)"/>
     <arg name="output/objects" value="rois7"/>
     <arg name="gpu_id" value="$(var gpu_id_image_raw7)"/>

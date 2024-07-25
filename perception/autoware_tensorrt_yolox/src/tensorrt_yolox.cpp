@@ -15,10 +15,10 @@
 #include "cuda_utils/cuda_check_error.hpp"
 #include "cuda_utils/cuda_unique_ptr.hpp"
 
+#include <autoware/tensorrt_yolox/calibrator.hpp>
+#include <autoware/tensorrt_yolox/preprocess.hpp>
+#include <autoware/tensorrt_yolox/tensorrt_yolox.hpp>
 #include <experimental/filesystem>
-#include <tensorrt_yolox/calibrator.hpp>
-#include <tensorrt_yolox/preprocess.hpp>
-#include <tensorrt_yolox/tensorrt_yolox.hpp>
 
 #include <assert.h>
 
@@ -104,9 +104,9 @@ std::vector<std::string> loadImageList(const std::string & filename, const std::
   return fileList;
 }
 
-std::vector<tensorrt_yolox::Colormap> get_seg_colormap(const std::string & filename)
+std::vector<autoware::tensorrt_yolox::Colormap> get_seg_colormap(const std::string & filename)
 {
-  std::vector<tensorrt_yolox::Colormap> seg_cmap;
+  std::vector<autoware::tensorrt_yolox::Colormap> seg_cmap;
   if (filename != "not-specified") {
     std::vector<std::string> color_list = loadListFromTextFile(filename);
     for (int i = 0; i < static_cast<int>(color_list.size()); i++) {
@@ -115,7 +115,7 @@ std::vector<tensorrt_yolox::Colormap> get_seg_colormap(const std::string & filen
         continue;
       }
       std::string colormapString = color_list[i];
-      tensorrt_yolox::Colormap cmap;
+      autoware::tensorrt_yolox::Colormap cmap;
       size_t npos = colormapString.find_first_of(',');
       assert(npos != std::string::npos);
       std::string substr = colormapString.substr(0, npos);
@@ -151,7 +151,7 @@ std::vector<tensorrt_yolox::Colormap> get_seg_colormap(const std::string & filen
 
 }  // anonymous namespace
 
-namespace tensorrt_yolox
+namespace autoware::tensorrt_yolox
 {
 TrtYoloX::TrtYoloX(
   const std::string & model_path, const std::string & precision, const int num_class,
@@ -1247,7 +1247,8 @@ int TrtYoloX::getMultitaskNum(void)
 }
 
 void TrtYoloX::getColorizedMask(
-  const std::vector<tensorrt_yolox::Colormap> & colormap, const cv::Mat & mask, cv::Mat & cmask)
+  const std::vector<autoware::tensorrt_yolox::Colormap> & colormap, const cv::Mat & mask,
+  cv::Mat & cmask)
 {
   int width = mask.cols;
   int height = mask.rows;
@@ -1264,4 +1265,4 @@ void TrtYoloX::getColorizedMask(
   }
 }
 
-}  // namespace tensorrt_yolox
+}  // namespace autoware::tensorrt_yolox

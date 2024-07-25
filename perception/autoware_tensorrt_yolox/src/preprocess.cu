@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <tensorrt_yolox/preprocess.hpp>
+#include <autoware/tensorrt_yolox/preprocess.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,7 +21,7 @@
 
 #define MIN(x, y) x < y ? x : y
 
-namespace tensorrt_yolox
+namespace autoware::tensorrt_yolox
 {
 constexpr size_t block = 512;
 
@@ -629,4 +629,4 @@ void argmax_gpu(
     N, dst, src, d_h, d_w, s_c, s_h, s_w, batch);
 }
 
-}  // namespace tensorrt_yolox
+}  // namespace autoware::tensorrt_yolox

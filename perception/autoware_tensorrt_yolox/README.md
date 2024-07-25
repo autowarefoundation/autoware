@@ -1,4 +1,4 @@
-# tensorrt_yolox
+# autoware_tensorrt_yolox
 
 ## Purpose
 

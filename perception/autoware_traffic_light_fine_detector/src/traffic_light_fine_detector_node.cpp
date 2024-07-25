@@ -31,7 +31,7 @@ namespace fs = ::std::experimental::filesystem;
 namespace
 {
 float calWeightedIou(
-  const sensor_msgs::msg::RegionOfInterest & bbox1, const tensorrt_yolox::Object & bbox2)
+  const sensor_msgs::msg::RegionOfInterest & bbox1, const autoware::tensorrt_yolox::Object & bbox2)
 {
   int x1 = std::max(static_cast<int>(bbox1.x_offset), bbox2.x_offset);
   int x2 = std::min(static_cast<int>(bbox1.x_offset + bbox1.width), bbox2.x_offset + bbox2.width);
@@ -89,7 +89,7 @@ TrafficLightFineDetectorNode::TrafficLightFineDetectorNode(const rclcpp::NodeOpt
   batch_size_ = input_dim.d[0];
   const tensorrt_common::BatchConfig batch_config{batch_size_, batch_size_, batch_size_};
 
-  trt_yolox_ = std::make_unique<tensorrt_yolox::TrtYoloX>(
+  trt_yolox_ = std::make_unique<autoware::tensorrt_yolox::TrtYoloX>(
     model_path, precision, num_class, score_thresh_, nms_threshold, build_config, cuda_preprocess,
     calib_image_list, scale, cache_dir, batch_config);
 
@@ -146,14 +146,14 @@ void TrafficLightFineDetectorNode::callback(
   cv::Mat original_image;
   TrafficLightRoiArray out_rois;
   std::map<int, TrafficLightRoi> id2expectRoi;
-  std::map<int, tensorrt_yolox::ObjectArray> id2detections;
+  std::map<int, autoware::tensorrt_yolox::ObjectArray> id2detections;
   for (const auto & expect_roi : expect_roi_msg->rois) {
     id2expectRoi[expect_roi.traffic_light_id] = expect_roi;
   }
 
   rosMsg2CvMat(in_image_msg, original_image, "bgr8");
   std::vector<cv::Rect> rois;
-  tensorrt_yolox::ObjectArrays inference_results;
+  autoware::tensorrt_yolox::ObjectArrays inference_results;
   std::vector<cv::Point> lts;
   std::vector<size_t> roi_ids;
 
@@ -177,7 +177,7 @@ void TrafficLightFineDetectorNode::callback(
     if (static_cast<int>(rois.size()) == batch_size_) {
       trt_yolox_->doMultiScaleInference(original_image, inference_results, rois);
       for (size_t batch_i = 0; batch_i < true_batch_size; batch_i++) {
-        for (const tensorrt_yolox::Object & detection : inference_results[batch_i]) {
+        for (const autoware::tensorrt_yolox::Object & detection : inference_results[batch_i]) {
           if (detection.score < score_thresh_) {
             continue;
           }
@@ -185,7 +185,7 @@ void TrafficLightFineDetectorNode::callback(
             lts[batch_i].x + detection.x_offset, lts[batch_i].y + detection.y_offset);
           cv::Point rb_roi(lt_roi.x + detection.width, lt_roi.y + detection.height);
           fitInFrame(lt_roi, rb_roi, cv::Size(original_image.size()));
-          tensorrt_yolox::Object det = detection;
+          autoware::tensorrt_yolox::Object det = detection;
           det.x_offset = lt_roi.x;
           det.y_offset = lt_roi.y;
           det.width = rb_roi.x - lt_roi.x;
@@ -214,8 +214,8 @@ void TrafficLightFineDetectorNode::callback(
 
 float TrafficLightFineDetectorNode::evalMatchScore(
   std::map<int, TrafficLightRoi> & id2expectRoi,
-  std::map<int, tensorrt_yolox::ObjectArray> & id2detections,
-  std::map<int, tensorrt_yolox::Object> & id2bestDetection)
+  std::map<int, autoware::tensorrt_yolox::ObjectArray> & id2detections,
+  std::map<int, autoware::tensorrt_yolox::Object> & id2bestDetection)
 {
   float score_sum = 0.0f;
   id2bestDetection.clear();
@@ -223,7 +223,7 @@ float TrafficLightFineDetectorNode::evalMatchScore(
     int tlr_id = roi_p.first;
     float max_score = 0.0f;
     const sensor_msgs::msg::RegionOfInterest & expected_roi = roi_p.second.roi;
-    for (const tensorrt_yolox::Object & detection : id2detections[tlr_id]) {
+    for (const autoware::tensorrt_yolox::Object & detection : id2detections[tlr_id]) {
       float score = ::calWeightedIou(expected_roi, detection);
       if (score >= max_score) {
         max_score = score;
@@ -237,17 +237,18 @@ float TrafficLightFineDetectorNode::evalMatchScore(
 
 void TrafficLightFineDetectorNode::detectionMatch(
   std::map<int, TrafficLightRoi> & id2expectRoi,
-  std::map<int, tensorrt_yolox::ObjectArray> & id2detections, TrafficLightRoiArray & out_rois)
+  std::map<int, autoware::tensorrt_yolox::ObjectArray> & id2detections,
+  TrafficLightRoiArray & out_rois)
 {
   float max_score = 0.0f;
-  std::map<int, tensorrt_yolox::Object> bestDetections;
+  std::map<int, autoware::tensorrt_yolox::Object> bestDetections;
   for (const auto & roi_pair : id2expectRoi) {
     int tlr_id = roi_pair.first;
     // the expected roi calculated from tf information
     const sensor_msgs::msg::RegionOfInterest & expect_roi = roi_pair.second.roi;
     int expect_cx = expect_roi.x_offset + expect_roi.width / 2;
     int expect_cy = expect_roi.y_offset + expect_roi.height / 2;
-    for (const tensorrt_yolox::Object & det : id2detections[tlr_id]) {
+    for (const autoware::tensorrt_yolox::Object & det : id2detections[tlr_id]) {
       // for every detection, calculate the center offset between the detection and the
       // corresponding expected roi
       int det_cx = det.x_offset + det.width / 2;
@@ -261,7 +262,7 @@ void TrafficLightFineDetectorNode::detectionMatch(
         p.second.roi.y_offset += dy;
       }
       // calculate the "match score" between expected rois and id2detections_copy
-      std::map<int, tensorrt_yolox::Object> id2bestDetection;
+      std::map<int, autoware::tensorrt_yolox::Object> id2bestDetection;
       float score = evalMatchScore(id2expectRoi_copy, id2detections, id2bestDetection);
       if (score > max_score) {
         max_score = score;

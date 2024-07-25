@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>tensorrt_yolox</name>
+  <name>autoware_tensorrt_yolox</name>
   <version>0.0.1</version>
   <description>tensorrt library implementation for yolox</description>
 

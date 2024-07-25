@@ -42,7 +42,7 @@
   <arg name="output/rule_detector/objects"/>
 
   <!-- Jetson AGX -->
-  <!-- <include file="$(find-pkg-share tensorrt_yolox)/launch/multiple_yolox.launch.xml">
+  <!-- <include file="$(find-pkg-share autoware_tensorrt_yolox)/launch/multiple_yolox.launch.xml">
     <arg name="image_raw0" value="$(var input/camera0/image)"/>
     <arg name="image_raw1" value="$(var input/camera1/image)"/>
     <arg name="image_raw2" value="$(var input/camera2/image)"/>

@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TENSORRT_YOLOX__TENSORRT_YOLOX_NODE_HPP_
-#define TENSORRT_YOLOX__TENSORRT_YOLOX_NODE_HPP_
+#ifndef AUTOWARE__TENSORRT_YOLOX__TENSORRT_YOLOX_NODE_HPP_
+#define AUTOWARE__TENSORRT_YOLOX__TENSORRT_YOLOX_NODE_HPP_
 
 #include "object_recognition_utils/object_recognition_utils.hpp"
 
+#include <autoware/tensorrt_yolox/tensorrt_yolox.hpp>
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
 #include <image_transport/image_transport.hpp>
 #include <opencv2/opencv.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tensorrt_yolox/tensorrt_yolox.hpp>
 
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/header.hpp>
@@ -42,7 +42,7 @@
 #include <string>
 #include <vector>
 
-namespace tensorrt_yolox
+namespace autoware::tensorrt_yolox
 {
 // cspell: ignore Semseg
 using LabelMap = std::map<int, std::string>;
@@ -110,6 +110,6 @@ private:
   std::unique_ptr<autoware::universe_utils::DebugPublisher> debug_publisher_;
 };
 
-}  // namespace tensorrt_yolox
+}  // namespace autoware::tensorrt_yolox
 
-#endif  // TENSORRT_YOLOX__TENSORRT_YOLOX_NODE_HPP_
+#endif  // AUTOWARE__TENSORRT_YOLOX__TENSORRT_YOLOX_NODE_HPP_

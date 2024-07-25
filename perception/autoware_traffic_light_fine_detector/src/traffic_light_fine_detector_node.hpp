@@ -15,12 +15,12 @@
 #ifndef TRAFFIC_LIGHT_FINE_DETECTOR_NODE_HPP_
 #define TRAFFIC_LIGHT_FINE_DETECTOR_NODE_HPP_
 
+#include <autoware/tensorrt_yolox/tensorrt_yolox.hpp>
 #include <image_transport/image_transport.hpp>
 #include <image_transport/subscriber_filter.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tensorrt_yolox/tensorrt_yolox.hpp>
 
 #include <sensor_msgs/image_encodings.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -94,8 +94,8 @@ private:
    */
   float evalMatchScore(
     std::map<int, TrafficLightRoi> & id2expectRoi,
-    std::map<int, tensorrt_yolox::ObjectArray> & id2detections,
-    std::map<int, tensorrt_yolox::Object> & id2bestDetection);
+    std::map<int, autoware::tensorrt_yolox::ObjectArray> & id2detections,
+    std::map<int, autoware::tensorrt_yolox::Object> & id2bestDetection);
   /**
    * @brief Every traffic light roi might have several possible detections. This function
    * is designed to select the best detection for every traffic light by making use of
@@ -114,7 +114,8 @@ private:
    */
   void detectionMatch(
     std::map<int, TrafficLightRoi> & id2expectRoi,
-    std::map<int, tensorrt_yolox::ObjectArray> & id2detections, TrafficLightRoiArray & out_rois);
+    std::map<int, autoware::tensorrt_yolox::ObjectArray> & id2detections,
+    TrafficLightRoiArray & out_rois);
 
   /**
    * @brief convert image message to cv::Mat
@@ -167,8 +168,8 @@ private:
   std::vector<int> tlr_label_id_;
 
   int batch_size_;
-  std::unique_ptr<tensorrt_yolox::TrtYoloX> trt_yolox_;
-};  // TrafficLightFineDetectorNode
+  std::unique_ptr<autoware::tensorrt_yolox::TrtYoloX> trt_yolox_;
+};  // TrafficLightFineDetectorNodelet
 
 }  // namespace autoware::traffic_light
 

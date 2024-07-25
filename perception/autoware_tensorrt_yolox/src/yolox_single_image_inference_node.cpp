@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <autoware/tensorrt_yolox/tensorrt_yolox.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tensorrt_yolox/tensorrt_yolox.hpp>
 
 #if (defined(_MSC_VER) or (defined(__GNUC__) and (7 <= __GNUC_MAJOR__)))
 #include <filesystem>
@@ -26,7 +26,7 @@ namespace fs = ::std::experimental::filesystem;
 #include <memory>
 #include <string>
 
-namespace tensorrt_yolox
+namespace autoware::tensorrt_yolox
 {
 class YoloXSingleImageInferenceNode : public rclcpp::Node
 {
@@ -67,7 +67,7 @@ public:
     rclcpp::shutdown();
   }
 };
-}  // namespace tensorrt_yolox
+}  // namespace autoware::tensorrt_yolox
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(tensorrt_yolox::YoloXSingleImageInferenceNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::tensorrt_yolox::YoloXSingleImageInferenceNode)

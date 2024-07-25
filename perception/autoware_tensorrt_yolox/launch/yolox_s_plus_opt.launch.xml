@@ -10,7 +10,7 @@
     description="options `yolox-sPlus-T4-960x960-pseudo-finetune` if only detection is needed, `yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls` if sematic segmentation is also needed"
   />
   <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
-  <arg name="yolox_param_path" default="$(find-pkg-share tensorrt_yolox)/config/yolox_s_plus_opt.param.yaml"/>
+  <arg name="yolox_param_path" default="$(find-pkg-share autoware_tensorrt_yolox)/config/yolox_s_plus_opt.param.yaml"/>
   <arg name="use_decompress" default="true" description="use image decompress"/>
   <arg name="build_only" default="false" description="exit after trt engine is built"/>
 
@@ -21,7 +21,7 @@
     <param from="$(var param_file)"/>
   </node>
 
-  <node pkg="tensorrt_yolox" exec="tensorrt_yolox_node_exe" name="tensorrt_yolox" output="screen">
+  <node pkg="autoware_tensorrt_yolox" exec="autoware_tensorrt_yolox_node_exe" name="tensorrt_yolox" output="screen">
     <remap from="~/in/image" to="$(var input/image)"/>
     <remap from="~/out/objects" to="$(var output/objects)"/>
     <remap from="~/out/mask" to="$(var output/mask)"/>

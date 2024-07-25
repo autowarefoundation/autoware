@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TENSORRT_YOLOX__TENSORRT_YOLOX_HPP_
-#define TENSORRT_YOLOX__TENSORRT_YOLOX_HPP_
+#ifndef AUTOWARE__TENSORRT_YOLOX__TENSORRT_YOLOX_HPP_
+#define AUTOWARE__TENSORRT_YOLOX__TENSORRT_YOLOX_HPP_
 
+#include <autoware/tensorrt_yolox/preprocess.hpp>
 #include <cuda_utils/cuda_unique_ptr.hpp>
 #include <cuda_utils/stream_unique_ptr.hpp>
 #include <opencv2/opencv.hpp>
 #include <tensorrt_common/tensorrt_common.hpp>
-#include <tensorrt_yolox/preprocess.hpp>
 
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace tensorrt_yolox
+namespace autoware::tensorrt_yolox
 {
 using cuda_utils::CudaUniquePtr;
 using cuda_utils::CudaUniquePtrHost;
@@ -312,6 +312,6 @@ private:
   std::vector<tensorrt_yolox::Colormap> sematic_color_map_;
 };
 
-}  // namespace tensorrt_yolox
+}  // namespace autoware::tensorrt_yolox
 
-#endif  // TENSORRT_YOLOX__TENSORRT_YOLOX_HPP_
+#endif  // AUTOWARE__TENSORRT_YOLOX__TENSORRT_YOLOX_HPP_

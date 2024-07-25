@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
-project(tensorrt_yolox)
+project(autoware_tensorrt_yolox)
 
 find_package(tensorrt_common)
 if(NOT ${tensorrt_common_FOUND})
@@ -138,7 +138,7 @@ target_compile_definitions(yolox_single_image_inference_node PRIVATE
 )
 
 rclcpp_components_register_node(yolox_single_image_inference_node
-  PLUGIN "tensorrt_yolox::YoloXSingleImageInferenceNode"
+  PLUGIN "autoware::tensorrt_yolox::YoloXSingleImageInferenceNode"
   EXECUTABLE yolox_single_image_inference
 )
 
@@ -159,7 +159,7 @@ target_compile_definitions(${PROJECT_NAME}_node PRIVATE
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}_node
-  PLUGIN "tensorrt_yolox::TrtYoloXNode"
+  PLUGIN "autoware::tensorrt_yolox::TrtYoloXNode"
   EXECUTABLE ${PROJECT_NAME}_node_exe
 )
 

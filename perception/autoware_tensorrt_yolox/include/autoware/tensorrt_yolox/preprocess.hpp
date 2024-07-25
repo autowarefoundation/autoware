@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TENSORRT_YOLOX__PREPROCESS_HPP_
-#define TENSORRT_YOLOX__PREPROCESS_HPP_
+#ifndef AUTOWARE__TENSORRT_YOLOX__PREPROCESS_HPP_
+#define AUTOWARE__TENSORRT_YOLOX__PREPROCESS_HPP_
 
 #include <cublas_v2.h>
 #include <cuda.h>
@@ -21,7 +21,7 @@
 #include <cuda_runtime_api.h>
 #include <curand.h>
 
-namespace tensorrt_yolox
+namespace autoware::tensorrt_yolox
 {
 struct Roi
 {
@@ -195,5 +195,5 @@ extern void multi_scale_resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
 extern void argmax_gpu(
   unsigned char * dst, float * src, int d_w, int d_h, int s_w, int s_h, int s_c, int batch,
   cudaStream_t stream);
-}  // namespace tensorrt_yolox
-#endif  // TENSORRT_YOLOX__PREPROCESS_HPP_
+}  // namespace autoware::tensorrt_yolox
+#endif  // AUTOWARE__TENSORRT_YOLOX__PREPROCESS_HPP_

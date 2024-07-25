@@ -13,13 +13,13 @@
 
   <build_depend>autoware_cmake</build_depend>
 
+  <depend>autoware_tensorrt_yolox</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>message_filters</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
-  <depend>tensorrt_yolox</depend>
   <depend>tier4_debug_msgs</depend>
   <depend>tier4_perception_msgs</depend>
 

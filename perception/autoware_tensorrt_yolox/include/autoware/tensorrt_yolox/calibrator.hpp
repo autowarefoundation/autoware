@@ -34,8 +34,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef TENSORRT_YOLOX__CALIBRATOR_HPP_
-#define TENSORRT_YOLOX__CALIBRATOR_HPP_
+#ifndef AUTOWARE__TENSORRT_YOLOX__CALIBRATOR_HPP_
+#define AUTOWARE__TENSORRT_YOLOX__CALIBRATOR_HPP_
 
 #include "cuda_utils/cuda_check_error.hpp"
 #include "cuda_utils/cuda_unique_ptr.hpp"
@@ -53,7 +53,7 @@
 #include <string>
 #include <vector>
 
-namespace tensorrt_yolox
+namespace autoware::tensorrt_yolox
 {
 class ImageStream
 {
@@ -488,6 +488,6 @@ private:
   std::vector<char> hist_cache_;
   double scale_;
 };
-}  // namespace tensorrt_yolox
+}  // namespace autoware::tensorrt_yolox
 
-#endif  // TENSORRT_YOLOX__CALIBRATOR_HPP_
+#endif  // AUTOWARE__TENSORRT_YOLOX__CALIBRATOR_HPP_
