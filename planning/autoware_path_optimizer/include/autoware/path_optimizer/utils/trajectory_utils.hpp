@@ -158,13 +158,13 @@ size_t findEgoSegmentIndex(
 }
 
 std::vector<TrajectoryPoint> resampleTrajectoryPoints(
-  const std::vector<TrajectoryPoint> traj_points, const double interval);
+  const std::vector<TrajectoryPoint> & traj_points, const double interval);
 
 std::vector<TrajectoryPoint> resampleTrajectoryPointsWithoutStopPoint(
-  const std::vector<TrajectoryPoint> traj_points, const double interval);
+  const std::vector<TrajectoryPoint> & traj_points, const double interval);
 
 std::vector<ReferencePoint> resampleReferencePoints(
-  const std::vector<ReferencePoint> ref_points, const double interval);
+  const std::vector<ReferencePoint> & ref_points, const double interval);
 
 template <typename T>
 std::optional<size_t> updateFrontPointForFix(

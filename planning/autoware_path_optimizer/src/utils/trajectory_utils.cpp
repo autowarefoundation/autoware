@@ -136,7 +136,7 @@ geometry_msgs::msg::Point getNearestPosition(
 }
 
 std::vector<TrajectoryPoint> resampleTrajectoryPoints(
-  const std::vector<TrajectoryPoint> traj_points, const double interval)
+  const std::vector<TrajectoryPoint> & traj_points, const double interval)
 {
   constexpr bool enable_resampling_stop_point = true;
 
@@ -148,7 +148,7 @@ std::vector<TrajectoryPoint> resampleTrajectoryPoints(
 
 // NOTE: stop point will not be resampled
 std::vector<TrajectoryPoint> resampleTrajectoryPointsWithoutStopPoint(
-  const std::vector<TrajectoryPoint> traj_points, const double interval)
+  const std::vector<TrajectoryPoint> & traj_points, const double interval)
 {
   constexpr bool enable_resampling_stop_point = false;
 
@@ -159,7 +159,7 @@ std::vector<TrajectoryPoint> resampleTrajectoryPointsWithoutStopPoint(
 }
 
 std::vector<ReferencePoint> resampleReferencePoints(
-  const std::vector<ReferencePoint> ref_points, const double interval)
+  const std::vector<ReferencePoint> & ref_points, const double interval)
 {
   // resample pose and velocity
   const auto traj_points = convertToTrajectoryPoints(ref_points);
