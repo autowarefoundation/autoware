@@ -128,12 +128,8 @@ protected:
 
   void filterOncomingObjects(PredictedObjects & objects) const;
 
-  void filterAheadTerminalObjects(
-    PredictedObjects & objects, const lanelet::ConstLanelets & current_lanes) const;
-
   void filterObjectsByLanelets(
-    const PredictedObjects & objects, const lanelet::ConstLanelets & current_lanes,
-    const lanelet::ConstLanelets & target_lanes,
+    const PredictedObjects & objects, const PathWithLaneId & current_lanes_ref_path,
     std::vector<PredictedObject> & current_lane_objects,
     std::vector<PredictedObject> & target_lane_objects,
     std::vector<PredictedObject> & other_lane_objects) const;

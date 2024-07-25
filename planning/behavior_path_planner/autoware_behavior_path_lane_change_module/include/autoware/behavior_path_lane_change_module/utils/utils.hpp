@@ -302,6 +302,18 @@ LanesPolygon create_lanes_polygon(const CommonDataPtr & common_data_ptr);
 bool is_same_lane_with_prev_iteration(
   const CommonDataPtr & common_data_ptr, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes);
+
+Pose to_pose(
+  const autoware::universe_utils::Point2d & point,
+  const geometry_msgs::msg::Quaternion & orientation);
+
+bool is_ahead_of_ego(
+  const CommonDataPtr & common_data_ptr, const PathWithLaneId & path,
+  const PredictedObject & object);
+
+bool is_before_terminal(
+  const CommonDataPtr & common_data_ptr, const PathWithLaneId & path,
+  const PredictedObject & object);
 }  // namespace autoware::behavior_path_planner::utils::lane_change
 
 namespace autoware::behavior_path_planner::utils::lane_change::debug

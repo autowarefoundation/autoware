@@ -331,8 +331,7 @@ title NormalLaneChange::filterObjects Method Execution Flow
 start
 
 group "Filter Objects by Class" {
-:Iterate through each object in objects list;
-while (has not finished iterating through object list) is (TRUE)
+while (has not finished iterating through predicted object list) is (TRUE)
   if (current object type != param.object_types_to_check?) then (TRUE)
   #LightPink:Remove current object;
 else (FALSE)
@@ -341,17 +340,15 @@ endif
 end while
 end group
 
-if (object list is empty?) then (TRUE)
+if (predicted object list is empty?) then (TRUE)
   :Return empty result;
   stop
 else (FALSE)
 endif
 
 group "Filter Oncoming Objects" #PowderBlue {
-:Iterate through each object in target lane objects list;
-while (has not finished iterating through object list?) is (TRUE)
-:check object's yaw with reference to ego's yaw.;
-if (yaw difference < 90 degree?) then (TRUE)
+while (has not finished iterating through predicted object list?) is (TRUE)
+if (object's yaw with reference to ego's yaw difference < 90 degree?) then (TRUE)
   :Keep current object;
 else (FALSE)
 if (object is stopping?) then (TRUE)
@@ -363,31 +360,7 @@ endif
 endwhile
 end group
 
-if (object list is empty?) then (TRUE)
-  :Return empty result;
-  stop
-else (FALSE)
-endif
-
-group "Filter Objects Ahead Terminal" #Beige {
-:Calculate lateral distance from ego to current lanes center;
-
-:Iterate through each object in objects list;
-while (has not finished iterating through object list) is (TRUE)
-  :Get current object's polygon;
-  :Initialize distance to terminal from object to max;
-  while (has not finished iterating through object polygon's vertices) is (TRUE)
-    :Calculate object's lateral distance to end of lane;
-    :Update minimum distance to terminal from object;
-  end while
-  if (Is object's distance to terminal exceeds minimum lane change length?) then (TRUE)
-      #LightPink:Remove current object;
-  else (FALSE)
-  endif
-end while
-end group
-
-if (object list is empty?) then (TRUE)
+if (predicted object list is empty?) then (TRUE)
   :Return empty result;
   stop
 else (FALSE)
@@ -395,21 +368,27 @@ endif
 
 group "Filter Objects By Lanelets" #LightGreen {
 
-:Iterate through each object in objects list;
-while (has not finished iterating through object list) is (TRUE)
-  :lateral distance diff = difference between object's lateral distance and ego's lateral distance to the current lanes' centerline.;
-  if (Object in target lane polygon, and lateral distance diff is more than half of ego's width?) then (TRUE)
-    :Add to target_lane_objects;
-    else (FALSE)
-      if (Object overlaps with backward target lanes?) then (TRUE)
+while (has not finished iterating through predicted object list) is (TRUE)
+  :Calculate lateral distance diff;
+  if (Object in target lane polygon?) then (TRUE)
+    if (lateral distance diff > half of ego's width?) then (TRUE)
+      if (Object's physical position is before terminal point?) then (TRUE)
         :Add to target_lane_objects;
       else (FALSE)
-        if (Object in current lane polygon?) then (TRUE)
-          :Add to current_lane_objects;
-        else (FALSE)
-          :Add to other_lane_objects;
-        endif
       endif
+    else (FALSE)
+    endif
+  else (FALSE)
+  endif
+
+  if (Object overlaps with backward target lanes?) then (TRUE)
+    :Add to target_lane_objects;
+  else (FALSE)
+    if (Object in current lane polygon?) then (TRUE)
+      :Add to current_lane_objects;
+    else (FALSE)
+      :Add to other_lane_objects;
+    endif
   endif
 end while
 
@@ -426,13 +405,10 @@ endif
 
 group "Filter Target Lanes' objects" #LightCyan {
 
-:Iterate through each object in target lane objects list;
-while (has not finished iterating through object list) is (TRUE)
-  :check object's velocity;
+while (has not finished iterating through target lanes' object list) is (TRUE)
   if(velocity is within threshold?) then (TRUE)
   :Keep current object;
   else (FALSE)
-    :check whether object is ahead of ego;
     if(object is ahead of ego?) then (TRUE)
       :keep current object;
     else (FALSE)
@@ -444,11 +420,8 @@ end group
 
 group "Filter Current Lanes' objects"  #LightYellow {
 
-:Iterate through each object in current lane objects list;
-while (has not finished iterating through object list) is (TRUE)
-  :check object's velocity;
+while (has not finished iterating through current lanes' object list) is (TRUE)
   if(velocity is within threshold?) then (TRUE)
-  :check whether object is ahead of ego;
     if(object is ahead of ego?) then (TRUE)
       :keep current object;
     else (FALSE)
@@ -462,11 +435,8 @@ end group
 
 group "Filter Other Lanes' objects"  #Lavender {
 
-:Iterate through each object in other lane objects list;
-while (has not finished iterating through object list) is (TRUE)
-  :check object's velocity;
+while (has not finished iterating through other lanes' object list) is (TRUE)
   if(velocity is within threshold?) then (TRUE)
-  :check whether object is ahead of ego;
     if(object is ahead of ego?) then (TRUE)
       :keep current object;
     else (FALSE)
@@ -478,7 +448,7 @@ while (has not finished iterating through object list) is (TRUE)
 endwhile
 end group
 
-:Trasform the objects into extended predicted object and return them as lane_change_target_objects;
+:Transform the objects into extended predicted object and return them as lane_change_target_objects;
 stop
 
 @enduml

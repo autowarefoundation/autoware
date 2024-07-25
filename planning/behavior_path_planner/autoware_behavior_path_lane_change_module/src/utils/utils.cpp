@@ -1216,6 +1216,7 @@ LanesPolygon create_lanes_polygon(const CommonDataPtr & common_data_ptr)
 
   lanes_polygon.current =
     utils::lane_change::createPolygon(lanes->current, 0.0, std::numeric_limits<double>::max());
+
   lanes_polygon.target =
     utils::lane_change::createPolygon(lanes->target, 0.0, std::numeric_limits<double>::max());
 
@@ -1262,6 +1263,85 @@ bool is_same_lane_with_prev_iteration(
   }
   return (prev_target_lanes.front().id() == target_lanes.front().id()) &&
          (prev_target_lanes.back().id() == prev_target_lanes.back().id());
+}
+
+Pose to_pose(
+  const autoware::universe_utils::Point2d & point,
+  const geometry_msgs::msg::Quaternion & orientation)
+{
+  Pose pose;
+  pose.position = autoware::universe_utils::createPoint(point.x(), point.y(), 0.0);
+  pose.orientation = orientation;
+  return pose;
+}
+
+bool is_ahead_of_ego(
+  const CommonDataPtr & common_data_ptr, const PathWithLaneId & path,
+  const PredictedObject & object)
+{
+  const auto & current_ego_pose = common_data_ptr->get_ego_pose();
+
+  const auto & obj_position = object.kinematics.initial_pose_with_covariance.pose.position;
+
+  const auto dist_to_base_link = autoware::motion_utils::calcSignedArcLength(
+    path.points, current_ego_pose.position, obj_position);
+  const auto & ego_info = common_data_ptr->bpp_param_ptr->vehicle_info;
+  const auto lon_dev = std::max(
+    ego_info.max_longitudinal_offset_m + ego_info.rear_overhang_m, object.shape.dimensions.x);
+
+  // we don't always have to check the distance accurately.
+  if (std::abs(dist_to_base_link) > lon_dev) {
+    return dist_to_base_link >= 0.0;
+  }
+
+  const auto ego_polygon = getEgoCurrentFootprint(current_ego_pose, ego_info).outer();
+  auto ego_min_dist_to_end = std::numeric_limits<double>::max();
+  for (const auto & ego_edge_point : ego_polygon) {
+    const auto ego_edge =
+      autoware::universe_utils::createPoint(ego_edge_point.x(), ego_edge_point.y(), 0.0);
+    const auto dist_to_end = autoware::motion_utils::calcSignedArcLength(
+      path.points, ego_edge, path.points.back().point.pose.position);
+    ego_min_dist_to_end = std::min(dist_to_end, ego_min_dist_to_end);
+  }
+
+  const auto obj_polygon = autoware::universe_utils::toPolygon2d(object).outer();
+  auto current_min_dist_to_end = std::numeric_limits<double>::max();
+  for (const auto & polygon_p : obj_polygon) {
+    const auto obj_p = autoware::universe_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
+    const auto dist_ego_to_obj = autoware::motion_utils::calcSignedArcLength(
+      path.points, obj_p, path.points.back().point.pose.position);
+    current_min_dist_to_end = std::min(dist_ego_to_obj, current_min_dist_to_end);
+  }
+  return ego_min_dist_to_end - current_min_dist_to_end >= 0.0;
+}
+
+bool is_before_terminal(
+  const CommonDataPtr & common_data_ptr, const PathWithLaneId & path,
+  const PredictedObject & object)
+{
+  const auto & route_handler_ptr = common_data_ptr->route_handler_ptr;
+  const auto & lanes_ptr = common_data_ptr->lanes_ptr;
+  const auto terminal_position = (lanes_ptr->current_lane_in_goal_section)
+                                   ? route_handler_ptr->getGoalPose().position
+                                   : path.points.back().point.pose.position;
+  double current_max_dist = std::numeric_limits<double>::lowest();
+
+  const auto & obj_position = object.kinematics.initial_pose_with_covariance.pose.position;
+  const auto dist_to_base_link =
+    autoware::motion_utils::calcSignedArcLength(path.points, obj_position, terminal_position);
+  // we don't always have to check the distance accurately.
+  if (std::abs(dist_to_base_link) > object.shape.dimensions.x) {
+    return dist_to_base_link >= 0.0;
+  }
+
+  const auto obj_polygon = autoware::universe_utils::toPolygon2d(object).outer();
+  for (const auto & polygon_p : obj_polygon) {
+    const auto obj_p = autoware::universe_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
+    const auto dist_obj_to_terminal =
+      autoware::motion_utils::calcSignedArcLength(path.points, obj_p, terminal_position);
+    current_max_dist = std::max(dist_obj_to_terminal, current_max_dist);
+  }
+  return current_max_dist >= 0.0;
 }
 }  // namespace autoware::behavior_path_planner::utils::lane_change
 
