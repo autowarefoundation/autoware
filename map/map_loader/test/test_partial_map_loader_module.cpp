@@ -82,8 +82,8 @@ TEST_F(TestPartialMapLoaderModule, LoadPartialPCDFiles)
 
   // Check the result
   auto result = result_future.get();
-  ASSERT_EQ(static_cast<int>(result->new_pointcloud_cells.size()), 1);
-  EXPECT_EQ(result->new_pointcloud_cells[0].metadata.cell_id, "/tmp/dummy.pcd");
+  ASSERT_EQ(static_cast<int>(result->new_pointcloud_with_ids.size()), 1);
+  EXPECT_EQ(result->new_pointcloud_with_ids[0].cell_id, "/tmp/dummy.pcd");
 }
 
 int main(int argc, char ** argv)

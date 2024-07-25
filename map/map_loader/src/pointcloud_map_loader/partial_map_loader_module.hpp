@@ -52,8 +52,7 @@ private:
   void partial_area_load(
     const autoware_map_msgs::msg::AreaInfo & area,
     const GetPartialPointCloudMap::Response::SharedPtr & response) const;
-  [[nodiscard]] autoware_map_msgs::msg::PointCloudMapCellWithMetaData
-  load_point_cloud_map_cell_with_metadata(
+  [[nodiscard]] autoware_map_msgs::msg::PointCloudMapCellWithID load_point_cloud_map_cell_with_id(
     const std::string & path, const std::string & map_id) const;
 };
 

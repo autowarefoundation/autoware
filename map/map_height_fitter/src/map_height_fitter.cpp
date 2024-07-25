@@ -145,17 +145,17 @@ bool MapHeightFitter::Impl::get_partial_point_cloud_map(const Point & point)
   const auto res = future.get();
   RCLCPP_DEBUG(
     logger, "Loaded partial pcd map from map_loader (grid size: %lu)",
-    res->new_pointcloud_cells.size());
+    res->new_pointcloud_with_ids.size());
 
   sensor_msgs::msg::PointCloud2 pcd_msg;
-  for (const auto & pcd_cell : res->new_pointcloud_cells) {
+  for (const auto & pcd_with_id : res->new_pointcloud_with_ids) {
     if (pcd_msg.width == 0) {
-      pcd_msg = pcd_cell.pointcloud;
+      pcd_msg = pcd_with_id.pointcloud;
     } else {
-      pcd_msg.width += pcd_cell.pointcloud.width;
-      pcd_msg.row_step += pcd_cell.pointcloud.row_step;
+      pcd_msg.width += pcd_with_id.pointcloud.width;
+      pcd_msg.row_step += pcd_with_id.pointcloud.row_step;
       pcd_msg.data.insert(
-        pcd_msg.data.end(), pcd_cell.pointcloud.data.begin(), pcd_cell.pointcloud.data.end());
+        pcd_msg.data.end(), pcd_with_id.pointcloud.data.begin(), pcd_with_id.pointcloud.data.end());
     }
   }
   map_frame_ = res->header.frame_id;

@@ -52,8 +52,7 @@ private:
   [[nodiscard]] bool on_service_get_selected_point_cloud_map(
     GetSelectedPointCloudMap::Request::SharedPtr req,
     GetSelectedPointCloudMap::Response::SharedPtr res) const;
-  [[nodiscard]] autoware_map_msgs::msg::PointCloudMapCellWithMetaData
-  load_point_cloud_map_cell_with_metadata(
+  [[nodiscard]] autoware_map_msgs::msg::PointCloudMapCellWithID load_point_cloud_map_cell_with_id(
     const std::string & path, const std::string & map_id) const;
 };
 

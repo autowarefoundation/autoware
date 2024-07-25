@@ -48,13 +48,13 @@ void DifferentialMapLoaderModule::differential_area_load(
       int index = static_cast<int>(id_in_cached_list - cached_ids.begin());
       should_remove[index] = false;
     } else {
-      autoware_map_msgs::msg::PointCloudMapCellWithMetaData pointcloud_map_cell =
-        load_point_cloud_map_cell_with_metadata(path, map_id);
-      pointcloud_map_cell.metadata.min_x = metadata.min.x;
-      pointcloud_map_cell.metadata.min_y = metadata.min.y;
-      pointcloud_map_cell.metadata.max_x = metadata.max.x;
-      pointcloud_map_cell.metadata.max_y = metadata.max.y;
-      response->new_pointcloud_cells.push_back(pointcloud_map_cell);
+      autoware_map_msgs::msg::PointCloudMapCellWithID pointcloud_map_cell_with_id =
+        load_point_cloud_map_cell_with_id(path, map_id);
+      pointcloud_map_cell_with_id.metadata.min_x = metadata.min.x;
+      pointcloud_map_cell_with_id.metadata.min_y = metadata.min.y;
+      pointcloud_map_cell_with_id.metadata.max_x = metadata.max.x;
+      pointcloud_map_cell_with_id.metadata.max_y = metadata.max.y;
+      response->new_pointcloud_with_ids.push_back(pointcloud_map_cell_with_id);
     }
   }
 
@@ -76,16 +76,16 @@ bool DifferentialMapLoaderModule::on_service_get_differential_point_cloud_map(
   return true;
 }
 
-autoware_map_msgs::msg::PointCloudMapCellWithMetaData
-DifferentialMapLoaderModule::load_point_cloud_map_cell_with_metadata(
+autoware_map_msgs::msg::PointCloudMapCellWithID
+DifferentialMapLoaderModule::load_point_cloud_map_cell_with_id(
   const std::string & path, const std::string & map_id) const
 {
   sensor_msgs::msg::PointCloud2 pcd;
   if (pcl::io::loadPCDFile(path, pcd) == -1) {
     RCLCPP_ERROR_STREAM(logger_, "PCD load failed: " << path);
   }
-  autoware_map_msgs::msg::PointCloudMapCellWithMetaData pointcloud_map_cell;
-  pointcloud_map_cell.pointcloud = pcd;
-  pointcloud_map_cell.metadata.cell_id = map_id;
-  return pointcloud_map_cell;
+  autoware_map_msgs::msg::PointCloudMapCellWithID pointcloud_map_cell_with_id;
+  pointcloud_map_cell_with_id.pointcloud = pcd;
+  pointcloud_map_cell_with_id.cell_id = map_id;
+  return pointcloud_map_cell_with_id;
 }
