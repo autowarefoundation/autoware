@@ -98,3 +98,4 @@ If you wish to use Autoware.AI, the previous version of Autoware based on ROS 1,
 
 - [Autoware Foundation homepage](https://www.autoware.org/)
 - [Support guidelines](https://autowarefoundation.github.io/autoware-documentation/main/support/support-guidelines/)
+- [CI metrics](https://autowarefoundation.github.io/autoware-ci-metrics/)

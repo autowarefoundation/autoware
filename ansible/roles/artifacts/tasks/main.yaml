@@ -158,6 +158,38 @@
     dest: "{{ data_dir }}/lidar_centerpoint/deploy_metadata.yaml"
     mode: "644"
     checksum: sha256:152536f053c3750b60d349800e1b983b418029d6dadf087614a00c661942a178
+
+# lidar_transfusion
+- name: Create lidar_transfusion directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/lidar_transfusion"
+    mode: "755"
+    state: directory
+
+- name: Download lidar_transfusion/transfusion.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/v1/transfusion.onnx
+    dest: "{{ data_dir }}/lidar_transfusion/transfusion.onnx"
+    mode: "644"
+    checksum: sha256:8938999cf03770ffd3301027300ea2cbcf471c180450e0434121d7294c42aa0b
+
+- name: Download lidar_transfusion/transfusion.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/v1/transfusion.param.yaml
+    dest: "{{ data_dir }}/lidar_transfusion/transfusion.param.yaml"
+    mode: "644"
+    checksum: sha256:0e18776040f14e380037ef6ecb500d1d1d151f21ff7d5c890606673f7e100e14
+
+- name: Download lidar_transfusion/detection_class_remapper.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/v1/detection_class_remapper.param.yaml
+    dest: "{{ data_dir }}/lidar_transfusion/detection_class_remapper.param.yaml"
+    mode: "644"
+    checksum: sha256:c711f8875ece9b527dfe31ffc75f8c0de2e77945ef67860a959a4e04c36772d5
+
 # tensorrt_yolox
 - name: Create tensorrt_yolox directory inside {{ data_dir }}
   ansible.builtin.file:
