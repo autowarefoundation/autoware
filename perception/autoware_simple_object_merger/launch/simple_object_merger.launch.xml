@@ -1,0 +1,9 @@
+<launch>
+  <arg name="output/objects" default="~/output/objects"/>
+  <arg name="param_path" default="$(find-pkg-share autoware_simple_object_merger)/config/simple_object_merger.param.yaml"/>
+
+  <node pkg="autoware_simple_object_merger" exec="simple_object_merger_node" name="simple_object_merger" output="screen">
+    <remap from="~/output/objects" to="$(var output/objects)"/>
+    <param from="$(var param_path)"/>
+  </node>
+</launch>

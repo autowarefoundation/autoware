@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>radar_tracks_msgs_converter</name>
+  <name>autoware_radar_tracks_msgs_converter</name>
   <version>0.0.1</version>
-  <description>radar_tracks_msgs_converter</description>
+  <description>autoware_radar_tracks_msgs_converter</description>
   <maintainer email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
   <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>

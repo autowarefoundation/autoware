@@ -132,10 +132,10 @@ perception/lidar_apollo_segmentation_tvm_nodes/** ambroise.vincent@arm.com yoshi
 perception/autoware_lidar_centerpoint/** kenzo.lobos@tier4.jp koji.minoda@tier4.jp
 perception/occupancy_grid_map_outlier_filter/** abrahammonrroy@yahoo.com yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/probabilistic_occupancy_grid_map/** mamoru.sobue@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
-perception/radar_tracks_msgs_converter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
+perception/autoware_radar_tracks_msgs_converter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
 perception/autoware_raindrop_cluster_filter/** dai.nguyen@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_shape_estimation/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
-perception/simple_object_merger/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp
+perception/autoware_simple_object_merger/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp
 perception/autoware_tensorrt_classifier/** kotaro.uetake@tier4.jp shunsuke.miura@tier4.jp
 perception/tensorrt_yolox/** dan.umeda@tier4.jp manato.hirabayashi@tier4.jp
 perception/traffic_light_arbiter/** kenzo.lobos@tier4.jp shunsuke.miura@tier4.jp
@@ -210,7 +210,7 @@ sensing/autoware_pointcloud_preprocessor/** abrahammonrroy@yahoo.com dai.nguyen@
 sensing/autoware_radar_scan_to_pointcloud2/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
 sensing/autoware_radar_static_pointcloud_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
 sensing/autoware_radar_threshold_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
-sensing/radar_tracks_noise_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
+sensing/autoware_radar_tracks_noise_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp taekjin.lee@tier4.jp yoshi.ri@tier4.jp
 sensing/tier4_pcl_extensions/** david.wong@tier4.jp kenzo.lobos@tier4.jp ryu.yamamoto@tier4.jp
 sensing/vehicle_velocity_converter/** ryu.yamamoto@tier4.jp
 simulator/dummy_perception_publisher/** yukihiro.saito@tier4.jp

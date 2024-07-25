@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(radar_tracks_msgs_converter)
+project(autoware_radar_tracks_msgs_converter)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()

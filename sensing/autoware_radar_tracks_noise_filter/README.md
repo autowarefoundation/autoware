@@ -1,4 +1,4 @@
-# radar_tracks_noise_filter
+# autoware_radar_tracks_noise_filter
 
 This package contains a radar object filter module for `radar_msgs/msg/RadarTrack`.
 This package can filter noise objects in RadarTracks.

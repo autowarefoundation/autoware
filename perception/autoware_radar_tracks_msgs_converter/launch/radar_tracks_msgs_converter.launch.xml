@@ -3,9 +3,9 @@
   <arg name="input/odometry" default="/localization/kinematic_state"/>
   <arg name="output/radar_detected_objects" default="output/radar_detected_objects"/>
   <arg name="output/radar_tracked_objects" default="output/radar_tracked_objects"/>
-  <arg name="param_path" default="$(find-pkg-share radar_tracks_msgs_converter)/config/radar_tracks_msgs_converter.param.yaml"/>
+  <arg name="param_path" default="$(find-pkg-share autoware_radar_tracks_msgs_converter)/config/radar_tracks_msgs_converter.param.yaml"/>
 
-  <node pkg="radar_tracks_msgs_converter" exec="radar_tracks_msgs_converter_node" name="radar_tracks_msgs_converter" output="screen">
+  <node pkg="autoware_radar_tracks_msgs_converter" exec="radar_tracks_msgs_converter_node" name="radar_tracks_msgs_converter" output="screen">
     <remap from="~/input/radar_objects" to="$(var input/radar_objects)"/>
     <remap from="~/input/odometry" to="$(var input/odometry)"/>
     <remap from="~/output/radar_detected_objects" to="$(var output/radar_detected_objects)"/>

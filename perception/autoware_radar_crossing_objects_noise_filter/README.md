@@ -24,7 +24,7 @@ Velocity estimation fails on static objects, resulting in ghost objects crossing
 
 - 2. Turning around by ego vehicle affect the output from radar.
 
-When the ego vehicle turns around, the radars outputting at the object level sometimes fail to estimate the twist of objects correctly even if [radar_tracks_msgs_converter](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/radar_tracks_msgs_converter) compensates by the ego vehicle twist.
+When the ego vehicle turns around, the radars outputting at the object level sometimes fail to estimate the twist of objects correctly even if [radar_tracks_msgs_converter](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/autoware_radar_tracks_msgs_converter) compensates by the ego vehicle twist.
 So if an object detected by radars has circular motion viewing from base_link, it is likely that the speed is estimated incorrectly and that the object is a static object.
 
 The example is below figure.

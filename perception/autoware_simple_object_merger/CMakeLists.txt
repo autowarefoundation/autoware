@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(simple_object_merger)
+project(autoware_simple_object_merger)
 
 # Dependencies
 find_package(autoware_cmake REQUIRED)
