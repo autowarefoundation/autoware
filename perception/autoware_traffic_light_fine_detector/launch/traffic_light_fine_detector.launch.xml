@@ -1,0 +1,21 @@
+<launch>
+  <arg name="input/image" default="/image_raw"/>
+  <arg name="input/rois" default="/traffic_light_map_based_detector/output/rois"/>
+  <arg name="expect/rois" default="~/expect/rois"/>
+  <arg name="output/rois" default="~/output/rois"/>
+  <arg
+    name="traffic_light_fine_detector_param_path"
+    default="$(find-pkg-share autoware_traffic_light_fine_detector)/config/traffic_light_fine_detector.param.yaml"
+    description="fine detector param path"
+  />
+  <arg name="build_only" default="false" description="exit after trt engine is built"/>
+
+  <node pkg="autoware_traffic_light_fine_detector" exec="traffic_light_fine_detector_node" name="traffic_light_fine_detector" output="screen">
+    <remap from="~/input/image" to="$(var input/image)"/>
+    <remap from="~/input/rois" to="$(var input/rois)"/>
+    <remap from="~/expect/rois" to="$(var expect/rois)"/>
+    <remap from="~/output/rois" to="$(var output/rois)"/>
+    <param from="$(var traffic_light_fine_detector_param_path)" allow_substs="true"/>
+    <param name="build_only" value="$(var build_only)"/>
+  </node>
+</launch>

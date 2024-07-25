@@ -1,0 +1,15 @@
+<launch>
+  <arg name="input/image" default="~/image_raw"/>
+  <arg name="input/rois" default="~/rois"/>
+  <arg name="output/traffic_signals" default="classified/traffic_signals"/>
+  <arg name="traffic_light_classifier_param_path" default="$(find-pkg-share autoware_traffic_light_classifier)/config/traffic_light_classifier.param.yaml" description="classifier param path"/>
+  <arg name="build_only" default="false" description="exit after trt engine is built"/>
+
+  <node pkg="autoware_traffic_light_classifier" exec="traffic_light_classifier_node" name="traffic_light_classifier" output="screen">
+    <remap from="~/input/image" to="$(var input/image)"/>
+    <remap from="~/input/rois" to="$(var input/rois)"/>
+    <remap from="~/output/traffic_signals" to="$(var output/traffic_signals)"/>
+    <param from="$(var traffic_light_classifier_param_path)" allow_substs="true"/>
+    <param name="build_only" value="$(var build_only)"/>
+  </node>
+</launch>

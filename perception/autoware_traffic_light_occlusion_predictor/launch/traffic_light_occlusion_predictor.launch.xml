@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="input/cloud" default="/sensing/lidar/concatenated/pointcloud"/>
+  <arg name="input/vector_map" default="/map/vector_map"/>
+  <arg name="input/camera_info"/>
+  <arg name="input/rois"/>
+  <arg name="input/car/traffic_signals"/>
+  <arg name="input/pedestrian/traffic_signals"/>
+  <arg name="output/traffic_signals"/>
+  <arg name="param_path" default="$(find-pkg-share autoware_traffic_light_occlusion_predictor)/config/traffic_light_occlusion_predictor.param.yaml"/>
+
+  <node pkg="autoware_traffic_light_occlusion_predictor" exec="traffic_light_occlusion_predictor_node" name="traffic_light_occlusion_predictor" output="screen">
+    <remap from="~/input/vector_map" to="$(var input/vector_map)"/>
+    <remap from="~/input/camera_info" to="$(var input/camera_info)"/>
+    <remap from="~/input/cloud" to="$(var input/cloud)"/>
+    <remap from="~/input/rois" to="$(var input/rois)"/>
+    <remap from="~/input/car/traffic_signals" to="$(var input/car/traffic_signals)"/>
+    <remap from="~/input/pedestrian/traffic_signals" to="$(var input/pedestrian/traffic_signals)"/>
+    <remap from="~/output/traffic_signals" to="$(var output/traffic_signals)"/>
+    <param from="$(var param_path)"/>
+  </node>
+</launch>
