@@ -652,7 +652,6 @@ BehaviorModuleOutput StartPlannerModule::plan()
     resetPathReference();
   }
 
-  BehaviorModuleOutput output;
   if (!status_.found_pull_out_path) {
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "Not found safe pull out path, publish stop path");
@@ -702,6 +701,7 @@ BehaviorModuleOutput StartPlannerModule::plan()
     return getCurrentPath();
   });
 
+  BehaviorModuleOutput output;
   output.path = path;
   output.reference_path = getPreviousModuleOutput().reference_path;
   output.turn_signal_info = calcTurnSignalInfo();
@@ -777,7 +777,6 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
 {
   updatePullOutStatus();
 
-  BehaviorModuleOutput output;
   if (!status_.found_pull_out_path) {
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "Not found safe pull out path, publish stop path");
@@ -806,6 +805,7 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
     p.point.longitudinal_velocity_mps = 0.0;
   }
 
+  BehaviorModuleOutput output;
   output.path = stop_path;
   output.reference_path = getPreviousModuleOutput().reference_path;
   output.turn_signal_info = calcTurnSignalInfo();
