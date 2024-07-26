@@ -182,7 +182,7 @@ private:
     const std::vector<tf2::Transform> & tf_map2camera_vec,
     const image_geometry::PinholeCameraModel & pinhole_camera_model,
     const lanelet::ConstLineString3d traffic_light, const Config & config,
-    tier4_perception_msgs::msg::TrafficLightRoi & roi) const;
+    tier4_perception_msgs::msg::TrafficLightRoi & out_roi) const;
   /**
    * @brief Publish the traffic lights for visualization
    *
