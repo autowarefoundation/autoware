@@ -213,7 +213,7 @@ void TrafficLightFineDetectorNode::callback(
 }
 
 float TrafficLightFineDetectorNode::evalMatchScore(
-  std::map<int, TrafficLightRoi> & id2expectRoi,
+  const std::map<int, TrafficLightRoi> & id2expectRoi,
   std::map<int, autoware::tensorrt_yolox::ObjectArray> & id2detections,
   std::map<int, autoware::tensorrt_yolox::Object> & id2bestDetection)
 {
@@ -236,7 +236,7 @@ float TrafficLightFineDetectorNode::evalMatchScore(
 }
 
 void TrafficLightFineDetectorNode::detectionMatch(
-  std::map<int, TrafficLightRoi> & id2expectRoi,
+  const std::map<int, TrafficLightRoi> & id2expectRoi,
   std::map<int, autoware::tensorrt_yolox::ObjectArray> & id2detections,
   TrafficLightRoiArray & out_rois)
 {
@@ -293,7 +293,7 @@ void TrafficLightFineDetectorNode::detectionMatch(
   for (const auto & id : invalid_roi_id) {
     TrafficLightRoi tlr;
     tlr.traffic_light_id = id;
-    tlr.traffic_light_type = id2expectRoi[id].traffic_light_type;
+    tlr.traffic_light_type = id2expectRoi.at(id).traffic_light_type;
     out_rois.rois.push_back(tlr);
   }
 }
