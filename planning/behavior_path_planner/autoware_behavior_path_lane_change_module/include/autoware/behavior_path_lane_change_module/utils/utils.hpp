@@ -136,7 +136,7 @@ PathWithLaneId getReferencePathFromTargetLane(
   const double next_lane_change_buffer);
 
 std::vector<DrivableLanes> generateDrivableLanes(
-  const std::vector<DrivableLanes> original_drivable_lanes, const RouteHandler & route_handler,
+  const std::vector<DrivableLanes> & original_drivable_lanes, const RouteHandler & route_handler,
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & lane_change_lanes);
 
 std::vector<DrivableLanes> generateDrivableLanes(
