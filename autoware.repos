@@ -38,10 +38,17 @@ repositories:
     url: https://github.com/tier4/autoware_auto_msgs.git
     version: tier4/main
   # universe
+  
+  #universe/autoware.universe:
+    #type: git
+    #url: https://github.com/autowarefoundation/autoware.universe.git
+    #version: main
+
   universe/autoware.universe:
     type: git
-    url: https://github.com/autowarefoundation/autoware.universe.git
+    url: https://github.com/iASL-Gifu/autoware.universe.git
     version: main
+  
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
@@ -87,10 +94,17 @@ repositories:
     url: https://github.com/tier4/glog.git
     version: v0.6.0_t4-ros
   # launcher
+
+  #launcher/autoware_launch:
+    #type: git
+    #url: https://github.com/autowarefoundation/autoware_launch.git
+    #version: main
+
   launcher/autoware_launch:
     type: git
-    url: https://github.com/autowarefoundation/autoware_launch.git
+    url: https://github.com/Arata-Stu/autoware_launch.git
     version: main
+
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
@@ -115,10 +129,17 @@ repositories:
     url: https://github.com/autowarefoundation/ros2_socketcan
     version: feat/continental_fd
   # sensor_kit
+
+  #sensor_kit/sample_sensor_kit_launch:
+    #type: git
+    #url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
+    #version: main
+
   sensor_kit/sample_sensor_kit_launch:
     type: git
-    url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
+    url: https://github.com/Arata-Stu/sample_sensor_kit_launch.git
     version: main
+  
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
     url: https://github.com/RobotecAI/awsim_sensor_kit_launch.git
@@ -132,10 +153,16 @@ repositories:
     url: https://github.com/autowarefoundation/single_lidar_sensor_kit_launch.git
     version: main
   # vehicle
+  #vehicle/sample_vehicle_launch:
+    #type: git
+    #url: https://github.com/autowarefoundation/sample_vehicle_launch.git
+    #version: main
+
   vehicle/sample_vehicle_launch:
     type: git
-    url: https://github.com/autowarefoundation/sample_vehicle_launch.git
+    url: https://github.com/Arata-Stu/sample_vehicle_launch.git
     version: main
+  
   vehicle/external/pacmod_interface:
     type: git
     url: https://github.com/tier4/pacmod_interface.git
