@@ -79,7 +79,7 @@ MarkerArray createFootprintMarkerArray(
 }
 
 MarkerArray createPointsMarkerArray(
-  const std::vector<Point> points, const std::string & ns, const int32_t id, const float r,
+  const std::vector<Point> & points, const std::string & ns, const int32_t id, const float r,
   const float g, const float b)
 {
   auto marker = createDefaultMarker(

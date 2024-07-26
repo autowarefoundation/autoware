@@ -376,7 +376,7 @@ std::vector<size_t> getReversingIndices(const PathWithLaneId & path)
 }
 
 std::vector<PathWithLaneId> dividePath(
-  const PathWithLaneId & path, const std::vector<size_t> indices)
+  const PathWithLaneId & path, const std::vector<size_t> & indices)
 {
   std::vector<PathWithLaneId> divided_paths;
 
@@ -445,8 +445,8 @@ bool isCloseToPath(const PathWithLaneId & path, const Pose & pose, const double 
 
 // only two points is supported
 std::vector<double> splineTwoPoints(
-  std::vector<double> base_s, std::vector<double> base_x, const double begin_diff,
-  const double end_diff, std::vector<double> new_s)
+  const std::vector<double> & base_s, const std::vector<double> & base_x, const double begin_diff,
+  const double end_diff, const std::vector<double> & new_s)
 {
   assert(base_s.size() == 2 && base_x.size() == 2);
 
