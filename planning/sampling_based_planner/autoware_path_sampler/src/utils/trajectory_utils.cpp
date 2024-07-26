@@ -59,7 +59,7 @@ void compensateLastPose(
 }
 
 std::vector<TrajectoryPoint> resampleTrajectoryPoints(
-  const std::vector<TrajectoryPoint> traj_points, const double interval)
+  const std::vector<TrajectoryPoint> & traj_points, const double interval)
 {
   constexpr bool enable_resampling_stop_point = true;
 
@@ -71,7 +71,7 @@ std::vector<TrajectoryPoint> resampleTrajectoryPoints(
 
 // NOTE: stop point will not be resampled
 std::vector<TrajectoryPoint> resampleTrajectoryPointsWithoutStopPoint(
-  const std::vector<TrajectoryPoint> traj_points, const double interval)
+  const std::vector<TrajectoryPoint> & traj_points, const double interval)
 {
   constexpr bool enable_resampling_stop_point = false;
 
