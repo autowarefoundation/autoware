@@ -35,7 +35,7 @@ std::string jsonDumpsPose(const geometry_msgs::msg::Pose & pose)
 }
 
 diagnostic_msgs::msg::DiagnosticStatus makeStopReasonDiag(
-  const std::string stop_reason, const geometry_msgs::msg::Pose & stop_pose)
+  const std::string & stop_reason, const geometry_msgs::msg::Pose & stop_pose)
 {
   diagnostic_msgs::msg::DiagnosticStatus stop_reason_diag;
   diagnostic_msgs::msg::KeyValue stop_reason_diag_kv;
