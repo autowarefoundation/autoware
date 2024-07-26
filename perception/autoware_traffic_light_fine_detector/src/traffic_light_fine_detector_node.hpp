@@ -68,7 +68,7 @@ public:
    * @param expect_roi_msg   expect rois message
    */
   void callback(
-    const sensor_msgs::msg::Image::ConstSharedPtr image_msg,
+    const sensor_msgs::msg::Image::ConstSharedPtr in_image_msg,
     const TrafficLightRoiArray::ConstSharedPtr rough_roi_msg,
     const TrafficLightRoiArray::ConstSharedPtr expect_roi_msg);
 
