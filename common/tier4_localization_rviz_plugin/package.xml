@@ -6,7 +6,10 @@
   <description>The tier4_localization_rviz_plugin package</description>
   <maintainer email="isamu.takagi@tier4.jp">Takagi, Isamu</maintainer>
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
+  <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
   <license>Apache License 2.0</license>
+  <author email="isamu.takagi@tier4.jp">Takagi, Isamu</author>
+  <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
