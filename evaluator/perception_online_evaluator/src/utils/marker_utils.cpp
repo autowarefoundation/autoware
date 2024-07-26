@@ -76,7 +76,7 @@ MarkerArray createFootprintMarkerArray(
 }
 
 MarkerArray createPointsMarkerArray(
-  const std::vector<Point> points, const std::string & ns, const int32_t id, const float r,
+  const std::vector<Point> & points, const std::string & ns, const int32_t id, const float r,
   const float g, const float b)
 {
   auto marker = createDefaultMarker(
@@ -93,7 +93,7 @@ MarkerArray createPointsMarkerArray(
 }
 
 MarkerArray createPointsMarkerArray(
-  const std::vector<Pose> poses, const std::string & ns, const int32_t id, const float r,
+  const std::vector<Pose> & poses, const std::string & ns, const int32_t id, const float r,
   const float g, const float b)
 {
   auto marker = createDefaultMarker(
@@ -110,7 +110,7 @@ MarkerArray createPointsMarkerArray(
 }
 
 MarkerArray createDeviationLines(
-  const std::vector<Pose> poses1, const std::vector<Pose> poses2, const std::string & ns,
+  const std::vector<Pose> & poses1, const std::vector<Pose> & poses2, const std::string & ns,
   const int32_t & first_id, const float r, const float g, const float b)
 {
   MarkerArray msg;
@@ -144,7 +144,7 @@ MarkerArray createPoseMarkerArray(
 }
 
 MarkerArray createPosesMarkerArray(
-  const std::vector<Pose> poses, std::string && ns, const int32_t & first_id, const float & r,
+  const std::vector<Pose> & poses, std::string && ns, const int32_t & first_id, const float & r,
   const float & g, const float & b, const float & x_scale, const float & y_scale,
   const float & z_scale)
 {
