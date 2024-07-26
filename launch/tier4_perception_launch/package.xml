@@ -29,7 +29,9 @@
   <exec_depend>autoware_object_merger</exec_depend>
   <exec_depend>autoware_object_range_splitter</exec_depend>
   <exec_depend>autoware_object_velocity_splitter</exec_depend>
+  <exec_depend>autoware_occupancy_grid_map_outlier_filter</exec_depend>
   <exec_depend>autoware_pointcloud_preprocessor</exec_depend>
+  <exec_depend>autoware_probabilistic_occupancy_grid_map</exec_depend>
   <exec_depend>autoware_radar_crossing_objects_noise_filter</exec_depend>
   <exec_depend>autoware_radar_fusion_to_detected_object</exec_depend>
   <exec_depend>autoware_radar_object_clustering</exec_depend>
@@ -38,9 +40,7 @@
   <exec_depend>autoware_shape_estimation</exec_depend>
   <exec_depend>autoware_tracking_object_merger</exec_depend>
   <exec_depend>image_transport_decompressor</exec_depend>
-  <exec_depend>occupancy_grid_map_outlier_filter</exec_depend>
   <exec_depend>pointcloud_to_laserscan</exec_depend>
-  <exec_depend>probabilistic_occupancy_grid_map</exec_depend>
   <exec_depend>topic_tools</exec_depend>
   <exec_depend>traffic_light_arbiter</exec_depend>
 

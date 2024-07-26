@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(occupancy_grid_map_outlier_filter)
+project(autoware_occupancy_grid_map_outlier_filter)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -41,6 +41,6 @@ endif()
 # -- Occupancy Grid Map Outlier Filter --
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "autoware::occupancy_grid_map_outlier_filter::OccupancyGridMapOutlierFilterComponent"
-  EXECUTABLE occupancy_grid_map_outlier_filter_node)
+  EXECUTABLE ${PROJECT_NAME}_node)
 
 ament_auto_package(INSTALL_TO_SHARE)

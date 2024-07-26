@@ -34,7 +34,7 @@ from rclpy.qos import QoSProfile
 from rclpy.qos import QoSReliabilityPolicy
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 
-PACKAGE_NAME = "probabilistic_occupancy_grid_map"
+PACKAGE_NAME = "autoware_probabilistic_occupancy_grid_map"
 INPUT_TOPICS = ["/topic1", "/topic2"]
 DEBUG_OUTPUT_TOPIC = "/synchronized_grid_map_fusion_node/debug/single_frame_map"
 OUTPUT_TOPIC = "/synchronized_grid_map_fusion_node/output/occupancy_grid_map"

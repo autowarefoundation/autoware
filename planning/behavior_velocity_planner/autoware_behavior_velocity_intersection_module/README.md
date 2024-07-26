@@ -508,7 +508,7 @@ If you want to care the occlusion nearby ego more cautiously, set `occlusion.occ
 
 #### occupancy grid map tuning
 
-Refer to the document of [probabilistic_occupancy_grid_map](https://autowarefoundation.github.io/autoware.universe/main/perception/probabilistic_occupancy_grid_map/) for details. If occlusion tends to be detected at apparently free space, increase `occlusion.free_space_max` to ignore them.
+Refer to the document of [autoware_probabilistic_occupancy_grid_map](https://autowarefoundation.github.io/autoware.universe/main/perception/autoware_probabilistic_occupancy_grid_map/) for details. If occlusion tends to be detected at apparently free space, increase `occlusion.free_space_max` to ignore them.
 
 #### in simple_planning_simulator
 

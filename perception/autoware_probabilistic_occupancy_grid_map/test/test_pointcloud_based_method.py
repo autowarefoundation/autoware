@@ -37,7 +37,7 @@ from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import PointField
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 
-PACKAGE_NAME = "probabilistic_occupancy_grid_map"
+PACKAGE_NAME = "autoware_probabilistic_occupancy_grid_map"
 INPUT_TOPIC_RAW = "/raw"
 INPUT_TOPIC_OBSTACLE = "/obstacle"
 

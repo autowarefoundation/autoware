@@ -5,11 +5,11 @@
 
   <arg name="input/laserscan" default="/perception/occupancy_grid_map/virtual_scan/laserscan"/>
   <arg name="input/occupancy_grid_map" default="/perception/object_recognition/detection/validation/occupancy_grid_based/single_frame_occupancy_grid_map"/>
-  <arg name="occupancy_grid_map_param_path" default="$(find-pkg-share probabilistic_occupancy_grid_map)/config/laserscan_based_occupancy_grid_map.param.yaml"/>
-  <arg name="occupancy_grid_map_updater_param_path" default="$(find-pkg-share probabilistic_occupancy_grid_map)/config/binary_bayes_filter_updater.param.yaml"/>
+  <arg name="occupancy_grid_map_param_path" default="$(find-pkg-share autoware_probabilistic_occupancy_grid_map)/config/laserscan_based_occupancy_grid_map.param.yaml"/>
+  <arg name="occupancy_grid_map_updater_param_path" default="$(find-pkg-share autoware_probabilistic_occupancy_grid_map)/config/binary_bayes_filter_updater.param.yaml"/>
   <arg name="occupancy_grid_based_validator_param_path" default="$(find-pkg-share autoware_detected_object_validation)/config/occupancy_grid_based_validator_param_path.param.yaml"/>
 
-  <node pkg="probabilistic_occupancy_grid_map" exec="laserscan_based_occupancy_grid_map_node" name="single_frame_laserscan_occupancy_grid_map" output="screen">
+  <node pkg="autoware_probabilistic_occupancy_grid_map" exec="laserscan_based_occupancy_grid_map_node" name="single_frame_laserscan_occupancy_grid_map" output="screen">
     <remap from="~/input/laserscan" to="$(var input/laserscan)"/>
     <remap from="~/output/occupancy_grid_map" to="$(var input/occupancy_grid_map)"/>
     <param name="input_obstacle_pointcloud" value="false"/>

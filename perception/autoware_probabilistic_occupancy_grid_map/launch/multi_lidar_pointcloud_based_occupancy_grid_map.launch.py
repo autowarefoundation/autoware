@@ -195,7 +195,7 @@ def launch_setup(context, *args, **kwargs):
 
         # generate composable node
         node = ComposableNode(
-            package="probabilistic_occupancy_grid_map",
+            package="autoware_probabilistic_occupancy_grid_map",
             plugin="autoware::occupancy_grid_map::PointcloudBasedOccupancyGridMapNode",
             name="occupancy_grid_map_node",
             namespace=frame_name,
@@ -218,7 +218,7 @@ def launch_setup(context, *args, **kwargs):
     # 2. launch occupancy grid map fusion node
     gridmap_fusion_node = [
         ComposableNode(
-            package="probabilistic_occupancy_grid_map",
+            package="autoware_probabilistic_occupancy_grid_map",
             plugin="synchronized_grid_map_fusion::GridMapFusionNode",
             name="occupancy_grid_map_fusion_node",
             remappings=[
@@ -275,13 +275,13 @@ def generate_launch_description():
             add_launch_arg("output", "occupancy_grid"),
             add_launch_arg(
                 "multi_lidar_fusion_config_file",
-                get_package_share_directory("probabilistic_occupancy_grid_map")
+                get_package_share_directory("autoware_probabilistic_occupancy_grid_map")
                 + "/config/multi_lidar_pointcloud_based_occupancy_grid_map.param.yaml",
             ),
             add_launch_arg("updater_type", "binary_bayes_filter"),
             add_launch_arg(
                 "updater_param_file",
-                get_package_share_directory("probabilistic_occupancy_grid_map")
+                get_package_share_directory("autoware_probabilistic_occupancy_grid_map")
                 + "/config/binary_bayes_filter_updater.param.yaml",
             ),
             set_container_executable,

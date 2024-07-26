@@ -77,9 +77,9 @@ The minimum node launch will be like the following.
 <?xml version="1.0"?>
 <launch>
 <arg name="output_topic" default="~/output/occupancy_grid_map"/>
-<arg name="fusion_node_param_path" default="$(find-pkg-share probabilistic_occupancy_grid_map)/config/synchronized_grid_map_fusion_node.param.yaml"/>
+<arg name="fusion_node_param_path" default="$(find-pkg-share autoware_probabilistic_occupancy_grid_map)/config/synchronized_grid_map_fusion_node.param.yaml"/>
 
-<node name="synchronized_grid_map_fusion_node" exec="synchronized_grid_map_fusion_node" pkg="probabilistic_occupancy_grid_map" output="screen">
+<node name="synchronized_grid_map_fusion_node" exec="synchronized_grid_map_fusion_node" pkg="autoware_probabilistic_occupancy_grid_map" output="screen">
   <remap from="~/output/occupancy_grid_map" to="$(var output_topic)"/>
   <param from="$(var fusion_node_param_path)"/>
 </node>
@@ -90,7 +90,7 @@ The minimum node launch will be like the following.
 
 You need to generate OGMs in each sensor frame before achieving grid map fusion.
 
-`probabilistic_occupancy_grid_map` package supports to generate OGMs for the each from the point cloud data.
+`autoware_probabilistic_occupancy_grid_map` package supports to generate OGMs for the each from the point cloud data.
 
 <details>
 <summary> Example launch.xml (click to expand) </summary>
@@ -107,7 +107,7 @@ You need to generate OGMs in each sensor frame before achieving grid map fusion.
     <arg name="use_pointcloud_container" value="$(var use_pointcloud_container)"/>
     <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
     <arg name="method" value="pointcloud_based_occupancy_grid_map"/>
-    <arg name="param_file" value="$(find-pkg-share probabilistic_occupancy_grid_map)/config/pointcloud_based_occupancy_grid_map_fusion.param.yaml"/>
+    <arg name="param_file" value="$(find-pkg-share autoware_probabilistic_occupancy_grid_map)/config/pointcloud_based_occupancy_grid_map_fusion.param.yaml"/>
 </include>
 
 
@@ -130,7 +130,7 @@ The minimum parameter for the OGM generation in each frame is shown in the follo
 <br>
 
 We recommend to use same `map_frame`, size and resolutions for the OGMs from synchronized sensors.  
-Also, remember to set `enable_single_frame_mode` and `filter_obstacle_pointcloud_by_raw_pointcloud` to `true` in the `probabilistic_occupancy_grid_map` package (you do not need to set these parameters if you use the above example config file).
+Also, remember to set `enable_single_frame_mode` and `filter_obstacle_pointcloud_by_raw_pointcloud` to `true` in the `autoware_probabilistic_occupancy_grid_map` package (you do not need to set these parameters if you use the above example config file).
 
 <br>
 
@@ -141,7 +141,7 @@ We prepared the launch file to run both OGM generation node and fusion node in [
 You can include this launch file like the following.
 
 ```xml
-<include file="$(find-pkg-share probabilistic_occupancy_grid_map)/launch/grid_map_fusion_with_synchronized_pointclouds.launch.py">
+<include file="$(find-pkg-share autoware_probabilistic_occupancy_grid_map)/launch/grid_map_fusion_with_synchronized_pointclouds.launch.py">
   <arg name="output" value="/perception/occupancy_grid_map/fusion/map"/>
   <arg name="use_intra_process" value="true"/>
   <arg name="use_multithread" value="true"/>

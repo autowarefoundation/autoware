@@ -1,4 +1,4 @@
-# probabilistic_occupancy_grid_map
+# autoware_probabilistic_occupancy_grid_map
 
 ## Purpose
 
@@ -21,12 +21,12 @@ You may need to choose `scan_origin_frame` and `gridmap_origin_frame` which mean
 
 ### Parameters
 
-{{ json_to_markdown("perception/probabilistic_occupancy_grid_map/schema/binary_bayes_filter_updater.schema.json") }}
-{{ json_to_markdown("perception/probabilistic_occupancy_grid_map/schema/grid_map.schema.json") }}
-{{ json_to_markdown("perception/probabilistic_occupancy_grid_map/schema/laserscan_based_occupancy_grid_map.schema.json") }}
-{{ json_to_markdown("perception/probabilistic_occupancy_grid_map/schema/multi_lidar_pointcloud_based_occupancy_grid_map.schema.json") }}
-{{ json_to_markdown("perception/probabilistic_occupancy_grid_map/schema/pointcloud_based_occupancy_grid_map.schema.json") }}
-{{ json_to_markdown("perception/probabilistic_occupancy_grid_map/schema/synchronized_grid_map_fusion_node.schema.json") }}
+{{ json_to_markdown("perception/autoware_probabilistic_occupancy_grid_map/schema/binary_bayes_filter_updater.schema.json") }}
+{{ json_to_markdown("perception/autoware_probabilistic_occupancy_grid_map/schema/grid_map.schema.json") }}
+{{ json_to_markdown("perception/autoware_probabilistic_occupancy_grid_map/schema/laserscan_based_occupancy_grid_map.schema.json") }}
+{{ json_to_markdown("perception/autoware_probabilistic_occupancy_grid_map/schema/multi_lidar_pointcloud_based_occupancy_grid_map.schema.json") }}
+{{ json_to_markdown("perception/autoware_probabilistic_occupancy_grid_map/schema/pointcloud_based_occupancy_grid_map.schema.json") }}
+{{ json_to_markdown("perception/autoware_probabilistic_occupancy_grid_map/schema/synchronized_grid_map_fusion_node.schema.json") }}
 
 ### Downsample input pointcloud(Optional)
 
@@ -54,7 +54,7 @@ This package provides unit tests using `gtest`.
 You can run the test by the following command.
 
 ```bash
-colcon test --packages-select probabilistic_occupancy_grid_map --event-handlers console_direct+
+colcon test --packages-select autoware_probabilistic_occupancy_grid_map --event-handlers console_direct+
 ```
 
 Test contains the following.

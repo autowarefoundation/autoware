@@ -16,7 +16,7 @@
 
   <!--pointcloud based method-->
   <group if="$(eval &quot;'$(var occupancy_grid_map_method)'=='pointcloud_based_occupancy_grid_map'&quot;)">
-    <include file="$(find-pkg-share probabilistic_occupancy_grid_map)/launch/pointcloud_based_occupancy_grid_map.launch.py">
+    <include file="$(find-pkg-share autoware_probabilistic_occupancy_grid_map)/launch/pointcloud_based_occupancy_grid_map.launch.py">
       <arg name="input/obstacle_pointcloud" value="$(var input/obstacle_pointcloud)"/>
       <arg name="input/raw_pointcloud" value="$(var input/raw_pointcloud)"/>
       <arg name="output" value="$(var output)"/>
@@ -32,7 +32,7 @@
 
   <!--laserscan based method-->
   <group if="$(eval &quot;'$(var occupancy_grid_map_method)'=='laserscan_based_occupancy_grid_map'&quot;)">
-    <include file="$(find-pkg-share probabilistic_occupancy_grid_map)/launch/laserscan_based_occupancy_grid_map.launch.py">
+    <include file="$(find-pkg-share autoware_probabilistic_occupancy_grid_map)/launch/laserscan_based_occupancy_grid_map.launch.py">
       <arg name="input/obstacle_pointcloud" value="$(var input/obstacle_pointcloud)"/>
       <arg name="input/raw_pointcloud" value="$(var input/raw_pointcloud)"/>
       <arg name="output" value="$(var output)"/>
@@ -50,7 +50,7 @@
 
   <!--multi lidar pointclouds based method-->
   <group if="$(eval &quot;'$(var occupancy_grid_map_method)'=='multi_lidar_pointcloud_based_occupancy_grid_map'&quot;)">
-    <include file="$(find-pkg-share probabilistic_occupancy_grid_map)/launch/multi_lidar_pointcloud_based_occupancy_grid_map.launch.py">
+    <include file="$(find-pkg-share autoware_probabilistic_occupancy_grid_map)/launch/multi_lidar_pointcloud_based_occupancy_grid_map.launch.py">
       <arg name="input/obstacle_pointcloud" value="$(var input/obstacle_pointcloud)"/>
       <arg name="output" value="/perception/occupancy_grid_map/map"/>
       <arg name="use_intra_process" value="true"/>

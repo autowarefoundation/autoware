@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(probabilistic_occupancy_grid_map)
+project(autoware_probabilistic_occupancy_grid_map)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()

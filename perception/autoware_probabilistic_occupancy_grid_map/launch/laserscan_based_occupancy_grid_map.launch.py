@@ -84,7 +84,7 @@ def launch_setup(context, *args, **kwargs):
             extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
         ),
         ComposableNode(
-            package="probabilistic_occupancy_grid_map",
+            package="autoware_probabilistic_occupancy_grid_map",
             plugin="autoware::occupancy_grid_map::LaserscanBasedOccupancyGridMapNode",
             name="occupancy_grid_map_node",
             remappings=[
@@ -162,13 +162,13 @@ def generate_launch_description():
             add_launch_arg("output/stixel", "virtual_scan/stixel"),
             add_launch_arg(
                 "param_file",
-                get_package_share_directory("probabilistic_occupancy_grid_map")
+                get_package_share_directory("autoware_probabilistic_occupancy_grid_map")
                 + "/config/laserscan_based_occupancy_grid_map.param.yaml",
             ),
             add_launch_arg("updater_type", "binary_bayes_filter"),
             add_launch_arg(
                 "updater_param_file",
-                get_package_share_directory("probabilistic_occupancy_grid_map")
+                get_package_share_directory("autoware_probabilistic_occupancy_grid_map")
                 + "/config/updater.param.yaml",
             ),
             add_launch_arg("input_obstacle_pointcloud", "false"),

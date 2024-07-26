@@ -95,7 +95,7 @@ def launch_setup(context, *args, **kwargs):
 
     composable_nodes.append(
         ComposableNode(
-            package="probabilistic_occupancy_grid_map",
+            package="autoware_probabilistic_occupancy_grid_map",
             plugin="autoware::occupancy_grid_map::PointcloudBasedOccupancyGridMapNode",
             name="occupancy_grid_map_node",
             remappings=[
@@ -173,13 +173,13 @@ def generate_launch_description():
             add_launch_arg("output", "occupancy_grid"),
             add_launch_arg(
                 "param_file",
-                get_package_share_directory("probabilistic_occupancy_grid_map")
+                get_package_share_directory("autoware_probabilistic_occupancy_grid_map")
                 + "/config/pointcloud_based_occupancy_grid_map.param.yaml",
             ),
             add_launch_arg("updater_type", "binary_bayes_filter"),
             add_launch_arg(
                 "updater_param_file",
-                get_package_share_directory("probabilistic_occupancy_grid_map")
+                get_package_share_directory("autoware_probabilistic_occupancy_grid_map")
                 + "/config/binary_bayes_filter_updater.param.yaml",
             ),
             set_container_executable,

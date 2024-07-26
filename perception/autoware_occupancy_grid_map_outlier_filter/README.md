@@ -1,4 +1,4 @@
-# occupancy_grid_map_outlier_filter
+# autoware_occupancy_grid_map_outlier_filter
 
 ## Purpose
 

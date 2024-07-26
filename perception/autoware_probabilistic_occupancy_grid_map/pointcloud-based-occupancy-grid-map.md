@@ -130,7 +130,7 @@ In several places we have modified the external code written in BSD3 license.
 If `grid_map_type` is "OccupancyGridMapProjectiveBlindSpot" and `pub_debug_grid` is `true`, it is possible to check the each process of grid map generation by running
 
 ```shell
-ros2 launch probabilistic_occupancy_grid_map debug.launch.xml
+ros2 launch autoware_probabilistic_occupancy_grid_map debug.launch.xml
 ```
 
 and visualizing the following occupancy grid map topics (which are listed in config/grid_map_param.yaml):
