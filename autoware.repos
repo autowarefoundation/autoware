@@ -47,7 +47,7 @@ repositories:
   universe/autoware.universe:
     type: git
     url: https://github.com/iASL-Gifu/autoware.universe.git
-    version: main
+    version: dev/rover
   
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
@@ -128,6 +128,12 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/ros2_socketcan
     version: feat/continental_fd
+
+  sensor_component/external/xsens:
+    type: git
+    url: https://github.com/Arata-Stu/bluespace_ai_xsens_ros_mti_driver.git
+    version: dev/rover
+
   # sensor_kit
 
   #sensor_kit/sample_sensor_kit_launch:
@@ -138,7 +144,7 @@ repositories:
   sensor_kit/sample_sensor_kit_launch:
     type: git
     url: https://github.com/Arata-Stu/sample_sensor_kit_launch.git
-    version: main
+    version: dev/rover
   
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
@@ -150,7 +156,7 @@ repositories:
     version: main
   sensor_kit/single_lidar_sensor_kit_launch:
     type: git
-    url: https://github.com/autowarefoundation/single_lidar_sensor_kit_launch.git
+    url: https://github.com/Arata-Stu/single_lidar_sensor_kit_launch.git
     version: main
   # vehicle
   #vehicle/sample_vehicle_launch:
@@ -168,7 +174,8 @@ repositories:
     url: https://github.com/tier4/pacmod_interface.git
     version: main
   # param
+
   param/autoware_individual_params:
     type: git
-    url: https://github.com/autowarefoundation/autoware_individual_params.git
-    version: main
+    url: https://github.com/Arata-Stu/autoware_individual_params.git
+    version: dev/rover
