@@ -275,6 +275,19 @@ bool LaneChangeInterface::canTransitFailureState()
       return true;
     }
 
+    const auto force_deactivated = std::any_of(
+      rtc_interface_ptr_map_.begin(), rtc_interface_ptr_map_.end(),
+      [&](const auto & rtc) { return rtc.second->isForceDeactivated(uuid_map_.at(rtc.first)); });
+
+    if (force_deactivated && module_type_->isAbleToReturnCurrentLane()) {
+      log_debug_throttled("Cancel lane change due to force deactivation");
+      module_type_->toCancelState();
+      updateRTCStatus(
+        std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest(), true,
+        State::FAILED);
+      return true;
+    }
+
     if (post_process_safety_status_.is_safe) {
       log_debug_throttled("Can't transit to failure state. Ego is on prepare, and it's safe.");
       return false;
