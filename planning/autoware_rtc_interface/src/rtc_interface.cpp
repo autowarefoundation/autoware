@@ -370,6 +370,30 @@ bool RTCInterface::isForceActivated(const UUID & uuid) const
   return false;
 }
 
+bool RTCInterface::isForceDeactivated(const UUID & uuid) const
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  const auto itr = std::find_if(
+    registered_status_.statuses.begin(), registered_status_.statuses.end(),
+    [uuid](const auto & s) { return s.uuid == uuid; });
+
+  if (itr != registered_status_.statuses.end()) {
+    if (itr->state.type != State::RUNNING) {
+      return false;
+    }
+    if (itr->command_status.type == Command::DEACTIVATE && itr->safe && !itr->auto_mode) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  RCLCPP_WARN_STREAM(
+    getLogger(),
+    "[isForceDeactivated] uuid : " << uuid_to_string(uuid) << " is not found" << std::endl);
+  return false;
+}
+
 bool RTCInterface::isRegistered(const UUID & uuid) const
 {
   std::lock_guard<std::mutex> lock(mutex_);
