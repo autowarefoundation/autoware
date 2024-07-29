@@ -72,9 +72,7 @@ void CompareElevationMapFilterComponent::filter(
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_input(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_output(new pcl::PointCloud<pcl::PointXYZ>);
-  std::string output_frame = map_frame_;
 
-  output_frame = elevation_map_.getFrameId();
   elevation_map_.setTimestamp(input->header.stamp.nanosec);
   pcl::fromROSMsg(*input, *pcl_input);
   pcl_output->points.reserve(pcl_input->points.size());
@@ -92,7 +90,7 @@ void CompareElevationMapFilterComponent::filter(
 
   pcl::toROSMsg(*pcl_output, output);
   output.header.stamp = input->header.stamp;
-  output.header.frame_id = output_frame;
+  output.header.frame_id = elevation_map_.getFrameId();
 }
 }  // namespace autoware::compare_map_segmentation
 
