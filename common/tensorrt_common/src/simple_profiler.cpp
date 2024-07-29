@@ -22,7 +22,6 @@ namespace tensorrt_common
 SimpleProfiler::SimpleProfiler(std::string name, const std::vector<SimpleProfiler> & src_profilers)
 : m_name(name)
 {
-  float total_time = 0.0;
   m_index = 0;
   for (const auto & src_profiler : src_profilers) {
     for (const auto & rec : src_profiler.m_profile) {
@@ -32,7 +31,6 @@ SimpleProfiler::SimpleProfiler(std::string name, const std::vector<SimpleProfile
       } else {
         it->second.time += rec.second.time;
         it->second.count += rec.second.count;
-        total_time += rec.second.time;
       }
     }
   }

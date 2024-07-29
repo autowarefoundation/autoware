@@ -278,7 +278,6 @@ void TrtCommon::printNetworkInfo(const std::string & onnx_file_path)
   for (int i = 0; i < num; i++) {
     nvinfer1::ILayer * layer = network->getLayer(i);
     auto layer_type = layer->getType();
-    std::string name = layer->getName();
     if (build_config_->profile_per_layer) {
       model_profiler_.setProfDict(layer);
     }
