@@ -420,7 +420,7 @@ std::vector<DynamicObstacle> RunOutModule::excludeObstaclesOnEgoPath(
 
 std::vector<DynamicObstacle> RunOutModule::checkCollisionWithObstacles(
   const std::vector<DynamicObstacle> & dynamic_obstacles,
-  std::vector<geometry_msgs::msg::Point> poly, const float travel_time,
+  const std::vector<geometry_msgs::msg::Point> & poly, const float travel_time,
   const std::vector<std::pair<int64_t, lanelet::ConstLanelet>> & crosswalk_lanelets) const
 {
   const auto bg_poly_vehicle = run_out_utils::createBoostPolyFromMsg(poly);
@@ -976,7 +976,7 @@ std::vector<DynamicObstacle> RunOutModule::excludeObstaclesOutSideOfPartition(
 }
 
 void RunOutModule::publishDebugValue(
-  const PathWithLaneId & path, const std::vector<DynamicObstacle> extracted_obstacles,
+  const PathWithLaneId & path, const std::vector<DynamicObstacle> & extracted_obstacles,
   const std::optional<DynamicObstacle> & dynamic_obstacle,
   const geometry_msgs::msg::Pose & current_pose) const
 {

@@ -33,7 +33,7 @@ namespace autoware::behavior_velocity_planner
 namespace
 {
 RunOutDebug::TextWithPosition createDebugText(
-  const std::string text, const geometry_msgs::msg::Pose pose, const float lateral_offset)
+  const std::string & text, const geometry_msgs::msg::Pose pose, const float lateral_offset)
 {
   const auto offset_pose = autoware::universe_utils::calcOffsetPose(pose, 0, lateral_offset, 0);
 
@@ -46,7 +46,7 @@ RunOutDebug::TextWithPosition createDebugText(
 
 visualization_msgs::msg::MarkerArray createPolygonMarkerArray(
   const std::vector<std::vector<geometry_msgs::msg::Point>> & poly, const rclcpp::Time & time,
-  const std::string ns, const geometry_msgs::msg::Vector3 & scale,
+  const std::string & ns, const geometry_msgs::msg::Vector3 & scale,
   const std_msgs::msg::ColorRGBA & color, const double height)
 {
   visualization_msgs::msg::MarkerArray marker_array;
