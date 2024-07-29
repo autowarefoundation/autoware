@@ -224,7 +224,7 @@ public:
   }
   inline void updateDifferentialMapCells(
     const std::vector<autoware_map_msgs::msg::PointCloudMapCellWithID> & map_cells_to_add,
-    std::vector<std::string> map_cell_ids_to_remove)
+    const std::vector<std::string> & map_cell_ids_to_remove)
   {
     for (const auto & map_cell_to_add : map_cells_to_add) {
       addMapCellAndFilter(map_cell_to_add);
@@ -271,7 +271,7 @@ public:
     (*mutex_ptr_).unlock();
   }
 
-  inline void removeMapCell(const std::string map_cell_id_to_remove)
+  inline void removeMapCell(const std::string & map_cell_id_to_remove)
   {
     (*mutex_ptr_).lock();
     current_voxel_grid_dict_.erase(map_cell_id_to_remove);
