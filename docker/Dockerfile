@@ -29,9 +29,6 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
   && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
 
-# Create entrypoint
-CMD ["/bin/bash"]
-
 FROM $BASE_IMAGE as rosdep-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -80,11 +77,8 @@ RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
 
 FROM base as autoware-core
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
 ARG SETUP_ARGS
-ENV CCACHE_DIR="/root/.ccache"
 
-# cspell: ignore libcu libnv
 # Set up development environment
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -92,7 +86,7 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
-# Install rosdep dependencies
+# Install rosdep dependencies for core packages
 COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -100,6 +94,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
+FROM autoware-core as autoware-core-prebuilt
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+# Build Autoware core
 RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
   --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
@@ -110,13 +110,12 @@ RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autow
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s
 
-FROM autoware-core as autoware-universe
+FROM autoware-core-prebuilt as autoware-universe
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
-ARG SETUP_ARGS
 ENV CCACHE_DIR="/root/.ccache"
 
-# Install rosdep dependencies
+# Install rosdep dependencies for universe packages
 COPY --from=rosdep-depend /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
@@ -124,7 +123,7 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-# Build Autoware
+# Build Autoware universe
 RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src,target=/autoware/src \
   --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
@@ -135,19 +134,24 @@ RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src,target=/autoware/s
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s
 
-CMD ["/bin/bash"]
-
-FROM autoware-universe as devel
+FROM autoware-core as devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install development tools and artifacts
+# Install rosdep dependencies for universe packages
+COPY --from=rosdep-depend /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
+# hadolint ignore=SC2002
 RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module dev-tools openadkit \
-  && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache
+  apt-get update \
+  && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-COPY src /autoware/src
+# Install development tools
+RUN --mount=type=ssh \
+--mount=type=cache,target=/var/cache/apt,sharing=locked \
+./setup-dev-env.sh -y --module dev-tools openadkit \
+&& pip uninstall -y ansible ansible-core \
+&& apt-get autoremove -y && rm -rf "$HOME"/.cache
+
 # Create entrypoint
 COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
