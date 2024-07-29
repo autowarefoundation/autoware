@@ -23,6 +23,7 @@
   <exec_depend>autoware_euclidean_cluster</exec_depend>
   <exec_depend>autoware_ground_segmentation</exec_depend>
   <exec_depend>autoware_image_projection_based_fusion</exec_depend>
+  <exec_depend>autoware_image_transport_decompressor</exec_depend>
   <exec_depend>autoware_lidar_apollo_instance_segmentation</exec_depend>
   <exec_depend>autoware_map_based_prediction</exec_depend>
   <exec_depend>autoware_multi_object_tracker</exec_depend>
@@ -46,7 +47,6 @@
   <exec_depend>autoware_traffic_light_multi_camera_fusion</exec_depend>
   <exec_depend>autoware_traffic_light_occlusion_predictor</exec_depend>
   <exec_depend>autoware_traffic_light_visualization</exec_depend>
-  <exec_depend>image_transport_decompressor</exec_depend>
   <exec_depend>pointcloud_to_laserscan</exec_depend>
   <exec_depend>topic_tools</exec_depend>
 

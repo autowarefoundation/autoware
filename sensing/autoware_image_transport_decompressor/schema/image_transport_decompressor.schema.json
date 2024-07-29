@@ -3,7 +3,7 @@
   "title": "Parameters for Image Transport Decompressor",
   "type": "object",
   "definitions": {
-    "image_transport_decompressor": {
+    "autoware_image_transport_decompressor": {
       "type": "object",
       "properties": {
         "encoding": {
@@ -20,7 +20,7 @@
       "type": "object",
       "properties": {
         "ros__parameters": {
-          "$ref": "#/definitions/image_transport_decompressor"
+          "$ref": "#/definitions/autoware_image_transport_decompressor"
         }
       },
       "required": ["ros__parameters"]

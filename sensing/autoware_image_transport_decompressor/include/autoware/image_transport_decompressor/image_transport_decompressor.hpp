@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef IMAGE_TRANSPORT_DECOMPRESSOR__IMAGE_TRANSPORT_DECOMPRESSOR_HPP_
-#define IMAGE_TRANSPORT_DECOMPRESSOR__IMAGE_TRANSPORT_DECOMPRESSOR_HPP_
+#ifndef AUTOWARE__IMAGE_TRANSPORT_DECOMPRESSOR__IMAGE_TRANSPORT_DECOMPRESSOR_HPP_
+#define AUTOWARE__IMAGE_TRANSPORT_DECOMPRESSOR__IMAGE_TRANSPORT_DECOMPRESSOR_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -24,7 +24,7 @@
 #include <string>
 #include <utility>
 
-namespace image_preprocessor
+namespace autoware::image_preprocessor
 {
 class ImageTransportDecompressor : public rclcpp::Node
 {
@@ -40,6 +40,6 @@ private:
   std::string encoding_;
 };
 
-}  // namespace image_preprocessor
+}  // namespace autoware::image_preprocessor
 
-#endif  // IMAGE_TRANSPORT_DECOMPRESSOR__IMAGE_TRANSPORT_DECOMPRESSOR_HPP_
+#endif  // AUTOWARE__IMAGE_TRANSPORT_DECOMPRESSOR__IMAGE_TRANSPORT_DECOMPRESSOR_HPP_

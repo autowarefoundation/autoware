@@ -46,7 +46,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "image_transport_decompressor/image_transport_decompressor.hpp"
+#include "autoware/image_transport_decompressor/image_transport_decompressor.hpp"
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -65,7 +65,7 @@
 #include <utility>
 #include <vector>
 
-namespace image_preprocessor
+namespace autoware::image_preprocessor
 {
 ImageTransportDecompressor::ImageTransportDecompressor(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("image_transport_decompressor", node_options),
@@ -179,7 +179,7 @@ void ImageTransportDecompressor::onCompressedImage(
     raw_image_pub_->publish(std::move(image_ptr));
   }
 }
-}  // namespace image_preprocessor
+}  // namespace autoware::image_preprocessor
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(image_preprocessor::ImageTransportDecompressor)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::image_preprocessor::ImageTransportDecompressor)

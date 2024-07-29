@@ -8,8 +8,8 @@
   <arg name="use_decompress" default="true" description="use image decompress"/>
   <arg name="build_only" default="false" description="exit after trt engine is built"/>
 
-  <arg name="param_file" default="$(find-pkg-share image_transport_decompressor)/config/image_transport_decompressor.param.yaml"/>
-  <node pkg="image_transport_decompressor" exec="image_transport_decompressor_node" name="image_transport_decompressor_node" if="$(var use_decompress)">
+  <arg name="param_file" default="$(find-pkg-share autoware_image_transport_decompressor)/config/image_transport_decompressor.param.yaml"/>
+  <node pkg="autoware_image_transport_decompressor" exec="image_transport_decompressor_node" name="image_transport_decompressor_node" if="$(var use_decompress)">
     <remap from="~/input/compressed_image" to="$(var input/image)/compressed"/>
     <remap from="~/output/raw_image" to="$(var input/image)"/>
     <param from="$(var param_file)"/>

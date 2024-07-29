@@ -113,8 +113,8 @@ def launch_setup(context, *args, **kwargs):
     decompressor_loader = LoadComposableNodes(
         composable_node_descriptions=[
             ComposableNode(
-                package="image_transport_decompressor",
-                plugin="image_preprocessor::ImageTransportDecompressor",
+                package="autoware_image_transport_decompressor",
+                plugin="autoware::image_preprocessor::ImageTransportDecompressor",
                 name="traffic_light_image_decompressor",
                 parameters=[{"encoding": "rgb8"}],
                 remappings=[

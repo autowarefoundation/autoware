@@ -201,7 +201,7 @@ planning/sampling_based_planner/autoware_path_sampler/** maxime.clement@tier4.jp
 planning/sampling_based_planner/autoware_sampler_common/** maxime.clement@tier4.jp
 sensing/gnss_poser/** anh.nguyen.2@tier4.jp kento.yabuuchi.2@tier4.jp masahiro.sakamoto@tier4.jp ryu.yamamoto@tier4.jp shintaro.sakoda@tier4.jp taiki.yamada@tier4.jp yamato.ando@tier4.jp
 sensing/autoware_image_diagnostics/** dai.nguyen@tier4.jp yoshi.ri@tier4.jp
-sensing/image_transport_decompressor/** kenzo.lobos@tier4.jp yukihiro.saito@tier4.jp
+sensing/autoware_image_transport_decompressor/** kenzo.lobos@tier4.jp yukihiro.saito@tier4.jp
 sensing/imu_corrector/** taiki.yamada@tier4.jp yamato.ando@tier4.jp
 sensing/livox/autoware_livox_tag_filter/** kenzo.lobos@tier4.jp ryohsuke.mitsudome@tier4.jp
 sensing/autoware_pointcloud_preprocessor/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp david.wong@tier4.jp kenzo.lobos@tier4.jp kyoichi.sugahara@tier4.jp melike@leodrive.ai shunsuke.miura@tier4.jp yihsiang.fang@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
