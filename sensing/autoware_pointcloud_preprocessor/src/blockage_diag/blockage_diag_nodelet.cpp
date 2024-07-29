@@ -108,7 +108,7 @@ void BlockageDiagComponent::onBlockageChecker(DiagnosticStatusWrapper & stat)
   // TODO(badai-nguyen): consider sky_blockage_ratio_ for DiagnosticsStatus." [todo]
 
   auto level = DiagnosticStatus::OK;
-  std::string msg;
+  std::string msg = "OK";
   if (ground_blockage_ratio_ < 0) {
     level = DiagnosticStatus::STALE;
     msg = "STALE";
@@ -120,9 +120,6 @@ void BlockageDiagComponent::onBlockageChecker(DiagnosticStatusWrapper & stat)
   } else if (ground_blockage_ratio_ > 0.0f) {
     level = DiagnosticStatus::WARN;
     msg = "WARN";
-  } else {
-    level = DiagnosticStatus::OK;
-    msg = "OK";
   }
 
   if ((ground_blockage_ratio_ > 0.0f) && (sky_blockage_ratio_ > 0.0f)) {
@@ -139,7 +136,7 @@ void BlockageDiagComponent::dustChecker(diagnostic_updater::DiagnosticStatusWrap
 {
   stat.add("ground_dust_ratio", std::to_string(ground_dust_ratio_));
   auto level = DiagnosticStatus::OK;
-  std::string msg;
+  std::string msg = "OK";
   if (ground_dust_ratio_ < 0.0f) {
     level = DiagnosticStatus::STALE;
     msg = "STALE";
@@ -150,9 +147,6 @@ void BlockageDiagComponent::dustChecker(diagnostic_updater::DiagnosticStatusWrap
   } else if (ground_dust_ratio_ > 0.0f) {
     level = DiagnosticStatus::WARN;
     msg = "WARN";
-  } else {
-    level = DiagnosticStatus::OK;
-    msg = "OK";
   }
 
   if (ground_dust_ratio_ > 0.0f) {
