@@ -13,7 +13,7 @@
       <remap from="~/input/odometry" to="$(var input/odometry)"/>
       <remap from="~/input/acceleration" to="$(var input/acceleration)"/>
       <remap from="~/input/trajectory" to="$(var input/trajectory)"/>
-      <remap from="~/metrics" to="/diagnostic/control_evaluator/metrics"/>
+      <remap from="~/metrics" to="/control/control_evaluator/metrics"/>
       <remap from="~/input/vector_map" to="$(var map_topic_name)"/>
       <remap from="~/input/route" to="$(var route_topic_name)"/>
     </node>

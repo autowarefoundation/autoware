@@ -221,7 +221,7 @@
         <remap from="~/input/odometry" to="/localization/kinematic_state"/>
         <remap from="~/input/acceleration" to="/localization/acceleration"/>
         <remap from="~/input/trajectory" to="/planning/scenario_planning/trajectory"/>
-        <remap from="~/metrics" to="/diagnostic/control_evaluator/metrics"/>
+        <remap from="~/metrics" to="/control/control_evaluator/metrics"/>
         <remap from="~/input/vector_map" to="/map/vector_map"/>
         <remap from="~/input/route" to="/planning/mission_planning/route"/>
       </composable_node>

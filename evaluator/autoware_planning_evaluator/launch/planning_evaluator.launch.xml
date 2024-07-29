@@ -22,7 +22,7 @@
       <remap from="~/input/modified_goal" to="$(var input/modified_goal)"/>
       <remap from="~/input/route" to="$(var input/route_topic)"/>
       <remap from="~/input/vector_map" to="$(var input/map_topic)"/>
-      <remap from="~/metrics" to="/diagnostic/planning_evaluator/metrics"/>
+      <remap from="~/metrics" to="/planning/planning_evaluator/metrics"/>
     </node>
   </group>
 </launch>
