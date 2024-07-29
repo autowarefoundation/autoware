@@ -50,26 +50,19 @@ void ImageDiagNode::onImageDiagChecker(DiagnosticStatusWrapper & stat)
   stat.add("number backlight  regions ", std::to_string(params_.num_of_regions_backlight));
 
   auto level = DiagnosticStatusWrapper::OK;
+  std::string msg = "OK";
+
   if (params_.diagnostic_status < 0) {
     level = DiagnosticStatusWrapper::STALE;
+    msg = "STALE";
   } else if (params_.diagnostic_status == 1) {
     level = DiagnosticStatusWrapper::WARN;
+    msg = "WARNING: abnormal state in image diagnostics";
   } else if (params_.diagnostic_status == 2) {
     level = DiagnosticStatusWrapper::ERROR;
-  } else {
-    level = DiagnosticStatusWrapper::OK;
+    msg = "ERROR: abnormal state in image diagnostics";
   }
 
-  std::string msg;
-  if (level == DiagnosticStatusWrapper::OK) {
-    msg = "OK";
-  } else if (level == DiagnosticStatusWrapper::WARN) {
-    msg = "WARNING: abnormal state in image diagnostics";
-  } else if (level == DiagnosticStatusWrapper::ERROR) {
-    msg = "ERROR: abnormal state in image diagnostics";
-  } else if (level == DiagnosticStatusWrapper::STALE) {
-    msg = "STALE";
-  }
   stat.summary(level, msg);
 }
 
@@ -101,7 +94,6 @@ void ImageDiagNode::ImageChecker(const sensor_msgs::msg::Image::ConstSharedPtr i
   img_gray.convertTo(img_gray_32b, CV_32FC1);
   cv::Mat imgDCT(size, CV_32FC1);
   imgDCT.setTo(0.0);
-  float region_freq_average = 0.0;
   cv::Mat imgDFT(size, CV_32FC1);
   imgDFT.setTo(0.0);
   // calculate the features of each small block in image
@@ -132,7 +124,7 @@ void ImageDiagNode::ImageChecker(const sensor_msgs::msg::Image::ConstSharedPtr i
       cv::Mat rect_tmp = img_gray_32b(roi);
       channelImg[0](original_roi).copyTo(rect_tmp);
       cv::log(rect_tmp, rect_tmp);
-      region_freq_average = cv::mean(rect_tmp)[0];
+      const float region_freq_average = cv::mean(rect_tmp)[0];
 
       region_average_vec.push_back(intensity_average);
       region_blockage_ratio_vec.push_back(roi_blockage_ratio);
