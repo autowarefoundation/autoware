@@ -293,10 +293,6 @@ bool LinearMotionTracker::predict(const double dt, KalmanFilter & ekf) const
   A(IDX::VX, IDX::AX) = dt * acc_coeff;
   A(IDX::VY, IDX::AY) = dt * acc_coeff;
 
-  // Q: system noise
-  Eigen::MatrixXd Q = Eigen::MatrixXd::Zero(ekf_params_.dim_x, ekf_params_.dim_x);
-  Eigen::MatrixXd Q_local = Eigen::MatrixXd::Zero(ekf_params_.dim_x, ekf_params_.dim_x);
-
   // system noise in local coordinate
   // we assume acceleration random walk model
   //
@@ -311,7 +307,6 @@ bool LinearMotionTracker::predict(const double dt, KalmanFilter & ekf) const
   Eigen::VectorXd q_diag_vector = Eigen::VectorXd::Zero(ekf_params_.dim_x);
   q_diag_vector << ekf_params_.q_cov_x, ekf_params_.q_cov_y, ekf_params_.q_cov_vx,
     ekf_params_.q_cov_vy, ekf_params_.q_cov_ax, ekf_params_.q_cov_ay;
-  Q_local = q_diag_vector.asDiagonal();
 
   // Rotate the covariance matrix according to the vehicle yaw
   // because q_cov_x and y are in the vehicle coordinate system.
@@ -326,7 +321,10 @@ bool LinearMotionTracker::predict(const double dt, KalmanFilter & ekf) const
   RotateCovMatrix.block<2, 2>(IDX::X, IDX::X) = R;
   RotateCovMatrix.block<2, 2>(IDX::VX, IDX::VX) = R;
   RotateCovMatrix.block<2, 2>(IDX::AX, IDX::AX) = R;
-  Q = RotateCovMatrix * Q_local * RotateCovMatrix.transpose();
+
+  // Q: system noise
+  Eigen::MatrixXd Q_local = q_diag_vector.asDiagonal();
+  Eigen::MatrixXd Q = RotateCovMatrix * Q_local * RotateCovMatrix.transpose();
 
   Eigen::MatrixXd B = Eigen::MatrixXd::Zero(ekf_params_.dim_x, ekf_params_.dim_x);
   Eigen::MatrixXd u = Eigen::MatrixXd::Zero(ekf_params_.dim_x, 1);
@@ -396,23 +394,21 @@ bool LinearMotionTracker::measureWithPose(
 
     // covariance need to be rotated since it is in the vehicle coordinate system
     Eigen::MatrixXd Rxy_local = Eigen::MatrixXd::Zero(2, 2);
-    Eigen::MatrixXd Rxy = Eigen::MatrixXd::Zero(2, 2);
     if (!object.kinematics.has_position_covariance) {
       // switch noise covariance in polar coordinate or cartesian coordinate
       const auto r_cov_y = use_polar_coordinate_in_measurement_noise_
                              ? depth * depth * ekf_params_.r_cov_x
                              : ekf_params_.r_cov_y;
       Rxy_local << ekf_params_.r_cov_x, 0, 0, r_cov_y;  // xy in base_link coordinate
-      Rxy = RotationBaseLink * Rxy_local * RotationBaseLink.transpose();
+      R_block_list.push_back(RotationBaseLink * Rxy_local * RotationBaseLink.transpose());
     } else {
       Rxy_local << object.kinematics.pose_with_covariance.covariance[XYZRPY_COV_IDX::X_X],
         object.kinematics.pose_with_covariance.covariance[XYZRPY_COV_IDX::X_Y],
         object.kinematics.pose_with_covariance.covariance[XYZRPY_COV_IDX::Y_X],
         object.kinematics.pose_with_covariance
           .covariance[XYZRPY_COV_IDX::Y_Y];  // xy in vehicle coordinate
-      Rxy = RotationYaw * Rxy_local * RotationYaw.transpose();
+      R_block_list.push_back(RotationYaw * Rxy_local * RotationYaw.transpose());
     }
-    R_block_list.push_back(Rxy);
   }
 
   // 2. add linear velocity measurement
@@ -425,23 +421,19 @@ bool LinearMotionTracker::measureWithPose(
 
     // velocity is in the target vehicle coordinate system
     Eigen::MatrixXd Vxy_local = Eigen::MatrixXd::Zero(2, 1);
-    Eigen::MatrixXd Vxy = Eigen::MatrixXd::Zero(2, 1);
     Vxy_local << object.kinematics.twist_with_covariance.twist.linear.x,
       object.kinematics.twist_with_covariance.twist.linear.y;
-    Vxy = RotationYaw * Vxy_local;
-    Y_list.push_back(Vxy);
+    Y_list.push_back(RotationYaw * Vxy_local);
 
     Eigen::Matrix2d R_v_xy_local = Eigen::MatrixXd::Zero(2, 2);
-    Eigen::MatrixXd R_v_xy = Eigen::MatrixXd::Zero(2, 2);
     if (!object.kinematics.has_twist_covariance) {
       R_v_xy_local << ekf_params_.r_cov_vx, 0, 0, ekf_params_.r_cov_vy;
-      R_v_xy = RotationBaseLink * R_v_xy_local * RotationBaseLink.transpose();
+      R_block_list.push_back(RotationBaseLink * R_v_xy_local * RotationBaseLink.transpose());
     } else {
       R_v_xy_local << object.kinematics.twist_with_covariance.covariance[XYZRPY_COV_IDX::X_X], 0, 0,
         object.kinematics.twist_with_covariance.covariance[XYZRPY_COV_IDX::Y_Y];
-      R_v_xy = RotationYaw * R_v_xy_local * RotationYaw.transpose();
+      R_block_list.push_back(RotationYaw * R_v_xy_local * RotationYaw.transpose());
     }
-    R_block_list.push_back(R_v_xy);
   }
 
   // 3. sum up matrices
