@@ -86,7 +86,7 @@ std::vector<lanelet::BasicPolygon2d> calculate_detection_areas(
 
 std::vector<autoware_perception_msgs::msg::PredictedObject> select_and_inflate_objects(
   const std::vector<autoware_perception_msgs::msg::PredictedObject> & objects,
-  const std::vector<double> velocity_thresholds, const double inflate_size)
+  const std::vector<double> & velocity_thresholds, const double inflate_size)
 {
   std::vector<autoware_perception_msgs::msg::PredictedObject> selected_objects;
   for (const auto & o : objects) {

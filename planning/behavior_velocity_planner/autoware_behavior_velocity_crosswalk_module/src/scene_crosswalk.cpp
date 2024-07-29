@@ -145,7 +145,7 @@ std::vector<Polygon2d> calcOverlappingPoints(const Polygon2d & polygon1, const P
 
 StopFactor createStopFactor(
   const geometry_msgs::msg::Pose & stop_pose,
-  const std::vector<geometry_msgs::msg::Point> stop_factor_points = {})
+  const std::vector<geometry_msgs::msg::Point> & stop_factor_points = {})
 {
   StopFactor stop_factor;
   stop_factor.stop_factor_points = stop_factor_points;
