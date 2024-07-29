@@ -36,6 +36,12 @@ namespace autoware::behavior_path_planner::utils::path_safety_checker
 
 namespace bg = boost::geometry;
 
+using autoware::motion_utils::calcLongitudinalOffsetPoint;
+using autoware::motion_utils::calcLongitudinalOffsetToSegment;
+using autoware::motion_utils::findNearestIndex;
+using autoware::motion_utils::findNearestSegmentIndex;
+using autoware::universe_utils::calcDistance2d;
+
 void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point & geom_point)
 {
   Point2d point;
@@ -720,6 +726,98 @@ void updateCollisionCheckDebugMap(
   }
 
   debug_map.insert(object_debug);
+}
+
+double calcObstacleMinLength(const Shape & shape)
+{
+  if (shape.type == Shape::BOUNDING_BOX) {
+    return std::min(shape.dimensions.x / 2.0, shape.dimensions.y / 2.0);
+  } else if (shape.type == Shape::CYLINDER) {
+    return shape.dimensions.x / 2.0;
+  } else if (shape.type == Shape::POLYGON) {
+    double min_length_to_point = std::numeric_limits<double>::max();
+    for (const auto rel_point : shape.footprint.points) {
+      const double length_to_point = std::hypot(rel_point.x, rel_point.y);
+      if (min_length_to_point > length_to_point) {
+        min_length_to_point = length_to_point;
+      }
+    }
+    return min_length_to_point;
+  }
+
+  throw std::logic_error("The shape type is not supported in obstacle_cruise_planner.");
+}
+
+double calcObstacleMaxLength(const Shape & shape)
+{
+  if (shape.type == Shape::BOUNDING_BOX) {
+    return std::hypot(shape.dimensions.x / 2.0, shape.dimensions.y / 2.0);
+  } else if (shape.type == Shape::CYLINDER) {
+    return shape.dimensions.x / 2.0;
+  } else if (shape.type == Shape::POLYGON) {
+    double max_length_to_point = 0.0;
+    for (const auto rel_point : shape.footprint.points) {
+      const double length_to_point = std::hypot(rel_point.x, rel_point.y);
+      if (max_length_to_point < length_to_point) {
+        max_length_to_point = length_to_point;
+      }
+    }
+    return max_length_to_point;
+  }
+
+  throw std::logic_error("The shape type is not supported in obstacle_cruise_planner.");
+}
+
+std::pair<bool, bool> checkObjectsCollisionRough(
+  const PathWithLaneId & path, const PredictedObjects & objects, const double margin,
+  const BehaviorPathPlannerParameters & parameters, const bool use_offset_ego_point)
+{
+  const auto & points = path.points;
+
+  std::pair<bool, bool> has_collision = {false, false};  // {min_distance, max_distance}
+  for (const auto & object : objects.objects) {
+    // calculate distance between object center and ego base_link
+    const Point & object_point = object.kinematics.initial_pose_with_covariance.pose.position;
+    const double distance = std::invoke([&]() -> double {
+      if (use_offset_ego_point) {
+        const size_t nearest_segment_idx = findNearestSegmentIndex(points, object_point);
+        const double offset_length =
+          calcLongitudinalOffsetToSegment(points, nearest_segment_idx, object_point);
+        const auto offset_point =
+          calcLongitudinalOffsetPoint(points, nearest_segment_idx, offset_length);
+        const Point ego_point =
+          offset_point ? offset_point.value()
+                       : points.at(findNearestIndex(points, object_point)).point.pose.position;
+        return autoware::universe_utils::calcDistance2d(ego_point, object_point);
+      }
+      const Point ego_point = points.at(findNearestIndex(points, object_point)).point.pose.position;
+      return autoware::universe_utils::calcDistance2d(ego_point, object_point);
+    });
+
+    // calculate min and max length from object center to edge
+    const double object_min_length = calcObstacleMinLength(object.shape);
+    const double object_max_length = calcObstacleMaxLength(object.shape);
+
+    // calculate min and max length from ego base_link to edge
+    const auto & p = parameters;
+    const double ego_min_length =
+      std::min({p.vehicle_width / 2, p.front_overhang / 2, p.rear_overhang / 2});
+    const double ego_max_length = std::max(
+      std::hypot(p.vehicle_width / 2, p.front_overhang),
+      std::hypot(p.vehicle_width / 2, p.rear_overhang));
+
+    // calculate min and max distance between object footprint and ego footprint
+    const double min_distance = distance - object_max_length - ego_max_length;
+    const double max_distance = distance - object_min_length - ego_min_length;
+
+    if (min_distance < margin) {
+      has_collision.first = true;
+    }
+    if (max_distance < margin) {
+      has_collision.second = true;
+    }
+  }
+  return has_collision;
 }
 
 }  // namespace autoware::behavior_path_planner::utils::path_safety_checker
