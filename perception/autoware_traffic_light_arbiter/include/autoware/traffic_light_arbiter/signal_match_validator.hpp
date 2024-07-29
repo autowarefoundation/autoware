@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAFFIC_LIGHT_ARBITER__SIGNAL_MATCH_VALIDATOR_HPP_
-#define TRAFFIC_LIGHT_ARBITER__SIGNAL_MATCH_VALIDATOR_HPP_
+#ifndef AUTOWARE__TRAFFIC_LIGHT_ARBITER__SIGNAL_MATCH_VALIDATOR_HPP_
+#define AUTOWARE__TRAFFIC_LIGHT_ARBITER__SIGNAL_MATCH_VALIDATOR_HPP_
 
 #include <autoware_lanelet2_extension/utility/query.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -100,4 +100,4 @@ private:
   bool isPedestrianSignal(const lanelet::Id & signal_id);
 };
 
-#endif  // TRAFFIC_LIGHT_ARBITER__SIGNAL_MATCH_VALIDATOR_HPP_
+#endif  // AUTOWARE__TRAFFIC_LIGHT_ARBITER__SIGNAL_MATCH_VALIDATOR_HPP_

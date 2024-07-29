@@ -136,7 +136,7 @@ perception/autoware_shape_estimation/** yoshi.ri@tier4.jp yukihiro.saito@tier4.j
 perception/autoware_simple_object_merger/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp
 perception/autoware_tensorrt_classifier/** kotaro.uetake@tier4.jp shunsuke.miura@tier4.jp
 perception/autoware_tensorrt_yolox/** dan.umeda@tier4.jp manato.hirabayashi@tier4.jp
-perception/traffic_light_arbiter/** kenzo.lobos@tier4.jp shunsuke.miura@tier4.jp
+perception/autoware_traffic_light_arbiter/** kenzo.lobos@tier4.jp shunsuke.miura@tier4.jp
 perception/autoware_traffic_light_classifier/** shunsuke.miura@tier4.jp tao.zhong@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_traffic_light_fine_detector/** shintaro.tomie@tier4.jp shunsuke.miura@tier4.jp tao.zhong@tier4.jp
 perception/autoware_traffic_light_map_based_detector/** shunsuke.miura@tier4.jp tao.zhong@tier4.jp yukihiro.saito@tier4.jp

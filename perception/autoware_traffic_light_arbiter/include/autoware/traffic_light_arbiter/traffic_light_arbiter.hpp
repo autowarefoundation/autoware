@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAFFIC_LIGHT_ARBITER__TRAFFIC_LIGHT_ARBITER_HPP_
-#define TRAFFIC_LIGHT_ARBITER__TRAFFIC_LIGHT_ARBITER_HPP_
+#ifndef AUTOWARE__TRAFFIC_LIGHT_ARBITER__TRAFFIC_LIGHT_ARBITER_HPP_
+#define AUTOWARE__TRAFFIC_LIGHT_ARBITER__TRAFFIC_LIGHT_ARBITER_HPP_
 
+#include <autoware/traffic_light_arbiter/signal_match_validator.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <traffic_light_arbiter/signal_match_validator.hpp>
 
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_perception_msgs/msg/traffic_light_group_array.hpp>
@@ -26,6 +26,8 @@
 #include <memory>
 #include <unordered_set>
 
+namespace autoware
+{
 class TrafficLightArbiter : public rclcpp::Node
 {
 public:
@@ -58,5 +60,6 @@ private:
   TrafficSignalArray latest_external_msg_;
   std::unique_ptr<SignalMatchValidator> signal_match_validator_;
 };
+}  // namespace autoware
 
-#endif  // TRAFFIC_LIGHT_ARBITER__TRAFFIC_LIGHT_ARBITER_HPP_
+#endif  // AUTOWARE__TRAFFIC_LIGHT_ARBITER__TRAFFIC_LIGHT_ARBITER_HPP_

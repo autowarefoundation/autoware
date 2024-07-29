@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <autoware/traffic_light_arbiter/traffic_light_arbiter.hpp>
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <autoware_lanelet2_extension/utility/query.hpp>
 #include <rclcpp/time.hpp>
-#include <traffic_light_arbiter/traffic_light_arbiter.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
@@ -65,6 +65,8 @@ std::vector<TrafficLightConstPtr> filter_pedestrian_signals(const LaneletMapCons
 
 }  // namespace lanelet
 
+namespace autoware
+{
 TrafficLightArbiter::TrafficLightArbiter(const rclcpp::NodeOptions & options)
 : Node("traffic_light_arbiter", options)
 {
@@ -228,6 +230,7 @@ void TrafficLightArbiter::arbitrateAndPublish(const builtin_interfaces::msg::Tim
 
   pub_->publish(output_signals_msg);
 }
+}  // namespace autoware
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(TrafficLightArbiter)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::TrafficLightArbiter)

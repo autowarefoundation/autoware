@@ -39,10 +39,16 @@
   <exec_depend>autoware_raindrop_cluster_filter</exec_depend>
   <exec_depend>autoware_shape_estimation</exec_depend>
   <exec_depend>autoware_tracking_object_merger</exec_depend>
+  <exec_depend>autoware_traffic_light_arbiter</exec_depend>
+  <exec_depend>autoware_traffic_light_classifier</exec_depend>
+  <exec_depend>autoware_traffic_light_fine_detector</exec_depend>
+  <exec_depend>autoware_traffic_light_map_based_detector</exec_depend>
+  <exec_depend>autoware_traffic_light_multi_camera_fusion</exec_depend>
+  <exec_depend>autoware_traffic_light_occlusion_predictor</exec_depend>
+  <exec_depend>autoware_traffic_light_visualization</exec_depend>
   <exec_depend>image_transport_decompressor</exec_depend>
   <exec_depend>pointcloud_to_laserscan</exec_depend>
   <exec_depend>topic_tools</exec_depend>
-  <exec_depend>traffic_light_arbiter</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

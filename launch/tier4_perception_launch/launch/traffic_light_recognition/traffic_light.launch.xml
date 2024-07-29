@@ -150,7 +150,7 @@
 
   <!-- V2X fusion -->
   <group>
-    <include file="$(find-pkg-share traffic_light_arbiter)/launch/traffic_light_arbiter.launch.xml">
+    <include file="$(find-pkg-share autoware_traffic_light_arbiter)/launch/traffic_light_arbiter.launch.xml">
       <arg name="perception_traffic_signals" value="$(var internal/traffic_signals)"/>
       <arg name="external_traffic_signals" value="$(var external/traffic_signals)"/>
       <arg name="output_traffic_signals" value="$(var judged/traffic_signals)"/>

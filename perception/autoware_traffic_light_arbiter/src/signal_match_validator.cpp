@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "traffic_light_arbiter/signal_match_validator.hpp"
+#include "autoware/traffic_light_arbiter/signal_match_validator.hpp"
 
 namespace util
 {
