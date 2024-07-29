@@ -65,7 +65,7 @@ struct ObjectData
 class TrackerObjectDebugger
 {
 public:
-  explicit TrackerObjectDebugger(std::string frame_id);
+  explicit TrackerObjectDebugger(const std::string & frame_id);
 
 private:
   bool is_initialized_{false};
@@ -96,7 +96,7 @@ public:
 
   void reset();
   void draw(
-    const std::vector<std::vector<ObjectData>> object_data_groups,
+    const std::vector<std::vector<ObjectData>> & object_data_groups,
     visualization_msgs::msg::MarkerArray & marker_array) const;
   void process();
   void getMessage(visualization_msgs::msg::MarkerArray & marker_array) const;

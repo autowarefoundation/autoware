@@ -51,7 +51,7 @@ int32_t uuidToInt(const boost::uuids::uuid & uuid)
 namespace autoware::multi_object_tracker
 {
 
-TrackerObjectDebugger::TrackerObjectDebugger(std::string frame_id)
+TrackerObjectDebugger::TrackerObjectDebugger(const std::string & frame_id)
 {
   // set frame id
   frame_id_ = frame_id;
@@ -173,7 +173,7 @@ void TrackerObjectDebugger::process()
 }
 
 void TrackerObjectDebugger::draw(
-  const std::vector<std::vector<ObjectData>> object_data_groups,
+  const std::vector<std::vector<ObjectData>> & object_data_groups,
   visualization_msgs::msg::MarkerArray & marker_array) const
 {
   // initialize markers
