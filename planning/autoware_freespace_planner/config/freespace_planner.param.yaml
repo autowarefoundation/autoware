@@ -15,16 +15,16 @@
     # -- Configurations common to the all planners --
     # base configs
     time_limit: 30000.0
-    minimum_turning_radius: 9.0
-    maximum_turning_radius: 9.0
-    turning_radius_size: 1
+    max_turning_ratio: 0.5 # ratio of actual turning limit of vehicle
+    turning_steps: 1
     # search configs
     theta_size: 144
     angle_goal_range: 6.0
-    curve_weight: 1.2
-    reverse_weight: 2.0
     lateral_goal_range: 0.5
     longitudinal_goal_range: 2.0
+    curve_weight: 0.5
+    reverse_weight: 1.0
+    direction_change_weight: 1.5
     # costmap configs
     obstacle_threshold: 100
 
@@ -32,7 +32,9 @@
     astar:
       only_behind_solutions: false
       use_back: true
+      expansion_distance: 0.5
       distance_heuristic_weight: 1.0
+      smoothness_weight: 0.5
 
     # -- RRT* search Configurations --
     rrtstar:

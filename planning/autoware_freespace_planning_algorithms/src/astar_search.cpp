@@ -14,10 +14,14 @@
 
 #include "autoware/freespace_planning_algorithms/astar_search.hpp"
 
+#include "autoware/freespace_planning_algorithms/kinematic_bicycle_model.hpp"
+
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/math/unit_conversion.hpp>
 
 #include <tf2/utils.h>
+
+#include <limits>
 
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -29,8 +33,7 @@
 
 namespace autoware::freespace_planning_algorithms
 {
-double calcReedsSheppDistance(
-  const geometry_msgs::msg::Pose & p1, const geometry_msgs::msg::Pose & p2, double radius)
+double calcReedsSheppDistance(const Pose & p1, const Pose & p2, double radius)
 {
   const auto rs_space = ReedsSheppStateSpace(radius);
   const ReedsSheppStateSpace::StateXYT pose0{
@@ -45,8 +48,7 @@ void setYaw(geometry_msgs::msg::Quaternion * orientation, const double yaw)
   *orientation = autoware::universe_utils::createQuaternionFromYaw(yaw);
 }
 
-geometry_msgs::msg::Pose calcRelativePose(
-  const geometry_msgs::msg::Pose & base_pose, const geometry_msgs::msg::Pose & pose)
+Pose calcRelativePose(const Pose & base_pose, const Pose & pose)
 {
   tf2::Transform tf_transform;
   tf2::convert(base_pose, tf_transform);
@@ -62,55 +64,6 @@ geometry_msgs::msg::Pose calcRelativePose(
   return transformed.pose;
 }
 
-AstarSearch::TransitionTable createTransitionTable(
-  const double minimum_turning_radius, const double maximum_turning_radius,
-  const int turning_radius_size, const double theta_size, const bool use_back)
-{
-  // Vehicle moving for each angle
-  AstarSearch::TransitionTable transition_table;
-  transition_table.resize(theta_size);
-
-  const double dtheta = 2.0 * M_PI / theta_size;
-
-  // Minimum moving distance with one state update
-  // arc  = r * theta
-  const auto & R_min = minimum_turning_radius;
-  const auto & R_max = maximum_turning_radius;
-  const double step_min = R_min * dtheta;
-  const double dR = (R_max - R_min) / std::max(turning_radius_size - 1, 1);
-
-  // NodeUpdate actions
-  std::vector<NodeUpdate> forward_node_candidates;
-  const NodeUpdate forward_straight{step_min, 0.0, 0.0, step_min, false, false};
-  forward_node_candidates.push_back(forward_straight);
-  for (int i = 0; i < turning_radius_size; ++i) {
-    double R = R_min + i * dR;
-    double step = R * dtheta;
-    const double shift_x = R * sin(dtheta);
-    const double shift_y = R * (1 - cos(dtheta));
-    const NodeUpdate forward_left{shift_x, shift_y, dtheta, step, true, false};
-    const NodeUpdate forward_right = forward_left.flipped();
-    forward_node_candidates.push_back(forward_left);
-    forward_node_candidates.push_back(forward_right);
-  }
-
-  for (int i = 0; i < theta_size; i++) {
-    const double theta = dtheta * i;
-
-    for (const auto & nu : forward_node_candidates) {
-      transition_table[i].push_back(nu.rotated(theta));
-    }
-
-    if (use_back) {
-      for (const auto & nu : forward_node_candidates) {
-        transition_table[i].push_back(nu.reversed().rotated(theta));
-      }
-    }
-  }
-
-  return transition_table;
-}
-
 AstarSearch::AstarSearch(
   const PlannerCommonParam & planner_common_param, const VehicleShape & collision_vehicle_shape,
   const AstarParam & astar_param)
@@ -119,66 +72,134 @@ AstarSearch::AstarSearch(
   goal_node_(nullptr),
   use_reeds_shepp_(true)
 {
-  transition_table_ = createTransitionTable(
-    planner_common_param_.minimum_turning_radius, planner_common_param_.maximum_turning_radius,
-    planner_common_param_.turning_radius_size, planner_common_param_.theta_size,
-    astar_param_.use_back);
+  steering_resolution_ =
+    collision_vehicle_shape_.max_steering / planner_common_param_.turning_steps;
+  heading_resolution_ = 2.0 * M_PI / planner_common_param_.theta_size;
 
-  y_scale_ = planner_common_param.theta_size;
+  const double avg_steering =
+    steering_resolution_ + (collision_vehicle_shape_.max_steering - steering_resolution_) / 2.0;
+  avg_turning_radius_ =
+    kinematic_bicycle_model::getTurningRadius(collision_vehicle_shape_.base_length, avg_steering);
+
+  setTransitionTable();
 }
 
-void AstarSearch::setMap(const nav_msgs::msg::OccupancyGrid & costmap)
+void AstarSearch::setTransitionTable()
 {
-  AbstractPlanningAlgorithm::setMap(costmap);
+  const double distance = astar_param_.expansion_distance;
+  transition_table_.resize(planner_common_param_.theta_size);
 
-  x_scale_ = costmap_.info.height;
+  std::vector<NodeUpdate> forward_transitions;
+  int steering_ind = -1 * planner_common_param_.turning_steps;
+  for (; steering_ind <= planner_common_param_.turning_steps; ++steering_ind) {
+    const double steering = static_cast<double>(steering_ind) * steering_resolution_;
+    Pose shift_pose = kinematic_bicycle_model::getPoseShift(
+      0.0, collision_vehicle_shape_.base_length, steering, distance);
+    forward_transitions.push_back(
+      {shift_pose.position.x, shift_pose.position.y, tf2::getYaw(shift_pose.orientation), distance,
+       steering_ind, false});
+  }
+
+  for (int i = 0; i < planner_common_param_.theta_size; ++i) {
+    const double theta = static_cast<double>(i) * heading_resolution_;
+    for (const auto & transition : forward_transitions) {
+      transition_table_[i].push_back(transition.rotated(theta));
+    }
+
+    if (astar_param_.use_back) {
+      for (const auto & transition : forward_transitions) {
+        transition_table_[i].push_back(transition.reversed().rotated(theta));
+      }
+    }
+  }
 }
 
-bool AstarSearch::makePlan(
-  const geometry_msgs::msg::Pose & start_pose, const geometry_msgs::msg::Pose & goal_pose)
+bool AstarSearch::makePlan(const Pose & start_pose, const Pose & goal_pose)
 {
+  resetData();
+
   start_pose_ = global2local(costmap_, start_pose);
   goal_pose_ = global2local(costmap_, goal_pose);
 
-  clearNodes();
-  graph_.reserve(100000);
+  if (!setGoalNode()) {
+    throw std::logic_error("Invalid goal pose");
+  }
+
+  setCollisionFreeDistanceMap();
 
   if (!setStartNode()) {
-    return false;
+    throw std::logic_error("Invalid start pose");
   }
 
-  if (!setGoalNode()) {
-    return false;
+  if (!search()) {
+    throw std::logic_error("HA* failed to find path to goal");
   }
 
-  return search();
+  return true;
 }
 
-void AstarSearch::clearNodes()
+void AstarSearch::resetData()
 {
   // clearing openlist is necessary because otherwise remaining elements of openlist
   // point to deleted node.
   openlist_ = std::priority_queue<AstarNode *, std::vector<AstarNode *>, NodeComparison>();
+  const int nb_of_grid_nodes = costmap_.info.width * costmap_.info.height;
+  const int total_astar_node_count = nb_of_grid_nodes * planner_common_param_.theta_size;
+  graph_ = std::vector<AstarNode>(total_astar_node_count);
+  col_free_distance_map_ =
+    std::vector<double>(nb_of_grid_nodes, std::numeric_limits<double>::max());
+}
 
-  graph_ = std::unordered_map<uint, AstarNode>();
+void AstarSearch::setCollisionFreeDistanceMap()
+{
+  using Entry = std::pair<IndexXY, double>;
+  struct CompareEntry
+  {
+    bool operator()(const Entry & a, const Entry & b) { return a.second > b.second; }
+  };
+  std::priority_queue<Entry, std::vector<Entry>, CompareEntry> heap;
+  std::vector<bool> closed(col_free_distance_map_.size(), false);
+  auto goal_index = pose2index(costmap_, goal_pose_, planner_common_param_.theta_size);
+  col_free_distance_map_[indexToId(goal_index)] = 0.0;
+  heap.push({IndexXY{goal_index.x, goal_index.y}, 0.0});
+
+  Entry current;
+  std::array<int, 3> offsets = {1, 0, -1};
+  while (!heap.empty()) {
+    current = heap.top();
+    heap.pop();
+    const int id = indexToId(current.first);
+    if (closed[id]) continue;
+    closed[id] = true;
+
+    const auto & index = current.first;
+    for (const auto & offset_x : offsets) {
+      const int x = index.x + offset_x;
+      for (const auto & offset_y : offsets) {
+        const int y = index.y + offset_y;
+        const IndexXY n_index{x, y};
+        const double offset = std::abs(offset_x) + std::abs(offset_y);
+        if (isOutOfRange(n_index) || isObs(n_index) || offset < 1) continue;
+        const int n_id = indexToId(n_index);
+        const double dist = current.second + (sqrt(offset) * costmap_.info.resolution);
+        if (closed[n_id] || col_free_distance_map_[n_id] < dist) continue;
+        col_free_distance_map_[n_id] = dist;
+        heap.push({n_index, dist});
+      }
+    }
+  }
 }
 
 bool AstarSearch::setStartNode()
 {
   const auto index = pose2index(costmap_, start_pose_, planner_common_param_.theta_size);
 
-  if (detectCollision(index)) {
-    return false;
-  }
+  if (detectCollision(index)) return false;
 
   // Set start node
-  AstarNode * start_node = getNodeRef(index);
-  start_node->x = start_pose_.position.x;
-  start_node->y = start_pose_.position.y;
-  start_node->theta = 2.0 * M_PI / planner_common_param_.theta_size * index.theta;
-  start_node->gc = 0;
-  start_node->hc = estimateCost(start_pose_);
-  start_node->is_back = false;
+  AstarNode * start_node = &graph_[getKey(index)];
+  start_node->set(start_pose_, 0.0, estimateCost(start_pose_, index), 0, false);
+  start_node->dir_distance = 0.0;
   start_node->status = NodeStatus::Open;
   start_node->parent = nullptr;
 
@@ -191,29 +212,18 @@ bool AstarSearch::setStartNode()
 bool AstarSearch::setGoalNode()
 {
   const auto index = pose2index(costmap_, goal_pose_, planner_common_param_.theta_size);
-
-  if (detectCollision(index)) {
-    return false;
-  }
-
-  return true;
+  return !detectCollision(index);
 }
 
-double AstarSearch::estimateCost(const geometry_msgs::msg::Pose & pose) const
+double AstarSearch::estimateCost(const Pose & pose, const IndexXYT & index) const
 {
-  double total_cost = 0.0;
+  double total_cost = col_free_distance_map_[indexToId(index)];
   // Temporarily, until reeds_shepp gets stable.
   if (use_reeds_shepp_) {
-    const double radius = (planner_common_param_.minimum_turning_radius +
-                           planner_common_param_.maximum_turning_radius) *
-                          0.5;
-    total_cost +=
-      calcReedsSheppDistance(pose, goal_pose_, radius) * astar_param_.distance_heuristic_weight;
-  } else {
-    total_cost += autoware::universe_utils::calcDistance2d(pose, goal_pose_) *
-                  astar_param_.distance_heuristic_weight;
+    total_cost =
+      std::max(total_cost, calcReedsSheppDistance(pose, goal_pose_, avg_turning_radius_));
   }
-  return total_cost;
+  return astar_param_.distance_heuristic_weight * total_cost;
 }
 
 bool AstarSearch::search()
@@ -232,6 +242,7 @@ bool AstarSearch::search()
     // Expand minimum cost node
     AstarNode * current_node = openlist_.top();
     openlist_.pop();
+    if (current_node->status == NodeStatus::Closed) continue;
     current_node->status = NodeStatus::Closed;
 
     if (isGoal(*current_node)) {
@@ -240,45 +251,81 @@ bool AstarSearch::search()
       return true;
     }
 
-    // Transit
-    const auto index_theta = discretizeAngle(current_node->theta, planner_common_param_.theta_size);
-    for (const auto & transition : transition_table_[index_theta]) {
-      const bool is_turning_point = transition.is_back != current_node->is_back;
-
-      const double move_cost = is_turning_point
-                                 ? planner_common_param_.reverse_weight * transition.distance
-                                 : transition.distance;
-
-      // Calculate index of the next state
-      geometry_msgs::msg::Pose next_pose;
-      next_pose.position.x = current_node->x + transition.shift_x;
-      next_pose.position.y = current_node->y + transition.shift_y;
-      setYaw(&next_pose.orientation, current_node->theta + transition.shift_theta);
-      const auto next_index = pose2index(costmap_, next_pose, planner_common_param_.theta_size);
-
-      if (detectCollision(next_index)) {
-        continue;
-      }
-
-      // Compare cost
-      AstarNode * next_node = getNodeRef(next_index);
-      if (next_node->status == NodeStatus::None) {
-        next_node->status = NodeStatus::Open;
-        next_node->x = next_pose.position.x;
-        next_node->y = next_pose.position.y;
-        next_node->theta = tf2::getYaw(next_pose.orientation);
-        next_node->gc = current_node->gc + move_cost;
-        next_node->hc = estimateCost(next_pose);
-        next_node->is_back = transition.is_back;
-        next_node->parent = current_node;
-        openlist_.push(next_node);
-        continue;
-      }
-    }
+    expandNodes(*current_node);
   }
 
   // Failed to find path
   return false;
+}
+
+void AstarSearch::expandNodes(AstarNode & current_node)
+{
+  const auto index_theta = discretizeAngle(current_node.theta, planner_common_param_.theta_size);
+  for (const auto & transition : transition_table_[index_theta]) {
+    // skip transition back to parent
+    if (
+      current_node.parent != nullptr && transition.is_back != current_node.is_back &&
+      transition.steering_index == current_node.steering_index) {
+      continue;
+    }
+
+    // Calculate index of the next state
+    Pose next_pose;
+    next_pose.position.x = current_node.x + transition.shift_x;
+    next_pose.position.y = current_node.y + transition.shift_y;
+    setYaw(&next_pose.orientation, current_node.theta + transition.shift_theta);
+    const auto next_index = pose2index(costmap_, next_pose, planner_common_param_.theta_size);
+
+    if (isOutOfRange(next_index) || isObs(next_index)) continue;
+
+    AstarNode * next_node = &graph_[getKey(next_index)];
+    if (next_node->status == NodeStatus::Closed || detectCollision(next_index)) continue;
+
+    const bool is_direction_switch =
+      (current_node.parent != nullptr) && (transition.is_back != current_node.is_back);
+
+    double total_weight = 1.0;
+    total_weight += getSteeringCost(transition.steering_index);
+    if (transition.is_back) {
+      total_weight *= (1.0 + planner_common_param_.reverse_weight);
+    }
+
+    double move_cost = current_node.gc + (total_weight * transition.distance);
+    move_cost += getSteeringChangeCost(transition.steering_index, current_node.steering_index);
+    if (is_direction_switch) move_cost += getDirectionChangeCost(current_node.dir_distance);
+
+    double total_cost = move_cost + estimateCost(next_pose, next_index);
+    // Compare cost
+    if (next_node->status == NodeStatus::None || next_node->fc > total_cost) {
+      next_node->status = NodeStatus::Open;
+      next_node->set(
+        next_pose, move_cost, total_cost, transition.steering_index, transition.is_back);
+      next_node->dir_distance =
+        transition.distance + (is_direction_switch ? 0.0 : current_node.dir_distance);
+      next_node->parent = &current_node;
+      openlist_.push(next_node);
+      continue;
+    }
+  }
+}
+
+double AstarSearch::getSteeringCost(const int steering_index) const
+{
+  return planner_common_param_.curve_weight *
+         (abs(steering_index) / planner_common_param_.turning_steps);
+}
+
+double AstarSearch::getSteeringChangeCost(
+  const int steering_index, const int prev_steering_index) const
+{
+  double steering_index_diff = abs(steering_index - prev_steering_index);
+  return astar_param_.smoothness_weight * steering_index_diff /
+         (2.0 * planner_common_param_.turning_steps);
+}
+
+double AstarSearch::getDirectionChangeCost(const double dir_distance) const
+{
+  return planner_common_param_.direction_change_weight * (1.0 + (1.0 / (1.0 + dir_distance)));
 }
 
 void AstarSearch::setPath(const AstarNode & goal_node)
@@ -293,30 +340,12 @@ void AstarSearch::setPath(const AstarNode & goal_node)
   // From the goal node to the start node
   const AstarNode * node = &goal_node;
 
-  // push exact goal pose first
-  {
-    geometry_msgs::msg::PoseStamped pose;
-    pose.header = header;
-    pose.pose = local2global(costmap_, goal_pose_);
-
-    PlannerWaypoint pw;
-    pw.pose = pose;
-    pw.is_back = node->is_back;
-    waypoints_.waypoints.push_back(pw);
-  }
-
+  geometry_msgs::msg::PoseStamped pose;
+  pose.header = header;
   // push astar nodes poses
   while (node != nullptr) {
-    geometry_msgs::msg::PoseStamped pose;
-    pose.header = header;
     pose.pose = local2global(costmap_, node2pose(*node));
-
-    // PlannerWaypoint
-    PlannerWaypoint pw;
-    pw.pose = pose;
-    pw.is_back = node->is_back;
-    waypoints_.waypoints.push_back(pw);
-
+    waypoints_.waypoints.push_back({pose, node->is_back});
     // To the next node
     node = node->parent;
   }
@@ -359,9 +388,9 @@ bool AstarSearch::isGoal(const AstarNode & node) const
   return true;
 }
 
-geometry_msgs::msg::Pose AstarSearch::node2pose(const AstarNode & node) const
+Pose AstarSearch::node2pose(const AstarNode & node) const
 {
-  geometry_msgs::msg::Pose pose_local;
+  Pose pose_local;
 
   pose_local.position.x = node.x;
   pose_local.position.y = node.y;

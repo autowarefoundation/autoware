@@ -59,14 +59,15 @@ None
 | Parameter                 | Type   | Description                                        |
 | ------------------------- | ------ | -------------------------------------------------- |
 | `time_limit`              | double | time limit of planning                             |
-| `minimum_turning_radius`  | double | minimum turning radius of robot                    |
-| `maximum_turning_radius`  | double | maximum turning radius of robot                    |
+| `maximum_turning_ratio`   | double | max ratio of actual turning range to use           |
+| `turning_steps`           | double | number of turning steps within turning range       |
 | `theta_size`              | double | the number of angle's discretization               |
 | `lateral_goal_range`      | double | goal range of lateral position                     |
 | `longitudinal_goal_range` | double | goal range of longitudinal position                |
 | `angle_goal_range`        | double | goal range of angle                                |
 | `curve_weight`            | double | additional cost factor for curve actions           |
 | `reverse_weight`          | double | additional cost factor for reverse actions         |
+| `direction_change_weight` | double | additional cost factor for switching direction     |
 | `obstacle_threshold`      | double | threshold for regarding a certain grid as obstacle |
 
 #### A\* search parameters
@@ -75,7 +76,9 @@ None
 | --------------------------- | ------ | ------------------------------------------------------- |
 | `only_behind_solutions`     | bool   | whether restricting the solutions to be behind the goal |
 | `use_back`                  | bool   | whether using backward trajectory                       |
+| `expansion_distance`        | double | length of expansion for node transitions                |
 | `distance_heuristic_weight` | double | heuristic weight for estimating node's cost             |
+| `smoothness_weight`         | double | cost factor for change in curvature                     |
 
 #### RRT\* search parameters
 

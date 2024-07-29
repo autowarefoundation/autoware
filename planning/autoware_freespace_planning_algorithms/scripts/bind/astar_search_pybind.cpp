@@ -115,27 +115,29 @@ PYBIND11_MODULE(autoware_freespace_planning_algorithms_pybind, p)
         "only_behind_solutions", &freespace_planning_algorithms::AstarParam::only_behind_solutions)
       .def_readwrite("use_back", &freespace_planning_algorithms::AstarParam::use_back)
       .def_readwrite(
+        "expansion_distance", &freespace_planning_algorithms::AstarParam::expansion_distance)
+      .def_readwrite(
         "distance_heuristic_weight",
-        &freespace_planning_algorithms::AstarParam::distance_heuristic_weight);
+        &freespace_planning_algorithms::AstarParam::distance_heuristic_weight)
+      .def_readwrite(
+        "smoothness_weight", &freespace_planning_algorithms::AstarParam::smoothness_weight);
   auto pyPlannerCommonParam =
     py::class_<freespace_planning_algorithms::PlannerCommonParam>(
       p, "PlannerCommonParam", py::dynamic_attr())
       .def(py::init<>())
       .def_readwrite("time_limit", &freespace_planning_algorithms::PlannerCommonParam::time_limit)
-      .def_readwrite(
-        "minimum_turning_radius",
-        &freespace_planning_algorithms::PlannerCommonParam::minimum_turning_radius)
-      .def_readwrite(
-        "maximum_turning_radius",
-        &freespace_planning_algorithms::PlannerCommonParam::maximum_turning_radius)
-      .def_readwrite(
-        "turning_radius_size",
-        &freespace_planning_algorithms::PlannerCommonParam::turning_radius_size)
       .def_readwrite("theta_size", &freespace_planning_algorithms::PlannerCommonParam::theta_size)
+      .def_readwrite(
+        "max_turning_ratio", &freespace_planning_algorithms::PlannerCommonParam::max_turning_ratio)
+      .def_readwrite(
+        "turning_steps", &freespace_planning_algorithms::PlannerCommonParam::turning_steps)
       .def_readwrite(
         "curve_weight", &freespace_planning_algorithms::PlannerCommonParam::curve_weight)
       .def_readwrite(
         "reverse_weight", &freespace_planning_algorithms::PlannerCommonParam::reverse_weight)
+      .def_readwrite(
+        "direction_change_weight",
+        &freespace_planning_algorithms::PlannerCommonParam::direction_change_weight)
       .def_readwrite(
         "lateral_goal_range",
         &freespace_planning_algorithms::PlannerCommonParam::lateral_goal_range)
@@ -150,9 +152,11 @@ PYBIND11_MODULE(autoware_freespace_planning_algorithms_pybind, p)
   auto pyVehicleShape =
     py::class_<freespace_planning_algorithms::VehicleShape>(p, "VehicleShape", py::dynamic_attr())
       .def(py::init<>())
-      .def(py::init<double, double, double>())
+      .def(py::init<double, double, double, double, double>())
       .def_readwrite("length", &freespace_planning_algorithms::VehicleShape::length)
       .def_readwrite("width", &freespace_planning_algorithms::VehicleShape::width)
+      .def_readwrite("base_length", &freespace_planning_algorithms::VehicleShape::base_length)
+      .def_readwrite("max_steering", &freespace_planning_algorithms::VehicleShape::max_steering)
       .def_readwrite("base2back", &freespace_planning_algorithms::VehicleShape::base2back);
 
   py::class_<freespace_planning_algorithms::AbstractPlanningAlgorithm>(

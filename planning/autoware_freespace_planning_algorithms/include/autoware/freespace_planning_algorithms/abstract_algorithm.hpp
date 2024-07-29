@@ -23,6 +23,7 @@
 
 #include <tf2/utils.h>
 
+#include <algorithm>
 #include <vector>
 
 namespace autoware::freespace_planning_algorithms
@@ -57,14 +58,21 @@ geometry_msgs::msg::Pose local2global(
 
 struct VehicleShape
 {
-  double length;     // X [m]
-  double width;      // Y [m]
+  double length;  // X [m]
+  double width;   // Y [m]
+  double base_length;
+  double max_steering;
   double base2back;  // base_link to rear [m]
 
   VehicleShape() = default;
 
-  VehicleShape(double length, double width, double base2back)
-  : length(length), width(width), base2back(base2back)
+  VehicleShape(
+    double length, double width, double base_length, double max_steering, double base2back)
+  : length(length),
+    width(width),
+    base_length(base_length),
+    max_steering(max_steering),
+    base2back(base2back)
   {
   }
 
@@ -72,6 +80,8 @@ struct VehicleShape
     const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double margin = 0.0)
   : length(vehicle_info.vehicle_length_m + margin),
     width(vehicle_info.vehicle_width_m + margin),
+    base_length(vehicle_info.wheel_base_m),
+    max_steering(vehicle_info.max_steer_angle_rad),
     base2back(vehicle_info.rear_overhang_m + margin / 2.0)
   {
   }
@@ -82,18 +92,16 @@ struct PlannerCommonParam
   // base configs
   double time_limit;  // planning time limit [msec]
 
-  // robot configs
-  double minimum_turning_radius;  // [m]
-  double maximum_turning_radius;  // [m]
-  int turning_radius_size;        // discretized turning radius table size [-]
-
   // search configs
   int theta_size;                  // discretized angle table size [-]
   double curve_weight;             // curve moving cost [-]
   double reverse_weight;           // backward moving cost [-]
+  double direction_change_weight;  // direction change cost [-]
   double lateral_goal_range;       // reaching threshold, lateral error [m]
   double longitudinal_goal_range;  // reaching threshold, longitudinal error [m]
   double angle_goal_range;         // reaching threshold, angle error [deg]
+  double max_turning_ratio;        // factor of max turning range to use [-]
+  int turning_steps;               // number of turning steps [-]
 
   // costmap configs
   int obstacle_threshold;  // obstacle threshold on grid [-]
@@ -120,6 +128,8 @@ public:
     const PlannerCommonParam & planner_common_param, const VehicleShape & collision_vehicle_shape)
   : planner_common_param_(planner_common_param), collision_vehicle_shape_(collision_vehicle_shape)
   {
+    planner_common_param_.turning_steps = std::max(planner_common_param_.turning_steps, 1);
+    collision_vehicle_shape_.max_steering *= planner_common_param_.max_turning_ratio;
     is_collision_table_initialized = false;
   }
 
@@ -128,6 +138,8 @@ public:
     const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double margin = 0.0)
   : planner_common_param_(planner_common_param), collision_vehicle_shape_(vehicle_info, margin)
   {
+    planner_common_param_.turning_steps = std::max(planner_common_param_.turning_steps, 1);
+    collision_vehicle_shape_.max_steering *= planner_common_param_.max_turning_ratio;
   }
 
   virtual void setMap(const nav_msgs::msg::OccupancyGrid & costmap);
@@ -142,8 +154,11 @@ protected:
   void computeCollisionIndexes(
     int theta_index, std::vector<IndexXY> & indexes,
     std::vector<IndexXY> & vertex_indexes_2d) const;
+  bool detectBoundaryExit(const IndexXYT & base_index) const;
   bool detectCollision(const IndexXYT & base_index) const;
-  inline bool isOutOfRange(const IndexXYT & index) const
+
+  template <typename IndexType>
+  inline bool isOutOfRange(const IndexType & index) const
   {
     if (index.x < 0 || static_cast<int>(costmap_.info.width) <= index.x) {
       return true;
@@ -153,16 +168,41 @@ protected:
     }
     return false;
   }
-  inline bool isObs(const IndexXYT & index) const
+
+  template <typename IndexType>
+  inline bool isWithinMargin(const IndexType & index) const
+  {
+    if (
+      index.x < nb_of_margin_cells_ ||
+      static_cast<int>(costmap_.info.width) - index.x < nb_of_margin_cells_) {
+      return false;
+    }
+    if (
+      index.y < nb_of_margin_cells_ ||
+      static_cast<int>(costmap_.info.height) - index.y < nb_of_margin_cells_) {
+      return false;
+    }
+    return true;
+  }
+
+  template <typename IndexType>
+  inline bool isObs(const IndexType & index) const
   {
     // NOTE: Accessing by .at() instead makes 1.2 times slower here.
     // Also, boundary check is already done in isOutOfRange before calling this function.
     // So, basically .at() is not necessary.
-    return is_obstacle_table_[index.y][index.x];
+    return is_obstacle_table_[indexToId(index)];
+  }
+
+  // compute single dimensional grid cell index from 2 dimensional index
+  template <typename IndexType>
+  inline int indexToId(const IndexType & index) const
+  {
+    return index.y * costmap_.info.width + index.x;
   }
 
   PlannerCommonParam planner_common_param_;
-  const VehicleShape collision_vehicle_shape_;
+  VehicleShape collision_vehicle_shape_;
 
   // costmap as occupancy grid
   nav_msgs::msg::OccupancyGrid costmap_;
@@ -174,7 +214,7 @@ protected:
   std::vector<std::vector<IndexXY>> vertex_indexes_table_;
 
   // is_obstacle's table
-  std::vector<std::vector<bool>> is_obstacle_table_;
+  std::vector<bool> is_obstacle_table_;
 
   // pose in costmap frame
   geometry_msgs::msg::Pose start_pose_;
@@ -185,6 +225,8 @@ protected:
 
   // result path
   PlannerWaypoints waypoints_;
+
+  int nb_of_margin_cells_;
 };
 
 }  // namespace autoware::freespace_planning_algorithms

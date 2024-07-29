@@ -37,7 +37,10 @@ namespace fpa = autoware::freespace_planning_algorithms;
 
 const double length_lexus = 5.5;
 const double width_lexus = 2.75;
-const fpa::VehicleShape vehicle_shape = fpa::VehicleShape(length_lexus, width_lexus, 1.5);
+const double base_length_lexus = 3.0;
+const double max_steering_lexus = 0.7;
+const fpa::VehicleShape vehicle_shape =
+  fpa::VehicleShape(length_lexus, width_lexus, base_length_lexus, max_steering_lexus, 1.5);
 const double pi = 3.1415926;
 const std::array<double, 3> start_pose{5.5, 4., pi * 0.5};
 const std::array<double, 3> goal_pose1{8.0, 26.3, pi * 1.5};   // easiest
@@ -170,15 +173,14 @@ fpa::PlannerCommonParam get_default_planner_params()
 {
   // set problem configuration
   const double time_limit = 10 * 1000.0;
-  const double minimum_turning_radius = 9.0;
-  const double maximum_turning_radius = 9.0;
-  const int turning_radius_size = 1;
+  const double max_turning_ratio = 0.5;
+  const int turning_steps = 1;
 
   const int theta_size = 144;
 
-  // Setting weight to 1.0 to fairly compare all algorithms
-  const double curve_weight = 1.0;
+  const double curve_weight = 0.5;
   const double reverse_weight = 1.0;
+  const double direction_change_weight = 1.5;
 
   const double lateral_goal_range = 0.5;
   const double longitudinal_goal_range = 2.0;
@@ -187,15 +189,15 @@ fpa::PlannerCommonParam get_default_planner_params()
 
   return fpa::PlannerCommonParam{
     time_limit,
-    minimum_turning_radius,
-    maximum_turning_radius,
-    turning_radius_size,
     theta_size,
     curve_weight,
     reverse_weight,
+    direction_change_weight,
     lateral_goal_range,
     longitudinal_goal_range,
     angle_goal_range,
+    max_turning_ratio,
+    turning_steps,
     obstacle_threshold};
 }
 
@@ -203,16 +205,18 @@ std::unique_ptr<fpa::AbstractPlanningAlgorithm> configure_astar(bool use_multi)
 {
   auto planner_common_param = get_default_planner_params();
   if (use_multi) {
-    planner_common_param.maximum_turning_radius = 14.0;
-    planner_common_param.turning_radius_size = 3;
+    planner_common_param.turning_steps = 3;
   }
 
   // configure astar param
   const bool only_behind_solutions = false;
   const bool use_back = true;
-  const double distance_heuristic_weight = 1.0;
-  const auto astar_param =
-    fpa::AstarParam{only_behind_solutions, use_back, distance_heuristic_weight};
+  const double expansion_distance = 0.4;
+  const double distance_heuristic_weight = 2.0;
+  const double smoothness_weight = 0.5;
+  const auto astar_param = fpa::AstarParam{
+    only_behind_solutions, use_back, expansion_distance, distance_heuristic_weight,
+    smoothness_weight};
 
   auto algo = std::make_unique<fpa::AstarSearch>(planner_common_param, vehicle_shape, astar_param);
   return algo;
