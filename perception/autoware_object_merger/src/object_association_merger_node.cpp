@@ -36,8 +36,8 @@ bool isUnknownObjectOverlapped(
   const autoware_perception_msgs::msg::DetectedObject & unknown_object,
   const autoware_perception_msgs::msg::DetectedObject & known_object,
   const double precision_threshold, const double recall_threshold,
-  std::map<int, double> distance_threshold_map,
-  const std::map<int, double> generalized_iou_threshold_map)
+  const std::map<int, double> & distance_threshold_map,
+  const std::map<int, double> & generalized_iou_threshold_map)
 {
   const double generalized_iou_threshold = generalized_iou_threshold_map.at(
     object_recognition_utils::getHighestProbLabel(known_object.classification));
