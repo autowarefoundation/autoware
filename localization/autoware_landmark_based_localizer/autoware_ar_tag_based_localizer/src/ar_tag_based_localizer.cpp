@@ -116,7 +116,7 @@ ArTagBasedLocalizer::ArTagBasedLocalizer(const rclcpp::NodeOptions & options)
   */
   using std::placeholders::_1;
   map_bin_sub_ = this->create_subscription<LaneletMapBin>(
-    "~/input/lanelet2_map", rclcpp::QoS(10).durability(rclcpp::DurabilityPolicy::TransientLocal),
+    "~/input/lanelet2_map", rclcpp::QoS(1).durability(rclcpp::DurabilityPolicy::TransientLocal),
     std::bind(&ArTagBasedLocalizer::map_bin_callback, this, _1));
 
   rclcpp::QoS qos_sub(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
@@ -131,7 +131,7 @@ ArTagBasedLocalizer::ArTagBasedLocalizer(const rclcpp::NodeOptions & options)
   /*
     Publishers
   */
-  const rclcpp::QoS qos_pub_once = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local().reliable();
+  const rclcpp::QoS qos_pub_once = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
   const rclcpp::QoS qos_pub_periodic(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
   pose_pub_ = this->create_publisher<PoseWithCovarianceStamped>(
     "~/output/pose_with_covariance", qos_pub_periodic);
