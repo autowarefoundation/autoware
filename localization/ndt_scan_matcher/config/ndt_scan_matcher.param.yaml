@@ -117,7 +117,7 @@
         initial_pose_offset_model_y: [0.5, -0.5, 0.0, 0.0, 0.0, 0.0]
 
         # In MULTI_NDT_SCORE, the parameter that adjusts the estimated 2D covariance
-        temperature: 0.1
+        temperature: 0.05
 
         # Scale value for adjusting the estimated covariance by a constant multiplication
         scale_factor: 1.0

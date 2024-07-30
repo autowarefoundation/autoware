@@ -25,7 +25,7 @@
         "temperature": {
           "type": "number",
           "description": "In MULTI_NDT_SCORE, the parameter that adjusts the estimated 2D covariance",
-          "default": 0.1,
+          "default": 0.05,
           "exclusiveMinimum": 0
         },
         "scale_factor": {
