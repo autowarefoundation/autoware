@@ -15,6 +15,7 @@
 #include "autoware/velocity_smoother/smoother/jerk_filtered_smoother.hpp"
 
 #include "autoware/velocity_smoother/trajectory_utils.hpp"
+#include "qp_interface/proxqp_interface.hpp"
 
 #include <Eigen/Core>
 
@@ -40,11 +41,8 @@ JerkFilteredSmoother::JerkFilteredSmoother(
   p.over_j_weight = node.declare_parameter<double>("over_j_weight");
   p.jerk_filter_ds = node.declare_parameter<double>("jerk_filter_ds");
 
-  qp_solver_.updateMaxIter(20000);
-  qp_solver_.updateRhoInterval(0);  // 0 means automatic
-  qp_solver_.updateEpsRel(1.0e-6);  // def: 1.0e-4
-  qp_solver_.updateEpsAbs(1.0e-8);  // def: 1.0e-4
-  qp_solver_.updateVerbose(false);
+  qp_interface_ =
+    std::make_shared<autoware::common::ProxQPInterface>(false, 20000, 1.0e-8, 1.0e-6, false);
 }
 
 void JerkFilteredSmoother::setParam(const Param & smoother_param)
@@ -301,14 +299,13 @@ bool JerkFilteredSmoother::apply(
 
   // execute optimization
   time_keeper_->start_track("optimize");
-  const auto result = qp_solver_.optimize(P, A, q, lower_bound, upper_bound);
+  const auto optval = qp_interface_->optimize(P, A, q, lower_bound, upper_bound);
   time_keeper_->end_track("optimize");
-  const std::vector<double> optval = std::get<0>(result);
-  const int status_val = std::get<3>(result);
-  if (status_val != 1) {
-    RCLCPP_WARN(logger_, "optimization failed : %s", qp_solver_.getStatusMessage().c_str());
+  if (!qp_interface_->isSolved()) {
+    RCLCPP_WARN(logger_, "optimization failed : %s", qp_interface_->getStatus().c_str());
     return false;
   }
+
   const auto has_nan =
     std::any_of(optval.begin(), optval.end(), [](const auto v) { return std::isnan(v); });
   if (has_nan) {
@@ -330,16 +327,6 @@ bool JerkFilteredSmoother::apply(
   for (size_t i = N; i < output.size(); ++i) {
     output.at(i).longitudinal_velocity_mps = 0.0;
     output.at(i).acceleration_mps2 = a_stop_decel;
-  }
-
-  qp_solver_.logUnsolvedStatus("[autoware_velocity_smoother]");
-
-  const int status_polish = std::get<2>(result);
-  if (status_polish != 1) {
-    const auto msg = status_polish == 0    ? "unperformed"
-                     : status_polish == -1 ? "unsuccessful"
-                                           : "unknown";
-    RCLCPP_DEBUG(logger_, "osqp polish process failed : %s. The result may be inaccurate", msg);
   }
 
   if (VERBOSE_TRAJECTORY_VELOCITY) {

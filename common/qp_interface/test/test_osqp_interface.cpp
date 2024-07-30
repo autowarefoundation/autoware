@@ -63,7 +63,7 @@ TEST(TestOsqpInterface, BasicQp)
 
   {
     // Define problem during optimization
-    autoware::common::OSQPInterface osqp(false, 1e-6);
+    autoware::common::OSQPInterface osqp(false, 4000, 1e-6);
     const auto solution = osqp.QPInterface::optimize(P, A, q, l, u);
     const auto status = osqp.getStatus();
     const auto polish_status = osqp.getPolishStatus();
@@ -72,7 +72,7 @@ TEST(TestOsqpInterface, BasicQp)
 
   {
     // Define problem during initialization
-    autoware::common::OSQPInterface osqp(false, 1e-6);
+    autoware::common::OSQPInterface osqp(false, 4000, 1e-6);
     const auto solution = osqp.QPInterface::optimize(P, A, q, l, u);
     const auto status = osqp.getStatus();
     const auto polish_status = osqp.getPolishStatus();
@@ -87,7 +87,7 @@ TEST(TestOsqpInterface, BasicQp)
     std::vector<double> q_ini(2, 0.0);
     std::vector<double> l_ini(4, 0.0);
     std::vector<double> u_ini(4, 0.0);
-    autoware::common::OSQPInterface osqp(false, 1e-6);
+    autoware::common::OSQPInterface osqp(false, 4000, 1e-6);
     osqp.QPInterface::optimize(P_ini, A_ini, q_ini, l_ini, u_ini);
   }
 
@@ -95,7 +95,7 @@ TEST(TestOsqpInterface, BasicQp)
     // Define problem during initialization with csc matrix
     CSC_Matrix P_csc = calCSCMatrixTrapezoidal(P);
     CSC_Matrix A_csc = calCSCMatrix(A);
-    autoware::common::OSQPInterface osqp(false, 1e-6);
+    autoware::common::OSQPInterface osqp(false, 4000, 1e-6);
 
     const auto solution = osqp.optimize(P_csc, A_csc, q, l, u);
     const auto status = osqp.getStatus();
@@ -111,7 +111,7 @@ TEST(TestOsqpInterface, BasicQp)
     std::vector<double> q_ini(2, 0.0);
     std::vector<double> l_ini(4, 0.0);
     std::vector<double> u_ini(4, 0.0);
-    autoware::common::OSQPInterface osqp(false, 1e-6);
+    autoware::common::OSQPInterface osqp(false, 4000, 1e-6);
     osqp.optimize(P_ini_csc, A_ini_csc, q_ini, l_ini, u_ini);
 
     // Redefine problem before optimization
@@ -132,7 +132,7 @@ TEST(TestOsqpInterface, BasicQp)
     std::vector<double> q_ini(2, 0.0);
     std::vector<double> l_ini(4, 0.0);
     std::vector<double> u_ini(4, 0.0);
-    autoware::common::OSQPInterface osqp(true, 1e-6);  // enable warm start
+    autoware::common::OSQPInterface osqp(true, 4000, 1e-6);  // enable warm start
     osqp.optimize(P_ini_csc, A_ini_csc, q_ini, l_ini, u_ini);
 
     // Redefine problem before optimization

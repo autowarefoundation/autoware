@@ -31,8 +31,8 @@ class ProxQPInterface : public QPInterface
 {
 public:
   explicit ProxQPInterface(
-    const bool enable_warm_start, const double eps_abs, const double eps_rel,
-    const bool verbose = false);
+    const bool enable_warm_start, const int max_iteration, const double eps_abs,
+    const double eps_rel, const bool verbose = false);
 
   int getIterationNumber() const override;
   bool isSolved() const override;

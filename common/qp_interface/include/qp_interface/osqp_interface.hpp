@@ -33,7 +33,7 @@ class OSQPInterface : public QPInterface
 public:
   /// \brief Constructor without problem formulation
   OSQPInterface(
-    const bool enable_warm_start = false,
+    const bool enable_warm_start = false, const int max_iteration = 20000,
     const c_float eps_abs = std::numeric_limits<c_float>::epsilon(),
     const c_float eps_rel = std::numeric_limits<c_float>::epsilon(), const bool polish = true,
     const bool verbose = false);

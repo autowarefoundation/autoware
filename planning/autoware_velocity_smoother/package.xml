@@ -30,6 +30,7 @@
   <depend>interpolation</depend>
   <depend>nav_msgs</depend>
   <depend>osqp_interface</depend>
+  <depend>qp_interface</depend>
   <depend>rclcpp</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>

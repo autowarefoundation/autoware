@@ -19,9 +19,11 @@ namespace autoware::common
 using proxsuite::proxqp::QPSolverOutput;
 
 ProxQPInterface::ProxQPInterface(
-  const bool enable_warm_start, const double eps_abs, const double eps_rel, const bool verbose)
+  const bool enable_warm_start, const int max_iteration, const double eps_abs, const double eps_rel,
+  const bool verbose)
 : QPInterface(enable_warm_start)
 {
+  settings_.max_iter = max_iteration;
   settings_.eps_abs = eps_abs;
   settings_.eps_rel = eps_rel;
   settings_.verbose = verbose;

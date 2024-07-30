@@ -57,7 +57,7 @@ TEST(TestProxqpInterface, BasicQp)
 
   {
     // Define problem during optimization
-    autoware::common::ProxQPInterface proxqp(false, 1e-9, 1e-9, false);
+    autoware::common::ProxQPInterface proxqp(false, 4000, 1e-9, 1e-9, false);
     const auto solution = proxqp.QPInterface::optimize(P, A, q, l, u);
     const auto status = proxqp.getStatus();
     check_result(solution, status);
@@ -65,7 +65,7 @@ TEST(TestProxqpInterface, BasicQp)
 
   {
     // Define problem during optimization with warm start
-    autoware::common::ProxQPInterface proxqp(true, 1e-9, 1e-9, false);
+    autoware::common::ProxQPInterface proxqp(true, 4000, 1e-9, 1e-9, false);
     {
       const auto solution = proxqp.QPInterface::optimize(P, A, q, l, u);
       const auto status = proxqp.getStatus();
