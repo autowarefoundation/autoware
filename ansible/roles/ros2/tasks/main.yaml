@@ -55,6 +55,7 @@
   when: not install_result.changed
 
 - name: Add PATH to .bashrc
+  become: true
   ansible.builtin.lineinfile:
     dest: "{{ item }}"
     line: source /opt/ros/{{ rosdistro }}/setup.bash
