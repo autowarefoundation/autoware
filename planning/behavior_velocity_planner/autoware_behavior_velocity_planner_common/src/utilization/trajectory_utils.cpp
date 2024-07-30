@@ -76,7 +76,7 @@ bool smoothPath(
   TrajectoryPoints traj_smoothed;
   clipped.insert(
     clipped.end(), traj_resampled.begin() + traj_resampled_closest, traj_resampled.end());
-  if (!smoother->apply(v0, a0, clipped, traj_smoothed, debug_trajectories)) {
+  if (!smoother->apply(v0, a0, clipped, traj_smoothed, debug_trajectories, false)) {
     std::cerr << "[behavior_velocity][trajectory_utils]: failed to smooth" << std::endl;
     return false;
   }

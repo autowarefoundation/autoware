@@ -53,7 +53,8 @@ L2PseudoJerkSmoother::Param L2PseudoJerkSmoother::getParam() const
 
 bool L2PseudoJerkSmoother::apply(
   const double initial_vel, const double initial_acc, const TrajectoryPoints & input,
-  TrajectoryPoints & output, std::vector<TrajectoryPoints> & debug_trajectories)
+  TrajectoryPoints & output, std::vector<TrajectoryPoints> & debug_trajectories,
+  [[maybe_unused]] const bool publish_debug_trajs)
 {
   debug_trajectories.clear();
 

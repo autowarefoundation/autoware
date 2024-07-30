@@ -629,7 +629,8 @@ bool VelocitySmootherNode::smoothVelocity(
 
   std::vector<TrajectoryPoints> debug_trajectories;
   if (!smoother_->apply(
-        initial_motion.vel, initial_motion.acc, clipped, traj_smoothed, debug_trajectories)) {
+        initial_motion.vel, initial_motion.acc, clipped, traj_smoothed, debug_trajectories,
+        publish_debug_trajs_)) {
     RCLCPP_WARN(get_logger(), "Fail to solve optimization.");
   }
 
@@ -669,15 +670,13 @@ bool VelocitySmootherNode::smoothVelocity(
       pub_trajectory_steering_rate_limited_->publish(toTrajectoryMsg(tmp));
     }
 
-    if (!debug_trajectories.empty()) {
-      for (auto & debug_trajectory : debug_trajectories) {
-        debug_trajectory.insert(
-          debug_trajectory.begin(), traj_resampled.begin(),
-          traj_resampled.begin() + traj_resampled_closest);
-        for (size_t i = 0; i < traj_resampled_closest; ++i) {
-          debug_trajectory.at(i).longitudinal_velocity_mps =
-            debug_trajectory.at(traj_resampled_closest).longitudinal_velocity_mps;
-        }
+    for (auto & debug_trajectory : debug_trajectories) {
+      debug_trajectory.insert(
+        debug_trajectory.begin(), traj_resampled.begin(),
+        traj_resampled.begin() + traj_resampled_closest);
+      for (size_t i = 0; i < traj_resampled_closest; ++i) {
+        debug_trajectory.at(i).longitudinal_velocity_mps =
+          debug_trajectory.at(traj_resampled_closest).longitudinal_velocity_mps;
       }
     }
     publishDebugTrajectories(debug_trajectories);

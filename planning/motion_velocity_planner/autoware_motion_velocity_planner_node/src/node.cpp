@@ -361,7 +361,7 @@ autoware::motion_velocity_planner::TrajectoryPoints MotionVelocityPlannerNode::s
   autoware::motion_velocity_planner::TrajectoryPoints traj_smoothed;
   clipped.insert(
     clipped.end(), traj_resampled.begin() + traj_resampled_closest, traj_resampled.end());
-  if (!smoother->apply(v0, a0, clipped, traj_smoothed, debug_trajectories)) {
+  if (!smoother->apply(v0, a0, clipped, traj_smoothed, debug_trajectories, false)) {
     RCLCPP_ERROR(get_logger(), "failed to smooth");
   }
   traj_smoothed.insert(

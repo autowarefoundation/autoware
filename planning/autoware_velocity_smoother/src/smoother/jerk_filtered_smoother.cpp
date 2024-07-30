@@ -57,7 +57,7 @@ JerkFilteredSmoother::Param JerkFilteredSmoother::getParam() const
 
 bool JerkFilteredSmoother::apply(
   const double v0, const double a0, const TrajectoryPoints & input, TrajectoryPoints & output,
-  std::vector<TrajectoryPoints> & debug_trajectories)
+  std::vector<TrajectoryPoints> & debug_trajectories, const bool publish_debug_trajs)
 {
   autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
@@ -114,10 +114,12 @@ bool JerkFilteredSmoother::apply(
   auto opt_resampled_trajectory = resample(filtered);
 
   // Set debug trajectories
-  debug_trajectories.resize(3);
-  debug_trajectories[0] = resample(forward_filtered);
-  debug_trajectories[1] = resample(backward_filtered);
-  debug_trajectories[2] = resample(filtered);
+  if (publish_debug_trajs) {
+    debug_trajectories.resize(3);
+    debug_trajectories[0] = resample(forward_filtered);
+    debug_trajectories[1] = resample(backward_filtered);
+    debug_trajectories[2] = resample(filtered);
+  }
 
   // Ensure terminal velocity is zero
   opt_resampled_trajectory.back().longitudinal_velocity_mps = 0.0;
@@ -127,9 +129,12 @@ bool JerkFilteredSmoother::apply(
     // No need to do optimization
     output.front().longitudinal_velocity_mps = v0;
     output.front().acceleration_mps2 = a0;
-    debug_trajectories[0] = output;
-    debug_trajectories[1] = output;
-    debug_trajectories[2] = output;
+    if (publish_debug_trajs) {
+      debug_trajectories.resize(3);
+      debug_trajectories[0] = output;
+      debug_trajectories[1] = output;
+      debug_trajectories[2] = output;
+    }
     return true;
   }
 
