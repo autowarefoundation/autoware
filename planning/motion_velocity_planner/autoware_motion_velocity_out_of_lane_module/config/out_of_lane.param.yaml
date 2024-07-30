@@ -28,7 +28,8 @@
       action:  # action to insert in the trajectory if an object causes a conflict at an overlap
         skip_if_over_max_decel: true  # if true, do not take an action that would cause more deceleration than the maximum allowed
         precision: 0.1  # [m] precision when inserting a stop pose in the trajectory
-        distance_buffer: 1.5  # [m] buffer distance to try to keep between the ego footprint and lane
+        longitudinal_distance_buffer: 1.5  # [m] safety distance buffer to keep in front of the ego vehicle
+        lateral_distance_buffer: 1.0  # [m] safety distance buffer to keep on the side of the ego vehicle
         min_duration: 1.0  # [s] minimum duration needed before a decision can be canceled
         slowdown:
           distance_threshold: 30.0 # [m] insert a slowdown when closer than this distance from an overlap

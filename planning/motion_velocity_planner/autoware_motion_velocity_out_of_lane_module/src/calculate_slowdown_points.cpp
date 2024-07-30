@@ -70,9 +70,11 @@ std::optional<TrajectoryPoint> calculate_last_in_lane_pose(
 
 std::optional<SlowdownToInsert> calculate_slowdown_point(
   const EgoData & ego_data, const std::vector<Slowdown> & decisions,
-  const std::optional<SlowdownToInsert> prev_slowdown_point, PlannerParam params)
+  const std::optional<SlowdownToInsert> & prev_slowdown_point, PlannerParam params)
 {
-  params.extra_front_offset += params.dist_buffer;
+  params.extra_front_offset += params.lon_dist_buffer;
+  params.extra_right_offset += params.lat_dist_buffer;
+  params.extra_left_offset += params.lat_dist_buffer;
   const auto base_footprint = make_base_footprint(params);
 
   // search for the first slowdown decision for which a stop point can be inserted

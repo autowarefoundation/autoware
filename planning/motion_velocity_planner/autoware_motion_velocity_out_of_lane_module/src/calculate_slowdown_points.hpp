@@ -53,6 +53,6 @@ std::optional<TrajectoryPoint> calculate_last_in_lane_pose(
 /// @return optional slowdown point to insert in the trajectory
 std::optional<SlowdownToInsert> calculate_slowdown_point(
   const EgoData & ego_data, const std::vector<Slowdown> & decisions,
-  const std::optional<SlowdownToInsert> prev_slowdown_point, PlannerParam params);
+  const std::optional<SlowdownToInsert> & prev_slowdown_point, PlannerParam params);
 }  // namespace autoware::motion_velocity_planner::out_of_lane
 #endif  // CALCULATE_SLOWDOWN_POINTS_HPP_
