@@ -58,7 +58,12 @@ std::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
   const Pose end_pose =
     use_back_ ? goal_pose
               : autoware::universe_utils::calcOffsetPose(goal_pose, -straight_distance, 0.0, 0.0);
-  if (!planner_->makePlan(current_pose, end_pose)) {
+
+  try {
+    if (!planner_->makePlan(current_pose, end_pose)) {
+      return {};
+    }
+  } catch (const std::exception & e) {
     return {};
   }
 

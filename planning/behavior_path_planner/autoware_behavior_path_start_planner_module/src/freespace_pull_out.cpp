@@ -54,9 +54,12 @@ std::optional<PullOutPath> FreespacePullOut::plan(
 
   planner_->setMap(*planner_data_->costmap);
 
-  const bool found_path = planner_->makePlan(start_pose, end_pose);
-  if (!found_path) {
-    planner_debug_data.conditions_evaluation.emplace_back("no path found");
+  try {
+    if (!planner_->makePlan(start_pose, end_pose)) {
+      planner_debug_data.conditions_evaluation.emplace_back("no path found");
+      return {};
+    }
+  } catch (const std::exception & e) {
     return {};
   }
 
