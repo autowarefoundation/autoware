@@ -42,6 +42,7 @@ using geometry_msgs::msg::Twist;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
+using Shape = autoware_perception_msgs::msg::Shape;
 using Polygon2d = autoware::universe_utils::Polygon2d;
 
 lanelet::ConstLanelets getPullOverLanes(

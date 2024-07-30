@@ -52,41 +52,29 @@ struct PullOverPath
   size_t goal_id{};
   size_t id{};
   bool decided_velocity{false};
-  double max_curvature{0.0};  // max curvature of the parking path
 
-  PathWithLaneId getFullPath() const
+  /**
+   * @brief Set paths and start/end poses
+   * By setting partial_paths, full_path, parking_path and curvature are also set at the same time
+   * @param input_partial_paths partial paths
+   * @param input_start_pose start pose
+   * @param input_end_pose end pose
+   */
+  void setPaths(
+    const std::vector<PathWithLaneId> input_partial_paths, const Pose & input_start_pose,
+    const Pose & input_end_pose)
   {
-    PathWithLaneId path{};
-    for (size_t i = 0; i < partial_paths.size(); ++i) {
-      if (i == 0) {
-        path.points.insert(
-          path.points.end(), partial_paths.at(i).points.begin(), partial_paths.at(i).points.end());
-      } else {
-        // skip overlapping point
-        path.points.insert(
-          path.points.end(), next(partial_paths.at(i).points.begin()),
-          partial_paths.at(i).points.end());
-      }
-    }
-    path.points = autoware::motion_utils::removeOverlapPoints(path.points);
+    partial_paths = input_partial_paths;
+    start_pose = input_start_pose;
+    end_pose = input_end_pose;
 
-    return path;
+    updatePathData();
   }
 
-  // path from the pull over start pose to the end pose
-  PathWithLaneId getParkingPath() const
-  {
-    const PathWithLaneId full_path = getFullPath();
-    const size_t start_idx =
-      autoware::motion_utils::findNearestIndex(full_path.points, start_pose.position);
+  // Note: return copy value (not const&) because the value is used in multi threads
+  PathWithLaneId getFullPath() const { return full_path; }
 
-    PathWithLaneId parking_path{};
-    std::copy(
-      full_path.points.begin() + start_idx, full_path.points.end(),
-      std::back_inserter(parking_path.points));
-
-    return parking_path;
-  }
+  PathWithLaneId getParkingPath() const { return parking_path; }
 
   PathWithLaneId getCurrentPath() const
   {
@@ -108,6 +96,82 @@ struct PullOverPath
   }
 
   bool isValidPath() const { return type != PullOverPlannerType::NONE; }
+
+  std::vector<double> getFullPathCurvatures() const { return full_path_curvatures; }
+  std::vector<double> getParkingPathCurvatures() const { return parking_path_curvatures; }
+  double getFullPathMaxCurvature() const { return full_path_max_curvature; }
+  double getParkingPathMaxCurvature() const { return parking_path_max_curvature; }
+
+private:
+  void updatePathData()
+  {
+    updateFullPath();
+    updateParkingPath();
+    updateCurvatures();
+  }
+
+  void updateFullPath()
+  {
+    PathWithLaneId path{};
+    for (size_t i = 0; i < partial_paths.size(); ++i) {
+      if (i == 0) {
+        path.points.insert(
+          path.points.end(), partial_paths.at(i).points.begin(), partial_paths.at(i).points.end());
+      } else {
+        // skip overlapping point
+        path.points.insert(
+          path.points.end(), next(partial_paths.at(i).points.begin()),
+          partial_paths.at(i).points.end());
+      }
+    }
+    full_path.points = autoware::motion_utils::removeOverlapPoints(path.points);
+  }
+
+  void updateParkingPath()
+  {
+    if (full_path.points.empty()) {
+      updateFullPath();
+    }
+    const size_t start_idx =
+      autoware::motion_utils::findNearestIndex(full_path.points, start_pose.position);
+
+    PathWithLaneId path{};
+    std::copy(
+      full_path.points.begin() + start_idx, full_path.points.end(),
+      std::back_inserter(path.points));
+    parking_path = path;
+  }
+
+  void updateCurvatures()
+  {
+    const auto calculateCurvaturesAndMax =
+      [](const auto & path) -> std::pair<std::vector<double>, double> {
+      std::vector<double> curvatures = autoware::motion_utils::calcCurvature(path.points);
+      double max_curvature = 0.0;
+      if (!curvatures.empty()) {
+        max_curvature = std::abs(*std::max_element(
+          curvatures.begin(), curvatures.end(),
+          [](const double & a, const double & b) { return std::abs(a) < std::abs(b); }));
+      }
+      return std::make_pair(curvatures, max_curvature);
+    };
+    std::tie(full_path_curvatures, full_path_max_curvature) =
+      calculateCurvaturesAndMax(getFullPath());
+    std::tie(parking_path_curvatures, parking_path_max_curvature) =
+      calculateCurvaturesAndMax(getParkingPath());
+  }
+
+  // curvatures
+  std::vector<double> full_path_curvatures{};
+  std::vector<double> parking_path_curvatures{};
+  std::vector<double> current_path_curvatures{};
+  double parking_path_max_curvature{0.0};
+  double full_path_max_curvature{0.0};
+  double current_path_max_curvature{0.0};
+
+  // path
+  PathWithLaneId full_path{};
+  PathWithLaneId parking_path{};
 };
 
 class PullOverPlannerBase

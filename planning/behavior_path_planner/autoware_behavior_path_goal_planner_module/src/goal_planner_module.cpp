@@ -306,12 +306,6 @@ void GoalPlannerModule::onTimer()
 
       // calculate absolute maximum curvature of parking path(start pose to end pose) for path
       // priority
-      const std::vector<double> curvatures =
-        autoware::motion_utils::calcCurvature(pull_over_path->getParkingPath().points);
-      pull_over_path->max_curvature = std::abs(*std::max_element(
-        curvatures.begin(), curvatures.end(),
-        [](const double & a, const double & b) { return std::abs(a) < std::abs(b); }));
-
       path_candidates.push_back(*pull_over_path);
       // calculate closest pull over start pose for stop path
       const double start_arc_length =
@@ -455,6 +449,22 @@ void GoalPlannerModule::updateObjectsFilteringParams(
 void GoalPlannerModule::updateData()
 {
   universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
+  // extract static and dynamic objects in expanded pull over lanes
+  {
+    const auto & p = parameters_;
+    const auto & rh = *(planner_data_->route_handler);
+    const auto objects = *(planner_data_->dynamic_object);
+    const auto static_target_objects =
+      goal_planner_utils::extractStaticObjectsInExpandedPullOverLanes(
+        rh, left_side_parking_, p->backward_goal_search_length, p->forward_goal_search_length,
+        p->detection_bound_offset, objects, p->th_moving_object_velocity);
+    const auto dynamic_target_objects = goal_planner_utils::extractObjectsInExpandedPullOverLanes(
+      rh, left_side_parking_, p->backward_goal_search_length, p->forward_goal_search_length,
+      p->detection_bound_offset, objects);
+    thread_safe_data_.set_static_target_objects(static_target_objects);
+    thread_safe_data_.set_dynamic_target_objects(dynamic_target_objects);
+  }
 
   // In PlannerManager::run(), it calls SceneModuleInterface::setData and
   // SceneModuleInterface::setPreviousModuleOutput before module_ptr->run().
@@ -764,16 +774,17 @@ bool GoalPlannerModule::canReturnToLaneParking()
     return false;
   }
 
-  if (!thread_safe_data_.get_lane_parking_pull_over_path()) {
+  const auto lane_parking_path = thread_safe_data_.get_lane_parking_pull_over_path();
+  if (!lane_parking_path) {
     return false;
   }
 
-  const PathWithLaneId path = thread_safe_data_.get_lane_parking_pull_over_path()->getFullPath();
-
+  const PathWithLaneId path = lane_parking_path->getFullPath();
+  const std::vector<double> curvatures = lane_parking_path->getFullPathCurvatures();
   if (
     parameters_->use_object_recognition &&
     checkObjectsCollision(
-      path, planner_data_, *parameters_,
+      path, curvatures, planner_data_, *parameters_,
       parameters_->object_recognition_collision_check_hard_margins.back(),
       /*extract_static_objects=*/false)) {
     return false;
@@ -870,7 +881,8 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
            << ", path_id: " << path.id << ", goal_id: " << path.goal_id
            << ", goal_priority: " << (is_safe_goal ? std::to_string(goal_priority) : "unsafe")
            << ", margin: " << path_id_to_margin_map.at(path.id)
-           << (isSoftMargin(path) ? " (soft)" : " (hard)") << ", curvature: " << path.max_curvature
+           << (isSoftMargin(path) ? " (soft)" : " (hard)")
+           << ", curvature: " << path.getParkingPathMaxCurvature()
            << (isHighCurvature(path) ? " (high)" : " (low)");
         ss << "\n";
       }
@@ -926,11 +938,11 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
         return 0.0;
       }
       // check path collision margin
-      const auto resampled_path =
-        utils::resamplePathWithSpline(pull_over_path.getParkingPath(), 0.5);
+      const PathWithLaneId parking_path = pull_over_path.getParkingPath();
+      const std::vector<double> parking_path_curvatures = pull_over_path.getParkingPathCurvatures();
       for (const auto & margin : margins) {
         if (!checkObjectsCollision(
-              resampled_path, planner_data_, *parameters_, margin,
+              parking_path, parking_path_curvatures, planner_data_, *parameters_, margin,
               /*extract_static_objects=*/true)) {
           return margin;
         }
@@ -957,7 +969,7 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
     // (3) Sort by curvature
     // If the curvature is less than the threshold, prioritize the path.
     const auto isHighCurvature = [&](const PullOverPath & path) -> bool {
-      return path.max_curvature >= parameters_->high_curvature_threshold;
+      return path.getParkingPathMaxCurvature() >= parameters_->high_curvature_threshold;
     };
 
     const auto isSoftMargin = [&](const PullOverPath & path) -> bool {
@@ -1065,11 +1077,14 @@ std::optional<std::pair<PullOverPath, GoalCandidate>> GoalPlannerModule::selectP
       continue;
     }
 
-    const auto resampled_path = utils::resamplePathWithSpline(pull_over_path.getParkingPath(), 0.5);
+    // const auto resampled_path = utils::resamplePathWithSpline(pull_over_path.getParkingPath(),
+    // 0.5);
+    const PathWithLaneId parking_path = pull_over_path.getParkingPath();
+    const std::vector<double> parking_path_curvatures = pull_over_path.getParkingPathCurvatures();
     if (
       parameters_->use_object_recognition &&
       checkObjectsCollision(
-        resampled_path, planner_data_, *parameters_, collision_check_margin,
+        parking_path, parking_path_curvatures, planner_data_, *parameters_, collision_check_margin,
         /*extract_static_objects=*/true,
         /*update_debug_data=*/true)) {
       continue;
@@ -1077,7 +1092,7 @@ std::optional<std::pair<PullOverPath, GoalCandidate>> GoalPlannerModule::selectP
 
     if (
       parameters_->use_occupancy_grid_for_path_collision_check &&
-      checkOccupancyGridCollision(resampled_path, occupancy_grid_map_)) {
+      checkOccupancyGridCollision(parking_path, occupancy_grid_map_)) {
       continue;
     }
 
@@ -1307,11 +1322,13 @@ DecidingPathStatusWithStamp GoalPlannerModule::checkDecidingPathStatus(
     }
 
     // check current parking path collision
-    const auto parking_path = utils::resamplePathWithSpline(pull_over_path->getParkingPath(), 0.5);
+    const auto parking_path = pull_over_path->getParkingPath();
+    const std::vector<double> parking_path_curvatures = pull_over_path->getParkingPathCurvatures();
     const double margin =
       parameters.object_recognition_collision_check_hard_margins.back() * hysteresis_factor;
     if (checkObjectsCollision(
-          parking_path, planner_data, parameters, margin, /*extract_static_objects=*/false)) {
+          parking_path, parking_path_curvatures, planner_data, parameters, margin,
+          /*extract_static_objects=*/false)) {
       RCLCPP_DEBUG(
         getLogger(),
         "[DecidingPathStatus]: DECIDING->NOT_DECIDED. path has collision with objects");
@@ -1812,13 +1829,16 @@ bool GoalPlannerModule::isStuck(
     return false;
   }
 
-  if (
-    parameters.use_object_recognition &&
-    checkObjectsCollision(
-      thread_safe_data_.get_pull_over_path()->getCurrentPath(), planner_data, parameters,
-      /*extract_static_objects=*/false,
-      parameters.object_recognition_collision_check_hard_margins.back())) {
-    return true;
+  const auto pull_over_path = thread_safe_data_.get_pull_over_path();
+  if (parameters.use_object_recognition) {
+    const auto path = pull_over_path->getCurrentPath();
+    const auto curvatures = autoware::motion_utils::calcCurvature(path.points);
+    if (checkObjectsCollision(
+          path, curvatures, planner_data, parameters,
+          parameters.object_recognition_collision_check_hard_margins.back(),
+          /*extract_static_objects=*/false)) {
+      return true;
+    }
   }
 
   if (
@@ -1966,23 +1986,29 @@ bool GoalPlannerModule::checkOccupancyGridCollision(
 }
 
 bool GoalPlannerModule::checkObjectsCollision(
-  const PathWithLaneId & path, const std::shared_ptr<const PlannerData> planner_data,
-  const GoalPlannerParameters & parameters, const double collision_check_margin,
-  const bool extract_static_objects, const bool update_debug_data) const
+  const PathWithLaneId & path, const std::vector<double> & curvatures,
+  const std::shared_ptr<const PlannerData> planner_data, const GoalPlannerParameters & parameters,
+  const double collision_check_margin, const bool extract_static_objects,
+  const bool update_debug_data) const
 {
-  const auto target_objects = std::invoke([&]() {
-    const auto & p = parameters;
-    const auto & rh = *(planner_data->route_handler);
-    const auto objects = *(planner_data->dynamic_object);
-    if (extract_static_objects) {
-      return goal_planner_utils::extractStaticObjectsInExpandedPullOverLanes(
-        rh, left_side_parking_, p.backward_goal_search_length, p.forward_goal_search_length,
-        p.detection_bound_offset, objects, p.th_moving_object_velocity);
-    }
-    return goal_planner_utils::extractObjectsInExpandedPullOverLanes(
-      rh, left_side_parking_, p.backward_goal_search_length, p.forward_goal_search_length,
-      p.detection_bound_offset, objects);
-  });
+  const auto target_objects = extract_static_objects
+                                ? thread_safe_data_.get_static_target_objects()
+                                : thread_safe_data_.get_dynamic_target_objects();
+  if (target_objects.objects.empty()) {
+    return false;
+  }
+
+  // check collision roughly with {min_distance, max_distance} between ego footprint and objects
+  // footprint
+  std::pair<bool, bool> has_collision_rough =
+    utils::path_safety_checker::checkObjectsCollisionRough(
+      path, target_objects, collision_check_margin, planner_data_->parameters, false);
+  if (!has_collision_rough.first) {
+    return false;
+  }
+  if (has_collision_rough.second) {
+    return true;
+  }
 
   std::vector<Polygon2d> obj_polygons;
   for (const auto & object : target_objects.objects) {
@@ -1994,18 +2020,22 @@ bool GoalPlannerModule::checkObjectsCollision(
    *   - `extra_stopping_margin` adds stopping margin under deceleration constraints forward.
    *   - `extra_lateral_margin` adds the lateral margin on curves.
    */
+  if (path.points.size() != curvatures.size()) {
+    RCLCPP_WARN_THROTTLE(
+      getLogger(), *clock_, 5000,
+      "path.points.size() != curvatures.size() in checkObjectsCollision(). judge as non collision");
+    return false;
+  }
   std::vector<Polygon2d> ego_polygons_expanded{};
-  const auto curvatures = autoware::motion_utils::calcCurvature(path.points);
   for (size_t i = 0; i < path.points.size(); ++i) {
     const auto p = path.points.at(i);
-
     const double extra_stopping_margin = std::min(
       std::pow(p.point.longitudinal_velocity_mps, 2) * 0.5 / parameters.maximum_deceleration,
       parameters.object_recognition_collision_check_max_extra_stopping_margin);
 
     // The square is meant to imply centrifugal force, but it is not a very well-founded formula.
-    // TODO(kosuke55): It is needed to consider better way because there is an inherently different
-    // conception of the inside and outside margins.
+    // TODO(kosuke55): It is needed to consider better way because there is an inherently
+    // different conception of the inside and outside margins.
     const double extra_lateral_margin = std::min(
       extra_stopping_margin,
       std::abs(curvatures.at(i) * std::pow(p.point.longitudinal_velocity_mps, 2)));
