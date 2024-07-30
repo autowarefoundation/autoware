@@ -100,8 +100,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
-COPY src/core /autoware/src/core
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
+  --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && colcon build --cmake-args \
@@ -125,13 +125,8 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
-COPY src/launcher /autoware/src/launcher
-COPY src/param /autoware/src/param
-COPY src/sensor_component /autoware/src/sensor_component
-COPY src/sensor_kit /autoware/src/sensor_kit
-COPY src/universe /autoware/src/universe
-COPY src/vehicle /autoware/src/vehicle
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src,target=/autoware/src \
+  --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && colcon build --cmake-args \
@@ -152,6 +147,7 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
+COPY src /autoware/src
 # Create entrypoint
 COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
