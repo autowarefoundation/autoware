@@ -37,8 +37,9 @@ using start_planner_utils::getPullOutLanes;
 
 ShiftPullOut::ShiftPullOut(
   rclcpp::Node & node, const StartPlannerParameters & parameters,
-  std::shared_ptr<LaneDepartureChecker> & lane_departure_checker)
-: PullOutPlannerBase{node, parameters}, lane_departure_checker_{lane_departure_checker}
+  std::shared_ptr<LaneDepartureChecker> & lane_departure_checker,
+  std::shared_ptr<universe_utils::TimeKeeper> time_keeper)
+: PullOutPlannerBase{node, parameters, time_keeper}, lane_departure_checker_{lane_departure_checker}
 {
 }
 
@@ -62,6 +63,8 @@ std::optional<PullOutPath> ShiftPullOut::plan(
 
   // get safe path
   for (auto & pull_out_path : pull_out_paths) {
+    universe_utils::ScopedTimeTrack st("get safe path", *time_keeper_);
+
     // shift path is not separate but only one.
     auto & shift_path = pull_out_path.partial_paths.front();
     // check lane_departure with path between pull_out_start to pull_out_end
@@ -215,6 +218,8 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & road_lanes,
   const Pose & start_pose, const Pose & goal_pose)
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   std::vector<PullOutPath> candidate_paths{};
 
   if (road_lanes.empty()) {

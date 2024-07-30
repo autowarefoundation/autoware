@@ -16,6 +16,7 @@
 #define AUTOWARE__BEHAVIOR_PATH_START_PLANNER_MODULE__FREESPACE_PULL_OUT_HPP_
 
 #include "autoware/behavior_path_start_planner_module/pull_out_planner_base.hpp"
+#include "autoware/universe_utils/system/time_keeper.hpp"
 
 #include <autoware/freespace_planning_algorithms/abstract_algorithm.hpp>
 #include <autoware/freespace_planning_algorithms/astar_search.hpp>
@@ -36,7 +37,8 @@ class FreespacePullOut : public PullOutPlannerBase
 public:
   FreespacePullOut(
     rclcpp::Node & node, const StartPlannerParameters & parameters,
-    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info);
+    const autoware::vehicle_info_utils::VehicleInfo & vehicle_info,
+    std::shared_ptr<universe_utils::TimeKeeper> time_keeper);
 
   PlannerType getPlannerType() const override { return PlannerType::FREESPACE; }
 
