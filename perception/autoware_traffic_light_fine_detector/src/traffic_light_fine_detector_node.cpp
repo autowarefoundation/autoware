@@ -49,7 +49,7 @@ float calWeightedIou(
 
 namespace autoware::traffic_light
 {
-inline std::vector<float> toFloatVector(const std::vector<double> double_vector)
+inline std::vector<float> toFloatVector(const std::vector<double> & double_vector)
 {
   return std::vector<float>(double_vector.begin(), double_vector.end());
 }
