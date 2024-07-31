@@ -17,21 +17,13 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <depend>autoware_universe_utils</depend>
-  <depend>fmt</depend>
+  <depend>diagnostic_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
-  <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>std_srvs</depend>
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
-  <depend>tf2_ros</depend>
-  <depend>tf2_sensor_msgs</depend>
-  <depend>tier4_debug_msgs</depend>
-  <depend>tier4_localization_msgs</depend>
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_cmake_cppcheck</test_depend>

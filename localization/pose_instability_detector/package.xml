@@ -17,7 +17,9 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <depend>ament_index_cpp</depend>
+  <test_depend>ament_cmake_cppcheck</test_depend>
+  <test_depend>ament_index_cpp</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
   <depend>autoware_universe_utils</depend>
   <depend>diagnostic_msgs</depend>
   <depend>geometry_msgs</depend>
@@ -26,10 +28,6 @@
   <depend>rclcpp_components</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
-  <depend>tier4_debug_msgs</depend>
-
-  <test_depend>ament_cmake_cppcheck</test_depend>
-  <test_depend>ament_lint_auto</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

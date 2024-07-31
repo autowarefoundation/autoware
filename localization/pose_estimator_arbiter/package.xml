@@ -25,15 +25,11 @@
   <depend>geometry_msgs</depend>
   <depend>magic_enum</depend>
   <depend>pcl_conversions</depend>
-  <depend>pcl_ros</depend>
-  <depend>pluginlib</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
-  <depend>ublox_msgs</depend>
   <depend>visualization_msgs</depend>
-  <depend>yabloc_particle_filter</depend>
 
   <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
