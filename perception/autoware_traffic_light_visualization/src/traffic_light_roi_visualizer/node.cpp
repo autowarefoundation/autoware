@@ -32,6 +32,7 @@ TrafficLightRoiVisualizerNode::TrafficLightRoiVisualizerNode(const rclcpp::NodeO
   using std::placeholders::_3;
   using std::placeholders::_4;
   enable_fine_detection_ = this->declare_parameter<bool>("enable_fine_detection");
+  use_image_transport_ = this->declare_parameter<bool>("use_image_transport");
 
   if (enable_fine_detection_) {
     sync_with_rough_roi_.reset(new SyncWithRoughRoi(
@@ -48,13 +49,24 @@ TrafficLightRoiVisualizerNode::TrafficLightRoiVisualizerNode(const rclcpp::NodeO
   timer_ = rclcpp::create_timer(
     this, get_clock(), 100ms, std::bind(&TrafficLightRoiVisualizerNode::connectCb, this));
 
-  image_pub_ =
-    image_transport::create_publisher(this, "~/output/image", rclcpp::QoS{1}.get_rmw_qos_profile());
+  if (use_image_transport_) {
+    image_pub_ = image_transport::create_publisher(
+      this, "~/output/image", rclcpp::QoS{1}.get_rmw_qos_profile());
+  } else {
+    auto qos = rclcpp::QoS(1);
+    simple_image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("~/output/image", qos);
+  }
 }
 
 void TrafficLightRoiVisualizerNode::connectCb()
 {
-  if (image_pub_.getNumSubscribers() == 0) {
+  int num_subscribers = 0;
+  if (use_image_transport_) {
+    num_subscribers = image_pub_.getNumSubscribers();
+  } else {
+    num_subscribers = simple_image_pub_->get_subscription_count();
+  }
+  if (num_subscribers == 0) {
     image_sub_.unsubscribe();
     traffic_signals_sub_.unsubscribe();
     roi_sub_.unsubscribe();
@@ -143,7 +155,11 @@ void TrafficLightRoiVisualizerNode::imageRoiCallback(
     RCLCPP_ERROR(
       get_logger(), "Could not convert from '%s' to 'rgb8'.", input_image_msg->encoding.c_str());
   }
-  image_pub_.publish(cv_ptr->toImageMsg());
+  if (use_image_transport_) {
+    image_pub_.publish(cv_ptr->toImageMsg());
+  } else {
+    simple_image_pub_->publish(*cv_ptr->toImageMsg());
+  }
 }
 
 bool TrafficLightRoiVisualizerNode::getClassificationResult(
@@ -220,7 +236,11 @@ void TrafficLightRoiVisualizerNode::imageRoughRoiCallback(
     RCLCPP_ERROR(
       get_logger(), "Could not convert from '%s' to 'rgb8'.", input_image_msg->encoding.c_str());
   }
-  image_pub_.publish(cv_ptr->toImageMsg());
+  if (use_image_transport_) {
+    image_pub_.publish(cv_ptr->toImageMsg());
+  } else {
+    simple_image_pub_->publish(*cv_ptr->toImageMsg());
+  }
 }
 
 }  // namespace autoware::traffic_light

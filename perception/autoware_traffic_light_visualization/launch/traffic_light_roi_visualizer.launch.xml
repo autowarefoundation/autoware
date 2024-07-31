@@ -5,6 +5,7 @@
   <arg name="input/traffic_signals" default="~/input/traffic_signals"/>
   <arg name="output/image" default="~/debug/rois"/>
   <arg name="enable_fine_detection" default="false"/>
+  <arg name="use_image_transport" default="true"/>
 
   <node pkg="autoware_traffic_light_visualization" exec="traffic_light_visualization_node" name="traffic_light_visualization">
     <remap from="~/input/image" to="$(var input/image)"/>
@@ -13,5 +14,6 @@
     <remap from="~/input/traffic_signals" to="$(var input/traffic_signals)"/>
     <remap from="~/output/image" to="$(var output/image)"/>
     <param name="enable_fine_detection" value="$(var enable_fine_detection)"/>
+    <param name="use_image_transport" value="$(var use_image_transport)"/>
   </node>
 </launch>

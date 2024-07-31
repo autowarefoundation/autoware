@@ -121,6 +121,8 @@ private:
   message_filters::Subscriber<tier4_perception_msgs::msg::TrafficLightRoiArray> rough_roi_sub_;
   message_filters::Subscriber<tier4_perception_msgs::msg::TrafficLightArray> traffic_signals_sub_;
   image_transport::Publisher image_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr simple_image_pub_;
+
   typedef message_filters::sync_policies::ApproximateTime<
     sensor_msgs::msg::Image, tier4_perception_msgs::msg::TrafficLightRoiArray,
     tier4_perception_msgs::msg::TrafficLightArray>
@@ -136,6 +138,7 @@ private:
   std::shared_ptr<SyncWithRoughRoi> sync_with_rough_roi_;
 
   bool enable_fine_detection_;
+  bool use_image_transport_;
 };
 
 }  // namespace autoware::traffic_light

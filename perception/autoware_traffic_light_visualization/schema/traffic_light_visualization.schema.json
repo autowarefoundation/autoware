@@ -10,9 +10,14 @@
           "type": "boolean",
           "description": "whether to visualize result of the traffic light fine detection",
           "default": "false"
+        },
+        "use_image_transport": {
+          "type": "boolean",
+          "description": "whether to apply image transport to compress the output debugging image in the traffic light fine detection",
+          "default": "true"
         }
       },
-      "required": ["enable_fine_detection"]
+      "required": ["enable_fine_detection", "use_image_transport"]
     }
   },
   "properties": {
