@@ -301,6 +301,8 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
   {
     const std::string ns = "avoidance.cancel.";
     p.enable_cancel_maneuver = getOrDeclareParameter<bool>(*node, ns + "enable");
+    p.force_deactivate_duration_time =
+      getOrDeclareParameter<double>(*node, ns + "force.duration_time");
   }
 
   // yield

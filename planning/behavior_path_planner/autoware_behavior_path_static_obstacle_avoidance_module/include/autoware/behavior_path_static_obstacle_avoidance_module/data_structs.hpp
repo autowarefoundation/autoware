@@ -107,6 +107,8 @@ struct AvoidanceParameters
   // if this param is true, it reverts avoidance path when the path is no longer needed.
   bool enable_cancel_maneuver{false};
 
+  double force_deactivate_duration_time{0.0};
+
   // enable avoidance for all parking vehicle
   std::string policy_ambiguous_vehicle{"ignore"};
 
@@ -580,6 +582,8 @@ struct AvoidancePlanningData
   bool yield_required{false};
 
   bool found_avoidance_path{false};
+
+  bool force_deactivated{false};
 
   double to_stop_line{std::numeric_limits<double>::max()};
 

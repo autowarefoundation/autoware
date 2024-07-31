@@ -477,6 +477,9 @@ private:
   mutable std::vector<AvoidanceDebugMsg> debug_avoidance_initializer_for_shift_line_;
 
   mutable rclcpp::Time debug_avoidance_initializer_for_shift_line_time_;
+
+  bool force_deactivated_{false};
+  rclcpp::Time last_deactivation_triggered_time_;
 };
 
 }  // namespace autoware::behavior_path_planner

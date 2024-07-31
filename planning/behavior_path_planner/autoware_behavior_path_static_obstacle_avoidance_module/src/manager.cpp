@@ -183,6 +183,11 @@ void StaticObstacleAvoidanceModuleManager::updateModuleParams(
   }
 
   {
+    const std::string ns = "avoidance.cancel.";
+    updateParam<double>(parameters, ns + "force.duration_time", p->force_deactivate_duration_time);
+  }
+
+  {
     const std::string ns = "avoidance.stop.";
     updateParam<double>(parameters, ns + "max_distance", p->stop_max_distance);
     updateParam<double>(parameters, ns + "stop_buffer", p->stop_buffer);

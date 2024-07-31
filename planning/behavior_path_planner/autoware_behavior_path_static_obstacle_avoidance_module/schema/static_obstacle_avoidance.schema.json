@@ -1263,6 +1263,16 @@
               "type": "boolean",
               "description": "Flag to enable cancel maneuver.",
               "default": "true"
+            },
+            "force": {
+              "type": "object",
+              "properties": {
+                "duration_time": {
+                  "type": "number",
+                  "description": "force deactivate duration time",
+                  "default": 2.0
+                }
+              }
             }
           },
           "required": ["enable"],
