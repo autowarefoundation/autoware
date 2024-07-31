@@ -40,7 +40,7 @@ GroundServer::GroundServer(const rclcpp::NodeOptions & options)
 {
   using std::placeholders::_1;
   using std::placeholders::_2;
-  const rclcpp::QoS map_qos = rclcpp::QoS(10).transient_local().reliable();
+  const rclcpp::QoS map_qos = rclcpp::QoS(1).transient_local().reliable();
 
   auto on_pose = std::bind(&GroundServer::on_pose_stamped, this, _1);
   auto on_map = std::bind(&GroundServer::on_map, this, _1);
