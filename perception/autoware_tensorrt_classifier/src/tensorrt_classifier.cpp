@@ -54,7 +54,7 @@ bool fileExists(const std::string & file_name, bool verbose)
   return true;
 }
 
-std::vector<std::string> loadListFromTextFile(const std::string filename)
+std::vector<std::string> loadListFromTextFile(const std::string & filename)
 {
   assert(fileExists(filename, true));
   std::vector<std::string> list;
