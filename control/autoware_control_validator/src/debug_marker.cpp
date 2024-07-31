@@ -17,9 +17,7 @@
 #include <autoware/motion_utils/marker/marker_helper.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
 
-#include <memory>
 #include <string>
-#include <vector>
 
 using visualization_msgs::msg::Marker;
 
@@ -33,47 +31,13 @@ ControlValidatorDebugMarkerPublisher::ControlValidatorDebugMarkerPublisher(rclcp
     node_->create_publisher<visualization_msgs::msg::MarkerArray>("~/virtual_wall", 1);
 }
 
-void ControlValidatorDebugMarkerPublisher::clearMarkers()
+void ControlValidatorDebugMarkerPublisher::clear_markers()
 {
   marker_array_.markers.clear();
   marker_array_virtual_wall_.markers.clear();
 }
 
-void ControlValidatorDebugMarkerPublisher::pushPoseMarker(
-  const autoware_planning_msgs::msg::TrajectoryPoint & p, const std::string & ns, int id)
-{
-  pushPoseMarker(p.pose, ns, id);
-}
-
-void ControlValidatorDebugMarkerPublisher::pushPoseMarker(
-  const geometry_msgs::msg::Pose & pose, const std::string & ns, int id)
-{
-  using autoware::universe_utils::createMarkerColor;
-
-  // append arrow marker
-  std_msgs::msg::ColorRGBA color;
-  if (id == 0)  // Red
-  {
-    color = createMarkerColor(1.0, 0.0, 0.0, 0.999);
-  }
-  if (id == 1)  // Green
-  {
-    color = createMarkerColor(0.0, 1.0, 0.0, 0.999);
-  }
-  if (id == 2)  // Blue
-  {
-    color = createMarkerColor(0.0, 0.0, 1.0, 0.999);
-  }
-  Marker marker = autoware::universe_utils::createDefaultMarker(
-    "map", node_->get_clock()->now(), ns, getMarkerId(ns), Marker::ARROW,
-    autoware::universe_utils::createMarkerScale(0.2, 0.1, 0.3), color);
-  marker.lifetime = rclcpp::Duration::from_seconds(0.2);
-  marker.pose = pose;
-
-  marker_array_.markers.push_back(marker);
-}
-
-void ControlValidatorDebugMarkerPublisher::pushWarningMsg(
+void ControlValidatorDebugMarkerPublisher::push_warning_msg(
   const geometry_msgs::msg::Pose & pose, const std::string & msg)
 {
   visualization_msgs::msg::Marker marker = autoware::universe_utils::createDefaultMarker(
@@ -86,7 +50,7 @@ void ControlValidatorDebugMarkerPublisher::pushWarningMsg(
   marker_array_virtual_wall_.markers.push_back(marker);
 }
 
-void ControlValidatorDebugMarkerPublisher::pushVirtualWall(const geometry_msgs::msg::Pose & pose)
+void ControlValidatorDebugMarkerPublisher::push_virtual_wall(const geometry_msgs::msg::Pose & pose)
 {
   const auto now = node_->get_clock()->now();
   const auto stop_wall_marker =

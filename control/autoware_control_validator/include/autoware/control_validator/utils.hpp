@@ -15,41 +15,26 @@
 #ifndef AUTOWARE__CONTROL_VALIDATOR__UTILS_HPP_
 #define AUTOWARE__CONTROL_VALIDATOR__UTILS_HPP_
 
-#include <autoware/motion_utils/trajectory/conversion.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 
-#include <string>
-#include <utility>
-#include <vector>
-
 namespace autoware::control_validator
 {
-using autoware::motion_utils::convertToTrajectory;
-using autoware::motion_utils::convertToTrajectoryPointArray;
-using autoware_planning_msgs::msg::Trajectory;
-using autoware_planning_msgs::msg::TrajectoryPoint;
-using geometry_msgs::msg::Pose;
-using TrajectoryPoints = std::vector<TrajectoryPoint>;
+/**
+ * @brief Shift pose along the yaw direction
+ */
+void shift_pose(geometry_msgs::msg::Pose & pose, double longitudinal);
 
-void shiftPose(Pose & pose, double longitudinal);
-
-void insertPointInPredictedTrajectory(
-  TrajectoryPoints & modified_trajectory, const geometry_msgs::msg::Pose & reference_pose,
-  const TrajectoryPoints & predicted_trajectory);
-
-TrajectoryPoints reverseTrajectoryPoints(const TrajectoryPoints & trajectory);
-
-bool removeFrontTrajectoryPoint(
-  const TrajectoryPoints & trajectory_points, TrajectoryPoints & modified_trajectory_points,
-  const TrajectoryPoints & predicted_trajectory_points);
-
-Trajectory alignTrajectoryWithReferenceTrajectory(
-  const Trajectory & trajectory, const Trajectory & predicted_trajectory);
-
-double calcMaxLateralDistance(
-  const Trajectory & trajectory, const Trajectory & predicted_trajectory);
+/**
+ * @brief Calculate the maximum lateral distance between the reference trajectory and the predicted
+ * trajectory
+ * @param reference_trajectory reference trajectory
+ * @param predicted_trajectory predicted trajectory
+ */
+double calc_max_lateral_distance(
+  const autoware_planning_msgs::msg::Trajectory & reference_trajectory,
+  const autoware_planning_msgs::msg::Trajectory & predicted_trajectory);
 }  // namespace autoware::control_validator
 
 #endif  // AUTOWARE__CONTROL_VALIDATOR__UTILS_HPP_
