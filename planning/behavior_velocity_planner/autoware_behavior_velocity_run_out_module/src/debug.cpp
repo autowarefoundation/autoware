@@ -202,7 +202,7 @@ autoware::motion_utils::VirtualWalls RunOutDebug::createVirtualWalls()
 }
 
 visualization_msgs::msg::MarkerArray RunOutDebug::createVisualizationMarkerArrayFromDebugData(
-  const builtin_interfaces::msg::Time & current_time)
+  const builtin_interfaces::msg::Time & current_time) const
 {
   visualization_msgs::msg::MarkerArray msg;
 

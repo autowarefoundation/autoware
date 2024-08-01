@@ -127,7 +127,7 @@ public:
 
 private:
   visualization_msgs::msg::MarkerArray createVisualizationMarkerArrayFromDebugData(
-    const builtin_interfaces::msg::Time & current_time);
+    const builtin_interfaces::msg::Time & current_time) const;
   void clearDebugMarker();
 
   rclcpp::Node & node_;
