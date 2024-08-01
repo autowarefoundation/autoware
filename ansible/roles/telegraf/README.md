@@ -6,7 +6,7 @@ After installing telegraf and influxdb2, we need to manually make an API token a
 
 ## Create Organization
 
-When accessing the InfluxDB UI http://localhost:8086/ for the first time, you need to create an organization and a backet. Enter as follows.
+When accessing the InfluxDB UI <http://localhost:8086/> for the first time, you need to create an organization and a backet. Enter as follows.
 
 ![](./files/create-org.png)
 
@@ -14,7 +14,7 @@ When accessing the InfluxDB UI http://localhost:8086/ for the first time, you ne
 
 Next, move to the `Load Data` tab, click the `GENERATE API TOKEN button`, and generate the API token.
 
-https://docs.influxdata.com/influxdb/v2/admin/tokens/create-token/#manage-tokens-in-the-influxdb-ui
+<https://docs.influxdata.com/influxdb/v2/admin/tokens/create-token/#manage-tokens-in-the-influxdb-ui>
 
 ![](./files/load-data.png)
 
@@ -24,4 +24,4 @@ https://docs.influxdata.com/influxdb/v2/admin/tokens/create-token/#manage-tokens
 
 Paste the obtained API token into the empty string part of `token = ""` in `/etc/telegraf/telegraf.conf`.
 
-https://github.com/youtalk/autoware/blob/telegraf/ansible/roles/telegraf/files/telegraf.conf#L18
+<https://github.com/youtalk/autoware/blob/telegraf/ansible/roles/telegraf/files/telegraf.conf#L18>
