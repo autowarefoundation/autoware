@@ -33,6 +33,11 @@
     update_cache: true
     cache_valid_time: 3600
 
+- name: Install InfluxDB v2
+  apt:
+    name: influxdb2
+    state: present
+
 - name: Install Telegraf
   apt:
     name: telegraf
