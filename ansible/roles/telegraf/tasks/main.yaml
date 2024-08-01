@@ -1,8 +1,27 @@
-- name: Copy a file to /opt
+- name: Copy telegraf.conf to /opt/autoware/bin
   become: true
   ansible.builtin.copy:
-    src: /path/to/local/file.txt  # ローカルのファイルパス
-    dest: /opt/file.txt           # コピー先のパス
-    owner: root                  # オーナー（必要に応じて変更）
-    group: root                  # グループ（必要に応じて変更）
-    mode: '0644'                 # ファイルのパーミッション（必要に応じて変更）
+    src: "{{ role_path }}/files/telegraf.conf"
+    dest: /etc/telegraf/telegraf.conf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+
+- name: Copy get_telegraf_proccpu_json.sh to /opt/autoware/bin
+  become: true
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/get_telegraf_proccpu_json.sh"
+    dest: /opt/autoware/bin/get_telegraf_proccpu_json.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy get_telegraf_procmem_json.sh to /opt/autoware/bin
+  become: true
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/get_telegraf_procmem_json.sh"
+    dest: /opt/autoware/bin/get_telegraf_procmem_json.sh
+    owner: root
+    group: root
+    mode: '0755'
