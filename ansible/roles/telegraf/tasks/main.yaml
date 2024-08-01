@@ -38,6 +38,11 @@
     name: influxdb2
     state: present
 
+- name: Install InfluxDB v2 CLI
+  apt:
+    name: influxdb2-cli
+    state: present
+
 - name: Install Telegraf
   apt:
     name: telegraf
