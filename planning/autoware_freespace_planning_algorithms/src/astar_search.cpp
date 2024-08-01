@@ -155,7 +155,7 @@ void AstarSearch::setCollisionFreeDistanceMap()
   using Entry = std::pair<IndexXY, double>;
   struct CompareEntry
   {
-    bool operator()(const Entry & a, const Entry & b) { return a.second > b.second; }
+    bool operator()(const Entry & a, const Entry & b) const { return a.second > b.second; }
   };
   std::priority_queue<Entry, std::vector<Entry>, CompareEntry> heap;
   std::vector<bool> closed(col_free_distance_map_.size(), false);
