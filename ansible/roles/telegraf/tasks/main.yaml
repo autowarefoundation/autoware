@@ -23,9 +23,9 @@
 - name: Add InfluxData repository
   become: true
   apt_repository:
-    repo: 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main'
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main"
     state: present
-    filename: 'influxdata.list'
+    filename: "influxdata.list"
 
 - name: Update apt cache
   become: true
@@ -50,7 +50,7 @@
     dest: /opt/autoware/bin/get_telegraf_proccpu_json.sh
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
 
 - name: Copy get_telegraf_procmem_json.sh to /opt/autoware/bin
   become: true
@@ -59,7 +59,7 @@
     dest: /opt/autoware/bin/get_telegraf_procmem_json.sh
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
 
 - name: Copy telegraf.conf to /opt/autoware/bin
   become: true
@@ -68,7 +68,7 @@
     dest: /etc/telegraf/telegraf.conf
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
     backup: true
   notify:
     - Restart telegraf

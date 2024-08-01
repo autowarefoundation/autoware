@@ -1,8 +1,8 @@
 #!/bin/bash
 
 echo "{"
-ps -ax --format "rss command" \
-    | while read -r rss cmd; do
+ps -ax --format "rss command" |
+    while read -r rss cmd; do
         if [[ $rss -lt 30000 ]]; then
             continue
         fi
@@ -10,6 +10,6 @@ ps -ax --format "rss command" \
         cmd="${cmd//=/_}"
         cmd="${cmd:0:50}"
         echo "\"${cmd}\":${rss},"
-      done
-echo "\"z\":0"
+    done
+echo '"z":0'
 echo "}"
