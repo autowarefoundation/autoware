@@ -32,7 +32,7 @@ The positions and orientations of the AR-Tags are assumed to be written in the L
 
 ## Parameters
 
-{{ json_to_markdown("localization/landmark_based_localizer/ar_tag_based_localizer/schema/ar_tag_based_localizer.schema.json") }}
+{{ json_to_markdown("localization/autoware_landmark_based_localizer/autoware_ar_tag_based_localizer/schema/ar_tag_based_localizer.schema.json") }}
 
 ## How to launch
 
