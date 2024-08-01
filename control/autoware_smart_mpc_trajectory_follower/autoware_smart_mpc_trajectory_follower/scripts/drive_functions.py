@@ -17,23 +17,21 @@
 
 """Define primary parameters and functions to be used elsewhere."""
 from functools import partial
-import json
 import os
 from pathlib import Path
 import sys
 from typing import Callable
 
+from ament_index_python.packages import get_package_share_directory
 from numba import njit
 import numpy as np
 import yaml
 
-package_path_json = str(Path(__file__).parent.parent) + "/package_path.json"
-with open(package_path_json, "r") as file:
-    package_path = json.load(file)
+PACKAGE_NAME = "autoware_smart_mpc_trajectory_follower"
 
-mpc_param_path = (
-    package_path["path"] + "/autoware_smart_mpc_trajectory_follower/param/mpc_param.yaml"
-)
+param_path = Path(get_package_share_directory(PACKAGE_NAME)) / "param"
+
+mpc_param_path = param_path / "mpc_param.yaml"
 with open(mpc_param_path, "r") as yml:
     mpc_param = yaml.safe_load(yml)
 
@@ -102,9 +100,7 @@ mppi_step = int(mpc_param["mpc_parameter"]["mppi"]["mppi_step"])
 
 cap_pred_error = np.array(mpc_param["mpc_parameter"]["preprocessing"]["cap_pred_error"])
 
-nominal_param_path = (
-    package_path["path"] + "/autoware_smart_mpc_trajectory_follower/param/nominal_param.yaml"
-)
+nominal_param_path = param_path / "nominal_param.yaml"
 with open(nominal_param_path, "r") as yml:
     nominal_param = yaml.safe_load(yml)
 # Vehicle body information given by default.
@@ -173,10 +169,7 @@ steer_fb_sec_order_ratio = float(
 )
 max_error_steer = float(mpc_param["mpc_parameter"]["compensation"]["max_error_steer"])
 
-
-trained_model_param_path = (
-    package_path["path"] + "/autoware_smart_mpc_trajectory_follower/param/trained_model_param.yaml"
-)
+trained_model_param_path = param_path / "trained_model_param.yaml"
 with open(trained_model_param_path, "r") as yml:
     trained_model_param = yaml.safe_load(yml)
 use_trained_model_diff = bool(
@@ -370,31 +363,12 @@ finalize_v_weight = float(
 )
 # upper limit of input
 
-
-package_path_split = str(package_path["path"]).split("/")
-control_dir_path = ""
-for i in range(len(package_path_split)):
-    control_dir_path += package_path_split[i]
-    if package_path_split[i] == "control":
-        break
-    control_dir_path += "/"
-
 read_limit_file = bool(mpc_param["mpc_parameter"]["limit"]["read_limit_file"])
 if read_limit_file:
-    limit_yaml_path = None
-    for curDir, dirs, files in os.walk(control_dir_path):
-        for name in files:
-            if name == "vehicle_cmd_gate.param.yaml":
-                if curDir.split("/")[-2] == "autoware_vehicle_cmd_gate":
-                    limit_yaml_path = curDir + "/" + name
-                    break
-
-    limit_params = None
-    if limit_yaml_path is not None:
-        with open(limit_yaml_path, "r") as yml:
-            limit_params = yaml.safe_load(yml)
-    else:
-        print("Error: limit_yaml_path is None")
+    limitter_package_path = Path(get_package_share_directory("autoware_vehicle_cmd_gate"))
+    limit_yaml_path = limitter_package_path / "config" / "vehicle_cmd_gate.param.yaml"
+    with open(limit_yaml_path, "r") as yml:
+        limit_params = yaml.safe_load(yml)
 
     if limit_params is not None:
         reference_speed_points = np.array(

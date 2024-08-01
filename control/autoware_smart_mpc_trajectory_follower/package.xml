@@ -25,9 +25,11 @@
   <depend>autoware_planning_msgs</depend>
   <depend>autoware_system_msgs</depend>
   <depend>autoware_universe_utils</depend>
+  <depend>autoware_vehicle_cmd_gate</depend>
   <depend>autoware_vehicle_msgs</depend>
   <depend>pybind11_vendor</depend>
   <depend>python3-scipy</depend>
+  <depend>python3-torch</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
 

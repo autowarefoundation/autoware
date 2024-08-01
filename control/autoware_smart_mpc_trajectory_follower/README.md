@@ -17,20 +17,6 @@ This technology makes it relatively easy to operate model predictive control, wh
   </a>
 </p>
 
-## Setup
-
-After building autoware, move to `control/autoware_smart_mpc_trajectory_follower` and run the following command:
-
-```bash
-pip3 install .
-```
-
-If you have already installed and want to update the package, run the following command instead:
-
-```bash
-pip3 install -U .
-```
-
 ## Provided features
 
 This package provides smart MPC logic for path-following control as well as mechanisms for learning and evaluation. These features are described below.
