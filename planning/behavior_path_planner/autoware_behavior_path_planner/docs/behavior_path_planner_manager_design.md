@@ -46,6 +46,31 @@ Additionally, the manager generates root reference path, and if any other module
 
 ![manager_overview](../image/manager/manager_overview.svg)
 
+### Slot
+
+The manager owns several containers of sub-managers, namely _slots_, that holds/runs several sub-managers and send the output to the next slot. Given the initial reference path, each slot processes the input path and the ouptut path is processed by the next slot. The final slot output is utilized as the output of the manager. The slot passes following information
+
+```cpp
+struct SlotOutput
+{
+  BehaviorModuleOutput valid_output;
+
+  // if candidate module is running, valid_output contains the planning by candidate module. In
+  // that case, downstream slots will just run aproved modules and do not try to launch new
+  // modules
+  bool is_upstream_candidate_exclusive{false};
+
+  // if this slot failed, downstream slots need to refresh approved/candidate modules and just
+  // forward valid_output of this slot output
+  bool is_upstream_failed_approved{false};
+
+  // if the approved module in this slot returned to isWaitingApproval, downstream slots need to
+  // refresh candidate once
+  bool is_upstream_waiting_approved{false};
+};
+
+```
+
 ### Sub-managers
 
 The sub-manager's main task is
@@ -136,13 +161,13 @@ There are 6 steps in one process:
 
 At first, the manager set latest planner data, and run all approved modules and get output path. At this time, the manager checks module status and removes expired modules from approved modules stack.
 
-![process_step1](../image/manager/process_step1.svg)
+![process_step1](../image/manager/process_step1.drawio.svg)
 
 ### Step2
 
 Input approved modules output and necessary data to all registered modules, and the modules judge the necessity of path modification based on it. The manager checks which module makes execution request.
 
-![process_step2](../image/manager/process_step2.svg)
+![process_step2](../image/manager/process_step2.drawio.svg)
 
 ### Step3
 
@@ -152,19 +177,19 @@ Check request module existence.
 
 The manager decides which module to execute as candidate modules from the modules that requested to execute path modification.
 
-![process_step4](../image/manager/process_step4.svg)
+![process_step4](../image/manager/process_step4.drawio.svg)
 
 ### Step5
 
 Decides the priority order of execution among candidate modules. And, run all candidate modules. Each modules outputs reference path and RTC cooperate status.
 
-![process_step5](../image/manager/process_step5.svg)
+![process_step5](../image/manager/process_step5.drawio.svg)
 
 ### Step6
 
 Move approved module to approved modules stack from candidate modules stack.
 
-![process_step6](../image/manager/process_step6.svg)
+![process_step6](../image/manager/process_step6.drawio.svg)
 
 ---
 
@@ -377,20 +402,20 @@ If a module that doesn't support simultaneous execution exists in approved modul
 
 For example, if approved module's setting of `enable_simultaneous_execution_as_approved_module` is **ENABLE**, then only modules whose the setting is **ENABLE** proceed to the next step.
 
-![request_step2](../image/manager/request_step2.svg)
+![request_step2](../image/manager/request_step2.drawio.svg)
 
 Other examples:
 
-| Process                                                  | Description                                                                                                                                                             |
-| :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![request_step2-2](../image/manager/request_step2-2.svg) | If approved modules stack is empty, then all request modules proceed to the next step, regardless of the setting of `enable_simultaneous_execution_as_approved_module`. |
-| ![request_step2-3](../image/manager/request_step2-3.svg) | If approved module's setting of `enable_simultaneous_execution_as_approved_module` is **DISABLE**, then all request modules are discarded.                              |
+| Process                                                         | Description                                                                                                                                                             |
+| :-------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![request_step2-2](../image/manager/request_step2-2.drawio.svg) | If approved modules stack is empty, then all request modules proceed to the next step, regardless of the setting of `enable_simultaneous_execution_as_approved_module`. |
+| ![request_step2-3](../image/manager/request_step2-3.drawio.svg) | If approved module's setting of `enable_simultaneous_execution_as_approved_module` is **DISABLE**, then all request modules are discarded.                              |
 
 ### Step3
 
 Sort `request_modules` by priority.
 
-![request_step3](../image/manager/request_step3.svg)
+![request_step3](../image/manager/request_step3.drawio.svg)
 
 ### Step4
 
@@ -444,26 +469,26 @@ Executable or not:
 
 For example, if the highest priority module's setting of `enable_simultaneous_execution_as_candidate_module` is **DISABLE**, then all modules after the second priority are discarded.
 
-![request_step4](../image/manager/request_step4.svg)
+![request_step4](../image/manager/request_step4.drawio.svg)
 
 Other examples:
 
-| Process                                                  | Description                                                                                                                                                          |
-| :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![request_step4-2](../image/manager/request_step4-2.svg) | If a module with a higher priority exists, lower priority modules whose setting of `enable_simultaneous_execution_as_candidate_module` is **DISABLE** are discarded. |
-| ![request_step4-3](../image/manager/request_step4-3.svg) | If all modules' setting of `enable_simultaneous_execution_as_candidate_module` is **ENABLE**, then all modules proceed to the next step.                             |
+| Process                                                         | Description                                                                                                                                                          |
+| :-------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![request_step4-2](../image/manager/request_step4-2.drawio.svg) | If a module with a higher priority exists, lower priority modules whose setting of `enable_simultaneous_execution_as_candidate_module` is **DISABLE** are discarded. |
+| ![request_step4-3](../image/manager/request_step4-3.drawio.svg) | If all modules' setting of `enable_simultaneous_execution_as_candidate_module` is **ENABLE**, then all modules proceed to the next step.                             |
 
 ### Step5
 
 Run all candidate modules.
 
-![request_step5](../image/manager/request_step5.svg)
+![request_step5](../image/manager/request_step5.drawio.svg)
 
 ## How to decide which module's output to use?
 
 Sometimes, multiple candidate modules are running simultaneously.
 
-![multiple_candidates](../image/manager/multiple_candidates.svg)
+![multiple_candidates](../image/manager/multiple_candidates.drawio.svg)
 
 In this case, the manager selects a candidate modules which output path is used as `behavior_path_planner` output by approval condition in the following rules.
 
@@ -482,11 +507,11 @@ In this case, the manager selects a candidate modules which output path is used 
     The smaller the number is, the higher the priority is.
 
 <figure markdown>
-  ![module_select](../image/manager/module_select.svg){width=1000}
+  ![module_select](../image/manager/module_select.drawio.svg){width=1000}
   <figcaption>module priority</figcaption>
 </figure>
 
-![output_module](../image/manager/output_module.svg)
+![output_module](../image/manager/output_module.drawio.svg)
 
 Additionally, the manager moves the highest priority module to approved modules stack if it is already approved.
 
@@ -502,7 +527,9 @@ This is because module C is planning output path with the output of module B as 
 
 As a result, the module A's output is used as approved modules stack.
 
-![waiting_approve](../image/manager/waiting_approve.svg)
+![waiting_approve](../image/manager/waiting_approve.drawio.svg)
+
+If this case happened in the slot, `is_upstream_waiting_approved` is set to true.
 
 ### Failure modules
 
@@ -510,23 +537,44 @@ The failure modules return the status `ModuleStatus::FAILURE`. The manager remov
 
 As a result, the module A's output is used as approved modules stack.
 
-![failure_modules](../image/manager/failure_modules.svg)
+![failure_modules](../image/manager/failure_modules.drawio.svg)
+
+If this case happened in the slot, `is_upstream_failed_approved` is set to true.
 
 ### Succeeded modules
 
 The succeeded modules return the status `ModuleStatus::SUCCESS`. The manager removes those modules based on **Last In First Out** policy. In other words, if a module added later to approved modules stack is still running (is in `ModuleStatus::RUNNING`), the manager doesn't remove the succeeded module. The reason for this is the same as in removal for waiting approval modules, and is to prevent sudden changes of the running module's output.
 
-![success_modules_remove](../image/manager/success_modules_remove.svg)
+![success_modules_remove](../image/manager/success_modules_remove.drawio.svg)
 
-![success_modules_skip](../image/manager/success_modules_skip.svg)
+![success_modules_skip](../image/manager/success_modules_skip.drawio.svg)
 
 As an exception, if **Lane Change** module returns status `ModuleStatus::SUCCESS`, the manager doesn't remove any modules until all modules is in status `ModuleStatus::SUCCESS`. This is because when the manager removes the **Lane Change** (normal LC, external LC, avoidance by LC) module as succeeded module, the manager updates the information of the lane Ego is currently driving in, so root reference path (= module A's input path) changes significantly at that moment.
 
-![lane_change_remove](../image/manager/lane_change_remove.svg)
+![lane_change_remove](../image/manager/lane_change_remove.drawio.svg)
 
-![lane_change_skip](../image/manager/lane_change_skip.svg)
+![lane_change_skip](../image/manager/lane_change_skip.drawio.svg)
 
 When the manager removes succeeded modules, the last added module's output is used as approved modules stack.
+
+## Slot output propagation
+
+As the initial solution, following _SlotOutput_ is passed to the first slot.
+
+```cpp
+  SlotOutput result_output = SlotOutput{
+    getReferencePath(data),
+    false,
+    false,
+    false,
+  };
+```
+
+If a slot turned out to be `is_upstream_failed_approved`, then all the subsequent slots are refreshed and have all of their approved_modules and candidate_modules cleared. The valid_output is just transferred to the end without any modification.
+
+If a slot turned out to be `is_upstream_waiting_approved`, then all the subsequent slots clear their candidate_modules once and apply their approved_modules to obtain the slot output.
+
+If a slot turned out to be `is_upstream_candidate_exclusive`, it means that a not `simultaneously_executable_as_candidate` module is running in that slot. Then all the subsequent modules just apply their approved_modules without trying to launch new candidate_modules.
 
 ## Reference path generation
 
@@ -545,7 +593,7 @@ The **current route lanelet** can be reset to the closest lanelet within the rou
 
 ![current_route_lanelet](../image/manager/current_route_lanelet.svg)
 
-The manager needs to know the ego behavior and then generate a root reference path from the lanes that Ego should follow.
+The manager needs to know the ego behavior and then generate a root reference path from the lanes tghat Ego should follow.
 
 For example, during autonomous driving, even if Ego moves into the next lane in order to avoid a parked vehicle, the target lanes that Ego should follow will **NOT** change because Ego will return to the original lane after the avoidance maneuver. Therefore, the manager does **NOT** reset the **current route lanelet**, even if the avoidance maneuver is finished.
 

@@ -3,80 +3,80 @@
 # NOTE: The smaller the priority number is, the higher the module priority is.
 /**:
   ros__parameters:
+    # NOTE: modules which are not set true in the preset is ignored in the slot configuration
+    slots:
+      # NOTE: array of array is not supported
+      - slot1
+      - slot2
+      - slot3
+      - slot4
+    slot1:
+      - "start_planner"
+    slot2:
+      - "side_shift"
+      - "avoidance_by_lane_change"
+      - "static_obstacle_avoidance"
+      - "lane_change_left"
+      - "lane_change_right"
+      - "external_request_lane_change_left"
+      - "external_request_lane_change_right"
+    slot3:
+      - "goal_planner"
+    slot4:
+      - "dynamic_obstacle_avoidance"
+
     external_request_lane_change_left:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: true
-      keep_last: false
-      priority: 6
 
     external_request_lane_change_right:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: true
-      keep_last: false
-      priority: 6
 
     lane_change_left:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: true
-      keep_last: false
-      priority: 5
 
     lane_change_right:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: true
-      keep_last: false
-      priority: 5
 
     start_planner:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false
-      keep_last: false
-      priority: 0
 
     side_shift:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false
-      keep_last: false
-      priority: 2
 
     goal_planner:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false
-      keep_last: true
-      priority: 1
 
     static_obstacle_avoidance:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: false
-      keep_last: false
-      priority: 4
 
     avoidance_by_lane_change:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false
-      keep_last: false
-      priority: 3
 
     dynamic_obstacle_avoidance:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: true
-      keep_last: false
-      priority: 7
 
     sampling_planner:
       enable_module: true
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false
-      keep_last: true
-      priority: 16

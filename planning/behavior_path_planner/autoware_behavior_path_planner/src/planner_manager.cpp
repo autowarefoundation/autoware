@@ -23,7 +23,7 @@
 #include <autoware_lanelet2_extension/utility/query.hpp>
 #include <magic_enum.hpp>
 
-#include <boost/format.hpp>
+#include <boost/scope_exit.hpp>
 
 #include <memory>
 #include <string>
@@ -37,6 +37,7 @@ PlannerManager::PlannerManager(rclcpp::Node & node)
   logger_(node.get_logger().get_child("planner_manager")),
   clock_(*node.get_clock())
 {
+  current_route_lanelet_ = std::make_shared<std::optional<lanelet::ConstLanelet>>(std::nullopt);
   processing_time_.emplace("total_time", 0.0);
   debug_publisher_ptr_ = std::make_unique<DebugPublisher>(&node, "~/debug");
   state_publisher_ptr_ = std::make_unique<DebugPublisher>(&node, "~/debug");
@@ -65,151 +66,123 @@ void PlannerManager::launchScenePlugin(rclcpp::Node & node, const std::string & 
   }
 }
 
-void PlannerManager::calculateMaxIterationNum(const size_t scene_module_num)
+void PlannerManager::configureModuleSlot(
+  const std::vector<std::vector<std::string>> & slot_configuration)
 {
-  max_iteration_num_ = scene_module_num * (scene_module_num + 1) / 2;
-}
+  std::unordered_map<std::string, SceneModuleManagerPtr> registered_modules;
+  for (const auto & manager_ptr : manager_ptrs_) {
+    registered_modules[manager_ptr->name()] = manager_ptr;
+  }
 
-void PlannerManager::removeScenePlugin(rclcpp::Node & node, const std::string & name)
-{
-  auto it = std::remove_if(manager_ptrs_.begin(), manager_ptrs_.end(), [&](const auto plugin) {
-    return plugin->name() == name;
-  });
-
-  if (it == manager_ptrs_.end()) {
-    RCLCPP_WARN_STREAM(
-      node.get_logger(),
-      "The scene plugin '" << name << "' is not found in the registered modules.");
-  } else {
-    manager_ptrs_.erase(it, manager_ptrs_.end());
-    processing_time_.erase(name);
-    RCLCPP_INFO_STREAM(node.get_logger(), "The scene plugin '" << name << "' is unloaded.");
+  for (const auto & slot : slot_configuration) {
+    SubPlannerManager sub_manager(current_route_lanelet_, processing_time_, debug_info_);
+    for (const auto & module_name : slot) {
+      if (const auto it = registered_modules.find(module_name); it != registered_modules.end()) {
+        sub_manager.addSceneModuleManager(it->second);
+      } else {
+        // TODO(Mamoru Sobue): use LOG
+        std::cout << module_name << " registered in slot_configuration is not registered, skipping"
+                  << std::endl;
+      }
+    }
+    if (sub_manager.getSceneModuleManager().size() != 0) {
+      planner_manager_slots_.push_back(sub_manager);
+      // TODO(Mamoru Sobue): use LOG
+      std::cout << "added a slot with " << sub_manager.getSceneModuleManager().size() << " modules"
+                << std::endl;
+    }
   }
 }
 
 BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & data)
 {
   resetProcessingTime();
-  stop_watch_.tic("total_time");
-  debug_info_.clear();
+  StopWatch<std::chrono::milliseconds> stop_watch;
+  stop_watch.tic("total_time");
+  BOOST_SCOPE_EXIT((&processing_time_)(&stop_watch))
+  {
+    processing_time_.at("total_time") += stop_watch.toc("total_time", true);
+  }
+  BOOST_SCOPE_EXIT_END;
 
-  if (!current_route_lanelet_) resetCurrentRouteLanelet(data);
+  debug_info_.scene_status.clear();
+  debug_info_.slot_status.clear();
+
+  if (!current_route_lanelet_->has_value()) resetCurrentRouteLanelet(data);
 
   std::for_each(
     manager_ptrs_.begin(), manager_ptrs_.end(), [&data](const auto & m) { m->setData(data); });
 
-  auto result_output = [&]() {
-    const bool is_any_approved_module_running =
-      std::any_of(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), [](const auto & m) {
-        return m->getCurrentStatus() == ModuleStatus::RUNNING ||
-               m->getCurrentStatus() == ModuleStatus::WAITING_APPROVAL;
+  const bool is_any_approved_module_running = std::any_of(
+    planner_manager_slots_.begin(), planner_manager_slots_.end(), [&](const auto & slot) {
+      return slot.isAnyApprovedPred([](const auto & m) {
+        const auto status = m->getCurrentStatus();
+        return status == ModuleStatus::RUNNING || status == ModuleStatus::WAITING_APPROVAL;
       });
+    });
 
-    // IDLE is a state in which an execution has been requested but not yet approved.
-    // once approved, it basically turns to running.
-    const bool is_any_candidate_module_running_or_idle =
-      std::any_of(candidate_module_ptrs_.begin(), candidate_module_ptrs_.end(), [](const auto & m) {
-        return m->getCurrentStatus() == ModuleStatus::RUNNING ||
-               m->getCurrentStatus() == ModuleStatus::WAITING_APPROVAL ||
-               m->getCurrentStatus() == ModuleStatus::IDLE;
+  // IDLE is a state in which an execution has been requested but not yet approved.
+  // once approved, it basically turns to running.
+  const bool is_any_candidate_module_running_or_idle = std::any_of(
+    planner_manager_slots_.begin(), planner_manager_slots_.end(), [](const auto & slot) {
+      return slot.isAnyCandidatePred([](const auto & m) {
+        const auto status = m->getCurrentStatus();
+        return status == ModuleStatus::RUNNING || status == ModuleStatus::WAITING_APPROVAL ||
+               status == ModuleStatus::IDLE;
       });
+    });
 
-    const bool is_any_module_running =
-      is_any_approved_module_running || is_any_candidate_module_running_or_idle;
+  const bool is_any_module_running =
+    is_any_approved_module_running || is_any_candidate_module_running_or_idle;
 
-    updateCurrentRouteLanelet(data);
+  updateCurrentRouteLanelet(data);
 
-    const bool is_out_of_route = utils::isEgoOutOfRoute(
-      data->self_odometry->pose.pose, current_route_lanelet_.value(), data->prev_modified_goal,
-      data->route_handler);
+  const bool is_out_of_route = utils::isEgoOutOfRoute(
+    data->self_odometry->pose.pose, current_route_lanelet_->value(), data->prev_modified_goal,
+    data->route_handler);
 
-    if (!is_any_module_running && is_out_of_route) {
-      BehaviorModuleOutput output = utils::createGoalAroundPath(data);
-      generateCombinedDrivableArea(output, data);
-      RCLCPP_WARN_THROTTLE(
-        logger_, clock_, 5000,
-        "Ego is out of route, no module is running. Skip running scene modules.");
-      return output;
+  if (!is_any_module_running && is_out_of_route) {
+    BehaviorModuleOutput result_output = utils::createGoalAroundPath(data);
+    RCLCPP_WARN_THROTTLE(
+      logger_, clock_, 5000,
+      "Ego is out of route, no module is running. Skip running scene modules.");
+    generateCombinedDrivableArea(result_output, data);
+    return result_output;
+  }
+  std::vector<SceneModulePtr>
+    deleted_modules;  // store the scene modules deleted from approved modules
+
+  SlotOutput result_output = SlotOutput{
+    getReferencePath(data),
+    false,
+    false,
+    false,
+  };
+
+  for (auto & planner_manager_slot : planner_manager_slots_) {
+    if (result_output.is_upstream_failed_approved) {
+      // clear all candidate/approved modules of all subsequent slots, and keep result_output as is
+      planner_manager_slot.propagateWithFailedApproved();
+      debug_info_.slot_status.push_back(SlotStatus::UPSTREAM_APPROVED_FAILED);
+    } else if (result_output.is_upstream_waiting_approved) {
+      result_output = planner_manager_slot.propagateWithWaitingApproved(data, result_output);
+      debug_info_.slot_status.push_back(SlotStatus::UPSTREAM_WAITING_APPROVED);
+    } else if (result_output.is_upstream_candidate_exclusive) {
+      result_output = planner_manager_slot.propagateWithExclusiveCandidate(data, result_output);
+      debug_info_.slot_status.push_back(SlotStatus::UPSTREAM_EXCLUSIVE_CANDIDATE);
+    } else {
+      result_output = planner_manager_slot.propagateFull(data, result_output);
+      debug_info_.slot_status.push_back(SlotStatus::NORMAL);
     }
-    std::vector<SceneModulePtr>
-      deleted_modules;  // store the scene modules deleted from approved modules
-
-    for (size_t itr_num = 1;; ++itr_num) {
-      /**
-       * STEP1: get approved modules' output
-       */
-      auto approved_modules_output = runApprovedModules(data, deleted_modules);
-
-      /**
-       * STEP2: check modules that need to be launched
-       */
-      const auto request_modules = getRequestModules(approved_modules_output, deleted_modules);
-
-      /**
-       * STEP3: if there is no module that need to be launched, return approved modules' output
-       */
-      if (request_modules.empty()) {
-        const auto output = runKeepLastModules(data, approved_modules_output);
-        processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
-        return output;
-      }
-
-      /**
-       * STEP4: if there is module that should be launched, execute the module
-       */
-      const auto [highest_priority_module, candidate_modules_output] =
-        runRequestModules(request_modules, data, approved_modules_output);
-
-      /**
-       * STEP5: run keep last approved modules after running candidate modules.
-       * NOTE: if no candidate module is launched, approved_modules_output used as input for keep
-       * last modules and return the result immediately.
-       */
-      const auto output = runKeepLastModules(
-        data, highest_priority_module ? candidate_modules_output : approved_modules_output);
-      if (!highest_priority_module) {
-        processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
-        return output;
-      }
-
-      /**
-       * STEP6: if the candidate module's modification is NOT approved yet, return the result.
-       * NOTE: the result is output of the candidate module, but the output path don't contains path
-       * shape modification that needs approval. On the other hand, it could include velocity
-       * profile modification.
-       */
-      if (highest_priority_module->isWaitingApproval()) {
-        processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
-        return output;
-      }
-
-      /**
-       * STEP7: if the candidate module is approved, push the module into approved_module_ptrs_
-       */
-      addApprovedModule(highest_priority_module);
-      clearCandidateModules();
-      debug_info_.emplace_back(highest_priority_module, Action::ADD, "To Approval");
-
-      if (itr_num >= max_iteration_num_) {
-        RCLCPP_WARN_THROTTLE(
-          logger_, clock_, 1000, "Reach iteration limit (max: %ld). Output current result.",
-          max_iteration_num_);
-        processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
-        return output;
-      }
-    }
-
-    return BehaviorModuleOutput{};  // something wrong.
-  }();
+  }
 
   std::for_each(manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) {
     m->updateObserver();
     m->publishRTCStatus();
   });
 
-  generateCombinedDrivableArea(result_output, data);
-
-  return result_output;
+  generateCombinedDrivableArea(result_output.valid_output, data);
+  return result_output.valid_output;
 }
 
 // NOTE: To deal with some policies about drivable area generation, currently DrivableAreaInfo is
@@ -255,93 +228,227 @@ void PlannerManager::generateCombinedDrivableArea(
   utils::extractObstaclesFromDrivableArea(output.path, di.obstacles);
 }
 
-std::vector<SceneModulePtr> PlannerManager::getRequestModules(
+void PlannerManager::updateCurrentRouteLanelet(const std::shared_ptr<PlannerData> & data)
+{
+  const auto & route_handler = data->route_handler;
+  const auto & pose = data->self_odometry->pose.pose;
+  const auto p = data->parameters;
+
+  constexpr double extra_margin = 10.0;
+  const auto backward_length =
+    std::max(p.backward_path_length, p.backward_path_length + extra_margin);
+
+  lanelet::ConstLanelet closest_lane{};
+
+  if (route_handler->getClosestRouteLaneletFromLanelet(
+        pose, current_route_lanelet_->value(), &closest_lane, p.ego_nearest_dist_threshold,
+        p.ego_nearest_yaw_threshold)) {
+    *current_route_lanelet_ = closest_lane;
+    return;
+  }
+
+  const auto lanelet_sequence = route_handler->getLaneletSequence(
+    current_route_lanelet_->value(), pose, backward_length, p.forward_path_length);
+
+  const auto could_calculate_closest_lanelet =
+    lanelet::utils::query::getClosestLaneletWithConstrains(
+      lanelet_sequence, pose, &closest_lane, p.ego_nearest_dist_threshold,
+      p.ego_nearest_yaw_threshold) ||
+    lanelet::utils::query::getClosestLanelet(lanelet_sequence, pose, &closest_lane);
+
+  if (could_calculate_closest_lanelet)
+    *current_route_lanelet_ = closest_lane;
+  else
+    resetCurrentRouteLanelet(data);
+}
+
+BehaviorModuleOutput PlannerManager::getReferencePath(
+  const std::shared_ptr<PlannerData> & data) const
+{
+  const auto reference_path = utils::getReferencePath(current_route_lanelet_->value(), data);
+  publishDebugRootReferencePath(reference_path);
+  return reference_path;
+}
+
+void PlannerManager::publishDebugRootReferencePath(
+  const BehaviorModuleOutput & reference_path) const
+{
+  using visualization_msgs::msg::Marker;
+  MarkerArray array;
+  Marker m = autoware::universe_utils::createDefaultMarker(
+    "map", clock_.now(), "root_reference_path", 0UL, Marker::LINE_STRIP,
+    autoware::universe_utils::createMarkerScale(1.0, 1.0, 1.0),
+    autoware::universe_utils::createMarkerColor(1.0, 0.0, 0.0, 1.0));
+  for (const auto & p : reference_path.path.points) m.points.push_back(p.point.pose.position);
+  array.markers.push_back(m);
+  m.points.clear();
+  m.id = 1UL;
+  for (const auto & p : current_route_lanelet_->value().polygon3d().basicPolygon())
+    m.points.emplace_back().set__x(p.x()).set__y(p.y()).set__z(p.z());
+  array.markers.push_back(m);
+  debug_publisher_ptr_->publish<MarkerArray>("root_reference_path", array);
+}
+
+bool PlannerManager::hasPossibleRerouteApprovedModules(
+  const std::shared_ptr<PlannerData> & data) const
+{
+  const auto & approved_module = approved_modules();
+  const auto not_possible_reroute_module = [&](const SceneModulePtr m) {
+    if (m->name() == "dynamic_avoidance") {
+      return false;
+    }
+    if (m->name() == "goal_planner" && !utils::isAllowedGoalModification(data->route_handler)) {
+      return false;
+    }
+    return true;
+  };
+
+  return std::any_of(approved_module.begin(), approved_module.end(), not_possible_reroute_module);
+}
+
+void PlannerManager::print() const
+{
+  const auto approved_module_ptrs = approved_modules();
+  const auto candidate_module_ptrs = candidate_modules();
+
+  const auto get_status = [](const auto & m) {
+    return magic_enum::enum_name(m->getCurrentStatus());
+  };
+
+  size_t max_string_num = 0;
+
+  std::ostringstream string_stream;
+  string_stream << "\n";
+  string_stream << "***********************************************************\n";
+  string_stream << "                  planner manager status\n";
+  string_stream << "-----------------------------------------------------------\n";
+  string_stream << "registered modules: ";
+  for (const auto & m : manager_ptrs_) {
+    string_stream << "[" << m->name() << "]";
+    max_string_num = std::max(max_string_num, m->name().length());
+  }
+
+  string_stream << "\n";
+  string_stream << "approved modules  : ";
+  std::string delimiter = "";
+  for (const auto & planner_manager_slot : planner_manager_slots_) {
+    string_stream << std::exchange(delimiter, " ==> ") << "[[ ";
+    std::string delimiter_sub = "";
+    for (const auto & m : planner_manager_slot.approved_modules()) {
+      string_stream << std::exchange(delimiter_sub, "->") << "[" << m->name() << "("
+                    << get_status(m) << ")"
+                    << "]";
+    }
+    string_stream << " ]]";
+  }
+
+  string_stream << "\n";
+  string_stream << "candidate modules : ";
+  delimiter = "";
+  for (const auto & planner_manager_slot : planner_manager_slots_) {
+    string_stream << std::exchange(delimiter, " ==> ") << "[[ ";
+    std::string delimiter_sub = "";
+    for (const auto & m : planner_manager_slot.candidate_modules()) {
+      string_stream << std::exchange(delimiter_sub, "->") << "[" << m->name() << "("
+                    << get_status(m) << ")"
+                    << "]";
+    }
+    string_stream << " ]]";
+  }
+
+  string_stream << "\n";
+  string_stream << "slot_status       : ";
+  delimiter = "";
+  for (const auto & slot_status : debug_info_.slot_status) {
+    string_stream << std::exchange(delimiter, "->") << "[" << magic_enum::enum_name(slot_status)
+                  << "]";
+  }
+
+  string_stream << "\n";
+  string_stream << "update module info: ";
+  for (const auto & i : debug_info_.scene_status) {
+    string_stream << "[Module:" << i.module_name << " Status:" << magic_enum::enum_name(i.status)
+                  << " Action:" << magic_enum::enum_name(i.action)
+                  << " Description:" << i.description << "]\n"
+                  << std::setw(28);
+  }
+
+  string_stream << "\n" << std::fixed << std::setprecision(1);
+  string_stream << "processing time   : ";
+  for (const auto & t : processing_time_) {
+    string_stream << std::right << "[" << std::setw(static_cast<int>(max_string_num) + 1)
+                  << std::left << t.first << ":" << std::setw(4) << std::right << t.second
+                  << "ms]\n"
+                  << std::setw(21);
+  }
+
+  state_publisher_ptr_->publish<DebugStringMsg>("internal_state", string_stream.str());
+
+  RCLCPP_DEBUG_STREAM(logger_, string_stream.str());
+}
+
+void PlannerManager::publishProcessingTime() const
+{
+  for (const auto & t : processing_time_) {
+    std::string name = t.first + std::string("/processing_time_ms");
+    debug_publisher_ptr_->publish<DebugDoubleMsg>(name, t.second);
+  }
+}
+
+std::shared_ptr<SceneModuleVisitor> PlannerManager::getDebugMsg()
+{
+  debug_msg_ptr_ = std::make_shared<SceneModuleVisitor>();
+  const auto approved_module_ptrs = approved_modules();
+  const auto candidate_module_ptrs = candidate_modules();
+
+  for (const auto & approved_module : approved_module_ptrs) {
+    approved_module->acceptVisitor(debug_msg_ptr_);
+  }
+
+  for (const auto & candidate_module : candidate_module_ptrs) {
+    candidate_module->acceptVisitor(debug_msg_ptr_);
+  }
+  return debug_msg_ptr_;
+}
+
+std::vector<SceneModulePtr> SubPlannerManager::getRequestModules(
   const BehaviorModuleOutput & previous_module_output,
   const std::vector<SceneModulePtr> & deleted_modules) const
 {
-  if (previous_module_output.path.points.empty()) {
-    RCLCPP_ERROR_STREAM(
-      logger_, "Current module output is null. Skip candidate module check."
-                 << "\n      - Approved  module list: " << getNames(approved_module_ptrs_)
-                 << "\n      - Candidate module list: " << getNames(candidate_module_ptrs_));
-    return {};
-  }
-
   std::vector<SceneModulePtr> request_modules{};
-
-  const auto toc = [this](const auto & name) {
-    processing_time_.at(name) += stop_watch_.toc(name, true);
-  };
+  StopWatch<std::chrono::milliseconds> stop_watch;
 
   for (const auto & manager_ptr : manager_ptrs_) {
-    stop_watch_.tic(manager_ptr->name());
-    /**
-     * skip the module that is already deleted.
-     */
+    stop_watch.tic(manager_ptr->name());
+    BOOST_SCOPE_EXIT((&manager_ptr)(&processing_time_)(&stop_watch))
     {
-      const auto name = manager_ptr->name();
-      const auto find_deleted_module = [&name](const auto & m) { return m->name() == name; };
-      const auto itr =
-        std::find_if(deleted_modules.begin(), deleted_modules.end(), find_deleted_module);
-      if (itr != deleted_modules.end()) {
-        continue;
-      }
+      processing_time_.at(manager_ptr->name()) += stop_watch.toc(manager_ptr->name(), true);
+    }
+    BOOST_SCOPE_EXIT_END;
+
+    if (const auto deleted_it = std::find_if(
+          deleted_modules.begin(), deleted_modules.end(),
+          [&](const auto & m) { return m->name() == manager_ptr->name(); });
+        deleted_it != deleted_modules.end()) {
+      continue;
     }
 
-    /**
-     * determine the execution capability of modules based on existing approved modules.
-     */
-    // Condition 1: always executable module can be added regardless of the existence of other
-    // modules, so skip checking the existence of other modules.
-    // in other cases, need to check the existence of other modules and which module can be added.
-    if (!manager_ptr->isAlwaysExecutableModule() && hasNonAlwaysExecutableApprovedModules()) {
-      // pairs of find_block_module and is_executable
-      std::vector<std::pair<std::function<bool(const SceneModulePtr &)>, std::function<bool()>>>
-        conditions;
+    // Condition 1:
+    // the approved module queue is either
+    // - consists of multiple simultaneous_executable_as_approved modules only
+    // - consists of only 1 "not simultaneous_executable_as_approved" module
+    const bool exclusive_module_exist_in_approved_pool = std::any_of(
+      approved_module_ptrs_.begin(), approved_module_ptrs_.end(), [&](const SceneModulePtr & m) {
+        return !getManager(m)->isSimultaneousExecutableAsApprovedModule();
+      });
+    const bool is_this_exclusive = !manager_ptr->isSimultaneousExecutableAsApprovedModule();
+    const bool approved_pool_is_not_empty = !approved_module_ptrs_.empty();
 
-      // Condition 2: do not add modules that are neither always nor simultaneous executable
-      // if there exists at least one approved module that is simultaneous but not always
-      // executable. (only modules that are either always executable or simultaneous executable can
-      // be added)
-      conditions.emplace_back(
-        [&](const SceneModulePtr & m) {
-          return !getManager(m)->isAlwaysExecutableModule() &&
-                 getManager(m)->isSimultaneousExecutableAsApprovedModule();
-        },
-        [&]() { return manager_ptr->isSimultaneousExecutableAsApprovedModule(); });
-
-      // Condition 3: do not add modules that are not always executable if there exists
-      // at least one approved module that is neither always nor simultaneous executable.
-      // (only modules that are always executable can be added)
-      conditions.emplace_back(
-        [&](const SceneModulePtr & m) {
-          return !getManager(m)->isAlwaysExecutableModule() &&
-                 !getManager(m)->isSimultaneousExecutableAsApprovedModule();
-        },
-        [&]() { return false; });
-
-      bool skip_module = false;
-      for (const auto & condition : conditions) {
-        const auto & find_block_module = condition.first;
-        const auto & is_executable = condition.second;
-
-        const auto itr = std::find_if(
-          approved_module_ptrs_.begin(), approved_module_ptrs_.end(), find_block_module);
-
-        if (itr != approved_module_ptrs_.end() && !is_executable()) {
-          toc(manager_ptr->name());
-          skip_module = true;
-          continue;
-        }
-      }
-      if (skip_module) {
-        continue;
-      }
+    const bool is_this_not_joinable =
+      exclusive_module_exist_in_approved_pool || (is_this_exclusive && approved_pool_is_not_empty);
+    if (is_this_not_joinable) {
+      continue;
     }
-    // else{
-    //   Condition 4: if none of the above conditions are met, any module can be added.
-    //   (when the approved modules are either empty or consist only of always executable modules.)
-    // }
 
     /**
      * launch new candidate module.
@@ -359,8 +466,6 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
             request_modules.emplace_back(manager_ptr->getIdleModule());
           }
         }
-
-        toc(manager_ptr->name());
         continue;
       }
     }
@@ -380,7 +485,6 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
       if (itr != candidate_module_ptrs_.end()) {
         request_modules.clear();
         request_modules.emplace_back(*itr);
-        toc(manager_ptr->name());
         break;
       }
     }
@@ -396,7 +500,6 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
 
       if (itr != candidate_module_ptrs_.end()) {
         request_modules.emplace_back(*itr);
-        toc(manager_ptr->name());
         continue;
       }
     }
@@ -406,100 +509,22 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
      */
     {
       if (!manager_ptr->canLaunchNewModule()) {
-        toc(manager_ptr->name());
         continue;
       }
 
       manager_ptr->updateIdleModuleInstance();
       if (!manager_ptr->isExecutionRequested(previous_module_output)) {
-        toc(manager_ptr->name());
         continue;
       }
 
       request_modules.emplace_back(manager_ptr->getIdleModule());
     }
-
-    toc(manager_ptr->name());
   }
 
   return request_modules;
 }
 
-BehaviorModuleOutput PlannerManager::runKeepLastModules(
-  const std::shared_ptr<PlannerData> & data, const BehaviorModuleOutput & previous_output) const
-{
-  auto output = previous_output;
-  std::for_each(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), [&](const auto & m) {
-    if (getManager(m)->isKeepLast()) {
-      output = run(m, data, output);
-    }
-  });
-
-  return output;
-}
-
-void PlannerManager::updateCurrentRouteLanelet(const std::shared_ptr<PlannerData> & data)
-{
-  const auto & route_handler = data->route_handler;
-  const auto & pose = data->self_odometry->pose.pose;
-  const auto p = data->parameters;
-
-  constexpr double extra_margin = 10.0;
-  const auto backward_length =
-    std::max(p.backward_path_length, p.backward_path_length + extra_margin);
-
-  lanelet::ConstLanelet closest_lane{};
-
-  if (route_handler->getClosestRouteLaneletFromLanelet(
-        pose, current_route_lanelet_.value(), &closest_lane, p.ego_nearest_dist_threshold,
-        p.ego_nearest_yaw_threshold)) {
-    current_route_lanelet_ = closest_lane;
-    return;
-  }
-
-  const auto lanelet_sequence = route_handler->getLaneletSequence(
-    current_route_lanelet_.value(), pose, backward_length, p.forward_path_length);
-
-  const auto could_calculate_closest_lanelet =
-    lanelet::utils::query::getClosestLaneletWithConstrains(
-      lanelet_sequence, pose, &closest_lane, p.ego_nearest_dist_threshold,
-      p.ego_nearest_yaw_threshold) ||
-    lanelet::utils::query::getClosestLanelet(lanelet_sequence, pose, &closest_lane);
-
-  if (could_calculate_closest_lanelet)
-    current_route_lanelet_ = closest_lane;
-  else
-    resetCurrentRouteLanelet(data);
-}
-
-BehaviorModuleOutput PlannerManager::getReferencePath(
-  const std::shared_ptr<PlannerData> & data) const
-{
-  const auto reference_path = utils::getReferencePath(*current_route_lanelet_, data);
-  publishDebugRootReferencePath(reference_path);
-  return reference_path;
-}
-
-void PlannerManager::publishDebugRootReferencePath(
-  const BehaviorModuleOutput & reference_path) const
-{
-  using visualization_msgs::msg::Marker;
-  MarkerArray array;
-  Marker m = autoware::universe_utils::createDefaultMarker(
-    "map", clock_.now(), "root_reference_path", 0UL, Marker::LINE_STRIP,
-    autoware::universe_utils::createMarkerScale(1.0, 1.0, 1.0),
-    autoware::universe_utils::createMarkerColor(1.0, 0.0, 0.0, 1.0));
-  for (const auto & p : reference_path.path.points) m.points.push_back(p.point.pose.position);
-  array.markers.push_back(m);
-  m.points.clear();
-  m.id = 1UL;
-  for (const auto & p : current_route_lanelet_->polygon3d().basicPolygon())
-    m.points.emplace_back().set__x(p.x()).set__y(p.y()).set__z(p.z());
-  array.markers.push_back(m);
-  debug_publisher_ptr_->publish<MarkerArray>("root_reference_path", array);
-}
-
-SceneModulePtr PlannerManager::selectHighestPriorityModule(
+SceneModulePtr SubPlannerManager::selectHighestPriorityModule(
   std::vector<SceneModulePtr> & request_modules) const
 {
   if (request_modules.empty()) {
@@ -511,7 +536,72 @@ SceneModulePtr PlannerManager::selectHighestPriorityModule(
   return request_modules.front();
 }
 
-std::pair<SceneModulePtr, BehaviorModuleOutput> PlannerManager::runRequestModules(
+void SubPlannerManager::clearApprovedModules()
+{
+  std::for_each(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), [this](auto & m) {
+    debug_info_.scene_status.emplace_back(
+      m, SceneModuleUpdateInfo::Action::DELETE, "From Approved");
+    deleteExpiredModules(m);
+  });
+  approved_module_ptrs_.clear();
+}
+
+void SubPlannerManager::updateCandidateModules(
+  const std::vector<SceneModulePtr> & request_modules,
+  const SceneModulePtr & highest_priority_module)
+{
+  const auto exist = [](const auto & module_ptr, const auto & module_ptrs) {
+    const auto itr = std::find_if(
+      module_ptrs.begin(), module_ptrs.end(),
+      [&module_ptr](const auto & m) { return m->name() == module_ptr->name(); });
+
+    return itr != module_ptrs.end();
+  };
+
+  /**
+   * unregister expired modules
+   */
+  {
+    const auto candidate_to_remove = [&](auto & itr) {
+      if (!exist(itr, request_modules)) {
+        deleteExpiredModules(itr);
+        return true;
+      }
+      return itr->name() == highest_priority_module->name() &&
+             !highest_priority_module->isWaitingApproval();
+    };
+
+    candidate_module_ptrs_.erase(
+      std::remove_if(
+        candidate_module_ptrs_.begin(), candidate_module_ptrs_.end(), candidate_to_remove),
+      candidate_module_ptrs_.end());
+
+    std::for_each(
+      manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->updateObserver(); });
+  }
+
+  /**
+   * register running candidate modules
+   */
+  for (const auto & m : request_modules) {
+    if (
+      m->name() == highest_priority_module->name() &&
+      !highest_priority_module->isWaitingApproval()) {
+      continue;
+    }
+
+    if (!exist(m, candidate_module_ptrs_)) {
+      candidate_module_ptrs_.push_back(m);
+    }
+  }
+
+  /**
+   * sort by priority. sorted_request_modules.front() is the highest priority module.
+   */
+  sortByPriority(candidate_module_ptrs_);
+}
+
+std::pair<SceneModulePtr, BehaviorModuleOutput> SubPlannerManager::runRequestModules(
   const std::vector<SceneModulePtr> & request_modules, const std::shared_ptr<PlannerData> & data,
   const BehaviorModuleOutput & previous_module_output)
 {
@@ -533,62 +623,27 @@ std::pair<SceneModulePtr, BehaviorModuleOutput> PlannerManager::runRequestModule
   auto sorted_request_modules = request_modules;
   sortByPriority(sorted_request_modules);
 
-  /**
-   * remove non-executable modules.
-   */
+  // the candidate module queue is either
+  // - consists of multiple simultaneous_executable_as_candidate modules only
+  // - consists of only 1 "not simultaneous_executable_as_candidate" module
   for (const auto & module_ptr : sorted_request_modules) {
-    // Condition 1: always executable module can be added regardless of the existence of other
-    // modules.
-    if (getManager(module_ptr)->isAlwaysExecutableModule()) {
+    // any module can join if executable_modules is empty
+    const bool is_executable_modules_empty = executable_modules.empty();
+    if (is_executable_modules_empty) {
       executable_modules.push_back(module_ptr);
       continue;
     }
 
-    // Condition 4: If the executable modules are either empty or consist only of always executable
-    // modules, any module can be added.
-    const bool has_non_always_executable_module = std::any_of(
-      executable_modules.begin(), executable_modules.end(),
-      [this](const auto & m) { return !getManager(m)->isAlwaysExecutableModule(); });
-    if (!has_non_always_executable_module) {
+    // if executable_module is not empty, only SimultaneousExecutableAsCandidate is joinable
+    const bool is_this_cooperative =
+      getManager(module_ptr)->isSimultaneousExecutableAsCandidateModule();
+    const bool any_other_cooperative = std::any_of(
+      executable_modules.begin(), executable_modules.end(), [&](const SceneModulePtr & m) {
+        return getManager(m)->isSimultaneousExecutableAsCandidateModule();
+      });
+
+    if (is_this_cooperative && any_other_cooperative) {
       executable_modules.push_back(module_ptr);
-      continue;
-    }
-
-    // pairs of find_block_module and is_executable
-    std::vector<std::pair<std::function<bool(const SceneModulePtr &)>, std::function<bool()>>>
-      conditions;
-
-    // Condition 3: Only modules that are always executable can be added
-    // if there exists at least one executable module that is neither always nor simultaneous
-    // executable.
-    conditions.emplace_back(
-      [this](const SceneModulePtr & m) {
-        return !getManager(m)->isAlwaysExecutableModule() &&
-               !getManager(m)->isSimultaneousExecutableAsCandidateModule();
-      },
-      [&]() { return false; });
-
-    // Condition 2: Only modules that are either always executable or simultaneous executable can be
-    // added if there exists at least one executable module that is simultaneous but not always
-    // executable.
-    conditions.emplace_back(
-      [this](const SceneModulePtr & m) {
-        return !getManager(m)->isAlwaysExecutableModule() &&
-               getManager(m)->isSimultaneousExecutableAsCandidateModule();
-      },
-      [&]() { return getManager(module_ptr)->isSimultaneousExecutableAsCandidateModule(); });
-
-    for (const auto & condition : conditions) {
-      const auto & find_block_module = condition.first;
-      const auto & is_executable = condition.second;
-
-      const auto itr =
-        std::find_if(executable_modules.begin(), executable_modules.end(), find_block_module);
-
-      if (itr != executable_modules.end() && is_executable()) {
-        executable_modules.push_back(module_ptr);
-        break;
-      }
     }
   }
 
@@ -654,7 +709,7 @@ std::pair<SceneModulePtr, BehaviorModuleOutput> PlannerManager::runRequestModule
   /**
    * choice highest priority module.
    */
-  const auto module_ptr = [&]() {
+  const auto module_ptr = [&]() -> SceneModulePtr {
     if (!already_approved_modules.empty()) {
       return selectHighestPriorityModule(already_approved_modules);
     }
@@ -663,8 +718,11 @@ std::pair<SceneModulePtr, BehaviorModuleOutput> PlannerManager::runRequestModule
       return selectHighestPriorityModule(waiting_approved_modules);
     }
 
-    return SceneModulePtr();
+    return nullptr;
   }();
+  if (module_ptr == nullptr) {
+    return std::make_pair(nullptr, BehaviorModuleOutput{});
+  }
 
   /**
    * register candidate modules.
@@ -674,149 +732,116 @@ std::pair<SceneModulePtr, BehaviorModuleOutput> PlannerManager::runRequestModule
   return std::make_pair(module_ptr, results.at(module_ptr->name()));
 }
 
-BehaviorModuleOutput PlannerManager::runApprovedModules(
-  const std::shared_ptr<PlannerData> & data, std::vector<SceneModulePtr> & deleted_modules)
+BehaviorModuleOutput SubPlannerManager::run(
+  const SceneModulePtr & module_ptr, const std::shared_ptr<PlannerData> & planner_data,
+  const BehaviorModuleOutput & previous_module_output) const
+{
+  StopWatch<std::chrono::milliseconds> stop_watch;
+  stop_watch.tic(module_ptr->name());
+
+  module_ptr->setData(planner_data);
+  module_ptr->setPreviousModuleOutput(previous_module_output);
+
+  module_ptr->lockRTCCommand();
+  const auto result = module_ptr->run();
+  module_ptr->unlockRTCCommand();
+
+  module_ptr->postProcess();
+
+  module_ptr->updateCurrentState();
+
+  module_ptr->publishSteeringFactor();
+
+  module_ptr->publishObjectsOfInterestMarker();
+
+  processing_time_.at(module_ptr->name()) += stop_watch.toc(module_ptr->name(), true);
+  return result;
+}
+
+SlotOutput SubPlannerManager::runApprovedModules(
+  const std::shared_ptr<PlannerData> & data, const BehaviorModuleOutput & upstream_slot_output)
 {
   std::unordered_map<std::string, BehaviorModuleOutput> results;
-  BehaviorModuleOutput output = getReferencePath(data);
+  BehaviorModuleOutput output = upstream_slot_output;
   results.emplace("root", output);
 
+  const bool is_candidate_plan_applied = true /* NOTE: not used in this process */;
+  bool is_this_failed = false;
+  bool is_this_waiting_approval = false;
+
   if (approved_module_ptrs_.empty()) {
-    return output;
+    return SlotOutput{output, is_candidate_plan_applied, is_this_failed, is_this_waiting_approval};
   }
 
-  // move modules whose keep last flag is true to end of the approved_module_ptrs_.
-  // if there are multiple keep last modules, sort by priority
-  {
-    const auto move_to_end = [](auto & modules, const auto & module_to_move) {
-      auto itr = std::find(modules.begin(), modules.end(), module_to_move);
-
-      if (itr != modules.end()) {
-        auto tmp = std::move(*itr);
-        modules.erase(itr);
-        modules.push_back(std::move(tmp));
-      }
-    };
-
-    const auto get_sorted_keep_last_modules = [this](const auto & modules) {
-      std::vector<SceneModulePtr> keep_last_modules;
-
-      std::copy_if(
-        modules.begin(), modules.end(), std::back_inserter(keep_last_modules),
-        [this](const auto & m) { return getManager(m)->isKeepLast(); });
-
-      // sort by priority (low -> high)
-      std::sort(
-        keep_last_modules.begin(), keep_last_modules.end(), [this](const auto & a, const auto & b) {
-          return getManager(a)->getPriority() < getManager(b)->getPriority();
-        });
-
-      return keep_last_modules;
-    };
-
-    for (const auto & module : get_sorted_keep_last_modules(approved_module_ptrs_)) {
-      move_to_end(approved_module_ptrs_, module);
-    }
-  }
-
-  // lock approved modules besides last one
+  // unlock only last approved module
   std::for_each(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), [&](const auto & m) {
     m->lockOutputPath();
   });
-
-  // unlock only last approved module except keep last module.
-  {
-    const auto not_keep_last_modules = std::find_if(
-      approved_module_ptrs_.rbegin(), approved_module_ptrs_.rend(),
-      [this](const auto & m) { return !getManager(m)->isKeepLast(); });
-
-    if (not_keep_last_modules != approved_module_ptrs_.rend()) {
-      (*not_keep_last_modules)->unlockOutputPath();
-    }
-  }
+  approved_module_ptrs_.back()->unlockOutputPath();
 
   /**
-   * execute approved modules except keep last modules.
+   * bootstrap approved module output
    */
   std::for_each(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), [&](const auto & m) {
-    if (!getManager(m)->isKeepLast()) {
-      output = run(m, data, output);
-      results.emplace(m->name(), output);
-    }
+    output = run(m, data, output);
+    results.emplace(m->name(), output);
   });
 
-  /**
-   * pop waiting approve module. push it back candidate modules. if waiting approve module is found
-   * in iteration std::find_if, not only the module but also the next one are removed from
-   * approved_module_ptrs_ since the next module's input (= waiting approve module's output) maybe
-   * change significantly. And, only the waiting approve module is pushed back to
-   * candidate_module_ptrs_.
-   */
-  {
-    const auto not_keep_last_module = std::find_if(
-      approved_module_ptrs_.rbegin(), approved_module_ptrs_.rend(),
-      [this](const auto & m) { return !getManager(m)->isKeepLast(); });
+  const auto waiting_approval_modules_itr = std::find_if(
+    approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
+    [](const auto & m) { return m->isWaitingApproval(); });
 
-    // convert reverse iterator -> iterator
-    const auto begin_itr = not_keep_last_module != approved_module_ptrs_.rend()
-                             ? std::next(not_keep_last_module).base()
-                             : approved_module_ptrs_.begin();
+  if (waiting_approval_modules_itr != approved_module_ptrs_.end()) {
+    is_this_waiting_approval = true;
 
-    const auto waiting_approval_modules_itr = std::find_if(
-      begin_itr, approved_module_ptrs_.end(),
-      [](const auto & m) { return m->isWaitingApproval(); });
+    // only keep this module as candidate
+    clearCandidateModules();
+    candidate_module_ptrs_.push_back(*waiting_approval_modules_itr);
 
-    if (waiting_approval_modules_itr != approved_module_ptrs_.end()) {
-      clearCandidateModules();
-      candidate_module_ptrs_.push_back(*waiting_approval_modules_itr);
+    // delete following result but keep the rest of the following modules
+    std::for_each(
+      waiting_approval_modules_itr, approved_module_ptrs_.end(),
+      [&results](const auto & m) { results.erase(m->name()); });
+    debug_info_.scene_status.emplace_back(
+      *waiting_approval_modules_itr, SceneModuleUpdateInfo::Action::MOVE,
+      "Back To Waiting Approval");
+    approved_module_ptrs_.erase(waiting_approval_modules_itr);
 
-      debug_info_.emplace_back(
-        *waiting_approval_modules_itr, Action::MOVE, "Back To Waiting Approval");
-
-      std::for_each(
-        waiting_approval_modules_itr, approved_module_ptrs_.end(),
-        [&results](const auto & m) { results.erase(m->name()); });
-
-      approved_module_ptrs_.erase(waiting_approval_modules_itr);
-
-      std::for_each(
-        manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->updateObserver(); });
-    }
+    std::for_each(
+      manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->updateObserver(); });
   }
 
   /**
    * remove failure modules. these modules' outputs are discarded as invalid plan.
    */
-  {
-    const auto itr = std::find_if(
-      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
-      [](const auto & m) { return m->getCurrentStatus() == ModuleStatus::FAILURE; });
-    if (itr != approved_module_ptrs_.end()) {
-      deleted_modules.push_back(*itr);
-    }
+  const auto failed_itr = std::find_if(
+    approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
+    [](const auto & m) { return m->getCurrentStatus() == ModuleStatus::FAILURE; });
+  if (failed_itr != approved_module_ptrs_.end()) {
+    is_this_failed = true;
 
-    std::for_each(itr, approved_module_ptrs_.end(), [this](auto & m) {
-      debug_info_.emplace_back(m, Action::DELETE, "From Approved");
+    // clear all candidates
+    clearCandidateModules();
+
+    // delete both subsequent result and modules
+    std::for_each(failed_itr, approved_module_ptrs_.end(), [&](auto & m) {
+      results.erase(m->name());
+      debug_info_.scene_status.emplace_back(
+        m, SceneModuleUpdateInfo::Action::DELETE, "From Approved");
       deleteExpiredModules(m);
     });
+    approved_module_ptrs_.erase(failed_itr, approved_module_ptrs_.end());
 
     std::for_each(
       manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->updateObserver(); });
-
-    if (itr != approved_module_ptrs_.end()) {
-      clearCandidateModules();
-    }
-
-    approved_module_ptrs_.erase(itr, approved_module_ptrs_.end());
   }
 
   if (approved_module_ptrs_.empty()) {
-    return results.at("root");
+    return SlotOutput{
+      results.at("root"), is_candidate_plan_applied, is_this_failed, is_this_waiting_approval};
   }
 
-  /**
-   * use the last module's output as approved modules planning result.
-   */
+  // use the last module's output as approved modules planning result.
   const auto approved_modules_output = [&results, this]() {
     const auto itr = std::find_if(
       approved_module_ptrs_.rbegin(), approved_module_ptrs_.rend(),
@@ -828,199 +853,124 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(
     return results.at("root");
   }();
 
-  /**
-   * remove success module immediately. if lane change module has succeeded, update current route
-   * lanelet.
-   */
-  {
-    const auto move_to_end = [](auto & modules, const auto & cond) {
-      auto itr = modules.begin();
-      while (itr != modules.end()) {
-        const auto satisfied_exit_cond =
-          std::all_of(itr, modules.end(), [&cond](const auto & m) { return cond(m); });
+  // if lane change module has succeeded, update current route lanelet.
+  if (std::any_of(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), [](const auto & m) {
+        return m->getCurrentStatus() == ModuleStatus::SUCCESS &&
+               m->isCurrentRouteLaneletToBeReset();
+      }))
+    resetCurrentRouteLanelet(data);
 
-        if (satisfied_exit_cond) {
-          return;
-        }
-
-        if (cond(*itr)) {
-          auto tmp = std::move(*itr);
-          itr = modules.erase(itr);
-          modules.insert(modules.end(), std::move(tmp));
-        } else {
-          itr++;
-        }
-      }
-    };
-    const auto success_module_cond = [](const auto & m) {
-      return m->getCurrentStatus() == ModuleStatus::SUCCESS;
-    };
-    move_to_end(approved_module_ptrs_, success_module_cond);
-
-    const auto itr =
-      std::find_if(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), success_module_cond);
-
-    if (std::any_of(itr, approved_module_ptrs_.end(), [](const auto & m) {
-          return m->isCurrentRouteLaneletToBeReset();
-        }))
-      resetCurrentRouteLanelet(data);
-
-    std::copy_if(
-      itr, approved_module_ptrs_.end(), std::back_inserter(deleted_modules), success_module_cond);
-
-    std::for_each(itr, approved_module_ptrs_.end(), [&](auto & m) {
-      debug_info_.emplace_back(m, Action::DELETE, "From Approved");
-      deleteExpiredModules(m);
-    });
-
-    approved_module_ptrs_.erase(itr, approved_module_ptrs_.end());
-
-    std::for_each(
-      manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->updateObserver(); });
-  }
-
-  return approved_modules_output;
-}
-
-void PlannerManager::updateCandidateModules(
-  const std::vector<SceneModulePtr> & request_modules,
-  const SceneModulePtr & highest_priority_module)
-{
-  const auto exist = [](const auto & module_ptr, const auto & module_ptrs) {
-    const auto itr = std::find_if(
-      module_ptrs.begin(), module_ptrs.end(),
-      [&module_ptr](const auto & m) { return m->name() == module_ptr->name(); });
-
-    return itr != module_ptrs.end();
-  };
-
-  /**
-   * unregister expired modules
-   */
-  {
-    const auto candidate_to_remove = [&](auto & itr) {
-      if (!exist(itr, request_modules)) {
-        deleteExpiredModules(itr);
-        return true;
-      }
-      return itr->name() == highest_priority_module->name() &&
-             !highest_priority_module->isWaitingApproval();
-    };
-
-    candidate_module_ptrs_.erase(
-      std::remove_if(
-        candidate_module_ptrs_.begin(), candidate_module_ptrs_.end(), candidate_to_remove),
-      candidate_module_ptrs_.end());
-
-    std::for_each(
-      manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->updateObserver(); });
-  }
-
-  /**
-   * register running candidate modules
-   */
-  for (const auto & m : request_modules) {
-    if (
-      m->name() == highest_priority_module->name() &&
-      !highest_priority_module->isWaitingApproval()) {
-      continue;
-    }
-
-    if (!exist(m, candidate_module_ptrs_)) {
-      candidate_module_ptrs_.push_back(m);
+  // remove success module immediately.
+  for (auto success_itr = std::find_if(
+         approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
+         [](const auto & m) { return m->getCurrentStatus() == ModuleStatus::SUCCESS; });
+       success_itr != approved_module_ptrs_.end();
+       /* success_itr++ */) {
+    if ((*success_itr)->getCurrentStatus() == ModuleStatus::SUCCESS) {
+      debug_info_.scene_status.emplace_back(
+        *success_itr, SceneModuleUpdateInfo::Action::DELETE, "From Approved");
+      deleteExpiredModules(*success_itr);
+      success_itr = approved_module_ptrs_.erase(success_itr);
+    } else {
+      success_itr++;
     }
   }
 
-  /**
-   * sort by priority. sorted_request_modules.front() is the highest priority module.
-   */
-  sortByPriority(candidate_module_ptrs_);
+  std::for_each(
+    manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->updateObserver(); });
+
+  return SlotOutput{
+    approved_modules_output, is_candidate_plan_applied, is_this_failed, is_this_waiting_approval};
 }
 
-void PlannerManager::print() const
+SlotOutput SubPlannerManager::propagateFull(
+  const std::shared_ptr<PlannerData> & data, const SlotOutput & previous_slot_output)
 {
-  const auto get_status = [](const auto & m) {
-    return magic_enum::enum_name(m->getCurrentStatus());
-  };
+  const size_t module_size = manager_ptrs_.size();
+  const size_t max_iteration_num = static_cast<int>(module_size * (module_size + 1) / 2);
 
-  size_t max_string_num = 0;
+  bool is_waiting_approved_slot = previous_slot_output.is_upstream_waiting_approved;
+  bool is_failed_approved_slot = false;
+  auto output_path = previous_slot_output.valid_output;
 
-  std::ostringstream string_stream;
-  string_stream << "\n";
-  string_stream << "***********************************************************\n";
-  string_stream << "                  planner manager status\n";
-  string_stream << "-----------------------------------------------------------\n";
-  string_stream << "registered modules: ";
-  for (const auto & m : manager_ptrs_) {
-    string_stream << "[" << m->name() << "]";
-    max_string_num = std::max(max_string_num, m->name().length());
+  std::vector<SceneModulePtr> deleted_modules;
+  for (size_t itr_num = 0; itr_num < max_iteration_num; ++itr_num) {
+    const auto approved_module_result = runApprovedModules(data, previous_slot_output.valid_output);
+    const auto & approved_module_output = approved_module_result.valid_output;
+
+    // these status needs to be propagated to downstream slots
+    // if any of the slots returned following statuses, keep it
+    is_waiting_approved_slot =
+      is_waiting_approved_slot || approved_module_result.is_upstream_waiting_approved;
+    is_failed_approved_slot =
+      is_failed_approved_slot || approved_module_result.is_upstream_failed_approved;
+
+    const auto request_modules = getRequestModules(approved_module_output, deleted_modules);
+    if (request_modules.empty()) {
+      // there is no module that needs to be launched
+      return SlotOutput{
+        approved_module_output, isAnyCandidateExclusive(), is_failed_approved_slot,
+        is_waiting_approved_slot};
+    }
+
+    const auto [highest_priority_module, candidate_module_output] =
+      runRequestModules(request_modules, data, approved_module_output);
+
+    if (!highest_priority_module) {
+      // there is no need to launch new module
+      return SlotOutput{
+        approved_module_output, isAnyCandidateExclusive(), is_failed_approved_slot,
+        is_waiting_approved_slot};
+    }
+
+    if (highest_priority_module->isWaitingApproval()) {
+      // there is no need to launch new module
+      return SlotOutput{
+        candidate_module_output, isAnyCandidateExclusive(), is_failed_approved_slot,
+        is_waiting_approved_slot};
+    }
+
+    output_path = candidate_module_output;
+    addApprovedModule(highest_priority_module);
+    clearCandidateModules();
   }
 
-  string_stream << "\n";
-  string_stream << "approved modules  : ";
-  for (const auto & m : approved_module_ptrs_) {
-    string_stream << "[" << m->name() << "(" << get_status(m) << ")"
-                  << "]->";
-  }
-
-  string_stream << "\n";
-  string_stream << "candidate module  : ";
-  for (const auto & m : candidate_module_ptrs_) {
-    string_stream << "[" << m->name() << "(" << get_status(m) << ")"
-                  << "]->";
-  }
-
-  string_stream << "\n";
-  string_stream << "update module info: ";
-  for (const auto & i : debug_info_) {
-    string_stream << "[Module:" << i.module_name << " Status:" << magic_enum::enum_name(i.status)
-                  << " Action:" << magic_enum::enum_name(i.action)
-                  << " Description:" << i.description << "]\n"
-                  << std::setw(28);
-  }
-
-  string_stream << "\n" << std::fixed << std::setprecision(1);
-  string_stream << "processing time   : ";
-  for (const auto & t : processing_time_) {
-    string_stream << std::right << "[" << std::setw(static_cast<int>(max_string_num) + 1)
-                  << std::left << t.first << ":" << std::setw(4) << std::right << t.second
-                  << "ms]\n"
-                  << std::setw(21);
-  }
-
-  state_publisher_ptr_->publish<DebugStringMsg>("internal_state", string_stream.str());
-
-  RCLCPP_DEBUG_STREAM(logger_, string_stream.str());
+  return SlotOutput{
+    output_path, isAnyCandidateExclusive(), is_failed_approved_slot, is_waiting_approved_slot};
 }
 
-void PlannerManager::publishProcessingTime() const
+SlotOutput SubPlannerManager::propagateWithExclusiveCandidate(
+  const std::shared_ptr<PlannerData> & data, const SlotOutput & previous_slot_output)
 {
-  for (const auto & t : processing_time_) {
-    std::string name = t.first + std::string("/processing_time_ms");
-    debug_publisher_ptr_->publish<DebugDoubleMsg>(name, t.second);
-  }
+  const auto approved_module_result = runApprovedModules(data, previous_slot_output.valid_output);
+  const auto & approved_module_output = approved_module_result.valid_output;
+
+  // these status needs to be propagated to downstream slots
+  // if any of the slots returned following statuses, keep it
+  const bool is_waiting_approved_slot = previous_slot_output.is_upstream_waiting_approved |
+                                        approved_module_result.is_upstream_waiting_approved;
+  const bool is_failed_approved_slot = previous_slot_output.is_upstream_failed_approved |
+                                       approved_module_result.is_upstream_failed_approved;
+
+  // there is no module that needs to be launched
+  return SlotOutput{
+    approved_module_output, true, is_failed_approved_slot, is_waiting_approved_slot};
 }
 
-std::shared_ptr<SceneModuleVisitor> PlannerManager::getDebugMsg()
+void SubPlannerManager::propagateWithFailedApproved()
 {
-  debug_msg_ptr_ = std::make_shared<SceneModuleVisitor>();
-  for (const auto & approved_module : approved_module_ptrs_) {
-    approved_module->acceptVisitor(debug_msg_ptr_);
-  }
-
-  for (const auto & candidate_module : candidate_module_ptrs_) {
-    candidate_module->acceptVisitor(debug_msg_ptr_);
-  }
-  return debug_msg_ptr_;
+  clearCandidateModules();
+  clearApprovedModules();
 }
 
-std::string PlannerManager::getNames(const std::vector<SceneModulePtr> & modules)
+SlotOutput SubPlannerManager::propagateWithWaitingApproved(
+  const std::shared_ptr<PlannerData> & data, const SlotOutput & previous_slot_output)
 {
-  std::stringstream ss;
-  for (const auto & m : modules) {
-    ss << "[" << m->name() << "], ";
-  }
-  return ss.str();
+  clearCandidateModules();
+
+  return previous_slot_output.is_upstream_candidate_exclusive
+           ? propagateWithExclusiveCandidate(data, previous_slot_output)
+           : propagateFull(data, previous_slot_output);
 }
 
 }  // namespace autoware::behavior_path_planner

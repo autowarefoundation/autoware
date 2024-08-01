@@ -68,18 +68,28 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
 
     const std::lock_guard<std::mutex> lock(mutex_manager_);  // for planner_manager_
 
+    const auto slots = declare_parameter<std::vector<std::string>>("slots");
+    std::vector<std::vector<std::string>> slot_configuration{slots.size()};
+    for (size_t i = 0; i < slots.size(); ++i) {
+      const auto & slot = slots.at(i);
+      const auto modules = declare_parameter<std::vector<std::string>>(slot);
+      for (const auto & module_name : modules) {
+        slot_configuration.at(i).push_back(module_name);
+      }
+    }
+
     planner_manager_ = std::make_shared<PlannerManager>(*this);
 
-    size_t scene_module_num = 0;
     for (const auto & name : declare_parameter<std::vector<std::string>>("launch_modules")) {
       // workaround: Since ROS 2 can't get empty list, launcher set [''] on the parameter.
       if (name == "") {
         break;
       }
       planner_manager_->launchScenePlugin(*this, name);
-      scene_module_num++;
     }
-    planner_manager_->calculateMaxIterationNum(scene_module_num);
+
+    // NOTE: this needs to be after launchScenePlugin()
+    planner_manager_->configureModuleSlot(slot_configuration);
 
     for (const auto & manager : planner_manager_->getSceneModuleManagers()) {
       path_candidate_publishers_.emplace(
@@ -419,7 +429,7 @@ void BehaviorPathPlannerNode::run()
     planner_data_->operation_mode->is_autoware_control_enabled;
   if (
     !controlled_by_autoware_autonomously &&
-    !planner_manager_->hasNonAlwaysExecutableApprovedModules())
+    !planner_manager_->hasPossibleRerouteApprovedModules(planner_data_))
     planner_manager_->resetCurrentRouteLanelet(planner_data_);
 
   // run behavior planner
@@ -548,7 +558,7 @@ void BehaviorPathPlannerNode::publish_reroute_availability() const
   // always-executable module is approved and running, rerouting will not be possible.
   RerouteAvailability is_reroute_available;
   is_reroute_available.stamp = this->now();
-  if (planner_manager_->hasNonAlwaysExecutableApprovedModules()) {
+  if (planner_manager_->hasPossibleRerouteApprovedModules(planner_data_)) {
     is_reroute_available.availability = false;
   } else {
     is_reroute_available.availability = true;

@@ -287,10 +287,6 @@ void DynamicObstacleAvoidanceModuleManager::updateModuleParams(
   });
 }
 
-bool DynamicObstacleAvoidanceModuleManager::isAlwaysExecutableModule() const
-{
-  return true;
-}
 }  // namespace autoware::behavior_path_planner
 
 #include <pluginlib/class_list_macros.hpp>

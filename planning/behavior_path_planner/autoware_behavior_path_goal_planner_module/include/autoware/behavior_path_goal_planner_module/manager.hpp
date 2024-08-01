@@ -43,8 +43,6 @@ public:
 
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) override;
 
-  bool isAlwaysExecutableModule() const override;
-
   bool isSimultaneousExecutableAsApprovedModule() const override;
 
   bool isSimultaneousExecutableAsCandidateModule() const override;

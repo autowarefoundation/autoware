@@ -47,8 +47,6 @@ public:
 
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) override;
 
-  bool isAlwaysExecutableModule() const override;
-
 private:
   std::shared_ptr<DynamicAvoidanceParameters> parameters_;
 };
