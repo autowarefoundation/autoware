@@ -93,9 +93,6 @@ __global__ void generateBoxes3D_kernel(
 PostprocessCuda::PostprocessCuda(const TransfusionConfig & config, cudaStream_t & stream)
 : config_(config), stream_(stream)
 {
-  boxes3d_d_ = thrust::device_vector<Box3D>(config_.num_proposals_);
-  yaw_norm_thresholds_d_ = thrust::device_vector<float>(
-    config_.yaw_norm_thresholds_.begin(), config_.yaw_norm_thresholds_.end());
 }
 
 // cspell: ignore divup
@@ -106,22 +103,25 @@ cudaError_t PostprocessCuda::generateDetectedBoxes3D_launch(
   dim3 threads = {THREADS_PER_BLOCK};
   dim3 blocks = {divup(config_.num_proposals_, threads.x)};
 
+  auto boxes3d_d = thrust::device_vector<Box3D>(config_.num_proposals_);
+  auto yaw_norm_thresholds_d = thrust::device_vector<float>(
+    config_.yaw_norm_thresholds_.begin(), config_.yaw_norm_thresholds_.end());
+
   generateBoxes3D_kernel<<<blocks, threads, 0, stream>>>(
     cls_output, box_output, dir_cls_output, config_.voxel_x_size_, config_.voxel_y_size_,
     config_.min_x_range_, config_.min_y_range_, config_.num_proposals_, config_.num_classes_,
-    config_.num_point_values_, thrust::raw_pointer_cast(yaw_norm_thresholds_d_.data()),
-    thrust::raw_pointer_cast(boxes3d_d_.data()));
+    config_.num_point_values_, thrust::raw_pointer_cast(yaw_norm_thresholds_d.data()),
+    thrust::raw_pointer_cast(boxes3d_d.data()));
 
   // suppress by score
   const auto num_det_boxes3d = thrust::count_if(
-    thrust::device, boxes3d_d_.begin(), boxes3d_d_.end(),
-    is_score_greater(config_.score_threshold_));
+    thrust::device, boxes3d_d.begin(), boxes3d_d.end(), is_score_greater(config_.score_threshold_));
   if (num_det_boxes3d == 0) {
     return cudaGetLastError();
   }
   thrust::device_vector<Box3D> det_boxes3d_d(num_det_boxes3d);
   thrust::copy_if(
-    thrust::device, boxes3d_d_.begin(), boxes3d_d_.end(), det_boxes3d_d.begin(),
+    thrust::device, boxes3d_d.begin(), boxes3d_d.end(), det_boxes3d_d.begin(),
     is_score_greater(config_.score_threshold_));
 
   // sort by score

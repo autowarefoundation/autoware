@@ -20,7 +20,6 @@
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
-#include <thrust/device_vector.h>
 
 #include <vector>
 
@@ -41,8 +40,6 @@ private:
   cudaStream_t stream_;
   cudaStream_t stream_event_;
   cudaEvent_t start_, stop_;
-  thrust::device_vector<Box3D> boxes3d_d_;
-  thrust::device_vector<float> yaw_norm_thresholds_d_;
 };
 
 }  // namespace autoware::lidar_transfusion
