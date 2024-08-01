@@ -25,4 +25,4 @@ This node aims to:
 
 ## Parameters
 
-{{ json_to_markdown("localization/stop_filter/schema/stop_filter.schema.json") }}
+{{ json_to_markdown("localization/autoware_stop_filter/schema/stop_filter.schema.json") }}
