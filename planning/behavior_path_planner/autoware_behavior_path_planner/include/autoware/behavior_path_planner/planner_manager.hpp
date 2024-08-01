@@ -111,7 +111,7 @@ struct SlotOutput
   BehaviorModuleOutput valid_output;
 
   // if candidate module is running, valid_output contains the planning by candidate module. In
-  // that case, downstream slots will just run aproved modules and do not try to launch new
+  // that case, downstream slots will just run approved modules and do not try to launch new
   // modules
   bool is_upstream_candidate_exclusive{false};
 
@@ -153,7 +153,7 @@ public:
     const std::shared_ptr<PlannerData> & planner_data, const SlotOutput & previous_slot_output);
 
   /**
-   * @brief run approved modules without launching new moules(candidates)
+   * @brief run approved modules without launching new modules(candidates)
    * @pre previous_slot_output.is_upstream_candidate_exclusive is true
    * @post is_upstream_candidate_exclusive of output is true
    * @post candidate_module does not increase
@@ -515,8 +515,8 @@ public:
   }
 
   /**
-   * @brief check if reroutable approved module is running(namely except for fixed_goal_planner and
-   * dynamic_avoidance)
+   * @brief check if re-routable approved module is running(namely except for fixed_goal_planner
+   * and dynamic_avoidance)
    */
   bool hasPossibleRerouteApprovedModules(const std::shared_ptr<PlannerData> & data) const;
 

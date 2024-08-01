@@ -48,7 +48,7 @@ Additionally, the manager generates root reference path, and if any other module
 
 ### Slot
 
-The manager owns several containers of sub-managers, namely _slots_, that holds/runs several sub-managers and send the output to the next slot. Given the initial reference path, each slot processes the input path and the ouptut path is processed by the next slot. The final slot output is utilized as the output of the manager. The slot passes following information
+The manager owns several containers of sub-managers, namely _slots_, that holds/runs several sub-managers and send the output to the next slot. Given the initial reference path, each slot processes the input path and the output path is processed by the next slot. The final slot output is utilized as the output of the manager. The slot passes following information
 
 ```cpp
 struct SlotOutput
@@ -593,7 +593,7 @@ The **current route lanelet** can be reset to the closest lanelet within the rou
 
 ![current_route_lanelet](../image/manager/current_route_lanelet.svg)
 
-The manager needs to know the ego behavior and then generate a root reference path from the lanes tghat Ego should follow.
+The manager needs to know the ego behavior and then generate a root reference path from the lanes that Ego should follow.
 
 For example, during autonomous driving, even if Ego moves into the next lane in order to avoid a parked vehicle, the target lanes that Ego should follow will **NOT** change because Ego will return to the original lane after the avoidance maneuver. Therefore, the manager does **NOT** reset the **current route lanelet**, even if the avoidance maneuver is finished.
 
