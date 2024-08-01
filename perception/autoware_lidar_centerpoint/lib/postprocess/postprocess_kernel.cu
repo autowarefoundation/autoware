@@ -137,10 +137,6 @@ __global__ void generateBoxes3D_kernel(
 
 PostProcessCUDA::PostProcessCUDA(const CenterPointConfig & config) : config_(config)
 {
-  const auto num_raw_boxes3d = config.down_grid_size_y_ * config.down_grid_size_x_;
-  boxes3d_d_ = thrust::device_vector<Box3D>(num_raw_boxes3d);
-  yaw_norm_thresholds_d_ = thrust::device_vector<float>(
-    config_.yaw_norm_thresholds_.begin(), config_.yaw_norm_thresholds_.end());
 }
 
 // cspell: ignore divup
@@ -153,23 +149,26 @@ cudaError_t PostProcessCUDA::generateDetectedBoxes3D_launch(
     divup(config_.down_grid_size_y_, THREADS_PER_BLOCK),
     divup(config_.down_grid_size_x_, THREADS_PER_BLOCK));
   dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
+  auto boxes3d_d =
+    thrust::device_vector<Box3D>(config_.down_grid_size_y_ * config_.down_grid_size_x_);
+  auto yaw_norm_thresholds_d = thrust::device_vector<float>(
+    config_.yaw_norm_thresholds_.begin(), config_.yaw_norm_thresholds_.end());
   generateBoxes3D_kernel<<<blocks, threads, 0, stream>>>(
     out_heatmap, out_offset, out_z, out_dim, out_rot, out_vel, config_.voxel_size_x_,
     config_.voxel_size_y_, config_.range_min_x_, config_.range_min_y_, config_.down_grid_size_x_,
     config_.down_grid_size_y_, config_.downsample_factor_, config_.class_size_,
-    config_.has_variance_, thrust::raw_pointer_cast(yaw_norm_thresholds_d_.data()),
-    thrust::raw_pointer_cast(boxes3d_d_.data()));
+    config_.has_variance_, thrust::raw_pointer_cast(yaw_norm_thresholds_d.data()),
+    thrust::raw_pointer_cast(boxes3d_d.data()));
 
   // suppress by score
   const auto num_det_boxes3d = thrust::count_if(
-    thrust::device, boxes3d_d_.begin(), boxes3d_d_.end(),
-    is_score_greater(config_.score_threshold_));
+    thrust::device, boxes3d_d.begin(), boxes3d_d.end(), is_score_greater(config_.score_threshold_));
   if (num_det_boxes3d == 0) {
     return cudaGetLastError();
   }
   thrust::device_vector<Box3D> det_boxes3d_d(num_det_boxes3d);
   thrust::copy_if(
-    thrust::device, boxes3d_d_.begin(), boxes3d_d_.end(), det_boxes3d_d.begin(),
+    thrust::device, boxes3d_d.begin(), boxes3d_d.end(), det_boxes3d_d.begin(),
     is_score_greater(config_.score_threshold_));
 
   // sort by score
