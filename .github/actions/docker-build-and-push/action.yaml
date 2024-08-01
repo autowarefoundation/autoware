@@ -55,7 +55,6 @@ runs:
       with:
         path: |
           var-cache-apt
-          var-lib-apt
         key: apt-get-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
           apt-get-${{ inputs.platform }}-${{ inputs.name }}-
@@ -67,8 +66,7 @@ runs:
         cache-map: |
           {
             "root-ccache": "/root/.ccache",
-            "var-cache-apt": "/var/cache/apt",
-            "var-lib-apt": "/var/lib/apt"
+            "var-cache-apt": "/var/cache/apt"
           }
         skip-extraction: true
 

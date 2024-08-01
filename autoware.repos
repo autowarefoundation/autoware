@@ -96,10 +96,16 @@ repositories:
     type: git
     url: https://github.com/tier4/nebula.git
     version: main
-  sensor_component/external/transport_drivers:
+  # Fork of transport_drivers that enables reduction of copy operations
+  sensor_component/transport_drivers:
     type: git
-    url: https://github.com/MapIV/transport_drivers.git
-    version: boost
+    url: https://github.com/autowarefoundation/transport_drivers
+    version: mutable-buffer-in-udp-callback
+  # Continental compatible version of ROS 2 socket CAN
+  sensor_component/ros2_socketcan:
+    type: git
+    url: https://github.com/autowarefoundation/ros2_socketcan
+    version: feat/continental_fd
   # sensor_kit
   sensor_kit/sample_sensor_kit_launch:
     type: git
@@ -112,6 +118,10 @@ repositories:
   sensor_kit/awsim_labs_sensor_kit_launch:
     type: git
     url: https://github.com/autowarefoundation/awsim_labs_sensor_kit_launch.git
+    version: main
+  sensor_kit/single_lidar_sensor_kit_launch:
+    type: git
+    url: https://github.com/autowarefoundation/single_lidar_sensor_kit_launch.git
     version: main
   # vehicle
   vehicle/sample_vehicle_launch:

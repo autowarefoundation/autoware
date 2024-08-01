@@ -134,7 +134,6 @@ build_images() {
         --set "*.args.LIB_DIR=$lib_dir" \
         --set "base.tags=ghcr.io/autowarefoundation/autoware:latest-base" \
         --set "devel.tags=ghcr.io/autowarefoundation/autoware:latest-devel$image_name_suffix" \
-        --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware:latest-prebuilt$image_name_suffix" \
         --set "runtime.tags=ghcr.io/autowarefoundation/autoware:latest-runtime$image_name_suffix" \
         "${targets[@]}"
     set +x
