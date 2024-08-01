@@ -88,7 +88,7 @@ def launch_setup(context, *args, **kwargs):
                 package="autoware_traffic_light_visualization",
                 plugin="autoware::traffic_light::TrafficLightRoiVisualizerNode",
                 name="traffic_light_roi_visualizer",
-                parameters=[create_parameter_dict("enable_fine_detection")],
+                parameters=[create_parameter_dict("enable_fine_detection", "use_image_transport")],
                 remappings=[
                     ("~/input/image", LaunchConfiguration("input/image")),
                     ("~/input/rois", LaunchConfiguration("output/rois")),
@@ -172,6 +172,7 @@ def generate_launch_description():
     classifier_share_dir = get_package_share_directory("autoware_traffic_light_classifier")
     add_launch_arg("enable_image_decompressor", "True")
     add_launch_arg("enable_fine_detection", "True")
+    add_launch_arg("use_image_transport", "True")
     add_launch_arg("input/image", "/sensing/camera/traffic_light/image_raw")
     add_launch_arg("output/rois", "/perception/traffic_light_recognition/rois")
     add_launch_arg(
