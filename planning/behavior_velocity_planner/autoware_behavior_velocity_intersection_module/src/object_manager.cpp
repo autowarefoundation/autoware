@@ -74,12 +74,12 @@ ObjectInfo::ObjectInfo(const unique_identifier_msgs::msg::UUID & uuid) : uuid_st
 
 void ObjectInfo::initialize(
   const autoware_perception_msgs::msg::PredictedObject & object,
-  std::optional<lanelet::ConstLanelet> attention_lanelet_opt_,
-  std::optional<lanelet::ConstLineString3d> stopline_opt_)
+  std::optional<lanelet::ConstLanelet> attention_lanelet_opt,
+  std::optional<lanelet::ConstLineString3d> stopline_opt)
 {
   predicted_object_ = object;
-  attention_lanelet_opt = attention_lanelet_opt_;
-  stopline_opt = stopline_opt_;
+  attention_lanelet_opt_ = attention_lanelet_opt;
+  stopline_opt_ = stopline_opt;
   unsafe_interval_ = std::nullopt;
   calc_dist_to_stopline();
 }
@@ -96,10 +96,10 @@ void ObjectInfo::update_safety(
 std::optional<geometry_msgs::msg::Point> ObjectInfo::estimated_past_position(
   const double past_duration) const
 {
-  if (!attention_lanelet_opt) {
+  if (!attention_lanelet_opt_) {
     return std::nullopt;
   }
-  const auto attention_lanelet = attention_lanelet_opt.value();
+  const auto attention_lanelet = attention_lanelet_opt_.value();
   const auto current_arc_coords = lanelet::utils::getArcCoordinates(
     {attention_lanelet}, predicted_object_.kinematics.initial_pose_with_covariance.pose);
   const auto distance = current_arc_coords.distance;
@@ -116,29 +116,29 @@ std::optional<geometry_msgs::msg::Point> ObjectInfo::estimated_past_position(
 
 void ObjectInfo::calc_dist_to_stopline()
 {
-  if (!stopline_opt || !attention_lanelet_opt) {
+  if (!stopline_opt_ || !attention_lanelet_opt_) {
     return;
   }
-  const auto attention_lanelet = attention_lanelet_opt.value();
+  const auto attention_lanelet = attention_lanelet_opt_.value();
   const auto object_arc_coords = lanelet::utils::getArcCoordinates(
     {attention_lanelet}, predicted_object_.kinematics.initial_pose_with_covariance.pose);
-  const auto stopline = stopline_opt.value();
+  const auto stopline = stopline_opt_.value();
   geometry_msgs::msg::Pose stopline_center;
   stopline_center.position.x = (stopline.front().x() + stopline.back().x()) / 2.0;
   stopline_center.position.y = (stopline.front().y() + stopline.back().y()) / 2.0;
   stopline_center.position.z = (stopline.front().z() + stopline.back().z()) / 2.0;
   const auto stopline_arc_coords =
     lanelet::utils::getArcCoordinates({attention_lanelet}, stopline_center);
-  dist_to_stopline_opt = (stopline_arc_coords.length - object_arc_coords.length);
+  dist_to_stopline_opt_ = (stopline_arc_coords.length - object_arc_coords.length);
 }
 
 bool ObjectInfo::can_stop_before_stopline(const double brake_deceleration) const
 {
-  if (!dist_to_stopline_opt) {
+  if (!dist_to_stopline_opt_) {
     return false;
   }
   const double velocity = predicted_object_.kinematics.initial_twist_with_covariance.twist.linear.x;
-  const double dist_to_stopline = dist_to_stopline_opt.value();
+  const double dist_to_stopline = dist_to_stopline_opt_.value();
   const double braking_distance = (velocity * velocity) / (2.0 * brake_deceleration);
   return dist_to_stopline > braking_distance;
 }
@@ -147,17 +147,17 @@ bool ObjectInfo::can_stop_before_ego_lane(
   const double brake_deceleration, const double tolerable_overshoot,
   lanelet::ConstLanelet ego_lane) const
 {
-  if (!dist_to_stopline_opt || !stopline_opt || !attention_lanelet_opt) {
+  if (!dist_to_stopline_opt_ || !stopline_opt_ || !attention_lanelet_opt_) {
     return false;
   }
-  const double dist_to_stopline = dist_to_stopline_opt.value();
+  const double dist_to_stopline = dist_to_stopline_opt_.value();
   const double velocity = predicted_object_.kinematics.initial_twist_with_covariance.twist.linear.x;
   const double braking_distance = (velocity * velocity) / (2.0 * brake_deceleration);
   if (dist_to_stopline > braking_distance) {
     return false;
   }
-  const auto attention_lanelet = attention_lanelet_opt.value();
-  const auto stopline = stopline_opt.value();
+  const auto attention_lanelet = attention_lanelet_opt_.value();
+  const auto stopline = stopline_opt_.value();
   const auto stopline_p1 = stopline.front();
   const auto stopline_p2 = stopline.back();
   const autoware::universe_utils::Point2d stopline_mid{
@@ -185,10 +185,10 @@ bool ObjectInfo::can_stop_before_ego_lane(
 
 bool ObjectInfo::before_stopline_by(const double margin) const
 {
-  if (!dist_to_stopline_opt) {
+  if (!dist_to_stopline_opt_) {
     return false;
   }
-  const double dist_to_stopline = dist_to_stopline_opt.value();
+  const double dist_to_stopline = dist_to_stopline_opt_.value();
   return dist_to_stopline < margin;
 }
 

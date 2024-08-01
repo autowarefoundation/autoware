@@ -590,7 +590,7 @@ private:
    * @brief generate discretized detection lane linestring.
    */
   std::vector<lanelet::ConstLineString3d> generateDetectionLaneDivisions(
-    lanelet::ConstLanelets detection_lanelets,
+    lanelet::ConstLanelets detection_lanelets_all,
     const lanelet::routing::RoutingGraphPtr routing_graph_ptr, const double resolution) const;
   /** @} */
 
@@ -752,7 +752,7 @@ private:
 
   void cutPredictPathWithinDuration(
     const builtin_interfaces::msg::Time & object_stamp, const double time_thr,
-    autoware_perception_msgs::msg::PredictedPath * predicted_path) const;
+    autoware_perception_msgs::msg::PredictedPath * path) const;
 
   /**
    * @brief check if there are any objects around the stoplines on the attention areas when ego
@@ -809,7 +809,7 @@ private:
   TimeDistanceArray calcIntersectionPassingTime(
     const tier4_planning_msgs::msg::PathWithLaneId & path, const bool is_prioritized,
     const IntersectionStopLines & intersection_stoplines,
-    tier4_debug_msgs::msg::Float64MultiArrayStamped * debug_ttc_array) const;
+    tier4_debug_msgs::msg::Float64MultiArrayStamped * ego_ttc_array) const;
   /** @} */
 
   mutable DebugData debug_data_;
