@@ -1,0 +1,8 @@
+- name: Copy a file to /opt
+  become: true
+  ansible.builtin.copy:
+    src: /path/to/local/file.txt  # ローカルのファイルパス
+    dest: /opt/file.txt           # コピー先のパス
+    owner: root                  # オーナー（必要に応じて変更）
+    group: root                  # グループ（必要に応じて変更）
+    mode: '0644'                 # ファイルのパーミッション（必要に応じて変更）
