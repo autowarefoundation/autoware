@@ -15,7 +15,8 @@
 #include "learning_based_vehicle_model/model_connections_helpers.hpp"
 
 std::vector<double> fillVectorUsingMap(
-  std::vector<double> vector1, std::vector<double> vector2, std::vector<int> map, bool inverse)
+  std::vector<double> vector1, std::vector<double> vector2, const std::vector<int> & map,
+  bool inverse)
 {
   // index in "map" is index in "vector1" and value in "map" is index in "vector2"
   // inverse = 0 from 1 -> 2; inverse = 1 from 2 -> 1
@@ -27,7 +28,7 @@ std::vector<double> fillVectorUsingMap(
 }
 
 std::vector<int> createConnectionsMap(
-  std::vector<char *> connection_names_1, std::vector<char *> connection_names_2)
+  const std::vector<char *> & connection_names_1, const std::vector<char *> & connection_names_2)
 {
   std::vector<int> connection_map;
   // index in "connection_map" is index in "connection_names_2" and value in "connection_map" is
