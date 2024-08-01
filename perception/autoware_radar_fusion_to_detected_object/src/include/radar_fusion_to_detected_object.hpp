@@ -99,9 +99,9 @@ private:
   // std::vector<DetectedObject> splitObject(
   //   const DetectedObject & object, const std::shared_ptr<std::vector<RadarInput>> & radars);
   TwistWithCovariance estimateTwist(
-    const DetectedObject & object, const std::shared_ptr<std::vector<RadarInput>> & radars);
+    const DetectedObject & object, const std::shared_ptr<std::vector<RadarInput>> & radars) const;
   bool isQualified(
-    const DetectedObject & object, const std::shared_ptr<std::vector<RadarInput>> & radars);
+    const DetectedObject & object, const std::shared_ptr<std::vector<RadarInput>> & radars) const;
   TwistWithCovariance convertDopplerToTwist(
     const DetectedObject & object, const TwistWithCovariance & twist_with_covariance);
   static bool isYawCorrect(
