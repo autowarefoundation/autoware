@@ -183,7 +183,7 @@ private:
   };
   Param param_;
 
-  double getMedianVel(const std::vector<nav_msgs::msg::Odometry> vel_que);
+  double getMedianVel(const std::vector<nav_msgs::msg::Odometry> & vel_que);
   double lowpass_filter(const double current_value, const double prev_value, const double gain);
   void calcDistanceToNearestPointOnPath(
     const TrajectoryPoints & trajectory, const int nearest_point_idx,

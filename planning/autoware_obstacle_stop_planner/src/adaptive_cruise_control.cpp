@@ -748,7 +748,7 @@ void AdaptiveCruiseController::registerQueToVelocity(
   est_vel_que_.emplace_back(new_vel);
 }
 
-double AdaptiveCruiseController::getMedianVel(const std::vector<nav_msgs::msg::Odometry> vel_que)
+double AdaptiveCruiseController::getMedianVel(const std::vector<nav_msgs::msg::Odometry> & vel_que)
 {
   if (vel_que.size() == 0) {
     RCLCPP_WARN_STREAM(node_->get_logger(), "size of vel que is 0. Something has wrong.");

@@ -122,7 +122,7 @@ Polygon2d convertBoundingBoxObjectToGeometryPolygon(
 
 std::string jsonDumpsPose(const Pose & pose);
 
-DiagnosticStatus makeStopReasonDiag(const std::string stop_reason, const Pose & stop_pose);
+DiagnosticStatus makeStopReasonDiag(const std::string & stop_reason, const Pose & stop_pose);
 
 TrajectoryPoint getBackwardPointFromBasePoint(
   const TrajectoryPoint & p_from, const TrajectoryPoint & p_to, const TrajectoryPoint & p_base,
