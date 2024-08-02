@@ -104,7 +104,7 @@ get_2d_shape_marker_ptr(
 AUTOWARE_PERCEPTION_RVIZ_PLUGIN_PUBLIC visualization_msgs::msg::Marker::SharedPtr
 get_label_marker_ptr(
   const geometry_msgs::msg::Point & centroid, const geometry_msgs::msg::Quaternion & orientation,
-  const std::string label, const std_msgs::msg::ColorRGBA & color_rgba);
+  const std::string & label, const std_msgs::msg::ColorRGBA & color_rgba);
 
 AUTOWARE_PERCEPTION_RVIZ_PLUGIN_PUBLIC visualization_msgs::msg::Marker::SharedPtr
 get_existence_probability_marker_ptr(

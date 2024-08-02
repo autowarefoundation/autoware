@@ -459,7 +459,7 @@ visualization_msgs::msg::Marker::SharedPtr get_uuid_marker_ptr(
 
 visualization_msgs::msg::Marker::SharedPtr get_label_marker_ptr(
   const geometry_msgs::msg::Point & centroid, const geometry_msgs::msg::Quaternion & orientation,
-  const std::string label, const std_msgs::msg::ColorRGBA & color_rgba)
+  const std::string & label, const std_msgs::msg::ColorRGBA & color_rgba)
 {
   auto marker_ptr = std::make_shared<Marker>();
   marker_ptr->type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
