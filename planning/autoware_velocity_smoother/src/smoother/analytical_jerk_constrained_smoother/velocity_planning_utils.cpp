@@ -271,8 +271,8 @@ bool calcStopVelocityWithConstantJerkAccLimit(
 }
 
 void updateStopVelocityStatus(
-  double v0, double a0, double jerk_acc, double jerk_dec, int type, std::vector<double> times,
-  double t, double & x, double & v, double & a, double & j)
+  double v0, double a0, double jerk_acc, double jerk_dec, int type,
+  const std::vector<double> & times, double t, double & x, double & v, double & a, double & j)
 {
   if (type == 1) {
     if (0 <= t && t < times.at(0)) {
