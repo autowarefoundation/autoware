@@ -6,6 +6,7 @@
     use_pointcloud_data: true
     use_predicted_object_data: true
     use_object_velocity_calculation: true
+    check_autoware_state: true
     min_generated_path_length: 0.5
     imu_prediction_time_horizon: 1.5
     imu_prediction_time_interval: 0.1

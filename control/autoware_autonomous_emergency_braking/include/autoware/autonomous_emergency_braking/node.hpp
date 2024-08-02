@@ -260,7 +260,8 @@ public:
     this, "/autoware/state"};
   // publisher
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_obstacle_pointcloud_;
-  rclcpp::Publisher<MarkerArray>::SharedPtr debug_ego_path_publisher_;  // debug
+  rclcpp::Publisher<MarkerArray>::SharedPtr debug_marker_publisher_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr info_marker_publisher_;
 
   // timer
   rclcpp::TimerBase::SharedPtr timer_;
@@ -308,6 +309,8 @@ public:
 
   void addCollisionMarker(const ObjectData & data, MarkerArray & debug_markers);
 
+  void addVirtualStopWallMarker(MarkerArray & markers);
+
   std::optional<double> calcObjectSpeedFromHistory(
     const ObjectData & closest_object, const Path & path, const double current_ego_speed);
 
@@ -335,6 +338,7 @@ public:
   bool use_pointcloud_data_;
   bool use_predicted_object_data_;
   bool use_object_velocity_calculation_;
+  bool check_autoware_state_;
   double path_footprint_extra_margin_;
   double detection_range_min_height_;
   double detection_range_max_height_margin_;
