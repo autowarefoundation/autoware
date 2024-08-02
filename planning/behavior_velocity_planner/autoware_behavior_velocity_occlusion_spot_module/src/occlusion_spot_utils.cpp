@@ -102,7 +102,7 @@ void calcSlowDownPointsForPossibleCollision(
   }
   std::sort(
     possible_collisions.begin(), possible_collisions.end(),
-    [](PossibleCollisionInfo pc1, PossibleCollisionInfo pc2) {
+    [](const PossibleCollisionInfo & pc1, const PossibleCollisionInfo & pc2) {
       return pc1.arc_lane_dist_at_collision.length < pc2.arc_lane_dist_at_collision.length;
     });
 

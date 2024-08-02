@@ -131,7 +131,7 @@ MarkerArray makeDebugInfoMarkers(T & debug_data)
 }
 
 MarkerArray makePolygonMarker(
-  const BasicPolygons & polygons, const std::string ns, const int id, const double z)
+  const BasicPolygons & polygons, const std::string & ns, const int id, const double z)
 {
   MarkerArray debug_markers;
   Marker debug_marker;
@@ -159,7 +159,7 @@ MarkerArray makePolygonMarker(
 }
 
 MarkerArray makeSlicePolygonMarker(
-  const Polygons2d & slices, const std::string ns, const int id, const double z)
+  const Polygons2d & slices, const std::string & ns, const int id, const double z)
 {
   MarkerArray debug_markers;
   Marker debug_marker;
