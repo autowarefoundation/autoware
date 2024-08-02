@@ -23,6 +23,7 @@
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 
 #include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 #include <autoware/universe_utils/system/time_keeper.hpp>
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <autoware_lanelet2_extension/utility/utilities.hpp>
@@ -689,21 +690,33 @@ bool NormalLaneChange::hasFinishedLaneChange() const
   const auto & lane_change_end = status_.lane_change_path.info.shift_line.end;
   const auto & target_lanes = get_target_lanes();
   const double dist_to_lane_change_end =
-    utils::getSignedDistance(current_pose, lane_change_end, get_target_lanes());
-  double finish_judge_buffer = lane_change_parameters_->lane_change_finish_judge_buffer;
+    utils::getSignedDistance(current_pose, lane_change_end, target_lanes);
 
-  // If ego velocity is low, relax finish judge buffer
-  const double ego_velocity = getEgoVelocity();
-  if (std::abs(ego_velocity) < 1.0) {
-    finish_judge_buffer = 0.0;
-  }
+  const auto finish_judge_buffer = std::invoke([&]() {
+    const double ego_velocity = getEgoVelocity();
+    // If ego velocity is low, relax finish judge buffer
+    if (std::abs(ego_velocity) < 1.0) {
+      return 0.0;
+    }
+    return lane_change_parameters_->lane_change_finish_judge_buffer;
+  });
 
-  const auto reach_lane_change_end = dist_to_lane_change_end + finish_judge_buffer < 0.0;
+  const auto has_passed_end_pose = dist_to_lane_change_end + finish_judge_buffer < 0.0;
 
   lane_change_debug_.distance_to_lane_change_finished =
     dist_to_lane_change_end + finish_judge_buffer;
 
-  if (!reach_lane_change_end) {
+  if (has_passed_end_pose) {
+    const auto & lanes_polygon = common_data_ptr_->lanes_polygon_ptr->target;
+    return !boost::geometry::disjoint(
+      lanes_polygon.value(),
+      lanelet::utils::to2D(lanelet::utils::conversion::toLaneletPoint(current_pose.position)));
+  }
+
+  const auto yaw_deviation_to_centerline =
+    utils::lane_change::calc_angle_to_lanelet_segment(target_lanes, current_pose);
+
+  if (yaw_deviation_to_centerline > lane_change_parameters_->finish_judge_lateral_angle_deviation) {
     return false;
   }
 

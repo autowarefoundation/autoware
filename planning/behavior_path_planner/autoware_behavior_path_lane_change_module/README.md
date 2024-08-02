@@ -618,6 +618,61 @@ The last behavior will also occur if the ego vehicle has departed from the curre
 
 ![stop](./images/lane_change-cant_cancel_no_abort.png)
 
+## Lane change completion checks
+
+To determine if the ego vehicle has successfully changed lanes, one of two criteria must be met: either the longitudinal or the lateral criteria.
+
+For the longitudinal criteria, the ego vehicle must pass the lane-changing end pose and be within the `finish_judge_buffer` distance from it. The module then checks if the ego vehicle is in the target lane. If true, the module returns success. This check ensures that the planner manager updates the root lanelet correctly based on the ego vehicle's current pose. Without this check, if the ego vehicle is changing lanes while avoiding an obstacle and its current pose is in the original lane, the planner manager might set the root lanelet as the original lane. This would force the ego vehicle to perform the lane change again. With the target lane check, the ego vehicle is confirmed to be in the target lane, and the planner manager can correctly update the root lanelets.
+
+If the longitudinal criteria are not met, the module evaluates the lateral criteria. For the lateral criteria, the ego vehicle must be within `finish_judge_lateral_threshold` distance from the target lane's centerline, and the angle deviation must be within `finish_judge_lateral_angle_deviation` degrees. The angle deviation check ensures there is no sudden steering. If the angle deviation is set too high, the ego vehicle's orientation could deviate significantly from the centerline, causing the trajectory follower to aggressively correct the steering to return to the centerline. Keeping the angle deviation value as small as possible avoids this issue.
+
+The process of determining lane change completion is shown in the following diagram.
+
+```plantuml
+@startuml
+skinparam defaultTextAlignment center
+skinparam backgroundColor #WHITE
+
+title Lane change completion judge
+
+start
+
+:Calculate distance from current ego pose to lane change end pose;
+
+if (Is ego velocity < 1.0?) then (<color:green><b>YES</b></color>)
+  :Set <b>finish_judge_buffer</b> to 0.0;
+else (<color:red><b>NO</b></color>)
+  :Set <b>finish_judge_buffer</b> to lane_change_finish_judge_buffer;
+endif
+
+if (ego has passed the end_pose and ego is <b>finish_judge_buffer</b> meters away from end_pose?) then (<color:green><b>YES</b></color>)
+  if (Current ego pose is in target lanes' polygon?) then (<color:green><b>YES</b></color>)
+    :Lane change is <color:green><b>completed</b></color>;
+    stop
+  else (<color:red><b>NO</b></color>)
+:Lane change is <color:red><b>NOT</b></color> completed;
+stop
+  endif
+else (<color:red><b>NO</b></color>)
+endif
+
+if (ego's yaw deviation to centerline exceeds finish_judge_lateral_angle_deviation?) then (<color:red><b>YES</b></color>)
+  :Lane change is <color:red><b>NOT</b></color> completed;
+  stop
+else (<color:green><b>NO</b></color>)
+  :Calculate distance to the target lanes' centerline;
+  if (abs(distance to the target lanes' centerline) is less than finish_judge_lateral_threshold?) then (<color:green><b>YES</b></color>)
+    :Lane change is <color:green><b>completed</b></color>;
+    stop
+  else (<color:red><b>NO</b></color>)
+    :Lane change is <color:red><b>NOT</b></color> completed;
+    stop
+  endif
+endif
+
+@enduml
+```
+
 ## Parameters
 
 ### Essential lane change parameters
@@ -631,7 +686,6 @@ The following parameters are configurable in [lane_change.param.yaml](https://gi
 | `backward_length_buffer_for_end_of_lane`     | [m]    | double | The end of lane buffer to ensure ego vehicle has enough distance to start lane change                                  | 3.0                |
 | `backward_length_buffer_for_blocking_object` | [m]    | double | The end of lane buffer to ensure ego vehicle has enough distance to start lane change when there is an object in front | 3.0                |
 | `lane_change_finish_judge_buffer`            | [m]    | double | The additional buffer used to confirm lane change process completion                                                   | 2.0                |
-| `finish_judge_lateral_threshold`             | [m]    | double | Lateral distance threshold to confirm lane change process completion                                                   | 0.2                |
 | `lane_changing_lateral_jerk`                 | [m/s3] | double | Lateral jerk value for lane change path generation                                                                     | 0.5                |
 | `minimum_lane_changing_velocity`             | [m/s]  | double | Minimum speed during lane changing process.                                                                            | 2.78               |
 | `prediction_time_resolution`                 | [s]    | double | Time resolution for object's path interpolation and collision check.                                                   | 0.5                |
@@ -646,6 +700,16 @@ The following parameters are configurable in [lane_change.param.yaml](https://gi
 | `lateral_acceleration.velocity`              | [m/s]  | double | Reference velocity for lateral acceleration calculation (look up table)                                                | [0.0, 4.0, 10.0]   |
 | `lateral_acceleration.min_values`            | [m/ss] | double | Min lateral acceleration values corresponding to velocity (look up table)                                              | [0.4, 0.4, 0.4]    |
 | `lateral_acceleration.max_values`            | [m/ss] | double | Max lateral acceleration values corresponding to velocity (look up table)                                              | [0.65, 0.65, 0.65] |
+
+### Parameter to judge if lane change is completed
+
+The following parameters are used to judge lane change completion.
+
+| Name                                   | Unit  | Type   | Description                                                                                                            | Default value |
+| :------------------------------------- | ----- | ------ | ---------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `lane_change_finish_judge_buffer`      | [m]   | double | The longitudinal distance starting from the lane change end pose.                                                      | 2.0           |
+| `finish_judge_lateral_threshold`       | [m]   | double | The lateral distance from targets lanes' centerline. Used in addition with `finish_judge_lateral_angle_deviation`      | 0.1           |
+| `finish_judge_lateral_angle_deviation` | [deg] | double | Ego angle deviation with reference to target lanes' centerline. Used in addition with `finish_judge_lateral_threshold` | 2.0           |
 
 ### Lane change regulations
 

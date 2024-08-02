@@ -166,8 +166,6 @@ void LaneChangeModuleManager::initParams(rclcpp::Node * node)
     getOrDeclareParameter<double>(*node, parameter("minimum_lane_changing_velocity"));
   p.minimum_lane_changing_velocity =
     std::min(p.minimum_lane_changing_velocity, max_acc * p.lane_change_prepare_duration);
-  p.lane_change_finish_judge_buffer =
-    getOrDeclareParameter<double>(*node, parameter("lane_change_finish_judge_buffer"));
 
   if (p.backward_length_buffer_for_end_of_lane < 1.0) {
     RCLCPP_WARN_STREAM(
@@ -224,8 +222,15 @@ void LaneChangeModuleManager::initParams(rclcpp::Node * node)
   p.cancel.unsafe_hysteresis_threshold =
     getOrDeclareParameter<int>(*node, parameter("cancel.unsafe_hysteresis_threshold"));
 
+  // finish judge parameters
+  p.lane_change_finish_judge_buffer =
+    getOrDeclareParameter<double>(*node, parameter("lane_change_finish_judge_buffer"));
   p.finish_judge_lateral_threshold =
     getOrDeclareParameter<double>(*node, parameter("finish_judge_lateral_threshold"));
+  const auto finish_judge_lateral_angle_deviation =
+    getOrDeclareParameter<double>(*node, parameter("finish_judge_lateral_angle_deviation"));
+  p.finish_judge_lateral_angle_deviation =
+    autoware::universe_utils::deg2rad(finish_judge_lateral_angle_deviation);
 
   // debug marker
   p.publish_debug_marker = getOrDeclareParameter<bool>(*node, parameter("publish_debug_marker"));

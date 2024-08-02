@@ -19,6 +19,7 @@
 
 #include <autoware/behavior_path_planner_common/parameters.hpp>
 #include <autoware/route_handler/route_handler.hpp>
+#include <autoware/universe_utils/math/unit_conversion.hpp>
 #include <interpolation/linear_interpolation.hpp>
 
 #include <nav_msgs/msg/odometry.hpp>
@@ -109,7 +110,6 @@ struct Parameters
   double lane_changing_lateral_jerk{0.5};
   double minimum_lane_changing_velocity{5.6};
   double lane_change_prepare_duration{4.0};
-  double lane_change_finish_judge_buffer{3.0};
   LateralAccelerationMap lane_change_lat_acc_map;
 
   // parked vehicle
@@ -157,7 +157,10 @@ struct Parameters
   // abort
   CancelParameters cancel{};
 
+  // finish judge parameter
+  double lane_change_finish_judge_buffer{3.0};
   double finish_judge_lateral_threshold{0.2};
+  double finish_judge_lateral_angle_deviation{autoware::universe_utils::deg2rad(3.0)};
 
   // debug marker
   bool publish_debug_marker{false};
