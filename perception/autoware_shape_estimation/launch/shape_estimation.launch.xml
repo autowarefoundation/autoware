@@ -2,12 +2,16 @@
   <arg name="input/objects" default="labeled_clusters"/>
   <arg name="output/objects" default="shape_estimated_objects"/>
   <arg name="node_name" default="shape_estimation"/>
+
+  <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
+  <arg name="model_path" default="$(var data_path)/shape_estimation/pointnet.onnx"/>
   <!-- Parameter -->
   <arg name="config_file" default="$(find-pkg-share autoware_shape_estimation)/config/shape_estimation.param.yaml"/>
 
   <node pkg="autoware_shape_estimation" exec="shape_estimation_node" name="$(var node_name)" output="screen">
     <remap from="input" to="$(var input/objects)"/>
     <remap from="objects" to="$(var output/objects)"/>
-    <param from="$(var config_file)"/>
+    <param name="model_path" value="$(var model_path)"/>
+    <param from="$(var config_file)" allow_substs="true"/>
   </node>
 </launch>

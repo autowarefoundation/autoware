@@ -6,19 +6,27 @@
   <description>This package implements a shape estimation algorithm as a ROS 2 node</description>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>
+  <maintainer email="kcolak@leodrive.ai">Kaan Colak</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
+  <buildtool_depend>cudnn_cmake_module</buildtool_depend>
+  <buildtool_depend>tensorrt_cmake_module</buildtool_depend>
+
+  <buildtool_export_depend>cudnn_cmake_module</buildtool_export_depend>
+  <buildtool_export_depend>tensorrt_cmake_module</buildtool_export_depend>
 
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_universe_utils</depend>
+  <depend>cuda_utils</depend>
   <depend>eigen</depend>
   <depend>libopencv-dev</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>tensorrt_common</depend>
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>

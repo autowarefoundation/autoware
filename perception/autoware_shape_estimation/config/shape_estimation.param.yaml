@@ -1,8 +1,14 @@
 /**:
-    ros__parameters:
-      use_corrector: true
-      use_filter: true
-      use_vehicle_reference_yaw: false
-      use_vehicle_reference_shape_size: false
-      use_boost_bbox_optimizer: false
-      fix_filtered_objects_label_to_unknown: true
+  ros__parameters:
+    use_corrector: true
+    use_filter: true
+    use_vehicle_reference_yaw: false
+    use_vehicle_reference_shape_size: false
+    use_boost_bbox_optimizer: false
+    fix_filtered_objects_label_to_unknown: true
+    model_params:
+      use_ml_shape_estimator: false
+      minimum_points: 16
+      precision: "fp32"
+      batch_size: 32
+      build_only: false

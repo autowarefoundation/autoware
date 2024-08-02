@@ -30,6 +30,37 @@
           "type": "boolean",
           "description": "The flag to use boost bbox optimizer",
           "default": "false"
+        },
+        "model_params": {
+          "type": "object",
+          "description": "Parameters for model configuration.",
+          "properties": {
+            "use_ml_shape_estimator": {
+              "type": "boolean",
+              "description": "The flag to apply use ml bounding box estimator.",
+              "default": "true"
+            },
+            "minimum_points": {
+              "type": "integer",
+              "description": "The minimum number of points to fit a bounding box.",
+              "default": "16"
+            },
+            "precision": {
+              "type": "string",
+              "description": "The precision of the model.",
+              "default": "fp32"
+            },
+            "batch_size": {
+              "type": "integer",
+              "description": "The batch size of the model.",
+              "default": "32"
+            },
+            "build_only": {
+              "type": "boolean",
+              "description": "The flag to build the model only.",
+              "default": "false"
+            }
+          }
         }
       },
       "required": [

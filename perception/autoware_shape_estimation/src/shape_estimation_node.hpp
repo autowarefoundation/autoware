@@ -17,6 +17,12 @@
 
 #include "autoware/shape_estimation/shape_estimator.hpp"
 
+#ifdef USE_CUDA
+#include "autoware/shape_estimation/tensorrt_shape_estimator.hpp"
+
+#include <tensorrt_common/tensorrt_common.hpp>
+#endif
+
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
@@ -50,6 +56,13 @@ private:
   bool use_vehicle_reference_yaw_;
   bool use_vehicle_reference_shape_size_;
   bool fix_filtered_objects_label_to_unknown_;
+
+#ifdef USE_CUDA
+  std::unique_ptr<TrtShapeEstimator> tensorrt_shape_estimator_;
+#endif
+
+  bool use_ml_shape_estimation_;
+  size_t min_points_;
 
 public:
   explicit ShapeEstimationNode(const rclcpp::NodeOptions & node_options);
