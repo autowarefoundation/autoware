@@ -31,7 +31,7 @@ class Graph
 {
 public:
   void create(const std::string & file, const std::string & id = "");
-  void update(const rclcpp::Time & stamp);
+  void update(const rclcpp::Time & stamp);  // cppcheck-suppress functionConst
   bool update(const rclcpp::Time & stamp, const DiagnosticStatus & status);
   const auto & nodes() const { return nodes_; }
   const auto & diags() const { return diags_; }
