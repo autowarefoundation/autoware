@@ -3,7 +3,6 @@
   <arg name="input_pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
   <arg name="input_velocity" default="/vehicle/status/velocity_status"/>
   <arg name="input_imu" default="/sensing/imu/imu_data"/>
-  <arg name="input_odometry" default="/localization/kinematic_state"/>
   <arg name="input_predicted_trajectory" default="/control/trajectory_follower/lateral/predicted_trajectory"/>
   <arg name="input_objects" default="/perception/object_recognition/objects"/>
 

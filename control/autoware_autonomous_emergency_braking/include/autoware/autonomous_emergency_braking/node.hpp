@@ -71,6 +71,9 @@ using Vector3 = geometry_msgs::msg::Vector3;
 using autoware_perception_msgs::msg::PredictedObject;
 using autoware_perception_msgs::msg::PredictedObjects;
 
+/**
+ * @brief Struct to store object data
+ */
 struct ObjectData
 {
   rclcpp::Time stamp;
@@ -80,22 +83,44 @@ struct ObjectData
   double distance_to_object{0.0};
 };
 
+/**
+ * @brief Class to manage collision data
+ */
 class CollisionDataKeeper
 {
 public:
+  /**
+   * @brief Constructor for CollisionDataKeeper
+   * @param clock Shared pointer to the clock
+   */
   explicit CollisionDataKeeper(rclcpp::Clock::SharedPtr clock) { clock_ = clock; }
 
+  /**
+   * @brief Set timeout values for collision and obstacle data
+   * @param collision_keep_time Time to keep collision data
+   * @param previous_obstacle_keep_time Time to keep previous obstacle data
+   */
   void setTimeout(const double collision_keep_time, const double previous_obstacle_keep_time)
   {
     collision_keep_time_ = collision_keep_time;
     previous_obstacle_keep_time_ = previous_obstacle_keep_time;
   }
 
+  /**
+   * @brief Get timeout values for collision and obstacle data
+   * @return Pair of collision and obstacle data timeout values
+   */
   std::pair<double, double> getTimeout()
   {
     return {collision_keep_time_, previous_obstacle_keep_time_};
   }
 
+  /**
+   * @brief Check if object data has expired
+   * @param data Optional reference to the object data
+   * @param timeout Timeout value to check against
+   * @return True if object data has expired, false otherwise
+   */
   bool checkObjectDataExpired(std::optional<ObjectData> & data, const double timeout)
   {
     if (!data.has_value()) return true;
@@ -109,38 +134,70 @@ public:
     return false;
   }
 
+  /**
+   * @brief Check if collision data has expired
+   * @return True if collision data has expired, false otherwise
+   */
   bool checkCollisionExpired()
   {
     return this->checkObjectDataExpired(closest_object_, collision_keep_time_);
   }
 
+  /**
+   * @brief Check if previous object data has expired
+   * @return True if previous object data has expired, false otherwise
+   */
   bool checkPreviousObjectDataExpired()
   {
     return this->checkObjectDataExpired(prev_closest_object_, previous_obstacle_keep_time_);
   }
 
+  /**
+   * @brief Get the closest object data
+   * @return Object data of the closest object
+   */
   [[nodiscard]] ObjectData get() const
   {
     return (closest_object_.has_value()) ? closest_object_.value() : ObjectData();
   }
 
+  /**
+   * @brief Get the previous closest object data
+   * @return Object data of the previous closest object
+   */
   [[nodiscard]] ObjectData getPreviousObjectData() const
   {
     return (prev_closest_object_.has_value()) ? prev_closest_object_.value() : ObjectData();
   }
 
+  /**
+   * @brief Set collision data
+   * @param data Object data to set
+   */
   void setCollisionData(const ObjectData & data)
   {
     closest_object_ = std::make_optional<ObjectData>(data);
   }
 
+  /**
+   * @brief Set previous object data
+   * @param data Object data to set
+   */
   void setPreviousObjectData(const ObjectData & data)
   {
     prev_closest_object_ = std::make_optional<ObjectData>(data);
   }
 
+  /**
+   * @brief Reset the obstacle velocity history
+   */
   void resetVelocityHistory() { obstacle_velocity_history_.clear(); }
 
+  /**
+   * @brief Update the velocity history with current object velocity
+   * @param current_object_velocity Current object velocity
+   * @param current_object_velocity_time_stamp Timestamp of the current object velocity
+   */
   void updateVelocityHistory(
     const double current_object_velocity, const rclcpp::Time & current_object_velocity_time_stamp)
   {
@@ -158,6 +215,10 @@ public:
       current_object_velocity, current_object_velocity_time_stamp);
   }
 
+  /**
+   * @brief Get the median obstacle velocity from history
+   * @return Optional median obstacle velocity
+   */
   [[nodiscard]] std::optional<double> getMedianObstacleVelocity() const
   {
     if (obstacle_velocity_history_.empty()) return std::nullopt;
@@ -177,6 +238,13 @@ public:
     return (vel1 + vel2) / 2.0;
   }
 
+  /**
+   * @brief Calculate object speed from velocity history
+   * @param closest_object Closest object data
+   * @param path Ego vehicle path
+   * @param current_ego_speed Current ego vehicle speed
+   * @return Optional calculated object speed
+   */
   std::optional<double> calcObjectSpeedFromHistory(
     const ObjectData & closest_object, const Path & path, const double current_ego_speed)
   {
@@ -241,9 +309,16 @@ private:
   rclcpp::Clock::SharedPtr clock_;
 };
 
+/**
+ * @brief Autonomous Emergency Braking (AEB) node
+ */
 class AEB : public rclcpp::Node
 {
 public:
+  /**
+   * @brief Constructor for AEB
+   * @param node_options Options for the node
+   */
   explicit AEB(const rclcpp::NodeOptions & node_options);
 
   // subscriber
@@ -267,53 +342,156 @@ public:
   rclcpp::TimerBase::SharedPtr timer_;
 
   // callback
+  /**
+   * @brief Callback for point cloud messages
+   * @param input_msg Shared pointer to the point cloud message
+   */
   void onPointCloud(const PointCloud2::ConstSharedPtr input_msg);
+
+  /**
+   * @brief Callback for IMU messages
+   * @param input_msg Shared pointer to the IMU message
+   */
   void onImu(const Imu::ConstSharedPtr input_msg);
+
+  /**
+   * @brief Timer callback function
+   */
   void onTimer();
+
+  /**
+   * @brief Callback for parameter updates
+   * @param parameters Vector of updated parameters
+   * @return Set parameters result
+   */
   rcl_interfaces::msg::SetParametersResult onParameter(
     const std::vector<rclcpp::Parameter> & parameters);
 
+  /**
+   * @brief Fetch the latest data from subscribers
+   * @return True if data fetch was successful, false otherwise
+   */
   bool fetchLatestData();
 
-  // main function
+  /**
+   * @brief Diagnostic check for collisions
+   * @param stat Diagnostic status wrapper
+   */
   void onCheckCollision(DiagnosticStatusWrapper & stat);
+
+  /**
+   * @brief Check for collisions
+   * @param debug_markers Marker array for debugging
+   * @return True if a collision is detected, false otherwise
+   */
   bool checkCollision(MarkerArray & debug_markers);
+
+  /**
+   * @brief Check if there is a collision with the closest object
+   * @param current_v Current velocity of the ego vehicle
+   * @param closest_object Data of the closest object
+   * @return True if a collision is detected, false otherwise
+   */
   bool hasCollision(const double current_v, const ObjectData & closest_object);
 
+  /**
+   * @brief Generate the ego vehicle path
+   * @param curr_v Current velocity of the ego vehicle
+   * @param curr_w Current angular velocity of the ego vehicle
+   * @return Generated ego path
+   */
   Path generateEgoPath(const double curr_v, const double curr_w);
+
+  /**
+   * @brief Generate the ego vehicle path from the predicted trajectory
+   * @param predicted_traj Predicted trajectory of the ego vehicle
+   * @return Optional generated ego path
+   */
   std::optional<Path> generateEgoPath(const Trajectory & predicted_traj);
+
+  /**
+   * @brief Generate the footprint of the path with extra width margin
+   * @param path Ego vehicle path
+   * @param extra_width_margin Extra width margin for the footprint
+   * @return Vector of polygons representing the path footprint
+   */
   std::vector<Polygon2d> generatePathFootprint(const Path & path, const double extra_width_margin);
 
+  /**
+   * @brief Create object data using point cloud clusters
+   * @param ego_path Ego vehicle path
+   * @param ego_polys Polygons representing the ego vehicle footprint
+   * @param stamp Timestamp of the data
+   * @param objects Vector to store the created object data
+   * @param obstacle_points_ptr Pointer to the point cloud of obstacles
+   */
   void createObjectDataUsingPointCloudClusters(
     const Path & ego_path, const std::vector<Polygon2d> & ego_polys, const rclcpp::Time & stamp,
     std::vector<ObjectData> & objects,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_points_ptr);
 
+  /**
+   * @brief Create object data using predicted objects
+   * @param ego_path Ego vehicle path
+   * @param ego_polys Polygons representing the ego vehicle footprint
+   * @param objects Vector to store the created object data
+   */
   void createObjectDataUsingPredictedObjects(
     const Path & ego_path, const std::vector<Polygon2d> & ego_polys,
     std::vector<ObjectData> & objects);
 
+  /**
+   * @brief Crop the point cloud with the ego vehicle footprint path
+   * @param ego_polys Polygons representing the ego vehicle footprint
+   * @param filtered_objects Pointer to the filtered point cloud of obstacles
+   */
   void cropPointCloudWithEgoFootprintPath(
     const std::vector<Polygon2d> & ego_polys, pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects);
 
-  void createObjectDataUsingPointCloudClusters(
-    const Path & ego_path, const std::vector<Polygon2d> & ego_polys, const rclcpp::Time & stamp,
-    std::vector<ObjectData> & objects);
-  void cropPointCloudWithEgoFootprintPath(const std::vector<Polygon2d> & ego_polys);
-
+  /**
+   * @brief Add a marker for debugging
+   * @param current_time Current time
+   * @param path Ego vehicle path
+   * @param polygons Polygons representing the ego vehicle footprint
+   * @param objects Vector of object data
+   * @param closest_object Optional data of the closest object
+   * @param color_r Red color component
+   * @param color_g Green color component
+   * @param color_b Blue color component
+   * @param color_a Alpha (transparency) component
+   * @param ns Namespace for the marker
+   * @param debug_markers Marker array for debugging
+   */
   void addMarker(
     const rclcpp::Time & current_time, const Path & path, const std::vector<Polygon2d> & polygons,
     const std::vector<ObjectData> & objects, const std::optional<ObjectData> & closest_object,
     const double color_r, const double color_g, const double color_b, const double color_a,
     const std::string & ns, MarkerArray & debug_markers);
 
+  /**
+   * @brief Add a collision marker for debugging
+   * @param data Data of the collision object
+   * @param debug_markers Marker array for debugging
+   */
   void addCollisionMarker(const ObjectData & data, MarkerArray & debug_markers);
 
+  /**
+   * @brief Add an info marker stop wall in front of the ego vehicle
+   * @param markers Data of the closest object
+   */
   void addVirtualStopWallMarker(MarkerArray & markers);
 
+  /**
+   * @brief Calculate object speed from history
+   * @param closest_object Data of the closest object
+   * @param path Ego vehicle path
+   * @param current_ego_speed Current speed of the ego vehicle
+   * @return Optional calculated object speed
+   */
   std::optional<double> calcObjectSpeedFromHistory(
     const ObjectData & closest_object, const Path & path, const double current_ego_speed);
 
+  // Member variables
   PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr_{nullptr};
   VelocityReport::ConstSharedPtr current_velocity_ptr_{nullptr};
   Vector3::SharedPtr angular_velocity_ptr_{nullptr};
@@ -330,7 +508,7 @@ public:
   // diag
   Updater updater_{this};
 
-  // member variables
+  // Member variables
   bool publish_debug_pointcloud_;
   bool publish_debug_markers_;
   bool use_predicted_trajectory_;

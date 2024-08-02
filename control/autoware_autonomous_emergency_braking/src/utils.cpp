@@ -49,6 +49,9 @@ PredictedObject transformObjectFrame(
 Polygon2d convertPolygonObjectToGeometryPolygon(
   const Pose & current_pose, const autoware_perception_msgs::msg::Shape & obj_shape)
 {
+  if (obj_shape.footprint.points.empty()) {
+    return {};
+  }
   Polygon2d object_polygon;
   tf2::Transform tf_map2obj;
   fromMsg(current_pose, tf_map2obj);

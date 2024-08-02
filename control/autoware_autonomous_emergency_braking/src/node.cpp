@@ -507,7 +507,8 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
   };
 
   // Data of filtered point cloud
-  pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects(new PointCloud);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects =
+    pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   // evaluate if there is a collision for both paths
   const bool has_collision =
     has_collision_ego(filtered_objects) || has_collision_predicted(filtered_objects);

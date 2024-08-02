@@ -192,7 +192,6 @@
         <remap from="~/input/pointcloud" to="/perception/obstacle_segmentation/pointcloud"/>
         <remap from="~/input/velocity" to="/vehicle/status/velocity_status"/>
         <remap from="~/input/imu" to="/sensing/imu/imu_data"/>
-        <remap from="~/input/odometry" to="/localization/kinematic_state"/>
         <remap from="~/input/objects" to="/perception/obstacle_segmentation/objects"/>
         <remap from="~/input/predicted_trajectory" to="/control/trajectory_follower/lateral/predicted_trajectory"/>
         <param from="$(var aeb_param_path)"/>
