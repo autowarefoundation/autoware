@@ -450,15 +450,13 @@ boost::optional<PpOutput> PurePursuitLateralController::calcTargetCurvature(
   const bool is_reverse = (target_vel < 0);
   const double min_lookahead_distance =
     is_reverse ? param_.reverse_min_lookahead_distance : param_.min_lookahead_distance;
-  double lookahead_distance = min_lookahead_distance;
-  if (is_control_output) {
-    lookahead_distance = calcLookaheadDistance(
-      lateral_error, current_curvature, current_odometry_.twist.twist.linear.x,
-      min_lookahead_distance, is_control_output);
-  } else {
-    lookahead_distance = calcLookaheadDistance(
-      lateral_error, current_curvature, target_vel, min_lookahead_distance, is_control_output);
-  }
+  double lookahead_distance =
+    is_control_output
+      ? calcLookaheadDistance(
+          lateral_error, current_curvature, current_odometry_.twist.twist.linear.x,
+          min_lookahead_distance, is_control_output)
+      : calcLookaheadDistance(
+          lateral_error, current_curvature, target_vel, min_lookahead_distance, is_control_output);
 
   // Set PurePursuit data
   pure_pursuit_->setCurrentPose(pose);
