@@ -202,17 +202,17 @@ struct dempsterShaferOccupancy
   }
 
   // calc conflict factor K
-  double calcK(const dempsterShaferOccupancy & other)
+  double calcK(const dempsterShaferOccupancy & other) const
   {
     return (occupied * other.empty + empty * other.occupied);
   }
   // calc sum of occupied probability mass
-  double calcOccupied(const dempsterShaferOccupancy & other)
+  double calcOccupied(const dempsterShaferOccupancy & other) const
   {
     return occupied * other.occupied + occupied * other.unknown + unknown * other.occupied;
   }
   // calc sum of empty probability mass
-  double calcEmpty(const dempsterShaferOccupancy & other)
+  double calcEmpty(const dempsterShaferOccupancy & other) const
   {
     return empty * other.empty + empty * other.unknown + unknown * other.empty;
   }
@@ -240,7 +240,7 @@ struct dempsterShaferOccupancy
   }
 
   // get occupancy probability via Pignistic Probability
-  double getPignisticProbability() { return occupied + unknown / 2.0; }
+  double getPignisticProbability() const { return occupied + unknown / 2.0; }
 };
 
 /**
