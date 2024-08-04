@@ -1,5 +1,6 @@
 repositories:
   # core
+  # test
   core/autoware_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
