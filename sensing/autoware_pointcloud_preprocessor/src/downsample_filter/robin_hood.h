@@ -1134,7 +1134,7 @@ private:
       map.deallocate(mData);
     }
 
-    void destroyDoNotDeallocate() noexcept { mData->~value_type(); }
+    void destroyDoNotDeallocate() const noexcept { mData->~value_type(); }
 
     value_type const * operator->() const noexcept { return mData; }
 
