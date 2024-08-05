@@ -81,9 +81,9 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
     : range(_range), wx(_wx), wy(_wy)
     {
     }
-    double range;
-    double wx;
-    double wy;
+    double range{};
+    double wx{};
+    double wy{};
   };
 
   std::vector</*angle bin*/ std::vector<BinInfo>> obstacle_pointcloud_angle_bins(angle_bin_size);
