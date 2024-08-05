@@ -76,7 +76,7 @@ private:
 
   PathWithNoDrivableLanePolygonIntersection path_no_drivable_lane_polygon_intersection;
   geometry_msgs::msg::Point first_intersection_point;
-  double distance_ego_first_intersection;
+  double distance_ego_first_intersection{};
 
   void handle_init_state();
   void handle_approaching_state(PathWithLaneId * path, StopReason * stop_reason);
