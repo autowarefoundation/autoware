@@ -605,7 +605,7 @@ double AdaptiveCruiseController::calcBaseDistToForwardObstacle(
 }
 
 double AdaptiveCruiseController::calcTargetVelocity_P(
-  const double target_dist, const double current_dist)
+  const double target_dist, const double current_dist) const
 {
   const double diff_dist = current_dist - target_dist;
   double add_vel_p;
