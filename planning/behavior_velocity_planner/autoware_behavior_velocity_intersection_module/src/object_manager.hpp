@@ -248,7 +248,7 @@ public:
   std::vector<std::shared_ptr<ObjectInfo>> allObjects() const;
 
   const std::unordered_map<unique_identifier_msgs::msg::UUID, std::shared_ptr<ObjectInfo>> &
-  getObjectsMap()
+  getObjectsMap() const
   {
     return objects_info_;
   }
