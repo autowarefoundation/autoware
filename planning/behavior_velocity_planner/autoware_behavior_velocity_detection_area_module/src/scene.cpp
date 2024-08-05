@@ -45,7 +45,8 @@ DetectionAreaModule::DetectionAreaModule(
   lane_id_(lane_id),
   detection_area_reg_elem_(detection_area_reg_elem),
   state_(State::GO),
-  planner_param_(planner_param)
+  planner_param_(planner_param),
+  debug_data_()
 {
   velocity_factor_.init(PlanningBehavior::USER_DEFINED_DETECTION_AREA);
 }
