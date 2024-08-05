@@ -21,7 +21,7 @@ jobs:
   build-and-test-differential:
     needs: make-sure-label-is-present
     if: ${{ needs.make-sure-label-is-present.outputs.result == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
       fail-fast: false
@@ -35,6 +35,10 @@ jobs:
           - rosdistro: humble
             container: ghcr.io/autowarefoundation/autoware:latest-autoware-universe
             build-depends-repos: build_depends.repos
+          - container-suffix: -cuda
+            runner: [self-hosted, linux, X64, cpu]
+          - container-suffix: ""
+            runner: ubuntu-latest
     steps:
       - name: Set PR fetch depth
         run: echo "PR_FETCH_DEPTH=$(( ${{ github.event.pull_request.commits }} + 1 ))" >> "${GITHUB_ENV}"
