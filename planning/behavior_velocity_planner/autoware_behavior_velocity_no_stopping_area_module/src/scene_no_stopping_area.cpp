@@ -48,7 +48,8 @@ NoStoppingAreaModule::NoStoppingAreaModule(
 : SceneModuleInterface(module_id, logger, clock),
   lane_id_(lane_id),
   no_stopping_area_reg_elem_(no_stopping_area_reg_elem),
-  planner_param_(planner_param)
+  planner_param_(planner_param),
+  debug_data_()
 {
   velocity_factor_.init(PlanningBehavior::NO_STOPPING_AREA);
   state_machine_.setState(StateMachine::State::GO);
