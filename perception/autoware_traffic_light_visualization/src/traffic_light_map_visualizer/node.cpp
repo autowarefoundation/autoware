@@ -38,7 +38,7 @@ namespace
 }
 
 bool isAttributeValue(
-  const lanelet::ConstPoint3d p, const std::string attr_str, const std::string value_str)
+  const lanelet::ConstPoint3d p, const std::string & attr_str, const std::string & value_str)
 {
   lanelet::Attribute attr = p.attribute(attr_str);
   if (attr.value().compare(value_str) == 0) {
@@ -49,7 +49,7 @@ bool isAttributeValue(
 
 void lightAsMarker(
   const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & node_logging,
-  lanelet::ConstPoint3d p, visualization_msgs::msg::Marker * marker, const std::string ns,
+  lanelet::ConstPoint3d p, visualization_msgs::msg::Marker * marker, const std::string & ns,
   const rclcpp::Time & current_time)
 {
   if (marker == nullptr) {
