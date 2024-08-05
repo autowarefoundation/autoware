@@ -19,6 +19,8 @@
 #include <autoware/universe_utils/math/trigonometry.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 
+#include <cstddef>
+
 namespace autoware::pointcloud_preprocessor
 {
 
@@ -85,29 +87,13 @@ void DistortionCorrector<T>::getIMUTransformation(
     return;
   }
 
-  geometry_imu_to_base_link_ptr_ = std::make_shared<geometry_msgs::msg::TransformStamped>();
-
   tf2::Transform tf2_imu_to_base_link;
-  if (base_frame == imu_frame) {
-    tf2_imu_to_base_link.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
-    tf2_imu_to_base_link.setRotation(tf2::Quaternion(0.0, 0.0, 0.0, 1.0));
-    imu_transform_exists_ = true;
-  } else {
-    try {
-      const auto transform_msg =
-        tf_buffer_.lookupTransform(base_frame, imu_frame, tf2::TimePointZero);
-      tf2::convert(transform_msg.transform, tf2_imu_to_base_link);
-      imu_transform_exists_ = true;
-    } catch (const tf2::TransformException & ex) {
-      RCLCPP_WARN(node_->get_logger(), "%s", ex.what());
-      RCLCPP_ERROR(
-        node_->get_logger(), "Please publish TF %s to %s", base_frame.c_str(), imu_frame.c_str());
+  Eigen::Matrix4f eigen_imu_to_base_link;
+  imu_transform_exists_ =
+    static_tf_buffer_->getTransform(node_, base_frame, imu_frame, eigen_imu_to_base_link);
+  convertMatrixToTransform(eigen_imu_to_base_link, tf2_imu_to_base_link);
 
-      tf2_imu_to_base_link.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
-      tf2_imu_to_base_link.setRotation(tf2::Quaternion(0.0, 0.0, 0.0, 1.0));
-    }
-  }
-
+  geometry_imu_to_base_link_ptr_ = std::make_shared<geometry_msgs::msg::TransformStamped>();
   geometry_imu_to_base_link_ptr_->transform.rotation =
     tf2::toMsg(tf2_imu_to_base_link.getRotation());
 }
@@ -295,6 +281,16 @@ void DistortionCorrector<T>::warnIfTimestampIsTooLate(
   }
 }
 
+template <class T>
+void DistortionCorrector<T>::convertMatrixToTransform(
+  const Eigen::Matrix4f & matrix, tf2::Transform & transform)
+{
+  transform.setOrigin(tf2::Vector3(matrix(0, 3), matrix(1, 3), matrix(2, 3)));
+  transform.setBasis(tf2::Matrix3x3(
+    matrix(0, 0), matrix(0, 1), matrix(0, 2), matrix(1, 0), matrix(1, 1), matrix(1, 2),
+    matrix(2, 0), matrix(2, 1), matrix(2, 2)));
+}
+
 ///////////////////////// Functions for different undistortion strategies /////////////////////////
 
 void DistortionCorrector2D::initialize()
@@ -316,29 +312,12 @@ void DistortionCorrector2D::setPointCloudTransform(
     return;
   }
 
-  if (base_frame == lidar_frame) {
-    tf2_lidar_to_base_link_.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
-    tf2_lidar_to_base_link_.setRotation(tf2::Quaternion(0.0, 0.0, 0.0, 1.0));
-    tf2_base_link_to_lidar_ = tf2_lidar_to_base_link_;
-    pointcloud_transform_exists_ = true;
-  } else {
-    try {
-      const auto transform_msg =
-        tf_buffer_.lookupTransform(base_frame, lidar_frame, tf2::TimePointZero);
-      tf2::convert(transform_msg.transform, tf2_lidar_to_base_link_);
-      tf2_base_link_to_lidar_ = tf2_lidar_to_base_link_.inverse();
-      pointcloud_transform_exists_ = true;
-      pointcloud_transform_needed_ = true;
-    } catch (const tf2::TransformException & ex) {
-      RCLCPP_WARN(node_->get_logger(), "%s", ex.what());
-      RCLCPP_ERROR(
-        node_->get_logger(), "Please publish TF %s to %s", base_frame.c_str(), lidar_frame.c_str());
-
-      tf2_lidar_to_base_link_.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
-      tf2_lidar_to_base_link_.setRotation(tf2::Quaternion(0.0, 0.0, 0.0, 1.0));
-      tf2_base_link_to_lidar_ = tf2_lidar_to_base_link_;
-    }
-  }
+  Eigen::Matrix4f eigen_lidar_to_base_link;
+  pointcloud_transform_exists_ =
+    static_tf_buffer_->getTransform(node_, base_frame, lidar_frame, eigen_lidar_to_base_link);
+  convertMatrixToTransform(eigen_lidar_to_base_link, tf2_lidar_to_base_link_);
+  tf2_base_link_to_lidar_ = tf2_lidar_to_base_link_.inverse();
+  pointcloud_transform_needed_ = base_frame != lidar_frame && pointcloud_transform_exists_;
 }
 
 void DistortionCorrector3D::setPointCloudTransform(
@@ -348,27 +327,10 @@ void DistortionCorrector3D::setPointCloudTransform(
     return;
   }
 
-  if (base_frame == lidar_frame) {
-    eigen_lidar_to_base_link_ = Eigen::Matrix4f::Identity();
-    eigen_base_link_to_lidar_ = Eigen::Matrix4f::Identity();
-    pointcloud_transform_exists_ = true;
-  }
-
-  try {
-    const auto transform_msg =
-      tf_buffer_.lookupTransform(base_frame, lidar_frame, tf2::TimePointZero);
-    eigen_lidar_to_base_link_ =
-      tf2::transformToEigen(transform_msg.transform).matrix().cast<float>();
-    eigen_base_link_to_lidar_ = eigen_lidar_to_base_link_.inverse();
-    pointcloud_transform_exists_ = true;
-    pointcloud_transform_needed_ = true;
-  } catch (const tf2::TransformException & ex) {
-    RCLCPP_WARN(node_->get_logger(), "%s", ex.what());
-    RCLCPP_ERROR(
-      node_->get_logger(), "Please publish TF %s to %s", base_frame.c_str(), lidar_frame.c_str());
-    eigen_lidar_to_base_link_ = Eigen::Matrix4f::Identity();
-    eigen_base_link_to_lidar_ = Eigen::Matrix4f::Identity();
-  }
+  pointcloud_transform_exists_ =
+    static_tf_buffer_->getTransform(node_, base_frame, lidar_frame, eigen_lidar_to_base_link_);
+  eigen_base_link_to_lidar_ = eigen_lidar_to_base_link_.inverse();
+  pointcloud_transform_needed_ = base_frame != lidar_frame && pointcloud_transform_exists_;
 }
 
 inline void DistortionCorrector2D::undistortPointImplementation(

@@ -82,6 +82,7 @@
 // Include tier4 autoware utils
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/ros/published_time_publisher.hpp>
+#include <autoware/universe_utils/ros/static_transform_buffer.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
 
 namespace autoware::pointcloud_preprocessor
@@ -239,8 +240,7 @@ protected:
    * versus an exact one (false by default). */
   bool approximate_sync_ = false;
 
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  std::unique_ptr<autoware::universe_utils::StaticTransformBuffer> static_tf_buffer_{nullptr};
 
   inline bool isValid(
     const PointCloud2ConstPtr & cloud, const std::string & /*topic_name*/ = "input")
@@ -288,10 +288,6 @@ private:
   bool calculate_transform_matrix(
     const std::string & target_frame, const sensor_msgs::msg::PointCloud2 & from,
     TransformInfo & transform_info /*output*/);
-
-  bool _calculate_transform_matrix(
-    const std::string & target_frame, const sensor_msgs::msg::PointCloud2 & from,
-    const tf2_ros::Buffer & tf_buffer, Eigen::Matrix4f & eigen_transform /*output*/);
 
   bool convert_output_costly(std::unique_ptr<PointCloud2> & output);
 

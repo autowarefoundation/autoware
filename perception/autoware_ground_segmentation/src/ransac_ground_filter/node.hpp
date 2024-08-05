@@ -17,6 +17,8 @@
 
 #include "autoware/pointcloud_preprocessor/filter.hpp"
 
+#include <autoware/universe_utils/ros/static_transform_buffer.hpp>
+
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -35,6 +37,7 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -80,6 +83,7 @@ private:
   bool debug_ = false;
   bool is_initialized_debug_message_ = false;
   Eigen::Vector3d unit_vec_ = Eigen::Vector3d::UnitZ();
+  std::unique_ptr<autoware::universe_utils::StaticTransformBuffer> static_tf_buffer_{nullptr};
 
   /*!
    * Output transformed PointCloud from in_cloud_ptr->header.frame_id to in_target_frame

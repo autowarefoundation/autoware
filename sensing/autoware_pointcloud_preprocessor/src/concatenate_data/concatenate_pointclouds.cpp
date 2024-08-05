@@ -93,8 +93,7 @@ PointCloudConcatenationComponent::PointCloudConcatenationComponent(
 
   // tf2 listener
   {
-    tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
-    tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
+    static_tf_buffer_ = std::make_unique<autoware::universe_utils::StaticTransformBuffer>();
   }
 
   // Output Publishers
@@ -149,30 +148,6 @@ PointCloudConcatenationComponent::PointCloudConcatenationComponent(
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void PointCloudConcatenationComponent::transformPointCloud(
-  const PointCloud2::ConstSharedPtr & in, PointCloud2::SharedPtr & out)
-{
-  transformPointCloud(in, out, output_frame_);
-}
-
-void PointCloudConcatenationComponent::transformPointCloud(
-  const PointCloud2::ConstSharedPtr & in, PointCloud2::SharedPtr & out,
-  const std::string & target_frame)
-{
-  // Transform the point clouds into the specified output frame
-  if (target_frame != in->header.frame_id) {
-    // TODO(YamatoAndo): use TF2
-    if (!pcl_ros::transformPointCloud(target_frame, *in, *out, *tf2_buffer_)) {
-      RCLCPP_ERROR(
-        this->get_logger(),
-        "[transformPointCloud] Error converting first input dataset from %s to %s.",
-        in->header.frame_id.c_str(), target_frame.c_str());
-      return;
-    }
-  } else {
-    out = std::make_shared<PointCloud2>(*in);
-  }
-}
 
 void PointCloudConcatenationComponent::checkSyncStatus()
 {
@@ -262,7 +237,8 @@ void PointCloudConcatenationComponent::combineClouds(
       // transform to output frame
       sensor_msgs::msg::PointCloud2::SharedPtr transformed_cloud_ptr(
         new sensor_msgs::msg::PointCloud2());
-      transformPointCloud(e.second, transformed_cloud_ptr);
+      static_tf_buffer_->transformPointcloud(
+        this, output_frame_, *e.second, *transformed_cloud_ptr);
 
       // concatenate
       if (concat_cloud_ptr == nullptr) {

@@ -115,6 +115,8 @@ RANSACGroundFilterComponent::RANSACGroundFilterComponent(const rclcpp::NodeOptio
     std::bind(&RANSACGroundFilterComponent::paramCallback, this, _1));
 
   pcl::console::setVerbosityLevel(pcl::console::L_ALWAYS);
+
+  static_tf_buffer_ = std::make_unique<autoware::universe_utils::StaticTransformBuffer>();
 }
 
 void RANSACGroundFilterComponent::setDebugPublisher()
@@ -161,20 +163,8 @@ bool RANSACGroundFilterComponent::transformPointCloud(
     return true;
   }
 
-  geometry_msgs::msg::TransformStamped transform_stamped;
-  try {
-    transform_stamped = tf_buffer_->lookupTransform(
-      in_target_frame, in_cloud_ptr->header.frame_id, in_cloud_ptr->header.stamp,
-      rclcpp::Duration::from_seconds(1.0));
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN(this->get_logger(), "%s", ex.what());
-    return false;
-  }
-  // tf2::doTransform(*in_cloud_ptr, *out_cloud_ptr, transform_stamped);
-  Eigen::Matrix4f mat = tf2::transformToEigen(transform_stamped.transform).matrix().cast<float>();
-  pcl_ros::transformPointCloud(mat, *in_cloud_ptr, *out_cloud_ptr);
-  out_cloud_ptr->header.frame_id = in_target_frame;
-  return true;
+  return static_tf_buffer_->transformPointcloud(
+    this, in_target_frame, *in_cloud_ptr, *out_cloud_ptr);
 }
 
 void RANSACGroundFilterComponent::extractPointsIndices(

@@ -79,6 +79,16 @@ VectorMapInsideAreaFilterComponent::VectorMapInsideAreaFilterComponent(
   // Set parameters
   use_z_filter_ = declare_parameter<bool>("use_z_filter", false);
   z_threshold_ = declare_parameter<float>("z_threshold", 0.0f);  // defined in the base_link frame
+
+  // Set tf
+  {
+    rclcpp::Clock::SharedPtr ros_clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
+    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(ros_clock);
+    auto timer_interface = std::make_shared<tf2_ros::CreateTimerROS>(
+      get_node_base_interface(), get_node_timers_interface());
+    tf_buffer_->setCreateTimerInterface(timer_interface);
+    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+  }
 }
 
 void VectorMapInsideAreaFilterComponent::filter(

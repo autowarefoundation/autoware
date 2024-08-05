@@ -24,6 +24,7 @@
 
 #include <lanelet2_core/geometry/Polygon.h>
 
+#include <memory>
 #include <string>
 
 using autoware::universe_utils::MultiPoint2d;
@@ -45,6 +46,10 @@ private:
   std::string polygon_type_;
   bool use_z_filter_ = false;
   float z_threshold_;
+
+  // tf2 listener
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
 public:
   PCL_MAKE_ALIGNED_OPERATOR_NEW

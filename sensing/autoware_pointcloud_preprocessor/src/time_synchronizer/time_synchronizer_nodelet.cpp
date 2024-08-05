@@ -110,8 +110,7 @@ PointCloudDataSynchronizerComponent::PointCloudDataSynchronizerComponent(
 
   // tf2 listener
   {
-    tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
-    tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
+    static_tf_buffer_ = std::make_unique<autoware::universe_utils::StaticTransformBuffer>();
   }
 
   // Subscribers
@@ -217,30 +216,6 @@ std::string PointCloudDataSynchronizerComponent::replaceSyncTopicNamePostfix(
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // overloaded functions
-void PointCloudDataSynchronizerComponent::transformPointCloud(
-  const PointCloud2::ConstSharedPtr & in, PointCloud2::SharedPtr & out)
-{
-  transformPointCloud(in, out, output_frame_);
-}
-
-void PointCloudDataSynchronizerComponent::transformPointCloud(
-  const PointCloud2::ConstSharedPtr & in, PointCloud2::SharedPtr & out,
-  const std::string & target_frame)
-{
-  // Transform the point clouds into the specified output frame
-  if (target_frame != in->header.frame_id) {
-    // TODO(YamatoAndo): use TF2
-    if (!pcl_ros::transformPointCloud(target_frame, *in, *out, *tf2_buffer_)) {
-      RCLCPP_ERROR(
-        this->get_logger(),
-        "[transformPointCloud] Error converting first input dataset from %s to %s.",
-        in->header.frame_id.c_str(), target_frame.c_str());
-      return;
-    }
-  } else {
-    out = std::make_shared<PointCloud2>(*in);
-  }
-}
 
 /**
  * @brief compute transform to adjust for old timestamp
@@ -346,7 +321,8 @@ PointCloudDataSynchronizerComponent::synchronizeClouds()
         continue;
       }
       // transform pointcloud to output frame
-      transformPointCloud(e.second, transformed_cloud_ptr);
+      static_tf_buffer_->transformPointcloud(
+        this, output_frame_, *e.second, *transformed_cloud_ptr);
 
       // calculate transforms to oldest stamp and transform pointcloud to oldest stamp
       Eigen::Matrix4f adjust_to_old_data_transform = Eigen::Matrix4f::Identity();
@@ -366,9 +342,9 @@ PointCloudDataSynchronizerComponent::synchronizeClouds()
         sensor_msgs::msg::PointCloud2::SharedPtr
           transformed_delay_compensated_cloud_ptr_in_input_frame(
             new sensor_msgs::msg::PointCloud2());
-        transformPointCloud(
-          transformed_delay_compensated_cloud_ptr,
-          transformed_delay_compensated_cloud_ptr_in_input_frame, e.second->header.frame_id);
+        static_tf_buffer_->transformPointcloud(
+          this, e.second->header.frame_id, *transformed_delay_compensated_cloud_ptr,
+          *transformed_delay_compensated_cloud_ptr_in_input_frame);
         transformed_delay_compensated_cloud_ptr =
           transformed_delay_compensated_cloud_ptr_in_input_frame;
       }
