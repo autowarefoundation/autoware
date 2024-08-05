@@ -170,6 +170,7 @@ TrafficLightModule::TrafficLightModule(
   traffic_light_reg_elem_(traffic_light_reg_elem),
   lane_(lane),
   state_(State::APPROACH),
+  debug_data_(),
   is_prev_state_stop_(false)
 {
   velocity_factor_.init(PlanningBehavior::TRAFFIC_SIGNAL);
