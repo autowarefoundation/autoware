@@ -17,9 +17,11 @@
 #include "autoware/behavior_path_planner_common/utils/parking_departure/utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
+#include "autoware/motion_utils/trajectory/trajectory.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
 #include "autoware/universe_utils/math/unit_conversion.hpp"
 
+#include <autoware_lanelet2_extension/utility/query.hpp>
 #include <autoware_lanelet2_extension/utility/utilities.hpp>
 #include <interpolation/spline_interpolation.hpp>
 
@@ -333,8 +335,20 @@ std::optional<Pose> GeometricParallelParking::calcStartPose(
   }
   const double dx_sign = is_forward ? -1 : 1;
   const double dx = 2 * std::sqrt(squared_distance_to_arc_connect) * dx_sign;
-  const Pose start_pose =
-    calcOffsetPose(goal_pose, dx + start_pose_offset, -arc_coordinates.distance, 0);
+
+  // Assuming parallel poses, calculate the approximate start pose on the centerline from the goal
+  // pose
+  const Pose approximate_start_pose = calcOffsetPose(goal_pose, dx, -arc_coordinates.distance, 0);
+  lanelet::ConstLanelet closest_road_lane{};
+
+  // Calculate start pose on the centerline, then offset it.
+  lanelet::utils::query::getClosestLanelet(road_lanes, approximate_start_pose, &closest_road_lane);
+  const Pose start_pose_no_offset =
+    lanelet::utils::getClosestCenterPose(closest_road_lane, approximate_start_pose.position);
+  const auto road_lane_path = planner_data_->route_handler->getCenterLinePath(
+    road_lanes, 0.0, std::numeric_limits<double>::max());
+  const auto start_pose = autoware::motion_utils::calcLongitudinalOffsetPose(
+    road_lane_path.points, start_pose_no_offset.position, start_pose_offset);
 
   return start_pose;
 }
