@@ -46,9 +46,9 @@ struct ObstacleParameters
   double dynamic_obstacles_buffer{};
   double dynamic_obstacles_min_vel{};
   std::vector<std::string> static_map_tags{};
-  bool filter_envelope;
-  bool ignore_on_path;
-  double ignore_extra_distance;
+  bool filter_envelope{};
+  bool ignore_on_path{};
+  double ignore_extra_distance{};
   size_t rtree_min_points{};
   size_t rtree_min_segments{};
 
