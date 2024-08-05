@@ -96,7 +96,7 @@ inline visualization_msgs::msg::Marker createMarker(
 inline visualization_msgs::msg::Marker createStringMarker(
   const std::string & frame_id, const std::string & ns, const int32_t id, const int32_t type,
   geometry_msgs::msg::Point point, geometry_msgs::msg::Vector3 scale,
-  const std_msgs::msg::ColorRGBA & color, const std::string text)
+  const std_msgs::msg::ColorRGBA & color, const std::string & text)
 {
   visualization_msgs::msg::Marker marker;
 

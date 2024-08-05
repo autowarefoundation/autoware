@@ -49,13 +49,13 @@ public:
 
   void setWheelBase(double v) { param_.wheel_base = v; }
   void setVelLim(double v) { param_.vel_lim = v; }
-  void setSteerLim(LimitArray v);
-  void setSteerRateLim(LimitArray v);
-  void setLonAccLim(LimitArray v);
-  void setLonJerkLim(LimitArray v);
-  void setLatAccLim(LimitArray v);
-  void setLatJerkLim(LimitArray v);
-  void setActualSteerDiffLim(LimitArray v);
+  void setSteerLim(const LimitArray & v);
+  void setSteerRateLim(const LimitArray & v);
+  void setLonAccLim(const LimitArray & v);
+  void setLonJerkLim(const LimitArray & v);
+  void setLatAccLim(const LimitArray & v);
+  void setLatJerkLim(const LimitArray & v);
+  void setActualSteerDiffLim(const LimitArray & v);
   void setCurrentSpeed(double v) { current_speed_ = v; }
   void setParam(const VehicleCmdFilterParam & p);
   VehicleCmdFilterParam getParam() const;
