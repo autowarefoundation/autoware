@@ -35,7 +35,8 @@ SpeedBumpModule::SpeedBumpModule(
   module_id_(module_id),
   lane_id_(lane_id),
   speed_bump_reg_elem_(std::move(speed_bump_reg_elem)),
-  planner_param_(planner_param)
+  planner_param_(planner_param),
+  debug_data_()
 {
   // Read speed bump height [m] from map
   const auto speed_bump_height =
