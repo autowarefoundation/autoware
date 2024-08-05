@@ -20,7 +20,7 @@
 namespace autoware::vehicle_cmd_gate
 {
 
-VehicleCmdFilter::VehicleCmdFilter()
+VehicleCmdFilter::VehicleCmdFilter() : param_()
 {
 }
 
