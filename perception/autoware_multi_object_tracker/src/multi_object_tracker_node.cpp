@@ -153,9 +153,7 @@ MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
   // If the delay compensation is enabled, the timer is used to publish the output at the correct
   // time.
   if (enable_delay_compensation) {
-    publisher_period_ = 1.0 / publish_rate;    // [s]
-    constexpr double timer_multiplier = 20.0;  // 20 times frequent for publish timing check
-    const auto timer_period = rclcpp::Rate(publish_rate * timer_multiplier).period();
+    const auto timer_period = rclcpp::Rate(publish_rate).period();
     publish_timer_ = rclcpp::create_timer(
       this, get_clock(), timer_period, std::bind(&MultiObjectTracker::onTimer, this));
   }
@@ -210,34 +208,12 @@ void MultiObjectTracker::onTrigger()
   ObjectsList objects_list;
   const bool is_objects_ready = input_manager_->getObjects(current_time, objects_list);
   if (!is_objects_ready) return;
-
   onMessage(objects_list);
-  const rclcpp::Time latest_time(objects_list.back().second.header.stamp);
-
-  // Publish objects if the timer is not enabled
-  if (publish_timer_ == nullptr) {
-    // if the delay compensation is disabled, publish the objects in the latest time
-    publish(latest_time);
-  } else {
-    // Publish if the next publish time is close
-    const double minimum_publish_interval = publisher_period_ * 0.70;  // 70% of the period
-    const rclcpp::Time publish_time = this->now();
-    if ((publish_time - last_published_time_).seconds() > minimum_publish_interval) {
-      checkAndPublish(publish_time);
-    }
-  }
 }
 
 void MultiObjectTracker::onTimer()
 {
   const rclcpp::Time current_time = this->now();
-
-  // Check the publish period
-  const auto elapsed_time = (current_time - last_published_time_).seconds();
-  // If the elapsed time is over the period, publish objects with prediction
-  constexpr double maximum_latency_ratio = 1.11;  // 11% margin
-  const double maximum_publish_latency = publisher_period_ * maximum_latency_ratio;
-  if (elapsed_time < maximum_publish_latency) return;
 
   // get objects from the input manager and run process
   ObjectsList objects_list;
