@@ -24,6 +24,14 @@ simulations:
         vehicle_model: sample_vehicle
         sensor_model: sample_sensor_kit
         initialize_duration: "90"
+  - name: localization
+    type: localization
+    simulator:
+     deployment:
+      type: container
+      artifact: main
+     runtime:
+      type: standard1/amd64/large
 
 release:
   components:
