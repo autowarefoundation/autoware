@@ -9,7 +9,6 @@ missingInclude
 missingIncludeSystem
 noConstructor
 passedByValue
-redundantInitialization
 // cspell: ignore uninit
 uninitMemberVar
 unknownMacro
