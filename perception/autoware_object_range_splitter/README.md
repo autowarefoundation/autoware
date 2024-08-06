@@ -43,7 +43,7 @@ Example:
 
 ## Parameters
 
-{{ json_to_markdown("perception/object_range_splitter/schema/object_range_splitter.schema.json") }}
+{{ json_to_markdown("perception/autoware_object_range_splitter/schema/object_range_splitter.schema.json") }}
 
 ## Assumptions / Known limits
 
