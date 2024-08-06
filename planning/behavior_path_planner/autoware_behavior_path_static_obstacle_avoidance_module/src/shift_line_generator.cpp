@@ -827,6 +827,8 @@ AvoidLineArray ShiftLineGenerator::applyFillGapProcess(
   utils::static_obstacle_avoidance::fillAdditionalInfoFromLongitudinal(
     data, debug.step1_front_shift_line);
 
+  applySmallShiftFilter(ret, 1e-3);
+
   return ret;
 }
 
