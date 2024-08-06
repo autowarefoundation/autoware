@@ -73,7 +73,7 @@ private:
 
   void filterCloud(
     const pcl::PointCloud<pcl::PointXYZ> & cloud_in, const std::vector<pcl::PointXYZ> & roi_tls,
-    const std::vector<pcl::PointXYZ> & roi_brs, pcl::PointCloud<pcl::PointXYZ> & cloud_out);
+    const std::vector<pcl::PointXYZ> & roi_brs, pcl::PointCloud<pcl::PointXYZ> & cloud_out) const;
 
   void sampleTrafficLightRoi(
     const pcl::PointXYZ & top_left, const pcl::PointXYZ & bottom_right,
