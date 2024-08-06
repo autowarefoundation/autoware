@@ -52,7 +52,10 @@ void drawShape(
   if (
     position.x < 0 || position.y < 0 || position.x + shapeImg.cols > params.image.cols ||
     position.y + shapeImg.rows > params.image.rows) {
-    std::cerr << "Adjusted position is out of image bounds." << std::endl;
+    // TODO(KhalilSelyan): This error message may flood the terminal logs, so commented out
+    // temporarily. Need to consider a better way.
+
+    // std::cerr << "Adjusted position is out of image bounds." << std::endl;
     return;
   }
 
