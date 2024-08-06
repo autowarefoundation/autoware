@@ -184,13 +184,14 @@ private:
   Param param_;
 
   double getMedianVel(const std::vector<nav_msgs::msg::Odometry> & vel_que);
-  double lowpass_filter(const double current_value, const double prev_value, const double gain);
+  static double lowpass_filter(
+    const double current_value, const double prev_value, const double gain);
   void calcDistanceToNearestPointOnPath(
     const TrajectoryPoints & trajectory, const int nearest_point_idx,
     const geometry_msgs::msg::Pose & self_pose, const pcl::PointXYZ & nearest_collision_point,
     const rclcpp::Time & nearest_collision_point_time, double * distance,
     const std_msgs::msg::Header & trajectory_header);
-  double calcTrajYaw(const TrajectoryPoints & trajectory, const int collision_point_idx);
+  static double calcTrajYaw(const TrajectoryPoints & trajectory, const int collision_point_idx);
   std::optional<double> estimatePointVelocityFromObject(
     const autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr object_ptr,
     const double traj_yaw, const pcl::PointXYZ & nearest_collision_point);
@@ -205,7 +206,7 @@ private:
   double calcThreshDistToForwardObstacle(const double current_vel, const double obj_vel);
   double calcBaseDistToForwardObstacle(const double current_vel, const double obj_vel);
   double calcTargetVelocity_P(const double target_dist, const double current_dist) const;
-  double calcTargetVelocity_I(const double target_dist, const double current_dist);
+  static double calcTargetVelocity_I(const double target_dist, const double current_dist);
   double calcTargetVelocity_D(const double target_dist, const double current_dist);
   double calcTargetVelocityByPID(
     const double current_vel, const double current_dist, const double obj_vel);
