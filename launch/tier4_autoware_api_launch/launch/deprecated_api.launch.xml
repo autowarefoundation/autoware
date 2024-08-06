@@ -15,6 +15,6 @@
   <!-- autoware api utils -->
   <group>
     <push-ros-namespace namespace="autoware_api/utils"/>
-    <include file="$(find-pkg-share path_distance_calculator)/launch/path_distance_calculator.launch.xml"/>
+    <include file="$(find-pkg-share autoware_path_distance_calculator)/launch/path_distance_calculator.launch.xml"/>
   </group>
 </launch>

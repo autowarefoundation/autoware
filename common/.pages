@@ -50,7 +50,7 @@ nav:
     - 'traffic_light_recognition_marker_publisher': common/traffic_light_recognition_marker_publisher/Readme
   - 'Node':
     - 'Goal Distance Calculator': common/goal_distance_calculator/Readme
-    - 'Path Distance Calculator': common/path_distance_calculator/Readme
+    - 'Path Distance Calculator': common/autoware_path_distance_calculator/Readme
   - 'Others':
     - 'autoware_ad_api_specs': common/autoware_ad_api_specs
     - 'component_interface_specs': common/component_interface_specs

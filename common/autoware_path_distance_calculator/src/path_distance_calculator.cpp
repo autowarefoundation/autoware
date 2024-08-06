@@ -22,6 +22,8 @@
 #include <utility>
 #include <vector>
 
+namespace autoware::path_distance_calculator
+{
 PathDistanceCalculator::PathDistanceCalculator(const rclcpp::NodeOptions & options)
 : Node("path_distance_calculator", options), self_pose_listener_(this)
 {
@@ -54,6 +56,6 @@ PathDistanceCalculator::PathDistanceCalculator(const rclcpp::NodeOptions & optio
     pub_dist_->publish(msg);
   });
 }
-
+}  // namespace autoware::path_distance_calculator
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(PathDistanceCalculator)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::path_distance_calculator::PathDistanceCalculator)

@@ -22,6 +22,9 @@
 #include <autoware_planning_msgs/msg/path.hpp>
 #include <tier4_debug_msgs/msg/float64_stamped.hpp>
 
+namespace autoware::path_distance_calculator
+{
+
 class PathDistanceCalculator : public rclcpp::Node
 {
 public:
@@ -34,5 +37,7 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
   autoware::universe_utils::SelfPoseListener self_pose_listener_;
 };
+
+}  // namespace autoware::path_distance_calculator
 
 #endif  // PATH_DISTANCE_CALCULATOR_HPP_
