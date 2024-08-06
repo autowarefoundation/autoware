@@ -693,6 +693,15 @@ bool isNeverAvoidanceTarget(
       }
     }
 
+    const auto right_opposite_lanes =
+      planner_data->route_handler->getRightOppositeLanelets(object.overhang_lanelet);
+    if (!right_opposite_lanes.empty() && isOnRight(object)) {
+      object.info = ObjectInfo::IS_NOT_PARKING_OBJECT;
+      RCLCPP_DEBUG(
+        rclcpp::get_logger(logger_namespace), "object isn't on the edge lane. never avoid it.");
+      return true;
+    }
+
     const auto left_lane =
       planner_data->route_handler->getLeftLanelet(object.overhang_lanelet, true, true);
     if (left_lane.has_value() && !isOnRight(object)) {
@@ -714,6 +723,15 @@ bool isNeverAvoidanceTarget(
           rclcpp::get_logger(logger_namespace), "object isn't on the edge lane. never avoid it.");
         return true;
       }
+    }
+
+    const auto left_opposite_lanes =
+      planner_data->route_handler->getLeftOppositeLanelets(object.overhang_lanelet);
+    if (!left_opposite_lanes.empty() && !isOnRight(object)) {
+      object.info = ObjectInfo::IS_NOT_PARKING_OBJECT;
+      RCLCPP_DEBUG(
+        rclcpp::get_logger(logger_namespace), "object isn't on the edge lane. never avoid it.");
+      return true;
     }
   }
 
