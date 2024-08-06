@@ -27,7 +27,7 @@ struct FalseType
 
 struct Foo
 {
-  CorrectType bar(CorrectType, const CorrectType &, CorrectType *) { return CorrectType{}; }
+  static CorrectType bar(CorrectType, const CorrectType &, CorrectType *) { return CorrectType{}; }
 };
 
 template <template <typename> class Expression, typename... Ts>
