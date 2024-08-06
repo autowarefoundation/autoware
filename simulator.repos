@@ -13,8 +13,7 @@ repositories:
  version: humble
  simulator/vendor/operational-design-domains:
  type: git
- url: 
-https://gitlab.com/autowarefoundation/operational-design-domains
+ url: https://gitlab.com/autowarefoundation/operational-design-domains
  version: 42321f9a04fcaef9caf3694530e1c63d3e27c47a
   simulator/scenario_simulator:
     type: git
