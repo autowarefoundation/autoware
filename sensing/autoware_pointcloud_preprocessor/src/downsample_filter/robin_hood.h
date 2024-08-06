@@ -567,7 +567,7 @@ template <typename T, size_t MinSize, size_t MaxSize>
 struct NodeAllocator<T, MinSize, MaxSize, true>
 {
   // we are not using the data, so just free it.
-  void addOrFree(void * ptr, size_t ROBIN_HOOD_UNUSED(numBytes) /*unused*/) noexcept
+  static void addOrFree(void * ptr, size_t ROBIN_HOOD_UNUSED(numBytes) /*unused*/) noexcept
   {
     ROBIN_HOOD_LOG("std::free")
     std::free(ptr);
@@ -1051,8 +1051,8 @@ private:
     }
 
     // doesn't do anything
-    void destroy(M & ROBIN_HOOD_UNUSED(map) /*unused*/) noexcept {}
-    void destroyDoNotDeallocate() noexcept {}
+    static void destroy(M & ROBIN_HOOD_UNUSED(map) /*unused*/) noexcept {}
+    static void destroyDoNotDeallocate() noexcept {}
 
     value_type const * operator->() const noexcept { return &mData; }
     value_type * operator->() noexcept { return &mData; }
@@ -1262,15 +1262,15 @@ private:
   template <typename M>
   struct Destroyer<M, true>
   {
-    void nodes(M & m) const noexcept { m.mNumElements = 0; }
+    static void nodes(M & m) noexcept { m.mNumElements = 0; }
 
-    void nodesDoNotDeallocate(M & m) const noexcept { m.mNumElements = 0; }
+    static void nodesDoNotDeallocate(M & m) noexcept { m.mNumElements = 0; }
   };
 
   template <typename M>
   struct Destroyer<M, false>
   {
-    void nodes(M & m) const noexcept
+    static void nodes(M & m) noexcept
     {
       m.mNumElements = 0;
       // clear also resets mInfo to 0, that's sometimes not necessary.
@@ -1285,7 +1285,7 @@ private:
       }
     }
 
-    void nodesDoNotDeallocate(M & m) const noexcept
+    static void nodesDoNotDeallocate(M & m) noexcept
     {
       m.mNumElements = 0;
       // clear also resets mInfo to 0, that's sometimes not necessary.
