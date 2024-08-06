@@ -1,5 +1,7 @@
 # Autoware Universe
 
+[![codecov](https://codecov.io/github/autowarefoundation/autoware.universe/graph/badge.svg?token=KQP68YQ65D)](https://codecov.io/github/autowarefoundation/autoware.universe)
+
 ## Welcome to Autoware Universe
 
 Autoware Universe serves as a foundational pillar within the Autoware ecosystem, playing a critical role in enhancing the core functionalities of autonomous driving technologies.
