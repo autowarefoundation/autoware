@@ -1,4 +1,4 @@
-# twist2accel
+# autoware_twist2accel
 
 ## Purpose
 
@@ -21,7 +21,7 @@ This package is responsible for estimating acceleration using the output of `ekf
 
 ## Parameters
 
-{{ json_to_markdown("localization/twist2accel/schema/twist2accel.schema.json") }}
+{{ json_to_markdown("localization/autoware_twist2accel/schema/twist2accel.schema.json") }}
 
 ## Future work
 

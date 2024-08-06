@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>twist2accel</name>
+  <name>autoware_twist2accel</name>
   <version>0.0.0</version>
   <description>The acceleration estimation package</description>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>

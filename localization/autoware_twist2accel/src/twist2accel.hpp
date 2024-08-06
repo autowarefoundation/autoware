@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TWIST2ACCEL__TWIST2ACCEL_HPP_
-#define TWIST2ACCEL__TWIST2ACCEL_HPP_
+#ifndef TWIST2ACCEL_HPP_
+#define TWIST2ACCEL_HPP_
 
 #include "signal_processing/lowpass_filter_1d.hpp"
 
@@ -37,6 +37,8 @@
 #include <string>
 #include <vector>
 
+namespace autoware::twist2accel
+{
 class Twist2Accel : public rclcpp::Node
 {
 public:
@@ -68,4 +70,5 @@ private:
   void callback_odometry(const nav_msgs::msg::Odometry::SharedPtr msg);
   void estimate_accel(const geometry_msgs::msg::TwistStamped::SharedPtr msg);
 };
-#endif  // TWIST2ACCEL__TWIST2ACCEL_HPP_
+}  // namespace autoware::twist2accel
+#endif  // TWIST2ACCEL_HPP_

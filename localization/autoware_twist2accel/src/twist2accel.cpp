@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "twist2accel/twist2accel.hpp"
+#include "twist2accel.hpp"
 
 #include <rclcpp/logging.hpp>
 
@@ -22,6 +22,8 @@
 #include <string>
 #include <utility>
 
+namespace autoware::twist2accel
+{
 using std::placeholders::_1;
 
 Twist2Accel::Twist2Accel(const rclcpp::NodeOptions & node_options)
@@ -103,6 +105,7 @@ void Twist2Accel::estimate_accel(const geometry_msgs::msg::TwistStamped::SharedP
   pub_accel_->publish(accel_msg);
   prev_twist_ptr_ = msg;
 }
+}  // namespace autoware::twist2accel
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(Twist2Accel)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::twist2accel::Twist2Accel)
