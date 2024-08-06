@@ -97,7 +97,7 @@ private:
   pcl::PointCloud<pcl::PointXYZ>::Ptr pointcloud_within_polygon_;
 
 private:
-  inline pcl::PointCloud<pcl::PointXYZ>::Ptr toXYZ(
+  inline static pcl::PointCloud<pcl::PointXYZ>::Ptr toXYZ(
     const pcl::PointCloud<pcl::PointXY>::Ptr & pointcloud)
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr pointcloud_xyz(new pcl::PointCloud<pcl::PointXYZ>);

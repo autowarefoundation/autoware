@@ -92,7 +92,7 @@ private:
 public:
   explicit Validator2D(PointsNumThresholdParam & points_num_threshold_param);
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr convertToXYZ(
+  static pcl::PointCloud<pcl::PointXYZ>::Ptr convertToXYZ(
     const pcl::PointCloud<pcl::PointXY>::Ptr & pointcloud_xy);
   inline pcl::PointCloud<pcl::PointXYZ>::Ptr getDebugNeighborPointCloud() override
   {
