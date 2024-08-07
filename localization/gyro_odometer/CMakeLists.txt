@@ -6,7 +6,6 @@ autoware_package()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/gyro_odometer_core.cpp
-  src/diagnostics_module.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} fmt)
