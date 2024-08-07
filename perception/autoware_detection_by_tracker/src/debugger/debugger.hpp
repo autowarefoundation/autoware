@@ -104,7 +104,7 @@ private:
   std::unique_ptr<autoware::universe_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
   std::unique_ptr<autoware::universe_utils::DebugPublisher> processing_time_publisher_;
 
-  autoware_perception_msgs::msg::DetectedObjects removeFeature(
+  static autoware_perception_msgs::msg::DetectedObjects removeFeature(
     const tier4_perception_msgs::msg::DetectedObjectsWithFeature & input)
   {
     autoware_perception_msgs::msg::DetectedObjects objects;
