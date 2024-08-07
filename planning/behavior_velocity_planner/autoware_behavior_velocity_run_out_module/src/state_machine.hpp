@@ -42,7 +42,7 @@ public:
   explicit StateMachine(const StateParam & state_param) { state_param_ = state_param; }
   State getCurrentState() const { return state_; }
   std::optional<DynamicObstacle> getTargetObstacle() const { return target_obstacle_; }
-  std::string toString(const State & state) const;
+  static std::string toString(const State & state);
   void updateState(const StateInput & state_input, rclcpp::Clock & clock);
 
 private:
