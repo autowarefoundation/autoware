@@ -137,6 +137,7 @@ void TrtCommon::setup()
     is_initialized_ = false;
     return;
   }
+  // cppcheck-suppress unreadVariable
   std::string engine_path = model_file_path_;
   if (model_file_path_.extension() == ".engine") {
     std::cout << "Load ... " << model_file_path_ << std::endl;
@@ -193,6 +194,7 @@ void TrtCommon::setup()
       logger_.stop_throttle(log_thread);
       logger_.log(nvinfer1::ILogger::Severity::kINFO, "End build engine");
     }
+    // cppcheck-suppress unreadVariable
     engine_path = cache_engine_path;
   } else {
     is_initialized_ = false;
