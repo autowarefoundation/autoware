@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "pose2twist/pose2twist_core.hpp"
+#include "pose2twist_core.hpp"
 
 #include <gtest/gtest.h>
 
@@ -102,7 +102,7 @@ TEST(AngularVelocityFromQuaternion, CheckNumericalValidity)
 
     // Calculate the relative rotation between the initial and final quaternion
     const geometry_msgs::msg::Vector3 rotation_vector =
-      compute_relative_rotation_vector(initial_q, final_q);
+      autoware::pose2twist::compute_relative_rotation_vector(initial_q, final_q);
 
     EXPECT_NEAR(rotation_vector.x, expected_axis.x() * expected_angle, acceptable_error);
     EXPECT_NEAR(rotation_vector.y, expected_axis.y() * expected_angle, acceptable_error);

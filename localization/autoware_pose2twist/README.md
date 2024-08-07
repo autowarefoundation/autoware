@@ -1,8 +1,8 @@
-# pose2twist
+# autoware_pose2twist
 
 ## Purpose
 
-This `pose2twist` calculates the velocity from the input pose history. In addition to the computed twist, this node outputs the linear-x and angular-z components as a float message to simplify debugging.
+This `autoware_pose2twist` calculates the velocity from the input pose history. In addition to the computed twist, this node outputs the linear-x and angular-z components as a float message to simplify debugging.
 
 The `twist.linear.x` is calculated as `sqrt(dx * dx + dy * dy + dz * dz) / dt`, and the values in the `y` and `z` fields are zero.
 The `twist.angular` is calculated as `relative_rotation_vector / dt` for each field.

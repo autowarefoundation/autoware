@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POSE2TWIST__POSE2TWIST_CORE_HPP_
-#define POSE2TWIST__POSE2TWIST_CORE_HPP_
+#ifndef POSE2TWIST_CORE_HPP_
+#define POSE2TWIST_CORE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -27,6 +27,8 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+namespace autoware::pose2twist
+{
 // Compute the relative rotation of q2 from q1 as a rotation vector
 geometry_msgs::msg::Vector3 compute_relative_rotation_vector(
   const tf2::Quaternion & q1, const tf2::Quaternion & q2);
@@ -45,5 +47,6 @@ private:
   rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr linear_x_pub_;
   rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr angular_z_pub_;
 };
+}  // namespace autoware::pose2twist
 
-#endif  // POSE2TWIST__POSE2TWIST_CORE_HPP_
+#endif  // POSE2TWIST_CORE_HPP_

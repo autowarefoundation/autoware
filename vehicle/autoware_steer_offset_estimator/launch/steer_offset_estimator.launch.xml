@@ -6,7 +6,7 @@
   <include file="$(find-pkg-share global_parameter_loader)/launch/global_params.launch.py"/>
 
   <!-- ndt twist publisher -->
-  <include file="$(find-pkg-share pose2twist)/launch/pose2twist.launch.xml">
+  <include file="$(find-pkg-share autoware_pose2twist)/launch/pose2twist.launch.xml">
     <arg name="input_pose_topic" value="/localization/pose_estimator/pose"/>
     <arg name="output_twist_topic" value="/estimate_twist"/>
   </include>

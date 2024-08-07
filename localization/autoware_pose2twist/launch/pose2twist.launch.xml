@@ -2,7 +2,7 @@
   <arg name="input_pose_topic" default="/localization/pose_estimator/pose" description=""/>
   <arg name="output_twist_topic" default="/estimate_twist" description=""/>
 
-  <node pkg="pose2twist" exec="pose2twist_node" output="both">
+  <node pkg="autoware_pose2twist" exec="autoware_pose2twist_node" output="both">
     <remap from="pose" to="$(var input_pose_topic)"/>
     <remap from="twist" to="$(var output_twist_topic)"/>
   </node>

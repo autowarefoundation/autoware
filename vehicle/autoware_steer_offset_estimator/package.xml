@@ -18,8 +18,8 @@
   <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
   <depend>tier4_debug_msgs</depend>
+  <exec_depend>autoware_pose2twist</exec_depend>
   <exec_depend>global_parameter_loader</exec_depend>
-  <exec_depend>pose2twist</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

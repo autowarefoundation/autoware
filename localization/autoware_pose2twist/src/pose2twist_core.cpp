@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "pose2twist/pose2twist_core.hpp"
+#include "pose2twist_core.hpp"
 
 #include <cmath>
 #include <cstddef>
 #include <functional>
 
+namespace autoware::pose2twist
+{
 Pose2Twist::Pose2Twist(const rclcpp::NodeOptions & options) : rclcpp::Node("pose2twist", options)
 {
   using std::placeholders::_1;
@@ -113,6 +115,7 @@ void Pose2Twist::callback_pose(geometry_msgs::msg::PoseStamped::SharedPtr pose_m
   angular_z_msg.data = static_cast<float>(twist_msg.twist.angular.z);
   angular_z_pub_->publish(angular_z_msg);
 }
+}  // namespace autoware::pose2twist
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(Pose2Twist)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::pose2twist::Pose2Twist)
