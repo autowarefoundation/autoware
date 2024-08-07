@@ -35,7 +35,7 @@ private:
 
 public:
   explicit AdapiPauseInterface(rclcpp::Node * node);
-  bool is_paused();
+  bool is_paused() const;
   void publish();
   void update(const Control & control);
 

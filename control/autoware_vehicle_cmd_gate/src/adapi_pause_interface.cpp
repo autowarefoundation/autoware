@@ -29,7 +29,7 @@ AdapiPauseInterface::AdapiPauseInterface(rclcpp::Node * node) : node_(node)
   publish();
 }
 
-bool AdapiPauseInterface::is_paused()
+bool AdapiPauseInterface::is_paused() const
 {
   return is_paused_;
 }
