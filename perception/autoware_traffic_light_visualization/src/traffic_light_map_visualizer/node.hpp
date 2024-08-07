@@ -31,11 +31,11 @@ namespace autoware::traffic_light
 class TrafficLightMapVisualizerNode : public rclcpp::Node
 {
 public:
-  explicit TrafficLightMapVisualizerNode(const rclcpp::NodeOptions & options);
+  explicit TrafficLightMapVisualizerNode(const rclcpp::NodeOptions & node_options);
   ~TrafficLightMapVisualizerNode() = default;
   void trafficSignalsCallback(
     const autoware_perception_msgs::msg::TrafficLightGroupArray::ConstSharedPtr
-      input_traffic_signals_msg);
+      input_traffic_signals);
   void binMapCallback(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr input_map_msg);
 
 private:
