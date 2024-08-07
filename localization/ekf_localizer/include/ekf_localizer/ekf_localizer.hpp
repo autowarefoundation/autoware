@@ -239,6 +239,11 @@ private:
 
   autoware::universe_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
 
+  /**
+   * @brief last angular velocity for compensating rph with delay
+   */
+  tf2::Vector3 last_angular_velocity_;
+
   friend class EKFLocalizerTestSuite;  // for test code
 };
 #endif  // EKF_LOCALIZER__EKF_LOCALIZER_HPP_

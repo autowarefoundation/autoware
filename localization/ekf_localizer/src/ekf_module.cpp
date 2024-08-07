@@ -282,15 +282,39 @@ bool EKFModule::measurement_update_pose(
   return true;
 }
 
-geometry_msgs::msg::PoseWithCovarianceStamped EKFModule::compensate_pose_with_z_delay(
-  const PoseWithCovariance & pose, const double delay_time)
+geometry_msgs::msg::PoseWithCovarianceStamped EKFModule::compensate_rph_with_delay(
+  const PoseWithCovariance & pose, tf2::Vector3 last_angular_velocity, const double delay_time)
 {
-  const auto rpy = autoware::universe_utils::getRPY(pose.pose.pose.orientation);
-  const double dz_delay = kalman_filter_.getXelement(IDX::VX) * delay_time * std::sin(-rpy.y);
-  PoseWithCovariance pose_with_z_delay;
-  pose_with_z_delay = pose;
-  pose_with_z_delay.pose.pose.position.z += dz_delay;
-  return pose_with_z_delay;
+  tf2::Quaternion delta_orientation;
+  if (last_angular_velocity.length() > 0.0) {
+    delta_orientation.setRotation(
+      last_angular_velocity.normalized(), last_angular_velocity.length() * delay_time);
+  } else {
+    delta_orientation.setValue(0.0, 0.0, 0.0, 1.0);
+  }
+
+  tf2::Quaternion prev_orientation = tf2::Quaternion(
+    pose.pose.pose.orientation.x, pose.pose.pose.orientation.y, pose.pose.pose.orientation.z,
+    pose.pose.pose.orientation.w);
+
+  tf2::Quaternion curr_orientation;
+  curr_orientation = prev_orientation * delta_orientation;
+  curr_orientation.normalize();
+
+  PoseWithCovariance pose_with_delay;
+  pose_with_delay = pose;
+  pose_with_delay.header.stamp =
+    rclcpp::Time(pose.header.stamp) + rclcpp::Duration::from_seconds(delay_time);
+  pose_with_delay.pose.pose.orientation.x = curr_orientation.x();
+  pose_with_delay.pose.pose.orientation.y = curr_orientation.y();
+  pose_with_delay.pose.pose.orientation.z = curr_orientation.z();
+  pose_with_delay.pose.pose.orientation.w = curr_orientation.w();
+
+  const auto rpy = autoware::universe_utils::getRPY(pose_with_delay.pose.pose.orientation);
+  const double delta_z = kalman_filter_.getXelement(IDX::VX) * delay_time * std::sin(-rpy.y);
+  pose_with_delay.pose.pose.position.z += delta_z;
+
+  return pose_with_delay;
 }
 
 bool EKFModule::measurement_update_twist(
