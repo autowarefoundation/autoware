@@ -60,7 +60,7 @@ public:
   void getObjectsOlderThan(
     const rclcpp::Time & object_latest_time, const rclcpp::Time & object_oldest_time,
     ObjectsList & objects_list);
-  void getNames(std::string & long_name, std::string & short_name)
+  void getNames(std::string & long_name, std::string & short_name) const
   {
     long_name = long_name_;
     short_name = short_name_;

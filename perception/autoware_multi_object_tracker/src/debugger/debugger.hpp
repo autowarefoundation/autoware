@@ -91,7 +91,8 @@ public:
   void endMeasurementTime(const rclcpp::Time & now);
   void startPublishTime(const rclcpp::Time & now);
   void endPublishTime(const rclcpp::Time & now, const rclcpp::Time & object_time);
-  void checkDelay(diagnostic_updater::DiagnosticStatusWrapper & stat);
+  void checkDelay(
+    diagnostic_updater::DiagnosticStatusWrapper & stat);  // cppcheck-suppress functionConst
 
   // Debug object
   void setObjectChannels(const std::vector<std::string> & channels)
