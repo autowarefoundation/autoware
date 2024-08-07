@@ -42,7 +42,7 @@ namespace autoware::twist2accel
 class Twist2Accel : public rclcpp::Node
 {
 public:
-  explicit Twist2Accel(const rclcpp::NodeOptions & options);
+  explicit Twist2Accel(const rclcpp::NodeOptions & node_options);
 
 private:
   rclcpp::Publisher<geometry_msgs::msg::AccelWithCovarianceStamped>::SharedPtr
