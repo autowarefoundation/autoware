@@ -392,16 +392,9 @@ void NormalLaneChange::insertStopPoint(
   const auto target_objects = filterObjects();
   double stopping_distance = distance_to_terminal - lane_change_buffer - stop_point_buffer;
 
-  const auto is_valid_start_point = std::invoke([&]() -> bool {
-    auto lc_start_point = lanelet::utils::conversion::toLaneletPoint(
-      status_.lane_change_path.info.lane_changing_start.position);
-    const auto & target_neighbor_preferred_lane_poly_2d =
-      common_data_ptr_->lanes_polygon_ptr->target_neighbor;
-    return boost::geometry::covered_by(
-      lanelet::traits::to2D(lc_start_point), target_neighbor_preferred_lane_poly_2d);
-  });
+  const auto & lc_start_point = status_.lane_change_path.info.lane_changing_start;
 
-  if (!is_valid_start_point) {
+  if (!is_valid_start_point(common_data_ptr_, lc_start_point)) {
     const auto stop_point = utils::insertStopPoint(stopping_distance, path);
     setStopPose(stop_point.point.pose);
 
@@ -1424,6 +1417,12 @@ bool NormalLaneChange::getLaneChangePaths(
         continue;
       }
 
+      if (!is_valid_start_point(common_data_ptr_, prepare_segment.points.back().point.pose)) {
+        debug_print(
+          "Reject: lane changing start point is not within the preferred lanes or its neighbors");
+        continue;
+      }
+
       // lane changing start getEgoPose() is at the end of prepare segment
       const auto & lane_changing_start_pose = prepare_segment.points.back().point.pose;
       const auto target_length_from_lane_change_start_pose = utils::getArcLengthToTargetLanelet(
@@ -1510,16 +1509,6 @@ bool NormalLaneChange::getLaneChangePaths(
           continue;
         }
 
-        const lanelet::BasicPoint2d lc_start_point(
-          prepare_segment.points.back().point.pose.position.x,
-          prepare_segment.points.back().point.pose.position.y);
-
-        const auto target_lane_poly_2d = common_data_ptr_->lanes_polygon_ptr->target.value();
-
-        const auto is_valid_start_point =
-          boost::geometry::covered_by(lc_start_point, target_neighbor_preferred_lane_poly_2d) ||
-          boost::geometry::covered_by(lc_start_point, target_lane_poly_2d);
-
         LaneChangeInfo lane_change_info;
         lane_change_info.longitudinal_acceleration =
           LaneChangePhaseInfo{longitudinal_acc_on_prepare, longitudinal_acc_on_lane_changing};
@@ -1531,13 +1520,6 @@ bool NormalLaneChange::getLaneChangePaths(
         lane_change_info.lane_changing_end = target_segment.points.front().point.pose;
         lane_change_info.lateral_acceleration = lateral_acc;
         lane_change_info.terminal_lane_changing_velocity = terminal_lane_changing_velocity;
-
-        if (!is_valid_start_point) {
-          debug_print_lat(
-            "Reject: lane changing points are not inside of the target preferred lanes or its "
-            "neighbors");
-          continue;
-        }
 
         const auto resample_interval = utils::lane_change::calcLaneChangeResampleInterval(
           lane_changing_length, initial_lane_changing_velocity);
@@ -2225,6 +2207,18 @@ bool NormalLaneChange::isVehicleStuck(const lanelet::ConstLanelets & current_lan
 
   lane_change_debug_.is_stuck = is_vehicle_stuck;
   return is_vehicle_stuck;
+}
+
+bool NormalLaneChange::is_valid_start_point(
+  const lane_change::CommonDataPtr & common_data_ptr, const Pose & pose) const
+{
+  const lanelet::BasicPoint2d lc_start_point(pose.position.x, pose.position.y);
+
+  const auto & target_neighbor_poly = common_data_ptr->lanes_polygon_ptr->target_neighbor;
+  const auto & target_lane_poly = common_data_ptr_->lanes_polygon_ptr->target.value();
+
+  return boost::geometry::covered_by(lc_start_point, target_neighbor_poly) ||
+         boost::geometry::covered_by(lc_start_point, target_lane_poly);
 }
 
 void NormalLaneChange::setStopPose(const Pose & stop_pose)

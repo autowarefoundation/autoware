@@ -184,6 +184,24 @@ protected:
 
   bool isVehicleStuck(const lanelet::ConstLanelets & current_lanes) const;
 
+  /**
+   * @brief Checks if the given pose is a valid starting point for a lane change.
+   *
+   * This function determines whether the given pose (position) of the vehicle is within
+   * the area of either the target neighbor lane or the target lane itself. It uses geometric
+   * checks to see if the start point of the lane change is covered by the polygons representing
+   * these lanes.
+   *
+   * @param common_data_ptr Shared pointer to a CommonData structure, which should include:
+   *  - Non-null `lanes_polygon_ptr` that contains the polygon data for lanes.
+   * @param pose The current pose of the vehicle
+   *
+   * @return `true` if the pose is within either the target neighbor lane or the target lane;
+   * `false` otherwise.
+   */
+  bool is_valid_start_point(
+    const lane_change::CommonDataPtr & common_data_ptr, const Pose & pose) const;
+
   bool check_prepare_phase() const;
 
   double calcMaximumLaneChangeLength(
