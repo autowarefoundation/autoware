@@ -195,7 +195,7 @@ bool CNNClassifier::readLabelfile(std::string filepath, std::vector<std::string>
   return true;
 }
 
-bool CNNClassifier::isColorLabel(const std::string label)
+bool CNNClassifier::isColorLabel(const std::string & label)
 {
   using tier4_perception_msgs::msg::TrafficLight;
   if (
