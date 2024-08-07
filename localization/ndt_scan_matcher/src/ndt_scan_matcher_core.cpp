@@ -834,7 +834,7 @@ Eigen::Matrix2d NDTScanMatcher::estimate_covariance(
   if (
     param_.covariance.covariance_estimation.covariance_estimation_type ==
     CovarianceEstimationType::LAPLACE_APPROXIMATION) {
-    return pclomp::estimate_xy_covariance_by_Laplace_approximation(ndt_result.hessian);
+    return pclomp::estimate_xy_covariance_by_laplace_approximation(ndt_result.hessian);
   } else if (
     param_.covariance.covariance_estimation.covariance_estimation_type ==
     CovarianceEstimationType::MULTI_NDT) {
