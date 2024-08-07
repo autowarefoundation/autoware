@@ -145,14 +145,6 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-# Set up runtime environment and artifacts
-COPY --from=rosdep-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
-# hadolint ignore=SC2002
-RUN --mount=type=ssh \
-  apt-get update \
-  && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
-
 # Install development tools
 RUN --mount=type=ssh \
 --mount=type=cache,target=/var/cache/apt,sharing=locked \
