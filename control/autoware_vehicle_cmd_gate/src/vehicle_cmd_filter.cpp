@@ -252,8 +252,7 @@ double VehicleCmdFilter::calcLatAcc(const Control & cmd, const double v) const
   return v * v * std::tan(cmd.lateral.steering_tire_angle) / param_.wheel_base;
 }
 
-double VehicleCmdFilter::limitDiff(
-  const double curr, const double prev, const double diff_lim) const
+double VehicleCmdFilter::limitDiff(const double curr, const double prev, const double diff_lim)
 {
   double diff = std::max(std::min(curr - prev, diff_lim), -diff_lim);
   return prev + diff;
