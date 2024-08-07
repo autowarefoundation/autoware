@@ -188,7 +188,7 @@ PredictedPath PathGenerator::generatePolynomialPath(
 {
   // Get current Frenet Point
   const double ref_path_len = autoware::motion_utils::calcArcLength(ref_path);
-  const auto current_point = getFrenetPoint(object, ref_path, speed_limit, duration);
+  const auto current_point = getFrenetPoint(object, ref_path, duration, speed_limit);
 
   // Step1. Set Target Frenet Point
   // Note that we do not set position s,
