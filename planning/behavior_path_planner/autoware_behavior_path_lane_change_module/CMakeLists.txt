@@ -9,6 +9,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/interface.cpp
   src/manager.cpp
   src/scene.cpp
+  src/utils/calculation.cpp
   src/utils/markers.cpp
   src/utils/utils.cpp
 )

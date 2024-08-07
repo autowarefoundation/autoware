@@ -14,6 +14,7 @@
 
 #include "autoware/behavior_path_lane_change_module/scene.hpp"
 
+#include "autoware/behavior_path_lane_change_module/utils/calculation.hpp"
 #include "autoware/behavior_path_lane_change_module/utils/utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "autoware/behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
@@ -45,6 +46,7 @@ using utils::lane_change::calcMinimumLaneChangeLength;
 using utils::lane_change::create_lanes_polygon;
 using utils::path_safety_checker::isPolygonOverlapLanelet;
 using utils::traffic_light::getDistanceToNextTrafficLight;
+namespace calculation = utils::lane_change::calculation;
 
 NormalLaneChange::NormalLaneChange(
   const std::shared_ptr<LaneChangeParameters> & parameters, LaneChangeModuleType type,
@@ -1361,7 +1363,7 @@ bool NormalLaneChange::getLaneChangePaths(
     route_handler.getLateralIntervalsToPreferredLane(target_lanes.back()));
 
   const auto dist_to_end_of_current_lanes =
-    utils::getDistanceToEndOfLane(getEgoPose(), current_lanes);
+    calculation::calc_ego_dist_to_terminal_end(common_data_ptr_);
 
   const auto target_lane_length = lanelet::utils::getLaneletLength2d(target_lanes);
 
@@ -1401,6 +1403,16 @@ bool NormalLaneChange::getLaneChangePaths(
 
       const auto prepare_length = utils::lane_change::calcPhaseLength(
         current_velocity, getCommonParam().max_vel, longitudinal_acc_on_prepare, prepare_duration);
+
+      const auto ego_dist_to_terminal_start = dist_to_end_of_current_lanes - lane_change_buffer;
+      if (prepare_length > ego_dist_to_terminal_start) {
+        RCLCPP_DEBUG(
+          logger_,
+          "Reject: Prepare length exceed distance to terminal start. prep_len: %.5f,  ego dist to "
+          "terminal start: %.5f",
+          prepare_length, ego_dist_to_terminal_start);
+        continue;
+      }
 
       auto prepare_segment = getPrepareSegment(current_lanes, backward_path_length, prepare_length);
 
