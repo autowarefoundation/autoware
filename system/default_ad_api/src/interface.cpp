@@ -21,7 +21,7 @@ InterfaceNode::InterfaceNode(const rclcpp::NodeOptions & options) : Node("interf
 {
   const auto on_interface_version = [](auto, auto res) {
     res->major = 1;
-    res->minor = 4;
+    res->minor = 5;
     res->patch = 0;
   };
 
