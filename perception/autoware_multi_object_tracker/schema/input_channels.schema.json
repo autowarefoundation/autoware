@@ -41,18 +41,138 @@
             "input_channels": {
               "type": "object",
               "properties": {
-                "detected_objects": { "$ref": "#/definitions/input_channel" },
-                "lidar_clustering": { "$ref": "#/definitions/input_channel" },
-                "lidar_centerpoint": { "$ref": "#/definitions/input_channel" },
-                "lidar_centerpoint_validated": { "$ref": "#/definitions/input_channel" },
-                "lidar_apollo": { "$ref": "#/definitions/input_channel" },
-                "lidar_apollo_validated": { "$ref": "#/definitions/input_channel" },
-                "lidar_pointpainitng": { "$ref": "#/definitions/input_channel" },
-                "lidar_pointpainting_validated": { "$ref": "#/definitions/input_channel" },
-                "camera_lidar_fusion": { "$ref": "#/definitions/input_channel" },
-                "detection_by_tracker": { "$ref": "#/definitions/input_channel" },
-                "radar": { "$ref": "#/definitions/input_channel" },
-                "radar_far": { "$ref": "#/definitions/input_channel" }
+                "detected_objects": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/perception/object_recognition/detection/objects",
+                    "can_spawn_new_tracker": true,
+                    "optional": {
+                      "name": "detected_objects",
+                      "short_name": "all"
+                    }
+                  }
+                },
+                "lidar_clustering": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/perception/object_recognition/detection/clustering/objects",
+                    "can_spawn_new_tracker": true,
+                    "optional": {
+                      "name": "clustering",
+                      "short_name": "Lcl"
+                    }
+                  }
+                },
+                "lidar_centerpoint": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/perception/object_recognition/detection/centerpoint/objects",
+                    "can_spawn_new_tracker": true,
+                    "optional": {
+                      "name": "centerpoint",
+                      "short_name": "Lcp"
+                    }
+                  }
+                },
+                "lidar_centerpoint_validated": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/perception/object_recognition/detection/centerpoint/validation/objects",
+                    "can_spawn_new_tracker": true,
+                    "optional": {
+                      "name": "centerpoint",
+                      "short_name": "Lcp"
+                    }
+                  }
+                },
+                "lidar_apollo": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/perception/object_recognition/detection/apollo/objects",
+                    "can_spawn_new_tracker": true,
+                    "optional": {
+                      "name": "apollo",
+                      "short_name": "Lap"
+                    }
+                  }
+                },
+                "lidar_apollo_validated": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/perception/object_recognition/detection/apollo/validation/objects",
+                    "can_spawn_new_tracker": true,
+                    "optional": {
+                      "name": "apollo",
+                      "short_name": "Lap"
+                    }
+                  }
+                },
+                "lidar_pointpainitng": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/perception/object_recognition/detection/pointpainting/objects",
+                    "can_spawn_new_tracker": true,
+                    "optional": {
+                      "name": "pointpainting",
+                      "short_name": "Lpp"
+                    }
+                  }
+                },
+                "lidar_pointpainting_validated": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/perception/object_recognition/detection/pointpainting/validation/objects",
+                    "can_spawn_new_tracker": true,
+                    "optional": {
+                      "name": "pointpainting",
+                      "short_name": "Lpp"
+                    }
+                  }
+                },
+                "camera_lidar_fusion": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/perception/object_recognition/detection/clustering/camera_lidar_fusion/objects",
+                    "can_spawn_new_tracker": true,
+                    "optional": {
+                      "name": "camera_lidar_fusion",
+                      "short_name": "CLf"
+                    }
+                  }
+                },
+                "detection_by_tracker": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/perception/object_recognition/detection/detection_by_tracker/objects",
+                    "can_spawn_new_tracker": false,
+                    "optional": {
+                      "name": "detection_by_tracker",
+                      "short_name": "dbT"
+                    }
+                  }
+                },
+                "radar": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/sensing/radar/detected_objects",
+                    "can_spawn_new_tracker": true,
+                    "optional": {
+                      "name": "radar",
+                      "short_name": "R"
+                    }
+                  }
+                },
+                "radar_far": {
+                  "$ref": "#/definitions/input_channel",
+                  "default": {
+                    "topic": "/perception/object_recognition/detection/radar/far_objects",
+                    "can_spawn_new_tracker": true,
+                    "optional": {
+                      "name": "radar_far",
+                      "short_name": "Rf"
+                    }
+                  }
+                }
               },
               "required": [
                 "detected_objects",
