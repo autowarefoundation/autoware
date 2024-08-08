@@ -1,7 +1,6 @@
 *:*/test/*
 
 checkersReport
-constParameterReference
 functionConst
 functionStatic
 missingInclude
