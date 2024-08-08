@@ -45,7 +45,7 @@ class DataManager
 {
 public:
   DataManager() = default;
-  bool isInitialized()
+  bool isInitialized() const
   {
     if (use_lane_filter_) {
       return static_cast<bool>(elevation_map_path_) && static_cast<bool>(map_pcl_ptr_) &&
