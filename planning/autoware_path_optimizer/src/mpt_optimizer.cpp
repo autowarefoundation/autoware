@@ -1434,6 +1434,7 @@ MPTOptimizer::ConstraintMatrix MPTOptimizer::calcConstraintMatrix(
       ub(A_rows_end + i) = ref_steer_angle + mpt_param_.max_steer_rad;
     }
 
+    // cppcheck-suppress unreadVariable
     A_rows_end += N_u;
   }
 
