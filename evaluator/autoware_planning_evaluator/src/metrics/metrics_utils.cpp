@@ -30,9 +30,8 @@ size_t getIndexAfterDistance(const Trajectory & traj, const size_t curr_id, cons
   const TrajectoryPoint & curr_p = traj.points.at(curr_id);
 
   size_t target_id = curr_id;
-  double current_distance = 0.0;
   for (size_t traj_id = curr_id + 1; traj_id < traj.points.size(); ++traj_id) {
-    current_distance = calcDistance2d(traj.points.at(traj_id), curr_p);
+    double current_distance = calcDistance2d(traj.points.at(traj_id), curr_p);
     if (current_distance >= distance) {
       target_id = traj_id;
       break;
