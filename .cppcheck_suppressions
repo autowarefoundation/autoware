@@ -6,8 +6,6 @@ functionStatic
 missingInclude
 missingIncludeSystem
 noConstructor
-// cspell: ignore uninit
-uninitMemberVar
 unknownMacro
 unmatchedSuppression
 unreadVariable
