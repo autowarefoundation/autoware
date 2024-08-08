@@ -467,12 +467,12 @@ void ScanGroundFilterComponent::classifyPointCloud(
   for (size_t i = 0; i < in_radial_ordered_clouds.size(); ++i) {
     float prev_gnd_radius = 0.0f;
     float prev_gnd_slope = 0.0f;
-    float points_distance = 0.0f;
     PointsCentroid ground_cluster, non_ground_cluster;
     PointLabel prev_point_label = PointLabel::INIT;
     pcl::PointXYZ prev_gnd_point(0, 0, 0), p_orig_point, prev_p_orig_point;
     // loop through each point in the radial div
     for (size_t j = 0; j < in_radial_ordered_clouds[i].size(); ++j) {
+      float points_distance = 0.0f;
       const float local_slope_max_angle = local_slope_max_angle_rad_;
       prev_p_orig_point = p_orig_point;
       auto * p = &in_radial_ordered_clouds[i][j];
