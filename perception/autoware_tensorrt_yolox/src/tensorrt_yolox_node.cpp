@@ -14,6 +14,7 @@
 
 #include "autoware/tensorrt_yolox/tensorrt_yolox_node.hpp"
 
+#include "autoware/tensorrt_yolox/utils.hpp"
 #include "object_recognition_utils/object_classification.hpp"
 
 #include <autoware_perception_msgs/msg/object_classification.hpp>
@@ -177,12 +178,19 @@ void TrtYoloXNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
       overlapSegmentByRoi(yolox_object, mask, width, height);
     }
   }
-  // TODO(badai-nguyen): consider to change to 4bits data transfer
   if (trt_yolox_->getMultitaskNum() > 0) {
     sensor_msgs::msg::Image::SharedPtr out_mask_msg =
       cv_bridge::CvImage(std_msgs::msg::Header(), sensor_msgs::image_encodings::MONO8, mask)
         .toImageMsg();
     out_mask_msg->header = msg->header;
+
+    std::vector<std::pair<uint8_t, int>> compressed_data = runLengthEncoder(mask);
+    int step = sizeof(uint8_t) + sizeof(int);
+    out_mask_msg->data.resize(static_cast<int>(compressed_data.size()) * step);
+    for (size_t i = 0; i < compressed_data.size(); ++i) {
+      std::memcpy(&out_mask_msg->data[i * step], &compressed_data.at(i).first, sizeof(uint8_t));
+      std::memcpy(&out_mask_msg->data[i * step + 1], &compressed_data.at(i).second, sizeof(int));
+    }
     mask_pub_.publish(out_mask_msg);
   }
   image_pub_.publish(in_image_ptr->toImageMsg());

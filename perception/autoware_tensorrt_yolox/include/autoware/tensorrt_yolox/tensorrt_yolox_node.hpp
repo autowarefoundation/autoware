@@ -40,6 +40,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace autoware::tensorrt_yolox
@@ -81,6 +82,7 @@ private:
   int mapRoiLabel2SegLabel(const int32_t roi_label_index);
   image_transport::Publisher image_pub_;
   image_transport::Publisher mask_pub_;
+
   image_transport::Publisher color_mask_pub_;
 
   rclcpp::Publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>::SharedPtr objects_pub_;
