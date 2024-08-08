@@ -2143,6 +2143,14 @@ bool RouteHandler::planPathLaneletsBetweenCheckpoints(
       continue;
     }
     is_route_found = true;
+    lanelet::ConstLanelet preferred_lane{};
+    if (getClosestPreferredLaneletWithinRoute(start_checkpoint, &preferred_lane)) {
+      if (st_llt.id() == preferred_lane.id()) {
+        shortest_path = optional_route->shortestPath();
+        start_lanelet = st_llt;
+        break;
+      }
+    }
     if (angle_diff < smallest_angle_diff) {
       smallest_angle_diff = angle_diff;
       shortest_path = optional_route->shortestPath();
