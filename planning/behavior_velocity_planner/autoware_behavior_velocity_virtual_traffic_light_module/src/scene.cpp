@@ -38,7 +38,6 @@ struct SegmentIndexWithPoint
 struct SegmentIndexWithOffset
 {
   size_t index;
-  double offset;
 };
 
 tier4_v2x_msgs::msg::KeyValue createKeyValue(const std::string & key, const std::string & value)
