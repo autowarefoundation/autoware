@@ -208,10 +208,8 @@ void CSC(double x, double y, double phi, ReedsSheppStateSpace::ReedsSheppPath & 
       ReedsSheppStateSpace::ReedsSheppPath(ReedsSheppStateSpace::reedsSheppPathType[13], t, u, v);
     L_min = L;
   }
-  if (
-    LpSpRp(-x, -y, phi, t, u, v) &&
-    L_min > (L = std::abs(t) + std::abs(u) + std::abs(v)))  // time flip + reflect
-  {
+  // time flip + reflect
+  if (LpSpRp(-x, -y, phi, t, u, v) && L_min > (std::abs(t) + std::abs(u) + std::abs(v))) {
     path = ReedsSheppStateSpace::ReedsSheppPath(
       ReedsSheppStateSpace::reedsSheppPathType[13], -t, -u, -v);
   }
@@ -288,7 +286,7 @@ void CCC(double x, double y, double phi, ReedsSheppStateSpace::ReedsSheppPath & 
   }
   if (
     LpRmL(-xb, -yb, phi, t, u, v) &&
-    L_min > (L = std::abs(t) + std::abs(u) + std::abs(v)))  // time flip + reflect
+    L_min > (std::abs(t) + std::abs(u) + std::abs(v)))  // time flip + reflect
   {
     path =
       ReedsSheppStateSpace::ReedsSheppPath(ReedsSheppStateSpace::reedsSheppPathType[1], -v, -u, -t);
@@ -387,7 +385,7 @@ void CCCC(double x, double y, double phi, ReedsSheppStateSpace::ReedsSheppPath &
   }
   if (
     LpRumLumRp(-x, -y, phi, t, u, v) &&
-    L_min > (L = std::abs(t) + 2. * std::abs(u) + std::abs(v)))  // time flip + reflect
+    L_min > (std::abs(t) + 2. * std::abs(u) + std::abs(v)))  // time flip + reflect
   {
     path = ReedsSheppStateSpace::ReedsSheppPath(
       ReedsSheppStateSpace::reedsSheppPathType[3], -t, -u, -u, -v);
@@ -545,7 +543,7 @@ void CCSC(double x, double y, double phi, ReedsSheppStateSpace::ReedsSheppPath &
   }
   if (
     LpRmSmRm(-xb, -yb, phi, t, u, v) &&
-    L_min > (L = std::abs(t) + std::abs(u) + std::abs(v)))  // time flip + reflect
+    L_min > (std::abs(t) + std::abs(u) + std::abs(v)))  // time flip + reflect
   {
     path = ReedsSheppStateSpace::ReedsSheppPath(
       ReedsSheppStateSpace::reedsSheppPathType[11], -v, -u, .5 * pi, -t);
@@ -598,7 +596,7 @@ void CCSCC(double x, double y, double phi, ReedsSheppStateSpace::ReedsSheppPath 
   }
   if (
     LpRmSLmRp(-x, -y, phi, t, u, v) &&
-    L_min > (L = std::abs(t) + std::abs(u) + std::abs(v)))  // time flip + reflect
+    L_min > (std::abs(t) + std::abs(u) + std::abs(v)))  // time flip + reflect
   {
     path = ReedsSheppStateSpace::ReedsSheppPath(
       ReedsSheppStateSpace::reedsSheppPathType[17], -t, .5 * pi, -u, .5 * pi, -v);
