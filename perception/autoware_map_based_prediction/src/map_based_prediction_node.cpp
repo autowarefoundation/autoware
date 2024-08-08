@@ -929,6 +929,16 @@ void MapBasedPredictionNode::mapCallback(const LaneletMapBin::ConstSharedPtr msg
   const auto walkways = lanelet::utils::query::walkwayLanelets(all_lanelets);
   crosswalks_.insert(crosswalks_.end(), crosswalks.begin(), crosswalks.end());
   crosswalks_.insert(crosswalks_.end(), walkways.begin(), walkways.end());
+
+  lanelet::LineStrings3d fences;
+  for (const auto & linestring : lanelet_map_ptr_->lineStringLayer) {
+    if (const std::string type = linestring.attributeOr(lanelet::AttributeName::Type, "none");
+        type == "fence") {
+      fences.push_back(lanelet::LineString3d(
+        std::const_pointer_cast<lanelet::LineStringData>(linestring.constData())));
+    }
+  }
+  fence_layer_ = lanelet::utils::createMap(fences);
 }
 
 void MapBasedPredictionNode::trafficSignalsCallback(
@@ -1318,10 +1328,9 @@ bool MapBasedPredictionNode::doesPathCrossAnyFence(const PredictedPath & predict
   for (const auto & p : predicted_path.path)
     predicted_path_ls.emplace_back(p.position.x, p.position.y);
   const auto candidates =
-    lanelet_map_ptr_->lineStringLayer.search(lanelet::geometry::boundingBox2d(predicted_path_ls));
+    fence_layer_->lineStringLayer.search(lanelet::geometry::boundingBox2d(predicted_path_ls));
   for (const auto & candidate : candidates) {
-    const std::string type = candidate.attributeOr(lanelet::AttributeName::Type, "none");
-    if (type == "fence" && doesPathCrossFence(predicted_path, candidate)) {
+    if (doesPathCrossFence(predicted_path, candidate)) {
       return true;
     }
   }
