@@ -662,7 +662,6 @@ ObjectClassification::_label_type changeLabelForPrediction(
     }
 
     case ObjectClassification::PEDESTRIAN: {
-      const bool within_road_lanelet = withinRoadLanelet(object, lanelet_map_ptr_, true);
       const float max_velocity_for_human_mps =
         autoware::universe_utils::kmph2mps(25.0);  // Max human being motion speed is 25km/h
       const double abs_speed = std::hypot(
@@ -670,7 +669,6 @@ ObjectClassification::_label_type changeLabelForPrediction(
         object.kinematics.twist_with_covariance.twist.linear.y);
       const bool high_speed_object = abs_speed > max_velocity_for_human_mps;
       // fast, human-like object: like segway
-      if (within_road_lanelet && high_speed_object) return label;  // currently do nothing
       // return ObjectClassification::MOTORCYCLE;
       if (high_speed_object) return label;  // currently do nothing
       // fast human outside road lanelet will move like unknown object
