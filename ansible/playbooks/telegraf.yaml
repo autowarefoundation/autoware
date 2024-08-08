@@ -1,0 +1,4 @@
+- name: Set up Telegraf and InfluxDB v2
+  hosts: localhost
+  roles:
+    - autoware.dev_env.telegraf
