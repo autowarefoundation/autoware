@@ -352,7 +352,6 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
   {
     int64 division_index{0};
     int64 point_index{0};
-    double dist{0.0};
     geometry_msgs::msg::Point point;
     geometry_msgs::msg::Point projection;
     geometry_msgs::msg::Point visible_end;
@@ -403,9 +402,7 @@ IntersectionModule::OcclusionType IntersectionModule::detectOcclusion(
         if (acc_dist < min_dist) {
           min_dist = acc_dist;
           nearest_occlusion_point = {
-            division_index,
-            std::distance(division.begin(), point_it),
-            acc_dist,
+            division_index, std::distance(division.begin(), point_it),
             autoware::universe_utils::createPoint(point_it->x(), point_it->y(), origin.z),
             autoware::universe_utils::createPoint(projection_it->x(), projection_it->y(), origin.z),
             autoware::universe_utils::createPoint(
