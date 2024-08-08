@@ -31,8 +31,11 @@ struct VectorsWithMin
 };
 
 VectorsWithMin prepare_coordinate_vectors(
-  const size_t nb_vertices, std::uniform_real_distribution<double> & random_double,
-  std::uniform_int_distribution<int> & random_bool, std::default_random_engine & random_engine)
+  const size_t nb_vertices,
+  std::uniform_real_distribution<double> &
+    random_double,                                   // cppcheck-suppress constParameterReference
+  std::uniform_int_distribution<int> & random_bool,  // cppcheck-suppress constParameterReference
+  std::default_random_engine & random_engine)
 {
   std::vector<double> v;
   for (auto i = 0UL; i < nb_vertices; ++i) {
