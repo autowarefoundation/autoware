@@ -350,7 +350,6 @@ void RingOutlierFilterComponent::setUpPointCloudFormat(
   // == true`
   formatted_points.header.frame_id =
     !tf_input_frame_.empty() ? tf_input_frame_ : tf_input_orig_frame_;
-  formatted_points.data.resize(formatted_points.point_step * input->width);
   formatted_points.height = 1;
   formatted_points.width =
     static_cast<uint32_t>(formatted_points.data.size() / formatted_points.point_step);
