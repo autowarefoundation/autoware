@@ -73,10 +73,12 @@ int main()
       const auto naive_constr_end = std::chrono::system_clock::now();
       const auto rtt_check_start = std::chrono::system_clock::now();
       for (const auto & polygon : polygons)
+        // cppcheck-suppress unreadVariable
         const auto rtree_result = rtree_collision_checker.intersections(polygon);
       const auto rtt_check_end = std::chrono::system_clock::now();
       const auto naive_check_start = std::chrono::system_clock::now();
       for (const auto & polygon : polygons)
+        // cppcheck-suppress unreadVariable
         const auto naive_result = naive_collision_checker.intersections(polygon);
       const auto naive_check_end = std::chrono::system_clock::now();
       const auto rtt_constr_time =
