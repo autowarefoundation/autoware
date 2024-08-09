@@ -16,7 +16,7 @@
 
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
-#include <interpolation/spline_interpolation.hpp>
+#include <interpolation/linear_interpolation.hpp>
 
 #include <algorithm>
 
@@ -332,29 +332,26 @@ PosePath PathGenerator::interpolateReferencePath(
     std::reverse(resampled_s.begin(), resampled_s.end());
   }
 
-  // Spline Interpolation
-  std::vector<double> spline_ref_path_x =
-    interpolation::spline(base_path_s, base_path_x, resampled_s);
-  std::vector<double> spline_ref_path_y =
-    interpolation::spline(base_path_s, base_path_y, resampled_s);
-  std::vector<double> spline_ref_path_z =
-    interpolation::spline(base_path_s, base_path_z, resampled_s);
+  // Lerp Interpolation
+  std::vector<double> lerp_ref_path_x = interpolation::lerp(base_path_s, base_path_x, resampled_s);
+  std::vector<double> lerp_ref_path_y = interpolation::lerp(base_path_s, base_path_y, resampled_s);
+  std::vector<double> lerp_ref_path_z = interpolation::lerp(base_path_s, base_path_z, resampled_s);
 
   interpolated_path.resize(interpolate_num);
   for (size_t i = 0; i < interpolate_num - 1; ++i) {
     geometry_msgs::msg::Pose interpolated_pose;
     const auto current_point =
-      autoware::universe_utils::createPoint(spline_ref_path_x.at(i), spline_ref_path_y.at(i), 0.0);
+      autoware::universe_utils::createPoint(lerp_ref_path_x.at(i), lerp_ref_path_y.at(i), 0.0);
     const auto next_point = autoware::universe_utils::createPoint(
-      spline_ref_path_x.at(i + 1), spline_ref_path_y.at(i + 1), 0.0);
+      lerp_ref_path_x.at(i + 1), lerp_ref_path_y.at(i + 1), 0.0);
     const double yaw = autoware::universe_utils::calcAzimuthAngle(current_point, next_point);
     interpolated_pose.position = autoware::universe_utils::createPoint(
-      spline_ref_path_x.at(i), spline_ref_path_y.at(i), spline_ref_path_z.at(i));
+      lerp_ref_path_x.at(i), lerp_ref_path_y.at(i), lerp_ref_path_z.at(i));
     interpolated_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(yaw);
     interpolated_path.at(i) = interpolated_pose;
   }
   interpolated_path.back().position = autoware::universe_utils::createPoint(
-    spline_ref_path_x.back(), spline_ref_path_y.back(), spline_ref_path_z.back());
+    lerp_ref_path_x.back(), lerp_ref_path_y.back(), lerp_ref_path_z.back());
   interpolated_path.back().orientation = interpolated_path.at(interpolate_num - 2).orientation;
 
   return interpolated_path;
