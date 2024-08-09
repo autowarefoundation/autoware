@@ -143,7 +143,6 @@ void BluetoothMonitor::setErrorLevel(diagnostic_updater::DiagnosticStatusWrapper
     return;
   }
 
-  int level = DiagStatus::OK;
   int whole_level = DiagStatus::OK;
   StatusCode whole_status_code = StatusCode::OK;
   int index = 0;
@@ -158,7 +157,7 @@ void BluetoothMonitor::setErrorLevel(diagnostic_updater::DiagnosticStatusWrapper
       stat.add(fmt::format("Device {}: {}", index, status.function_name), status.error_message);
     }
 
-    level = status_error_list_.at(status.status_code);
+    int level = status_error_list_.at(status.status_code);
     whole_level = std::max(whole_level, level);
     whole_status_code = std::max(whole_status_code, status.status_code);
     ++index;
