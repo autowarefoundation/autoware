@@ -538,14 +538,13 @@ std::optional<std::tuple<double, double, double, double>> updateStateWithJerkCon
   const double v0, const double a0, const std::map<double, double> & jerk_profile, const double t)
 {
   // constexpr double eps = 1.0E-05;
-  double j{0.0};
   double a{a0};
   double v{v0};
   double x{0.0};
   double t_sum{0.0};
 
   for (const auto & it : jerk_profile) {
-    j = it.first;
+    double j = it.first;
     t_sum += it.second;
     if (t > t_sum) {
       x = integ_x(x, v, a, j, it.second);
