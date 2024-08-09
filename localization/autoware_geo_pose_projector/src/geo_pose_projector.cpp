@@ -25,6 +25,8 @@
 
 #include <string>
 
+namespace autoware::geo_pose_projector
+{
 GeoPoseProjector::GeoPoseProjector(const rclcpp::NodeOptions & options)
 : rclcpp::Node("geo_pose_projector", options), publish_tf_(declare_parameter<bool>("publish_tf"))
 {
@@ -102,6 +104,7 @@ void GeoPoseProjector::on_geo_pose(const GeoPoseWithCovariance::ConstSharedPtr m
     tf_broadcaster_->sendTransform(transform_stamped);
   }
 }
+}  // namespace autoware::geo_pose_projector
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(GeoPoseProjector)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::geo_pose_projector::GeoPoseProjector)

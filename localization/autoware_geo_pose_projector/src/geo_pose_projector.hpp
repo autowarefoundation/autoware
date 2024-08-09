@@ -28,6 +28,8 @@
 #include <optional>
 #include <string>
 
+namespace autoware::geo_pose_projector
+{
 class GeoPoseProjector : public rclcpp::Node
 {
 private:
@@ -54,5 +56,6 @@ private:
   std::string parent_frame_;
   std::string child_frame_;
 };
+}  // namespace autoware::geo_pose_projector
 
 #endif  // GEO_POSE_PROJECTOR_HPP_

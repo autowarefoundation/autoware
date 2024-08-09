@@ -1,4 +1,4 @@
-# geo_pose_projector
+# autoware_geo_pose_projector
 
 ## Overview
 
@@ -20,7 +20,7 @@ This node is a simple node that subscribes to the geo-referenced pose topic and 
 
 ## Parameters
 
-{{ json_to_markdown("localization/geo_pose_projector/schema/geo_pose_projector.schema.json") }}
+{{ json_to_markdown("localization/autoware_geo_pose_projector/schema/geo_pose_projector.schema.json") }}
 
 ## Limitations
 
