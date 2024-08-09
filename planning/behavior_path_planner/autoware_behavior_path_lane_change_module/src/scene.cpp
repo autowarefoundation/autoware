@@ -87,6 +87,9 @@ void NormalLaneChange::update_lanes(const bool is_approved)
   common_data_ptr_->lanes_ptr->target = target_lanes;
 
   const auto & route_handler_ptr = common_data_ptr_->route_handler_ptr;
+  common_data_ptr_->lanes_ptr->target_neighbor = utils::lane_change::getTargetNeighborLanes(
+    *route_handler_ptr, current_lanes, common_data_ptr_->lc_type);
+
   common_data_ptr_->lanes_ptr->current_lane_in_goal_section =
     route_handler_ptr->isInGoalRouteSection(current_lanes.back());
   common_data_ptr_->lanes_ptr->preceding_target = utils::getPrecedingLanelets(
@@ -1464,6 +1467,9 @@ bool NormalLaneChange::getLaneChangePaths(
       RCLCPP_DEBUG(logger_, "  -  sampling num for lat_acc: %lu", sample_lat_acc.size());
 
       debug_print("Prepare path satisfy constraints");
+      const auto dist_lc_start_to_end_of_lanes = calculation::calc_dist_from_pose_to_terminal_end(
+        common_data_ptr_, common_data_ptr_->lanes_ptr->target_neighbor, lane_changing_start_pose);
+
       for (const auto & lateral_acc : sample_lat_acc) {
         const auto lane_changing_time = PathShifter::calcShiftTimeFromJerk(
           shift_length, lane_change_parameters_->lane_changing_lateral_jerk, lateral_acc);
@@ -1474,11 +1480,6 @@ bool NormalLaneChange::getLaneChangePaths(
         const auto lane_changing_length = utils::lane_change::calcPhaseLength(
           initial_lane_changing_velocity, getCommonParam().max_vel,
           longitudinal_acc_on_lane_changing, lane_changing_time);
-        const auto terminal_lane_changing_velocity = std::min(
-          initial_lane_changing_velocity + longitudinal_acc_on_lane_changing * lane_changing_time,
-          getCommonParam().max_vel);
-        utils::lane_change::setPrepareVelocity(
-          prepare_segment, current_velocity, terminal_lane_changing_velocity);
 
         const auto debug_print_lat = [&](const auto & s) {
           RCLCPP_DEBUG(
@@ -1493,25 +1494,29 @@ bool NormalLaneChange::getLaneChangePaths(
           continue;
         }
 
-        if (is_goal_in_route) {
-          const double s_start =
-            lanelet::utils::getArcCoordinates(target_lanes, lane_changing_start_pose).length;
-          const double s_goal =
-            lanelet::utils::getArcCoordinates(target_lanes, route_handler.getGoalPose()).length;
-          const auto num =
+        // if multiple lane change is necessary, does the remaining distance is sufficient
+        const auto remaining_dist_in_target = std::invoke([&]() {
+          const auto finish_judge_buffer = lane_change_parameters_->lane_change_finish_judge_buffer;
+          const auto num_to_preferred_lane_from_target_lane =
             std::abs(route_handler.getNumLaneToPreferredLane(target_lanes.back(), direction));
-          const double backward_buffer =
-            num == 0 ? 0.0 : lane_change_parameters_->backward_length_buffer_for_end_of_lane;
-          const double finish_judge_buffer =
-            lane_change_parameters_->lane_change_finish_judge_buffer;
-          if (
-            s_start + lane_changing_length + finish_judge_buffer + backward_buffer +
-              next_lane_change_buffer >
-            s_goal) {
-            debug_print_lat("Reject: length of lane changing path is longer than length to goal!!");
-            continue;
-          }
+          const auto backward_len_buffer =
+            lane_change_parameters_->backward_length_buffer_for_end_of_lane;
+          const auto backward_buffer_to_target_lane =
+            num_to_preferred_lane_from_target_lane == 0 ? 0.0 : backward_len_buffer;
+          return lane_changing_length + finish_judge_buffer + backward_buffer_to_target_lane +
+                 next_lane_change_buffer;
+        });
+
+        if (remaining_dist_in_target > dist_lc_start_to_end_of_lanes) {
+          debug_print_lat("Reject: length of lane changing path is longer than length to goal!!");
+          continue;
         }
+
+        const auto terminal_lane_changing_velocity = std::min(
+          initial_lane_changing_velocity + longitudinal_acc_on_lane_changing * lane_changing_time,
+          getCommonParam().max_vel);
+        utils::lane_change::setPrepareVelocity(
+          prepare_segment, current_velocity, terminal_lane_changing_velocity);
 
         const auto target_segment = getTargetSegment(
           target_lanes, lane_changing_start_pose, target_lane_length, lane_changing_length,

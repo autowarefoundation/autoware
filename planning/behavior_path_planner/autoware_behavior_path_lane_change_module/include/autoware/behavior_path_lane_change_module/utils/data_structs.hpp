@@ -191,6 +191,7 @@ struct Lanes
 {
   bool current_lane_in_goal_section{false};
   lanelet::ConstLanelets current;
+  lanelet::ConstLanelets target_neighbor;
   lanelet::ConstLanelets target;
   std::vector<lanelet::ConstLanelets> preceding_target;
 };
