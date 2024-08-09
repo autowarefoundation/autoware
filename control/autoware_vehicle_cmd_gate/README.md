@@ -84,6 +84,13 @@ This functionality for starting/stopping was embedded in the source code but was
 
 ## Assumptions / Known limits
 
+### External Emergency Heartbeat
+
 The parameter `check_external_emergency_heartbeat` (true by default) enables an emergency stop request from external modules.
 This feature requires a `~/input/external_emergency_stop_heartbeat` topic for health monitoring of the external module, and the vehicle_cmd_gate module will not start without the topic.
 The `check_external_emergency_heartbeat` parameter must be false when the "external emergency stop" function is not used.
+
+### Commands on Mode changes
+
+Output commands' topics: `turn_indicators_cmd`, `hazard_light` and `gear_cmd` are selected based on `gate_mode`.
+However, to ensure the continuity of commands, these commands will not change until the topics of new input commands arrive, even if a mode change occurs.
