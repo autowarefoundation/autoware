@@ -153,7 +153,6 @@ void GoalPlannerModuleManager::init(rclcpp::Node * node)
 
   // parallel parking common
   {
-    const std::string ns = base_ns + "pull_over.parallel_parking.";
     p.parallel_parking_parameters.center_line_path_interval =
       p.center_line_path_interval;  // for geometric parallel parking
   }
