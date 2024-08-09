@@ -59,25 +59,34 @@ constexpr int PORT = 7635;
  */
 struct AtaPassThrough12
 {
-  uint8_t operation_code_;      //!< @brief OPERATION CODE (A1h)
-  uint8_t reserved0_ : 1;       //!< @brief Reserved
-  uint8_t protocol_ : 4;        //!< @brief PROTOCOL
+  uint8_t operation_code_;  //!< @brief OPERATION CODE (A1h)
+  // cppcheck-suppress unusedStructMember
+  uint8_t reserved0_ : 1;  //!< @brief Reserved
+  uint8_t protocol_ : 4;   //!< @brief PROTOCOL
+  // cppcheck-suppress unusedStructMember
   uint8_t multiple_count_ : 3;  //!< @brief MULTIPLE_COUNT
   uint8_t t_length_ : 2;        //!< @brief T_LENGTH
   uint8_t byt_blok_ : 1;        //!< @brief BYT_BLOK
   uint8_t t_dir_ : 1;           //!< @brief T_DIR
-  uint8_t reserved1_ : 1;       //!< @brief Reserved
-  uint8_t ck_cond_ : 1;         //!< @brief CK_COND
-  uint8_t off_line_ : 2;        //!< @brief OFF_LINE
-  uint8_t features_;            //!< @brief FEATURES (0:7)
-  uint8_t sector_count_;        //!< @brief SECTOR_COUNT (0:7)
-  uint8_t lba_low_;             //!< @brief LBA_LOW (0:7)
-  uint8_t lba_mid_;             //!< @brief LBA_MID (0:7)
-  uint8_t lbe_high_;            //!< @brief LBE_HIGH (0:7)
-  uint8_t device_;              //!< @brief DEVICE
-  uint8_t command_;             //!< @brief COMMAND
-  uint8_t reserved2_;           //!< @brief Reserved
-  uint8_t control_;             //!< @brief CONTROL
+  // cppcheck-suppress unusedStructMember
+  uint8_t reserved1_ : 1;  //!< @brief Reserved
+  // cppcheck-suppress unusedStructMember
+  uint8_t ck_cond_ : 1;  //!< @brief CK_COND
+  // cppcheck-suppress unusedStructMember
+  uint8_t off_line_ : 2;  //!< @brief OFF_LINE
+  uint8_t features_;      //!< @brief FEATURES (0:7)
+  uint8_t sector_count_;  //!< @brief SECTOR_COUNT (0:7)
+  // cppcheck-suppress unusedStructMember
+  uint8_t lba_low_;   //!< @brief LBA_LOW (0:7)
+  uint8_t lba_mid_;   //!< @brief LBA_MID (0:7)
+  uint8_t lbe_high_;  //!< @brief LBE_HIGH (0:7)
+  // cppcheck-suppress unusedStructMember
+  uint8_t device_;   //!< @brief DEVICE
+  uint8_t command_;  //!< @brief COMMAND
+  // cppcheck-suppress unusedStructMember
+  uint8_t reserved2_;  //!< @brief Reserved
+  // cppcheck-suppress unusedStructMember
+  uint8_t control_;  //!< @brief CONTROL
 };
 
 /**

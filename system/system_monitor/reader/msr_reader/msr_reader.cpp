@@ -54,22 +54,36 @@ constexpr int PORT = 7634;
  */
 typedef struct
 {
-  uint64_t pkg_thermal_status_ : 1;               //!< @brief 0 Pkg Thermal Status (RO)
-  uint64_t pkg_thermal_status_log_ : 1;           //!< @brief 1 Pkg Thermal Status Log (R/W)
-  uint64_t pkg_prochot_event_ : 1;                //!< @brief 2 Pkg PROCHOT # event (RO)
-  uint64_t pkg_prochot_log_ : 1;                  //!< @brief 3 Pkg PROCHOT # log (R/WC0)
+  uint64_t pkg_thermal_status_ : 1;  //!< @brief 0 Pkg Thermal Status (RO)
+  // cppcheck-suppress unusedStructMember
+  uint64_t pkg_thermal_status_log_ : 1;  //!< @brief 1 Pkg Thermal Status Log (R/W)
+  // cppcheck-suppress unusedStructMember
+  uint64_t pkg_prochot_event_ : 1;  //!< @brief 2 Pkg PROCHOT # event (RO)
+  // cppcheck-suppress unusedStructMember
+  uint64_t pkg_prochot_log_ : 1;  //!< @brief 3 Pkg PROCHOT # log (R/WC0)
+  // cppcheck-suppress unusedStructMember
   uint64_t pkg_critical_temperature_status_ : 1;  //!< @brief 4 Pkg Critical Temperature Status (RO)
   uint64_t                                        //!< @brief 5 Pkg Critical Temperature
+                                                  // cppcheck-suppress unusedStructMember
     pkg_critical_temperature_status_log_ : 1;     //!<   Status Log (R/WC0)
-  uint64_t pkg_thermal_threshold_1_status_ : 1;   //!< @brief 6 Pkg Thermal Threshold #1 Status (RO)
-  uint64_t pkg_thermal_threshold_1_log_ : 1;      //!< @brief 7 Pkg Thermal Threshold #1 log (R/WC0)
-  uint64_t pkg_thermal_threshold_2_status_ : 1;   //!< @brief 8 Pkg Thermal Threshold #2 Status (RO)
-  uint64_t pkg_thermal_threshold_2_log_ : 1;      //!< @brief 9 Pkg Thermal Threshold #2 log (R/WC0)
-  uint64_t pkg_power_limitation_status_ : 1;      //!< @brief 10 Pkg Power Limitation Status (RO)
-  uint64_t pkg_power_limitation_log_ : 1;         //!< @brief 11 Pkg Power Limitation log (R/WC0)
-  uint64_t reserved1_ : 4;                        //!< @brief 15:12 Reserved
-  uint64_t pkg_digital_readout_ : 7;              //!< @brief 22:16 Pkg Digital Readout (RO)
-  uint64_t reserved2_ : 41;                       //!< @brief 63:23 Reserved
+  // cppcheck-suppress unusedStructMember
+  uint64_t pkg_thermal_threshold_1_status_ : 1;  //!< @brief 6 Pkg Thermal Threshold #1 Status (RO)
+  // cppcheck-suppress unusedStructMember
+  uint64_t pkg_thermal_threshold_1_log_ : 1;  //!< @brief 7 Pkg Thermal Threshold #1 log (R/WC0)
+  // cppcheck-suppress unusedStructMember
+  uint64_t pkg_thermal_threshold_2_status_ : 1;  //!< @brief 8 Pkg Thermal Threshold #2 Status (RO)
+  // cppcheck-suppress unusedStructMember
+  uint64_t pkg_thermal_threshold_2_log_ : 1;  //!< @brief 9 Pkg Thermal Threshold #2 log (R/WC0)
+  // cppcheck-suppress unusedStructMember
+  uint64_t pkg_power_limitation_status_ : 1;  //!< @brief 10 Pkg Power Limitation Status (RO)
+  // cppcheck-suppress unusedStructMember
+  uint64_t pkg_power_limitation_log_ : 1;  //!< @brief 11 Pkg Power Limitation log (R/WC0)
+  // cppcheck-suppress unusedStructMember
+  uint64_t reserved1_ : 4;  //!< @brief 15:12 Reserved
+  // cppcheck-suppress unusedStructMember
+  uint64_t pkg_digital_readout_ : 7;  //!< @brief 22:16 Pkg Digital Readout (RO)
+  // cppcheck-suppress unusedStructMember
+  uint64_t reserved2_ : 41;  //!< @brief 63:23 Reserved
 } PackageThermalStatus;
 
 /**
