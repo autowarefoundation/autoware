@@ -38,22 +38,22 @@ using Rtree = boost::geometry::index::rtree<BoxIndexPair, boost::geometry::index
 /// @brief parameters for the "out of lane" module
 struct PlannerParam
 {
-  double extra_object_width;
-  double minimum_object_velocity;
-  double stop_distance_buffer;
-  double time_horizon;
-  double hysteresis;
-  double add_duration_buffer;
-  double remove_duration_buffer;
-  double ego_longitudinal_offset;
-  double ego_lateral_offset;
-  double minimum_object_distance_from_ego_trajectory;
-  bool ignore_unavoidable_collisions;
+  double extra_object_width{};
+  double minimum_object_velocity{};
+  double stop_distance_buffer{};
+  double time_horizon{};
+  double hysteresis{};
+  double add_duration_buffer{};
+  double remove_duration_buffer{};
+  double ego_longitudinal_offset{};
+  double ego_lateral_offset{};
+  double minimum_object_distance_from_ego_trajectory{};
+  bool ignore_unavoidable_collisions{};
 };
 
 struct EgoData
 {
-  TrajectoryPoints trajectory{};
+  TrajectoryPoints trajectory;
   size_t first_trajectory_idx{};
   double longitudinal_offset_to_first_trajectory_idx;  // [m]
   geometry_msgs::msg::Pose pose;
@@ -65,11 +65,11 @@ struct EgoData
 /// @brief debug data
 struct DebugData
 {
-  autoware::universe_utils::MultiPolygon2d obstacle_footprints{};
+  autoware::universe_utils::MultiPolygon2d obstacle_footprints;
   size_t prev_dynamic_obstacles_nb{};
-  autoware::universe_utils::MultiPolygon2d ego_footprints{};
+  autoware::universe_utils::MultiPolygon2d ego_footprints;
   size_t prev_ego_footprints_nb{};
-  std::optional<geometry_msgs::msg::Pose> stop_pose{};
+  std::optional<geometry_msgs::msg::Pose> stop_pose;
   size_t prev_collisions_nb{};
   double z{};
   void reset_data()
