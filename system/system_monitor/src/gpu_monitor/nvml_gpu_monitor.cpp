@@ -130,7 +130,6 @@ void GPUMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
   // Remember start time to measure elapsed time
   const auto t_start = SystemMonitorUtility::startMeasurement();
 
-  int level = DiagStatus::OK;
   int whole_level = DiagStatus::OK;
   int index = 0;
   nvmlReturn_t ret{};
@@ -150,7 +149,7 @@ void GPUMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
       return;
     }
 
-    level = DiagStatus::OK;
+    int level = DiagStatus::OK;
     float usage = static_cast<float>(itr->utilization.gpu) / 100.0;
     if (usage >= gpu_usage_error_) {
       level = std::max(level, static_cast<int>(DiagStatus::ERROR));
@@ -264,7 +263,6 @@ void GPUMonitor::checkMemoryUsage(diagnostic_updater::DiagnosticStatusWrapper & 
   // Remember start time to measure elapsed time
   const auto t_start = SystemMonitorUtility::startMeasurement();
 
-  int level = DiagStatus::OK;
   int whole_level = DiagStatus::OK;
   int index = 0;
   nvmlReturn_t ret{};
@@ -286,7 +284,7 @@ void GPUMonitor::checkMemoryUsage(diagnostic_updater::DiagnosticStatusWrapper & 
       return;
     }
 
-    level = DiagStatus::OK;
+    int level = DiagStatus::OK;
     float usage = static_cast<float>(itr->utilization.memory) / 100.0;
     if (usage >= memory_usage_error_) {
       level = std::max(level, static_cast<int>(DiagStatus::ERROR));

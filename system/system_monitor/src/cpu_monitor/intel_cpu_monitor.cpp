@@ -130,16 +130,14 @@ void CPUMonitor::checkThrottling(diagnostic_updater::DiagnosticStatusWrapper & s
     return;
   }
 
-  int level = DiagStatus::OK;
   int whole_level = DiagStatus::OK;
   int index = 0;
 
   for (auto itr = info.pkg_thermal_status_.begin(); itr != info.pkg_thermal_status_.end();
        ++itr, ++index) {
+    int level = DiagStatus::OK;
     if (*itr) {
       level = DiagStatus::ERROR;
-    } else {
-      level = DiagStatus::OK;
     }
 
     stat.add(fmt::format("CPU {}: Pkg Thermal Status", index), thermal_dict_.at(level));
