@@ -2,6 +2,7 @@
 /**:
   ros__parameters:
     base_link_frame_id: "base_link"
+    merge_frame_id: "map"
     time_sync_threshold: 0.999
     sub_object_timeout_sec: 0.8
     publish_interpolated_sub_objects: true #for debug

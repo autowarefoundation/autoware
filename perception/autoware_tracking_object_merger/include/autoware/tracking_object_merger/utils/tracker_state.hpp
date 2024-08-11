@@ -146,7 +146,8 @@ public:
 };
 
 TrackedObjects getTrackedObjectsFromTrackerStates(
-  std::vector<TrackerState> & tracker_states, const rclcpp::Time & time);
+  std::vector<TrackerState> & tracker_states, const rclcpp::Time & time,
+  const std::string & frame_id);
 }  // namespace autoware::tracking_object_merger
 
 #endif  // AUTOWARE__TRACKING_OBJECT_MERGER__UTILS__TRACKER_STATE_HPP_

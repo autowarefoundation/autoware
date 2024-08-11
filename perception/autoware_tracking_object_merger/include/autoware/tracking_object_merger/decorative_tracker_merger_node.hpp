@@ -96,8 +96,8 @@ private:
   MEASUREMENT_STATE sub_sensor_type_;
   std::vector<TrackerState> inner_tracker_objects_;
   std::unordered_map<std::string, std::unique_ptr<DataAssociation>> data_association_map_;
-  std::string target_frame_;
   std::string base_link_frame_id_;
+  std::string merge_frame_id_;
   // buffer to save the sub objects
   std::vector<autoware_perception_msgs::msg::TrackedObjects::ConstSharedPtr> sub_objects_buffer_;
   double sub_object_timeout_sec_;

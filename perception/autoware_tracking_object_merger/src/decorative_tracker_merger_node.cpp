@@ -115,6 +115,7 @@ DecorativeTrackerMergerNode::DecorativeTrackerMergerNode(const rclcpp::NodeOptio
   // Parameters
   publish_interpolated_sub_objects_ = declare_parameter<bool>("publish_interpolated_sub_objects");
   base_link_frame_id_ = declare_parameter<std::string>("base_link_frame_id");
+  merge_frame_id_ = declare_parameter<std::string>("merge_frame_id", "map");
   time_sync_threshold_ = declare_parameter<double>("time_sync_threshold");
   sub_object_timeout_sec_ = declare_parameter<double>("sub_object_timeout_sec");
   // default setting parameter for tracker
@@ -196,6 +197,16 @@ void DecorativeTrackerMergerNode::mainObjectsCallback(
   const TrackedObjects::ConstSharedPtr & main_objects)
 {
   stop_watch_ptr_->toc("processing_time", true);
+
+  /* transform to target merge coordinate */
+  TrackedObjects transformed_objects;
+  if (!object_recognition_utils::transformObjects(
+        *main_objects, merge_frame_id_, tf_buffer_, transformed_objects)) {
+    return;
+  }
+  TrackedObjects::ConstSharedPtr transformed_main_objects =
+    std::make_shared<TrackedObjects>(transformed_objects);
+
   // try to merge sub object
   if (!sub_objects_buffer_.empty()) {
     // get interpolated sub objects
@@ -203,7 +214,7 @@ void DecorativeTrackerMergerNode::mainObjectsCallback(
     TrackedObjects::ConstSharedPtr closest_time_sub_objects;
     TrackedObjects::ConstSharedPtr closest_time_sub_objects_later;
     for (const auto & sub_object : sub_objects_buffer_) {
-      if (getUnixTime(sub_object->header) < getUnixTime(main_objects->header)) {
+      if (getUnixTime(sub_object->header) < getUnixTime(transformed_main_objects->header)) {
         closest_time_sub_objects = sub_object;
       } else {
         closest_time_sub_objects_later = sub_object;
@@ -212,7 +223,7 @@ void DecorativeTrackerMergerNode::mainObjectsCallback(
     }
     // get delay compensated sub objects
     const auto interpolated_sub_objects = interpolateObjectState(
-      closest_time_sub_objects, closest_time_sub_objects_later, main_objects->header);
+      closest_time_sub_objects, closest_time_sub_objects_later, transformed_main_objects->header);
     if (interpolated_sub_objects.has_value()) {
       // Merge sub objects
       const auto interp_sub_objs = interpolated_sub_objects.value();
@@ -225,9 +236,10 @@ void DecorativeTrackerMergerNode::mainObjectsCallback(
   }
 
   // try to merge main object
-  this->decorativeMerger(main_sensor_type_, main_objects);
-  const auto & tracked_objects = getTrackedObjects(main_objects->header);
+  this->decorativeMerger(main_sensor_type_, transformed_main_objects);
+  const auto & tracked_objects = getTrackedObjects(transformed_main_objects->header);
   merged_object_pub_->publish(tracked_objects);
+
   published_time_publisher_->publish_if_subscribed(
     merged_object_pub_, tracked_objects.header.stamp);
   processing_time_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
@@ -244,10 +256,19 @@ void DecorativeTrackerMergerNode::mainObjectsCallback(
  */
 void DecorativeTrackerMergerNode::subObjectsCallback(const TrackedObjects::ConstSharedPtr & msg)
 {
-  sub_objects_buffer_.push_back(msg);
+  /* transform to target merge coordinate */
+  TrackedObjects transformed_objects;
+  if (!object_recognition_utils::transformObjects(
+        *msg, merge_frame_id_, tf_buffer_, transformed_objects)) {
+    return;
+  }
+  TrackedObjects::ConstSharedPtr transformed_sub_objects =
+    std::make_shared<TrackedObjects>(transformed_objects);
+
+  sub_objects_buffer_.push_back(transformed_sub_objects);
   // remove old sub objects
   // const auto now = get_clock()->now();
-  const auto now = rclcpp::Time(msg->header.stamp);
+  const auto now = rclcpp::Time(transformed_sub_objects->header.stamp);
   const auto remove_itr = std::remove_if(
     sub_objects_buffer_.begin(), sub_objects_buffer_.end(), [now, this](const auto & sub_object) {
       return (now - rclcpp::Time(sub_object->header.stamp)).seconds() > sub_object_timeout_sec_;
@@ -392,7 +413,7 @@ TrackedObjects DecorativeTrackerMergerNode::getTrackedObjects(const std_msgs::ms
 {
   // get main objects
   rclcpp::Time current_time = rclcpp::Time(header.stamp);
-  return getTrackedObjectsFromTrackerStates(inner_tracker_objects_, current_time);
+  return getTrackedObjectsFromTrackerStates(inner_tracker_objects_, current_time, merge_frame_id_);
 }
 
 // create new tracker
