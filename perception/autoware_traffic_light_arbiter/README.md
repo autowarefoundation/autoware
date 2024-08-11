@@ -1,4 +1,4 @@
-# traffic_light_arbiter
+# autoware_traffic_light_arbiter
 
 ## Purpose
 
