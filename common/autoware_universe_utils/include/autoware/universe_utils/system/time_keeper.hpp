@@ -67,9 +67,9 @@ public:
   /**
    * @brief Get the parent node
    *
-   * @return std::shared_ptr<ProcessingTimeNode> Shared pointer to the parent node
+   * @return std::weak_ptr<ProcessingTimeNode> Weak pointer to the parent node
    */
-  std::shared_ptr<ProcessingTimeNode> get_parent_node() const;
+  std::weak_ptr<ProcessingTimeNode> get_parent_node() const;
 
   /**
    * @brief Get the child nodes
@@ -101,10 +101,10 @@ public:
   std::string get_name() const;
 
 private:
-  const std::string name_;                                    //!< Name of the node
-  double processing_time_{0.0};                               //!< Processing time of the node
-  std::string comment_;                                       //!< Comment for the node
-  std::shared_ptr<ProcessingTimeNode> parent_node_{nullptr};  //!< Shared pointer to the parent node
+  const std::string name_;                         //!< Name of the node
+  double processing_time_{0.0};                    //!< Processing time of the node
+  std::string comment_;                            //!< Comment for the node
+  std::weak_ptr<ProcessingTimeNode> parent_node_;  //!< Weak pointer to the parent node
   std::vector<std::shared_ptr<ProcessingTimeNode>>
     child_nodes_;  //!< Vector of shared pointers to the child nodes
 };

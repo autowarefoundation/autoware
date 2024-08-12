@@ -28,7 +28,7 @@ ProcessingTimeNode::ProcessingTimeNode(const std::string & name) : name_(name)
 std::shared_ptr<ProcessingTimeNode> ProcessingTimeNode::add_child(const std::string & name)
 {
   auto new_child_node = std::make_shared<ProcessingTimeNode>(name);
-  new_child_node->parent_node_ = shared_from_this();
+  new_child_node->parent_node_ = weak_from_this();
   child_nodes_.push_back(new_child_node);
   return new_child_node;
 }
@@ -86,7 +86,7 @@ tier4_debug_msgs::msg::ProcessingTimeTree ProcessingTimeNode::to_msg() const
   return time_tree_msg;
 }
 
-std::shared_ptr<ProcessingTimeNode> ProcessingTimeNode::get_parent_node() const
+std::weak_ptr<ProcessingTimeNode> ProcessingTimeNode::get_parent_node() const
 {
   return parent_node_;
 }
@@ -152,7 +152,7 @@ void TimeKeeper::end_track(const std::string & func_name)
   }
   const double processing_time = stop_watch_.toc(func_name);
   current_time_node_->set_time(processing_time);
-  current_time_node_ = current_time_node_->get_parent_node();
+  current_time_node_ = current_time_node_->get_parent_node().lock();
 
   if (current_time_node_ == nullptr) {
     report();
