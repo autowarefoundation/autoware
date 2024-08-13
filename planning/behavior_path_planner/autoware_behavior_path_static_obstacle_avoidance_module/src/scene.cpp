@@ -987,11 +987,6 @@ BehaviorModuleOutput StaticObstacleAvoidanceModule::plan()
     spline_shift_path = helper_->getPreviousSplineShiftPath();
   }
 
-  // post processing
-  {
-    postProcess();  // remove old shift points
-  }
-
   BehaviorModuleOutput output;
 
   const auto is_ignore_signal = [this](const UUID & uuid) {

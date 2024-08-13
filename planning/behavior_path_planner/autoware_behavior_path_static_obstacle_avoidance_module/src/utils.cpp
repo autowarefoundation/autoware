@@ -2282,10 +2282,9 @@ std::pair<PredictedObjects, PredictedObjects> separateObjectsByPath(
   Pose p_reference_ego_front = reference_path.points.front().point.pose;
   Pose p_spline_ego_front = spline_path.points.front().point.pose;
   double next_longitudinal_distance = parameters->resample_interval_for_output;
+  const auto offset = arc_length_array.at(ego_idx);
   for (size_t i = 0; i < points_size; ++i) {
-    const auto distance_from_ego =
-      autoware::motion_utils::calcSignedArcLength(reference_path.points, ego_idx, i);
-    if (distance_from_ego > object_check_forward_distance) {
+    if (arc_length_array.at(i) > object_check_forward_distance + offset) {
       break;
     }
 

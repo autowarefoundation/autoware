@@ -61,32 +61,30 @@ bool isCentroidWithinLanelet(
   const PredictedObject & object, const lanelet::ConstLanelet & lanelet, const double yaw_threshold)
 {
   const auto & object_pose = object.kinematics.initial_pose_with_covariance.pose;
-  const auto closest_pose = lanelet::utils::getClosestCenterPose(lanelet, object_pose.position);
-  if (
-    std::abs(autoware::universe_utils::calcYawDeviation(closest_pose, object_pose)) >
-    yaw_threshold) {
+  if (!boost::geometry::within(
+        lanelet::utils::to2D(lanelet::utils::conversion::toLaneletPoint(object_pose.position))
+          .basicPoint(),
+        lanelet.polygon2d().basicPolygon())) {
     return false;
   }
 
-  return boost::geometry::within(
-    lanelet::utils::to2D(lanelet::utils::conversion::toLaneletPoint(object_pose.position))
-      .basicPoint(),
-    lanelet.polygon2d().basicPolygon());
+  const auto closest_pose = lanelet::utils::getClosestCenterPose(lanelet, object_pose.position);
+  return std::abs(autoware::universe_utils::calcYawDeviation(closest_pose, object_pose)) <
+         yaw_threshold;
 }
 
 bool isPolygonOverlapLanelet(
   const PredictedObject & object, const lanelet::ConstLanelet & lanelet, const double yaw_threshold)
 {
-  const auto & object_pose = object.kinematics.initial_pose_with_covariance.pose;
-  const auto closest_pose = lanelet::utils::getClosestCenterPose(lanelet, object_pose.position);
-  if (
-    std::abs(autoware::universe_utils::calcYawDeviation(closest_pose, object_pose)) >
-    yaw_threshold) {
+  const auto lanelet_polygon = utils::toPolygon2d(lanelet);
+  if (!isPolygonOverlapLanelet(object, lanelet_polygon)) {
     return false;
   }
 
-  const auto lanelet_polygon = utils::toPolygon2d(lanelet);
-  return isPolygonOverlapLanelet(object, lanelet_polygon);
+  const auto & object_pose = object.kinematics.initial_pose_with_covariance.pose;
+  const auto closest_pose = lanelet::utils::getClosestCenterPose(lanelet, object_pose.position);
+  return std::abs(autoware::universe_utils::calcYawDeviation(closest_pose, object_pose)) <
+         yaw_threshold;
 }
 
 bool isPolygonOverlapLanelet(
