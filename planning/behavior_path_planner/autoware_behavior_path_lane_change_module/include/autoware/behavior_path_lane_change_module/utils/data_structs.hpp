@@ -215,11 +215,33 @@ struct Info
   double terminal_lane_changing_velocity{0.0};
 };
 
+template <typename Object>
 struct LanesObjects
 {
-  ExtendedPredictedObjects current_lane{};
-  ExtendedPredictedObjects target_lane{};
-  ExtendedPredictedObjects other_lane{};
+  Object current_lane{};
+  Object target_lane_leading{};
+  Object target_lane_trailing{};
+  Object other_lane{};
+
+  LanesObjects() = default;
+  LanesObjects(
+    Object current_lane, Object target_lane_leading, Object target_lane_trailing, Object other_lane)
+  : current_lane(std::move(current_lane)),
+    target_lane_leading(std::move(target_lane_leading)),
+    target_lane_trailing(std::move(target_lane_trailing)),
+    other_lane(std::move(other_lane))
+  {
+  }
+};
+
+struct TargetObjects
+{
+  ExtendedPredictedObjects leading;
+  ExtendedPredictedObjects trailing;
+  TargetObjects(ExtendedPredictedObjects leading, ExtendedPredictedObjects trailing)
+  : leading(std::move(leading)), trailing(std::move(trailing))
+  {
+  }
 };
 
 enum class ModuleType {
@@ -231,7 +253,13 @@ enum class ModuleType {
 struct PathSafetyStatus
 {
   bool is_safe{true};
-  bool is_object_coming_from_rear{false};
+  bool is_trailing_object{false};
+
+  PathSafetyStatus() = default;
+  PathSafetyStatus(const bool is_safe, const bool is_trailing_object)
+  : is_safe(is_safe), is_trailing_object(is_trailing_object)
+  {
+  }
 };
 
 struct LanesPolygon
@@ -280,12 +308,15 @@ using CommonDataPtr = std::shared_ptr<CommonData>;
 
 namespace autoware::behavior_path_planner
 {
+using autoware_perception_msgs::msg::PredictedObject;
+using utils::path_safety_checker::ExtendedPredictedObjects;
 using LaneChangeModuleType = lane_change::ModuleType;
 using LaneChangeParameters = lane_change::Parameters;
 using LaneChangeStates = lane_change::States;
 using LaneChangePhaseInfo = lane_change::PhaseInfo;
 using LaneChangeInfo = lane_change::Info;
-using LaneChangeLanesFilteredObjects = lane_change::LanesObjects;
+using FilteredByLanesObjects = lane_change::LanesObjects<std::vector<PredictedObject>>;
+using FilteredByLanesExtendedObjects = lane_change::LanesObjects<ExtendedPredictedObjects>;
 using LateralAccelerationMap = lane_change::LateralAccelerationMap;
 }  // namespace autoware::behavior_path_planner
 

@@ -307,7 +307,7 @@ bool LaneChangeInterface::canTransitFailureState()
     return false;
   }
 
-  if (module_type_->isRequiredStop(post_process_safety_status_.is_object_coming_from_rear)) {
+  if (module_type_->isRequiredStop(post_process_safety_status_.is_trailing_object)) {
     log_debug_throttled("Module require stopping");
   }
 

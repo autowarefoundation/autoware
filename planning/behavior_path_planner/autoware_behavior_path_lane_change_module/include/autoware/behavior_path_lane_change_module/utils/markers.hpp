@@ -29,6 +29,7 @@
 
 namespace marker_utils::lane_change_markers
 {
+using autoware::behavior_path_planner::FilteredByLanesExtendedObjects;
 using autoware::behavior_path_planner::LaneChangePath;
 using autoware::behavior_path_planner::lane_change::Debug;
 using autoware::behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObjects;
@@ -39,9 +40,7 @@ MarkerArray createLaneChangingVirtualWallMarker(
   const geometry_msgs::msg::Pose & lane_changing_pose, const std::string & module_name,
   const rclcpp::Time & now, const std::string & ns);
 MarkerArray showFilteredObjects(
-  const ExtendedPredictedObjects & current_lane_objects,
-  const ExtendedPredictedObjects & target_lane_objects,
-  const ExtendedPredictedObjects & other_lane_objects, const std::string & ns);
+  const FilteredByLanesExtendedObjects & filtered_objects, const std::string & ns);
 MarkerArray createExecutionArea(const geometry_msgs::msg::Polygon & execution_area);
 MarkerArray showExecutionInfo(const Debug & debug_data, const geometry_msgs::msg::Pose & ego_pose);
 MarkerArray createDebugMarkerArray(

@@ -312,6 +312,10 @@ bool is_before_terminal(
   const PredictedObject & object);
 
 double calc_angle_to_lanelet_segment(const lanelet::ConstLanelets & lanelets, const Pose & pose);
+
+ExtendedPredictedObjects transform_to_extended_objects(
+  const CommonDataPtr & common_data_ptr, const std::vector<PredictedObject> & objects,
+  const bool check_prepare_phase);
 }  // namespace autoware::behavior_path_planner::utils::lane_change
 
 namespace autoware::behavior_path_planner::utils::lane_change::debug
