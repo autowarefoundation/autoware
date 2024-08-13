@@ -137,6 +137,8 @@ void GoalPlannerModuleManager::init(rclcpp::Node * node)
     p.path_priority = node->declare_parameter<std::string>(ns + "path_priority");
     p.efficient_path_order =
       node->declare_parameter<std::vector<std::string>>(ns + "efficient_path_order");
+    p.lane_departure_check_expansion_margin =
+      node->declare_parameter<double>(ns + "lane_departure_check_expansion_margin");
   }
 
   // shift parking
@@ -518,6 +520,9 @@ void GoalPlannerModuleManager::updateModuleParams(
     updateParam<double>(parameters, ns + "deceleration_interval", p->deceleration_interval);
     updateParam<double>(
       parameters, ns + "after_shift_straight_distance", p->after_shift_straight_distance);
+    updateParam<double>(
+      parameters, ns + "lane_departure_check_expansion_margin",
+      p->lane_departure_check_expansion_margin);
   }
 
   // parallel parking common

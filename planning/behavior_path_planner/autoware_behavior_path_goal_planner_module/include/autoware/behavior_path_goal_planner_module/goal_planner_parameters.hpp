@@ -89,6 +89,7 @@ struct GoalPlannerParameters
   double maximum_jerk{0.0};
   std::string path_priority;  // "efficient_path" or "close_goal"
   std::vector<std::string> efficient_path_order{};
+  double lane_departure_check_expansion_margin{0.0};
 
   // shift path
   bool enable_shift_parking{false};

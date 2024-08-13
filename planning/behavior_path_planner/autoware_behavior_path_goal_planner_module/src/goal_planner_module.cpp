@@ -68,6 +68,10 @@ GoalPlannerModule::GoalPlannerModule(
 {
   LaneDepartureChecker lane_departure_checker{};
   lane_departure_checker.setVehicleInfo(vehicle_info_);
+  lane_departure_checker::Param lane_departure_checker_params;
+  lane_departure_checker_params.footprint_extra_margin =
+    parameters->lane_departure_check_expansion_margin;
+  lane_departure_checker.setParam(lane_departure_checker_params);
 
   occupancy_grid_map_ = std::make_shared<OccupancyGridBasedCollisionDetector>();
 
