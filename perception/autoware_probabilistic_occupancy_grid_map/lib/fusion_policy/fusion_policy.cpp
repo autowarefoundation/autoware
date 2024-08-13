@@ -218,7 +218,7 @@ struct dempsterShaferOccupancy
   }
 
   // Dempster-Shafer fusion
-  dempsterShaferOccupancy operator+(const dempsterShaferOccupancy & other)
+  dempsterShaferOccupancy operator+(const dempsterShaferOccupancy & other) const
   {
     dempsterShaferOccupancy result;
     double K = calcK(other);
