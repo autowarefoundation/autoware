@@ -271,8 +271,8 @@ TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
 
   // calculate twist for radar data with target_value * average
   Eigen::Vector2d vec_target_value_average(0.0, 0.0);
-  double sum_target_value = 0.0;
   if (param_.velocity_weight_target_value_average > 0.0) {
+    double sum_target_value = 0.0;
     for (const auto & radar : (*radars)) {
       vec_target_value_average += (toVector2d(radar.twist_with_covariance) * radar.target_value);
       sum_target_value += radar.target_value;
