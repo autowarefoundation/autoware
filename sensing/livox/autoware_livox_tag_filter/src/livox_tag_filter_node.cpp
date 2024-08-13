@@ -22,10 +22,10 @@
 
 struct EIGEN_ALIGN16 LivoxPoint
 {
-  float x;
-  float y;
-  float z;
-  float intensity;
+  float x;          // cppcheck-suppress unusedStructMember
+  float y;          // cppcheck-suppress unusedStructMember
+  float z;          // cppcheck-suppress unusedStructMember
+  float intensity;  // cppcheck-suppress unusedStructMember
   std::uint8_t tag;
   std::uint8_t line;
 };
