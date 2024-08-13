@@ -26,6 +26,11 @@
       min_longitudinal_acc: -1.0
       max_longitudinal_acc: 1.0
 
+      skip_process:
+        longitudinal_distance_diff_threshold:
+          prepare: 0.5
+          lane_changing: 0.5
+
       # safety check
       safety_check:
         allow_loose_check_for_cancel: true

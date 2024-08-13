@@ -124,6 +124,9 @@ struct Parameters
   double min_longitudinal_acc{-1.0};
   double max_longitudinal_acc{1.0};
 
+  double skip_process_lon_diff_th_prepare{0.5};
+  double skip_process_lon_diff_th_lane_changing{1.0};
+
   // collision check
   bool enable_collision_check_for_prepare_phase_in_general_lanes{false};
   bool enable_collision_check_for_prepare_phase_in_intersection{true};

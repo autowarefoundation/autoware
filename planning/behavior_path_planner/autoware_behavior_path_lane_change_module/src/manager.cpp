@@ -355,6 +355,13 @@ void LaneChangeModuleManager::updateModuleParams(const std::vector<rclcpp::Param
   }
 
   {
+    const std::string ns = "lane_change.skip_process.longitudinal_distance_diff_threshold.";
+    updateParam<double>(parameters, ns + "prepare", p->skip_process_lon_diff_th_prepare);
+    updateParam<double>(
+      parameters, ns + "lane_changing", p->skip_process_lon_diff_th_lane_changing);
+  }
+
+  {
     const std::string ns = "lane_change.safety_check.lane_expansion.";
     updateParam<double>(parameters, ns + "left_offset", p->lane_expansion_left_offset);
     updateParam<double>(parameters, ns + "right_offset", p->lane_expansion_right_offset);

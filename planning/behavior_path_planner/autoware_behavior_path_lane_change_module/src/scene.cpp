@@ -1417,6 +1417,13 @@ bool NormalLaneChange::getLaneChangePaths(
         continue;
       }
 
+      if (!candidate_paths->empty()) {
+        const auto prev_prep_diff = candidate_paths->back().info.length.prepare - prepare_length;
+        if (std::abs(prev_prep_diff) < lane_change_parameters_->skip_process_lon_diff_th_prepare) {
+          RCLCPP_DEBUG(logger_, "Skip: Change in prepare length is less than threshold.");
+          continue;
+        }
+      }
       auto prepare_segment = getPrepareSegment(current_lanes, backward_path_length, prepare_length);
 
       const auto debug_print = [&](const auto & s) {
@@ -1488,6 +1495,21 @@ bool NormalLaneChange::getLaneChangePaths(
             lane_changing_time, sampled_longitudinal_acc, longitudinal_acc_on_lane_changing,
             lane_changing_length);
         };
+        if (!candidate_paths->empty()) {
+          const auto prev_prep_diff = candidate_paths->back().info.length.prepare - prepare_length;
+          const auto lc_length_diff =
+            candidate_paths->back().info.length.lane_changing - lane_changing_length;
+
+          // We only check lc_length_diff if and only if the current prepare_length is equal to the
+          // previous prepare_length.
+          if (
+            std::abs(prev_prep_diff) < eps &&
+            std::abs(lc_length_diff) <
+              lane_change_parameters_->skip_process_lon_diff_th_lane_changing) {
+            RCLCPP_DEBUG(logger_, "Skip: Change in lane changing length is less than threshold.");
+            continue;
+          }
+        }
 
         if (lane_changing_length + prepare_length > dist_to_end_of_current_lanes) {
           debug_print_lat("Reject: length of lane changing path is longer than length to goal!!");
