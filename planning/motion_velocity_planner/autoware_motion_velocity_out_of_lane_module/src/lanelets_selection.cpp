@@ -16,6 +16,9 @@
 
 #include <autoware/universe_utils/geometry/geometry.hpp>
 
+#include <boost/geometry/algorithms/disjoint.hpp>
+
+#include <lanelet2_core/geometry/BoundingBox.h>
 #include <lanelet2_core/geometry/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
 
@@ -71,10 +74,12 @@ lanelet::ConstLanelets calculate_trajectory_lanelets(
   lanelet::BasicLineString2d trajectory_ls;
   for (const auto & p : ego_data.trajectory_points)
     trajectory_ls.emplace_back(p.pose.position.x, p.pose.position.y);
-  for (const auto & dist_lanelet :
-       lanelet::geometry::findWithin2d(lanelet_map_ptr->laneletLayer, trajectory_ls)) {
-    if (!contains_lanelet(trajectory_lanelets, dist_lanelet.second.id()))
-      trajectory_lanelets.push_back(dist_lanelet.second);
+  const auto candidates =
+    lanelet_map_ptr->laneletLayer.search(lanelet::geometry::boundingBox2d(trajectory_ls));
+  for (const auto & ll : candidates) {
+    if (!boost::geometry::disjoint(trajectory_ls, ll.polygon2d().basicPolygon())) {
+      trajectory_lanelets.push_back(ll);
+    }
   }
   const auto missing_lanelets =
     get_missing_lane_change_lanelets(trajectory_lanelets, route_handler);

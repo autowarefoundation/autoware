@@ -15,20 +15,23 @@
 #include "filter_predicted_objects.hpp"
 
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <traffic_light_utils/traffic_light_utils.hpp>
 
 #include <boost/geometry/algorithms/intersects.hpp>
+#include <boost/geometry/index/predicates.hpp>
 
 #include <lanelet2_core/geometry/LaneletMap.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
 #include <algorithm>
+#include <vector>
 
 namespace autoware::motion_velocity_planner::out_of_lane
 {
 void cut_predicted_path_beyond_line(
   autoware_perception_msgs::msg::PredictedPath & predicted_path,
-  const lanelet::BasicLineString2d & stop_line, const double object_front_overhang)
+  const universe_utils::LineString2d & stop_line, const double object_front_overhang)
 {
   if (predicted_path.path.empty() || stop_line.size() < 2) return;
 
@@ -58,43 +61,43 @@ void cut_predicted_path_beyond_line(
   }
 }
 
-std::optional<const lanelet::BasicLineString2d> find_next_stop_line(
-  const autoware_perception_msgs::msg::PredictedPath & path,
-  const std::shared_ptr<const PlannerData> planner_data)
+std::optional<universe_utils::LineString2d> find_next_stop_line(
+  const autoware_perception_msgs::msg::PredictedPath & path, const EgoData & ego_data)
 {
-  lanelet::ConstLanelets lanelets;
-  lanelet::BasicLineString2d query_line;
-  for (const auto & p : path.path) query_line.emplace_back(p.position.x, p.position.y);
-  const auto query_results = lanelet::geometry::findWithin2d(
-    planner_data->route_handler->getLaneletMapPtr()->laneletLayer, query_line);
-  for (const auto & r : query_results) lanelets.push_back(r.second);
-  for (const auto & ll : lanelets) {
-    for (const auto & element : ll.regulatoryElementsAs<lanelet::TrafficLight>()) {
-      const auto traffic_signal_stamped = planner_data->get_traffic_signal(element->id());
-      if (
-        traffic_signal_stamped.has_value() && element->stopLine().has_value() &&
-        traffic_light_utils::isTrafficSignalStop(ll, traffic_signal_stamped.value().signal)) {
-        lanelet::BasicLineString2d stop_line;
-        for (const auto & p : *(element->stopLine())) stop_line.emplace_back(p.x(), p.y());
-        return stop_line;
+  universe_utils::LineString2d query_path;
+  for (const auto & p : path.path) query_path.emplace_back(p.position.x, p.position.y);
+  std::vector<StopLineNode> query_results;
+  ego_data.stop_lines_rtree.query(
+    boost::geometry::index::intersects(query_path), std::back_inserter(query_results));
+  auto earliest_intersecting_index = query_path.size();
+  std::optional<universe_utils::LineString2d> earliest_stop_line;
+  universe_utils::Segment2d path_segment;
+  for (const auto & [_, stop_line] : query_results) {
+    for (auto index = 0UL; index + 1 < query_path.size(); ++index) {
+      path_segment.first = query_path[index];
+      path_segment.second = query_path[index + 1];
+      if (boost::geometry::intersects(path_segment, stop_line.stop_line)) {
+        bool within_stop_line_lanelet =
+          std::any_of(stop_line.lanelets.begin(), stop_line.lanelets.end(), [&](const auto & ll) {
+            return boost::geometry::within(path_segment.first, ll.polygon2d().basicPolygon());
+          });
+        if (within_stop_line_lanelet) {
+          earliest_intersecting_index = std::min(index, earliest_intersecting_index);
+          earliest_stop_line = stop_line.stop_line;
+        }
       }
     }
   }
-  return std::nullopt;
+  return earliest_stop_line;
 }
 
 void cut_predicted_path_beyond_red_lights(
-  autoware_perception_msgs::msg::PredictedPath & predicted_path,
-  const std::shared_ptr<const PlannerData> planner_data, const double object_front_overhang)
+  autoware_perception_msgs::msg::PredictedPath & predicted_path, const EgoData & ego_data,
+  const double object_front_overhang)
 {
-  const auto stop_line = find_next_stop_line(predicted_path, planner_data);
+  const auto stop_line = find_next_stop_line(predicted_path, ego_data);
   if (stop_line) {
-    // we use a longer stop line to also cut predicted paths that slightly go around the stop line
-    auto longer_stop_line = *stop_line;
-    const auto diff = stop_line->back() - stop_line->front();
-    longer_stop_line.front() -= diff * 0.5;
-    longer_stop_line.back() += diff * 0.5;
-    cut_predicted_path_beyond_line(predicted_path, longer_stop_line, object_front_overhang);
+    cut_predicted_path_beyond_line(predicted_path, *stop_line, object_front_overhang);
   }
 }
 
@@ -141,7 +144,7 @@ autoware_perception_msgs::msg::PredictedObjects filter_predicted_objects(
       if (params.objects_cut_predicted_paths_beyond_red_lights)
         for (auto & predicted_path : predicted_paths)
           cut_predicted_path_beyond_red_lights(
-            predicted_path, planner_data, filtered_object.shape.dimensions.x);
+            predicted_path, ego_data, filtered_object.shape.dimensions.x);
       predicted_paths.erase(
         std::remove_if(
           predicted_paths.begin(), predicted_paths.end(),

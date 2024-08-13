@@ -16,12 +16,17 @@
 #define TYPES_HPP_
 
 #include <autoware/route_handler/route_handler.hpp>
+#include <autoware/universe_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
 #include <autoware_planning_msgs/msg/trajectory_point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
+#include <boost/geometry/geometries/multi_polygon.hpp>
+#include <boost/geometry/index/rtree.hpp>
+
+#include <lanelet2_core/Forward.h>
 #include <lanelet2_core/LaneletMap.h>
 
 #include <algorithm>
@@ -172,6 +177,16 @@ struct OtherLane
   }
 };
 
+namespace bgi = boost::geometry::index;
+struct StopLine
+{
+  universe_utils::LineString2d stop_line;
+  lanelet::ConstLanelets lanelets;
+};
+using StopLineNode = std::pair<universe_utils::Box2d, StopLine>;
+using StopLinesRtree = bgi::rtree<StopLineNode, bgi::rstar<16>>;
+using OutAreaRtree = bgi::rtree<std::pair<universe_utils::Box2d, size_t>, bgi::rstar<16>>;
+
 /// @brief data related to the ego vehicle
 struct EgoData
 {
@@ -180,16 +195,17 @@ struct EgoData
   double velocity{};   // [m/s]
   double max_decel{};  // [m/s²]
   geometry_msgs::msg::Pose pose{};
+  StopLinesRtree stop_lines_rtree;
 };
 
 /// @brief data needed to make decisions
 struct DecisionInputs
 {
-  OverlapRanges ranges{};
-  EgoData ego_data{};
-  autoware_perception_msgs::msg::PredictedObjects objects{};
-  std::shared_ptr<const route_handler::RouteHandler> route_handler{};
-  lanelet::ConstLanelets lanelets{};
+  OverlapRanges ranges;
+  EgoData ego_data;
+  autoware_perception_msgs::msg::PredictedObjects objects;
+  std::shared_ptr<const route_handler::RouteHandler> route_handler;
+  lanelet::ConstLanelets lanelets;
 };
 
 /// @brief debug data

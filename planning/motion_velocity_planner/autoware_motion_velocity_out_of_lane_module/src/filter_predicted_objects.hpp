@@ -30,22 +30,21 @@ namespace autoware::motion_velocity_planner::out_of_lane
 /// @param [in] object_front_overhang extra distance to cut ahead of the stop line
 void cut_predicted_path_beyond_line(
   autoware_perception_msgs::msg::PredictedPath & predicted_path,
-  const lanelet::BasicLineString2d & stop_line, const double object_front_overhang);
+  const universe_utils::LineString2d & stop_line, const double object_front_overhang);
 
 /// @brief find the next red light stop line along the given path
 /// @param [in] path predicted path to check for a stop line
-/// @param [in] planner_data planner data with stop line information
+/// @param [in] ego_data ego data with the stop lines information
 /// @return the first red light stop line found along the path (if any)
-std::optional<const lanelet::BasicLineString2d> find_next_stop_line(
-  const autoware_perception_msgs::msg::PredictedPath & path,
-  const std::shared_ptr<const PlannerData> planner_data);
+std::optional<universe_utils::LineString2d> find_next_stop_line(
+  const autoware_perception_msgs::msg::PredictedPath & path, const EgoData & ego_data);
 
 /// @brief cut predicted path beyond stop lines of red lights
 /// @param [inout] predicted_path predicted path to cut
-/// @param [in] planner_data planner data to get the map and traffic light information
+/// @param [in] ego_data ego data with the stop lines information
 void cut_predicted_path_beyond_red_lights(
-  autoware_perception_msgs::msg::PredictedPath & predicted_path,
-  const std::shared_ptr<const PlannerData> planner_data, const double object_front_overhang);
+  autoware_perception_msgs::msg::PredictedPath & predicted_path, const EgoData & ego_data,
+  const double object_front_overhang);
 
 /// @brief filter predicted objects and their predicted paths
 /// @param [in] planner_data planner data

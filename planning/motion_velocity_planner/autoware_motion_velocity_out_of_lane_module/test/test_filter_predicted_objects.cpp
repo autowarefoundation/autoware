@@ -25,7 +25,7 @@ TEST(TestCollisionDistance, CutPredictedPathBeyondLine)
 {
   using autoware::motion_velocity_planner::out_of_lane::cut_predicted_path_beyond_line;
   autoware_perception_msgs::msg::PredictedPath predicted_path;
-  lanelet::BasicLineString2d stop_line;
+  autoware::universe_utils::LineString2d stop_line;
   double object_front_overhang = 0.0;
   const auto eps = 1e-9;
 
