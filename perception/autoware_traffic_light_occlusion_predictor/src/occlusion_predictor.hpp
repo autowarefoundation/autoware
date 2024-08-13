@@ -75,12 +75,12 @@ private:
     const pcl::PointCloud<pcl::PointXYZ> & cloud_in, const std::vector<pcl::PointXYZ> & roi_tls,
     const std::vector<pcl::PointXYZ> & roi_brs, pcl::PointCloud<pcl::PointXYZ> & cloud_out) const;
 
-  void sampleTrafficLightRoi(
+  static void sampleTrafficLightRoi(
     const pcl::PointXYZ & top_left, const pcl::PointXYZ & bottom_right,
     uint32_t horizontal_sample_num, uint32_t vertical_sample_num,
     pcl::PointCloud<pcl::PointXYZ> & cloud_out);
 
-  void calcRoiVector3D(
+  static void calcRoiVector3D(
     const tier4_perception_msgs::msg::TrafficLightRoi & roi,
     const image_geometry::PinholeCameraModel & pinhole_model,
     const std::map<lanelet::Id, tf2::Vector3> & traffic_light_position_map,
