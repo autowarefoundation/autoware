@@ -2404,7 +2404,13 @@ std::vector<PosePath> MapBasedPredictionNode::convertPathType(
 
           const double lane_yaw = std::atan2(
             current_p.position.y - prev_p.position.y, current_p.position.x - prev_p.position.x);
-          current_p.orientation = autoware::universe_utils::createQuaternionFromYaw(lane_yaw);
+          const double sin_yaw_half = std::sin(lane_yaw / 2.0);
+          const double cos_yaw_half = std::cos(lane_yaw / 2.0);
+          current_p.orientation.x = 0.0;
+          current_p.orientation.y = 0.0;
+          current_p.orientation.z = sin_yaw_half;
+          current_p.orientation.w = cos_yaw_half;
+
           converted_path.push_back(current_p);
           prev_p = current_p;
         }
@@ -2435,15 +2441,27 @@ std::vector<PosePath> MapBasedPredictionNode::convertPathType(
 
         const double lane_yaw = std::atan2(
           current_p.position.y - prev_p.position.y, current_p.position.x - prev_p.position.x);
-        current_p.orientation = autoware::universe_utils::createQuaternionFromYaw(lane_yaw);
+        const double sin_yaw_half = std::sin(lane_yaw / 2.0);
+        const double cos_yaw_half = std::cos(lane_yaw / 2.0);
+        current_p.orientation.x = 0.0;
+        current_p.orientation.y = 0.0;
+        current_p.orientation.z = sin_yaw_half;
+        current_p.orientation.w = cos_yaw_half;
+
         converted_path.push_back(current_p);
         prev_p = current_p;
       }
     }
 
     // Resample Path
-    const auto resampled_converted_path =
-      autoware::motion_utils::resamplePoseVector(converted_path, reference_path_resolution_);
+    const bool use_akima_spline_for_xy = true;
+    const bool use_lerp_for_z = true;
+    // the options use_akima_spline_for_xy and use_lerp_for_z are set to true
+    // but the implementation of use_akima_spline_for_xy in resamplePoseVector and
+    // resamplePointVector is opposite to the options so the options are set to true to use linear
+    // interpolation for xy
+    const auto resampled_converted_path = autoware::motion_utils::resamplePoseVector(
+      converted_path, reference_path_resolution_, use_akima_spline_for_xy, use_lerp_for_z);
     converted_paths.push_back(resampled_converted_path);
   }
 
