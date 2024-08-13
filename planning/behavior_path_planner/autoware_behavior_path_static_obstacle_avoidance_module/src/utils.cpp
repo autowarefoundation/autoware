@@ -772,6 +772,46 @@ bool isObviousAvoidanceTarget(
     }
   }
 
+  if (object.behavior == ObjectData::Behavior::MERGING) {
+    object.info = ObjectInfo::MERGING_TO_EGO_LANE;
+    if (
+      isOnRight(object) && !object.is_on_ego_lane &&
+      object.overhang_points.front().first < parameters->th_overhang_distance) {
+      RCLCPP_DEBUG(
+        rclcpp::get_logger(logger_namespace),
+        "merging vehicle. but overhang distance is less than threshold.");
+      return true;
+    }
+    if (
+      !isOnRight(object) && !object.is_on_ego_lane &&
+      object.overhang_points.front().first > -1.0 * parameters->th_overhang_distance) {
+      RCLCPP_DEBUG(
+        rclcpp::get_logger(logger_namespace),
+        "merging vehicle. but overhang distance is less than threshold.");
+      return true;
+    }
+  }
+
+  if (object.behavior == ObjectData::Behavior::DEVIATING) {
+    object.info = ObjectInfo::DEVIATING_FROM_EGO_LANE;
+    if (
+      isOnRight(object) && !object.is_on_ego_lane &&
+      object.overhang_points.front().first < parameters->th_overhang_distance) {
+      RCLCPP_DEBUG(
+        rclcpp::get_logger(logger_namespace),
+        "deviating vehicle. but overhang distance is less than threshold.");
+      return true;
+    }
+    if (
+      !isOnRight(object) && !object.is_on_ego_lane &&
+      object.overhang_points.front().first > -1.0 * parameters->th_overhang_distance) {
+      RCLCPP_DEBUG(
+        rclcpp::get_logger(logger_namespace),
+        "deviating vehicle. but overhang distance is less than threshold.");
+      return true;
+    }
+  }
+
   if (!object.is_parked) {
     object.info = ObjectInfo::IS_NOT_PARKING_OBJECT;
   }
