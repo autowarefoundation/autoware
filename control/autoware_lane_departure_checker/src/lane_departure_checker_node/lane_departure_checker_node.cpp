@@ -216,6 +216,16 @@ bool LaneDepartureCheckerNode::isDataReady()
     return false;
   }
 
+  if (!operation_mode_) {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "waiting for operation_mode msg...");
+    return false;
+  }
+
+  if (!control_mode_) {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "waiting for control_mode msg...");
+    return false;
+  }
+
   return true;
 }
 
@@ -260,6 +270,8 @@ void LaneDepartureCheckerNode::onTimer()
   route_ = sub_route_.takeData();
   reference_trajectory_ = sub_reference_trajectory_.takeData();
   predicted_trajectory_ = sub_predicted_trajectory_.takeData();
+  operation_mode_ = sub_operation_mode_.takeData();
+  control_mode_ = sub_control_mode_.takeData();
 
   const auto lanelet_map_bin_msg = sub_lanelet_map_bin_.takeData();
   if (lanelet_map_bin_msg) {
@@ -426,6 +438,9 @@ void LaneDepartureCheckerNode::checkTrajectoryDeviation(
   diagnostic_updater::DiagnosticStatusWrapper & stat)
 {
   using DiagStatus = diagnostic_msgs::msg::DiagnosticStatus;
+  using ControlModeStatus = autoware_vehicle_msgs::msg::ControlModeReport;
+  using OperationModeStatus = autoware_adapi_v1_msgs::msg::OperationModeState;
+
   int8_t level = DiagStatus::OK;
 
   if (std::abs(output_.trajectory_deviation.lateral) >= param_.max_lateral_deviation) {
@@ -441,8 +456,12 @@ void LaneDepartureCheckerNode::checkTrajectoryDeviation(
   }
 
   std::string msg = "OK";
-  if (level == DiagStatus::ERROR) {
+  if (
+    level == DiagStatus::ERROR && operation_mode_->mode == OperationModeStatus::AUTONOMOUS &&
+    control_mode_->mode == ControlModeStatus::AUTONOMOUS) {
     msg = "trajectory deviation is too large";
+  } else {
+    level = DiagStatus::OK;
   }
 
   stat.addf("max lateral deviation", "%.3f", param_.max_lateral_deviation);
