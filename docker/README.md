@@ -38,4 +38,8 @@ This stage installs the dependency packages based on `/rosdep-universe-depend-pa
 
 ### `devel`
 
+This stage provides a [development container](https://containers.dev) to Autoware developers. By running the host's source code with volume mounting, it allows for easy building and debugging of Autoware.
+
 ### `runtime`
+
+This stage is an Autoware runtime container. It only includes the dependencies required to run Autoware and the binaries built in the `autoware-universe` stage.
