@@ -7,3 +7,34 @@ Detailed instructions on how to use the containers can be found in the [Open AD 
 ## Multi-stage Dockerfile structure
 
 ![](./img/Dockerfile.svg)
+
+### `$BASE_IMAGE`
+
+This is a base image of this Dockerfile. [`ros:humble-ros-base-jammy`](https://hub.docker.com/_/ros/tags?page=&page_size=&ordering=&name=humble-ros-base-jammy) will be given.
+
+### `base`
+
+This stage performs only the basic setup required for all Autoware images.
+
+### `rosdep-depend`
+
+The following three ROS dependency package list files will be generated:
+- `/rosdep-core-depend-packages.txt`: A dependency package list file for the packages under the `core` directory of `autoware.repos`.
+- `/rosdep-universe-depend-packages.txt`: A dependency package list file for the packages under the `universe` directory of `autoware.repos`.
+- `/rosdep-exec-depend-packages.txt`: A dependency package list file required for running Autoware.
+
+These files will be used in the subsequent `autoware-core`, `autoware-universe`, and `runtime` stages.
+
+By generating only the package list files and copying them to the subsequent stages, the dependency packages will not be reinstalled during the container build process unless the dependency packages change.
+
+### `autoware-core`
+
+This stage installs the dependency packages based on `/rosdep-core-depend-packages.txt` and build the packages under the `core` directory of `autoware.repos`.
+
+### `autoware-universe`
+
+This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and build the packages under the `universe` directory of `autoware.repos`.
+
+### `devel`
+
+### `runtime`
