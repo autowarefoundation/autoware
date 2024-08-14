@@ -199,6 +199,8 @@ void CameraPoseInitializer::on_service(
   // Estimate orientation
   const double initial_yaw_angle_rad = 2 * std::atan2(orientation.z, orientation.w);
   const auto yaw_angle_rad_opt = estimate_pose(pos_vec3f, initial_yaw_angle_rad, yaw_std_rad);
+  // TODO(localization/mapping team): judge reliability of estimate pose
+  response->reliable = true;
   if (yaw_angle_rad_opt.has_value()) {
     response->success = true;
     response->pose_with_covariance =

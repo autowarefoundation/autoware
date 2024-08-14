@@ -21,6 +21,7 @@
 #include <tier4_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 
 #include <string>
+#include <tuple>
 
 class LocalizationModule
 {
@@ -30,7 +31,7 @@ private:
 
 public:
   LocalizationModule(rclcpp::Node * node, const std::string & service_name);
-  PoseWithCovarianceStamped align_pose(const PoseWithCovarianceStamped & pose);
+  std::tuple<PoseWithCovarianceStamped, bool> align_pose(const PoseWithCovarianceStamped & pose);
 
 private:
   rclcpp::Logger logger_;

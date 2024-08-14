@@ -15,6 +15,8 @@
 #ifndef POSE_INITIALIZER__POSE_INITIALIZER_CORE_HPP_
 #define POSE_INITIALIZER__POSE_INITIALIZER_CORE_HPP_
 
+#include "localization_util/diagnostics_module.hpp"
+
 #include <autoware/universe_utils/ros/logger_level_configure.hpp>
 #include <component_interface_specs/localization.hpp>
 #include <component_interface_utils/rclcpp.hpp>
@@ -55,6 +57,7 @@ private:
   std::unique_ptr<EkfLocalizationTriggerModule> ekf_localization_trigger_;
   std::unique_ptr<NdtLocalizationTriggerModule> ndt_localization_trigger_;
   std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
+  std::unique_ptr<DiagnosticsModule> diagnostics_pose_reliable_;
   double stop_check_duration_;
 
   void change_node_trigger(bool flag, bool need_spin = false);

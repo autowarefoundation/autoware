@@ -37,6 +37,8 @@ PoseInitializer::PoseInitializer(const rclcpp::NodeOptions & options)
   output_pose_covariance_ = get_covariance_parameter(this, "output_pose_covariance");
   gnss_particle_covariance_ = get_covariance_parameter(this, "gnss_particle_covariance");
 
+  diagnostics_pose_reliable_ = std::make_unique<DiagnosticsModule>(this, "pose_initializer_status");
+
   if (declare_parameter<bool>("ekf_enabled")) {
     ekf_localization_trigger_ = std::make_unique<EkfLocalizationTriggerModule>(this);
   }
@@ -151,13 +153,27 @@ void PoseInitializer::on_initialize(
 
       auto pose =
         req->pose_with_covariance.empty() ? get_gnss_pose() : req->pose_with_covariance.front();
+      bool reliable = true;
       if (ndt_) {
-        pose = ndt_->align_pose(pose);
+        std::tie(pose, reliable) = ndt_->align_pose(pose);
       } else if (yabloc_) {
         // If both the NDT and YabLoc initializer are enabled, prioritize NDT as it offers more
         // accuracy pose.
-        pose = yabloc_->align_pose(pose);
+        std::tie(pose, reliable) = yabloc_->align_pose(pose);
       }
+
+      diagnostics_pose_reliable_->clear();
+
+      // check initial pose result and publish diagnostics
+      diagnostics_pose_reliable_->add_key_value("initial_pose_reliable", reliable);
+      if (!reliable) {
+        std::stringstream message;
+        message << "Initial Pose Estimation is Unstable.";
+        diagnostics_pose_reliable_->update_level_and_message(
+          diagnostic_msgs::msg::DiagnosticStatus::ERROR, message.str());
+      }
+      diagnostics_pose_reliable_->publish(this->now());
+
       pose.pose.covariance = output_pose_covariance_;
       pub_reset_->publish(pose);
 

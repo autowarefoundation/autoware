@@ -41,6 +41,14 @@ This node depends on the map height fitter library.
 | `/localization/initialization_state` | autoware_adapi_v1_msgs::msg::LocalizationInitializationState | pose initialization state   |
 | `/initialpose3d`                     | geometry_msgs::msg::PoseWithCovarianceStamped                | calculated initial ego pose |
 
+## Diagnostics
+
+### pose_initializer_status
+
+If the score of initial pose estimation result is lower than score threshold, ERROR message is output to the `/diagnostics` topic.
+
+<img src="./media/diagnostic_pose_reliability.png" alt="drawing" width="400"/>
+
 ## Connection with Default AD API
 
 This `pose_initializer` is used via default AD API. For detailed description of the API description, please refer to [the description of `default_ad_api`](https://github.com/autowarefoundation/autoware.universe/blob/main/system/default_ad_api/document/localization.md).

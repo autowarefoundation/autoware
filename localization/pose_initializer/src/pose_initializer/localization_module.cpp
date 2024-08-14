@@ -30,7 +30,8 @@ LocalizationModule::LocalizationModule(rclcpp::Node * node, const std::string & 
   cli_align_ = node->create_client<RequestPoseAlignment>(service_name);
 }
 
-PoseWithCovarianceStamped LocalizationModule::align_pose(const PoseWithCovarianceStamped & pose)
+std::tuple<PoseWithCovarianceStamped, bool> LocalizationModule::align_pose(
+  const PoseWithCovarianceStamped & pose)
 {
   const auto req = std::make_shared<RequestPoseAlignment::Request>();
   req->pose_with_covariance = pose;
@@ -47,5 +48,5 @@ PoseWithCovarianceStamped LocalizationModule::align_pose(const PoseWithCovarianc
   RCLCPP_INFO(logger_, "align server succeeded.");
 
   // Overwrite the covariance.
-  return res->pose_with_covariance;
+  return std::make_tuple(res->pose_with_covariance, res->reliable);
 }
