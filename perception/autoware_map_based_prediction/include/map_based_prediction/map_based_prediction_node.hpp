@@ -252,7 +252,7 @@ private:
   std::unique_ptr<autoware::universe_utils::PublishedTimePublisher> published_time_publisher_;
   rclcpp::Publisher<autoware::universe_utils::ProcessingTimeDetail>::SharedPtr
     detailed_processing_time_publisher_;
-  mutable autoware::universe_utils::TimeKeeper time_keeper_;
+  std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_;
 
   // Member Functions
   void mapCallback(const LaneletMapBin::ConstSharedPtr msg);
@@ -342,6 +342,10 @@ private:
   Maneuver predictObjectManeuverByLatDiffDistance(
     const TrackedObject & object, const LaneletData & current_lanelet_data,
     const double object_detected_time);
+
+  void publish(
+    const PredictedObjects & output,
+    const visualization_msgs::msg::MarkerArray & debug_markers) const;
 
   // NOTE: This function is copied from the motion_velocity_smoother package.
   // TODO(someone): Consolidate functions and move them to a common

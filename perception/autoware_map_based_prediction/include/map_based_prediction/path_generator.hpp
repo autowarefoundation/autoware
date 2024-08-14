@@ -16,6 +16,7 @@
 #define MAP_BASED_PREDICTION__PATH_GENERATOR_HPP_
 
 #include <Eigen/Eigen>
+#include <autoware/universe_utils/system/time_keeper.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
@@ -82,6 +83,8 @@ class PathGenerator
 public:
   PathGenerator(const double sampling_time_interval, const double min_crosswalk_user_velocity);
 
+  void setTimeKeeper(std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_ptr);
+
   PredictedPath generatePathForNonVehicleObject(
     const TrackedObject & object, const double duration) const;
 
@@ -118,6 +121,8 @@ private:
   double min_crosswalk_user_velocity_;
   bool use_vehicle_acceleration_;
   double acceleration_exponential_half_life_;
+
+  std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_;
 
   // Member functions
   PredictedPath generateStraightPath(const TrackedObject & object, const double duration) const;

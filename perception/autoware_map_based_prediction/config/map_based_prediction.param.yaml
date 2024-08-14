@@ -50,3 +50,8 @@
       consider_only_routable_neighbours: false
 
     reference_path_resolution: 0.5 #[m]
+
+    # debug parameters
+    publish_processing_time: false
+    publish_processing_time_detail: false
+    publish_debug_markers: false
