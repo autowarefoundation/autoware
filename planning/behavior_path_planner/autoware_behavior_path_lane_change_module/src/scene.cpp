@@ -125,15 +125,9 @@ std::pair<bool, bool> NormalLaneChange::getSafePath(LaneChangePath & safe_path) 
 
   LaneChangePaths valid_paths{};
   const bool is_stuck = isVehicleStuck(current_lanes);
-  bool found_safe_path = getLaneChangePaths(
-    current_lanes, target_lanes, direction_, &valid_paths, lane_change_parameters_->rss_params,
-    is_stuck);
+  bool found_safe_path =
+    getLaneChangePaths(current_lanes, target_lanes, direction_, is_stuck, &valid_paths);
   // if no safe path is found and ego is stuck, try to find a path with a small margin
-  if (!found_safe_path && is_stuck) {
-    found_safe_path = getLaneChangePaths(
-      current_lanes, target_lanes, direction_, &valid_paths,
-      lane_change_parameters_->rss_params_for_stuck, is_stuck);
-  }
 
   lane_change_debug_.valid_paths = valid_paths;
 
@@ -1331,9 +1325,7 @@ bool NormalLaneChange::hasEnoughLengthToTrafficLight(
 
 bool NormalLaneChange::getLaneChangePaths(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,
-  Direction direction, LaneChangePaths * candidate_paths,
-  const utils::path_safety_checker::RSSparams rss_params, const bool is_stuck,
-  const bool check_safety) const
+  Direction direction, const bool is_stuck, LaneChangePaths * candidate_paths) const
 {
   lane_change_debug_.collision_check_objects.clear();
   if (current_lanes.empty() || target_lanes.empty()) {
@@ -1637,13 +1629,20 @@ bool NormalLaneChange::getLaneChangePaths(
           return false;
         }
 
-        if (!check_safety) {
-          debug_print_lat("ACCEPT!!!: it is valid (and safety check is skipped).");
-          return false;
-        }
+        const auto is_safe = std::invoke([&]() {
+          const auto safety_check_with_normal_rss = isLaneChangePathSafe(
+            *candidate_path, target_objects, common_data_ptr_->lc_param_ptr->rss_params,
+            lane_change_debug_.collision_check_objects);
 
-        const auto [is_safe, is_trailing_object] = isLaneChangePathSafe(
-          *candidate_path, target_objects, rss_params, lane_change_debug_.collision_check_objects);
+          if (!safety_check_with_normal_rss.is_safe && is_stuck) {
+            const auto safety_check_with_stuck_rss = isLaneChangePathSafe(
+              *candidate_path, target_objects, common_data_ptr_->lc_param_ptr->rss_params_for_stuck,
+              lane_change_debug_.collision_check_objects);
+            return safety_check_with_stuck_rss.is_safe;
+          }
+
+          return safety_check_with_normal_rss.is_safe;
+        });
 
         if (is_safe) {
           debug_print_lat("ACCEPT!!!: it is valid and safe!");
