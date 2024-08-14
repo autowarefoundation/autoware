@@ -113,9 +113,7 @@ bool RRTStar::hasObstacleOnTrajectory(const geometry_msgs::msg::PoseArray & traj
 {
   for (const auto & pose : trajectory.poses) {
     const auto pose_local = global2local(costmap_, pose);
-    const auto base_index = pose2index(costmap_, pose_local, planner_common_param_.theta_size);
-
-    if (detectCollision(base_index)) {
+    if (detectCollision(pose_local)) {
       return true;
     }
   }

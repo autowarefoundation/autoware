@@ -573,6 +573,7 @@ void FreespacePlannerNode::initializePlanningAlgorithm()
   extended_vehicle_shape.length += margin;
   extended_vehicle_shape.width += margin;
   extended_vehicle_shape.base2back += margin / 2;
+  extended_vehicle_shape.setMinMaxDimension();
 
   const auto planner_common_param = getPlannerCommonParam();
 

@@ -120,6 +120,8 @@ void AbstractPlanningAlgorithm::setMap(const nav_msgs::msg::OccupancyGrid & cost
   }
   is_obstacle_table_ = is_obstacle_table;
 
+  computeEDTMap();
+
   // construct collision indexes table
   if (is_collision_table_initialized == false) {
     for (int i = 0; i < planner_common_param_.theta_size; i++) {
@@ -134,6 +136,73 @@ void AbstractPlanningAlgorithm::setMap(const nav_msgs::msg::OccupancyGrid & cost
   const double base2front = collision_vehicle_shape_.length - collision_vehicle_shape_.base2back;
   nb_of_margin_cells_ = std::ceil(
     std::hypot(0.5 * collision_vehicle_shape_.width, base2front) / costmap_.info.resolution);
+}
+
+void AbstractPlanningAlgorithm::computeEDTMap()
+{
+  const int height = costmap_.info.height;
+  const int width = costmap_.info.width;
+  const double resolution_m = costmap_.info.resolution;
+  const double diagonal_m = std::hypot(resolution_m * height, resolution_m * width);
+  std::vector<double> edt_map;
+  edt_map.reserve(costmap_.data.size());
+
+  std::vector<double> temporary_storage(width);
+  // scan rows
+  for (int i = 0; i < height; ++i) {
+    double distance = resolution_m;
+    bool found_obstacle = false;
+    // forward scan
+    for (int j = 0; j < width; ++j) {
+      if (isObs(IndexXY{j, i})) {
+        temporary_storage[j] = 0.0;
+        distance = resolution_m;
+        found_obstacle = true;
+      } else if (found_obstacle) {
+        temporary_storage[j] = distance;
+        distance += resolution_m;
+      } else {
+        temporary_storage[j] = diagonal_m;
+      }
+    }
+
+    distance = resolution_m;
+    found_obstacle = false;
+    // backward scan
+    for (int j = width - 1; j >= 0; --j) {
+      if (isObs(IndexXY{j, i})) {
+        distance = resolution_m;
+        found_obstacle = true;
+      } else if (found_obstacle && temporary_storage[j] > distance) {
+        temporary_storage[j] = distance;
+        distance += resolution_m;
+      }
+    }
+    edt_map.insert(edt_map.end(), temporary_storage.begin(), temporary_storage.end());
+  }
+
+  temporary_storage.clear();
+  temporary_storage.resize(height);
+  // scan columns;
+  for (int j = 0; j < width; ++j) {
+    for (int i = 0; i < height; ++i) {
+      int id = indexToId(IndexXY{j, i});
+      double min_value = edt_map[id] * edt_map[id];
+      for (int k = 0; k < height; ++k) {
+        id = indexToId(IndexXY{j, k});
+        double dist = resolution_m * std::abs(static_cast<double>(i - k));
+        double value = edt_map[id] * edt_map[id] + dist * dist;
+        if (value < min_value) {
+          min_value = value;
+        }
+      }
+      temporary_storage[i] = sqrt(min_value);
+    }
+    for (int i = 0; i < height; ++i) {
+      edt_map[indexToId(IndexXY{j, i})] = temporary_storage[i];
+    }
+  }
+  edt_map_ = edt_map;
 }
 
 void AbstractPlanningAlgorithm::computeCollisionIndexes(
@@ -218,6 +287,12 @@ bool AbstractPlanningAlgorithm::detectBoundaryExit(const IndexXYT & base_index) 
   return false;
 }
 
+bool AbstractPlanningAlgorithm::detectCollision(const geometry_msgs::msg::Pose & base_pose) const
+{
+  const auto base_index = pose2index(costmap_, base_pose, planner_common_param_.theta_size);
+  return detectCollision(base_index);
+}
+
 bool AbstractPlanningAlgorithm::detectCollision(const IndexXYT & base_index) const
 {
   if (coll_indexes_table_.empty()) {
@@ -226,6 +301,13 @@ bool AbstractPlanningAlgorithm::detectCollision(const IndexXYT & base_index) con
   }
 
   if (detectBoundaryExit(base_index)) return true;
+
+  double obstacle_edt = getObstacleEDT(base_index);
+
+  // if nearest obstacle is further than largest dimension, no collision is guaranteed
+  // if nearest obstacle is closer than smallest dimension, collision is guaranteed
+  if (obstacle_edt > collision_vehicle_shape_.max_dimension) return false;
+  if (obstacle_edt < collision_vehicle_shape_.min_dimension) return true;
 
   const auto & coll_indexes_2d = coll_indexes_table_[base_index.theta];
   for (const auto & coll_index_2d : coll_indexes_2d) {
@@ -247,9 +329,7 @@ bool AbstractPlanningAlgorithm::hasObstacleOnTrajectory(
 {
   for (const auto & pose : trajectory.poses) {
     const auto pose_local = global2local(costmap_, pose);
-    const auto index = pose2index(costmap_, pose_local, planner_common_param_.theta_size);
-
-    if (detectCollision(index)) {
+    if (detectCollision(pose_local)) {
       return true;
     }
   }
