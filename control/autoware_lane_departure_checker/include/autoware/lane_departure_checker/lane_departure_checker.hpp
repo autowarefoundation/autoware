@@ -60,18 +60,18 @@ typedef boost::geometry::index::rtree<Segment2d, boost::geometry::index::rstar<1
 
 struct Param
 {
-  double footprint_margin_scale;
-  double footprint_extra_margin;
-  double resample_interval;
-  double max_deceleration;
-  double delay_time;
-  double max_lateral_deviation;
-  double max_longitudinal_deviation;
-  double max_yaw_deviation_deg;
-  double min_braking_distance;
+  double footprint_margin_scale{0.0};
+  double footprint_extra_margin{0.0};
+  double resample_interval{0.0};
+  double max_deceleration{0.0};
+  double delay_time{0.0};
+  double max_lateral_deviation{0.0};
+  double max_longitudinal_deviation{0.0};
+  double max_yaw_deviation_deg{0.0};
+  double min_braking_distance{0.0};
   // nearest search to ego
-  double ego_nearest_dist_threshold;
-  double ego_nearest_yaw_threshold;
+  double ego_nearest_dist_threshold{0.0};
+  double ego_nearest_yaw_threshold{0.0};
 };
 
 struct Input
