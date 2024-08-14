@@ -9,7 +9,10 @@
   <arg name="launch_simulator_perception_modules" default="true"/>
   <arg name="launch_dummy_perception"/>
   <arg name="launch_dummy_vehicle"/>
-  <arg name="launch_dummy_localization"/>
+  <arg
+    name="localization_sim_mode"
+    description="Select localization mode. Options are 'none' or 'api'. 'api' starts an external API for initial position estimation. 'none' does not start any localization-related process."
+  />
   <arg name="launch_dummy_doors"/>
   <arg name="launch_diagnostic_converter"/>
   <arg name="vehicle_info_param_file"/>
@@ -128,7 +131,11 @@
   </group>
 
   <!-- Dummy localization -->
-  <group if="$(var launch_dummy_localization)">
+  <group if="$(eval '&quot;$(var localization_sim_mode)&quot;==&quot;none&quot;')">
+    <!-- Do nothing -->
+  </group>
+
+  <group if="$(eval '&quot;$(var localization_sim_mode)&quot;==&quot;api&quot;')">
     <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
       <arg name="user_defined_initial_pose/enable" value="false"/>
       <arg name="user_defined_initial_pose/pose" value="[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]"/>
