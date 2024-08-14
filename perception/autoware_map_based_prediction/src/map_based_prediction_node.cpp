@@ -411,8 +411,8 @@ bool withinRoadLanelet(
 
 boost::optional<CrosswalkEdgePoints> isReachableCrosswalkEdgePoints(
   const TrackedObject & object, const lanelet::ConstLanelets & surrounding_lanelets,
-  const lanelet::ConstLanelets & external_surrounding_crosswalks,
-  const CrosswalkEdgePoints & edge_points, const double time_horizon, const double min_object_vel)
+  const lanelet::ConstLanelets & surrounding_crosswalks, const CrosswalkEdgePoints & edge_points,
+  const double time_horizon, const double min_object_vel)
 {
   using Point = boost::geometry::model::d2::point_xy<double>;
 
@@ -439,10 +439,10 @@ boost::optional<CrosswalkEdgePoints> isReachableCrosswalkEdgePoints(
   const auto is_stop_object = estimated_velocity < stop_velocity_th;
   const auto velocity = std::max(min_object_vel, estimated_velocity);
 
-  const auto isAcrossAnyRoad = [&surrounding_lanelets, &external_surrounding_crosswalks](
+  const auto isAcrossAnyRoad = [&surrounding_lanelets, &surrounding_crosswalks](
                                  const Point & p_src, const Point & p_dst) {
-    const auto withinAnyCrosswalk = [&external_surrounding_crosswalks](const Point & p) {
-      for (const auto & crosswalk : external_surrounding_crosswalks) {
+    const auto withinAnyCrosswalk = [&surrounding_crosswalks](const Point & p) {
+      for (const auto & crosswalk : surrounding_crosswalks) {
         if (boost::geometry::within(p, crosswalk.polygon2d().basicPolygon())) {
           return true;
         }
@@ -1388,7 +1388,7 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
     lanelet_map_ptr_->laneletLayer, lanelet::BasicPoint2d{obj_pos.x, obj_pos.y},
     prediction_time_horizon_.pedestrian * velocity);
   lanelet::ConstLanelets surrounding_lanelets;
-  lanelet::ConstLanelets external_surrounding_crosswalks;
+  lanelet::ConstLanelets surrounding_crosswalks;
   for (const auto & [dist, lanelet] : surrounding_lanelets_with_dist) {
     surrounding_lanelets.push_back(lanelet);
     const auto attr = lanelet.attribute(lanelet::AttributeName::Subtype);
@@ -1396,10 +1396,9 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
       attr.value() == lanelet::AttributeValueString::Crosswalk ||
       attr.value() == lanelet::AttributeValueString::Walkway) {
       const auto & crosswalk = lanelet;
+      surrounding_crosswalks.push_back(crosswalk);
       if (withinLanelet(object, crosswalk)) {
         crossing_crosswalk = crosswalk;
-      } else {
-        external_surrounding_crosswalks.push_back(crosswalk);
       }
     }
   }
@@ -1463,7 +1462,10 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
 
   // try to find the edge points for other surrounding crosswalks and generate path to the crosswalk
   // edge
-  for (const auto & crosswalk : external_surrounding_crosswalks) {
+  for (const auto & crosswalk : surrounding_crosswalks) {
+    if (crossing_crosswalk && crossing_crosswalk.get() == crosswalk) {
+      continue;
+    }
     const auto crosswalk_signal_id_opt = getTrafficSignalId(crosswalk);
     if (crosswalk_signal_id_opt.has_value() && use_crosswalk_signal_) {
       if (!calcIntentionToCrossWithTrafficSignal(
@@ -1488,7 +1490,7 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
     }
 
     const auto reachable_crosswalk = isReachableCrosswalkEdgePoints(
-      object, surrounding_lanelets, external_surrounding_crosswalks, edge_points,
+      object, surrounding_lanelets, surrounding_crosswalks, edge_points,
       prediction_time_horizon_.pedestrian, min_crosswalk_user_velocity_);
 
     if (!reachable_crosswalk) {
