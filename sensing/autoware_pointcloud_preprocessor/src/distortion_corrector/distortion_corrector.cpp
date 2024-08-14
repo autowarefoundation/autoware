@@ -217,13 +217,12 @@ void DistortionCorrector<T>::undistortPointCloud(
   // If there is a point in a pointcloud that cannot be associated, record it to issue a warning
   bool is_twist_time_stamp_too_late = false;
   bool is_imu_time_stamp_too_late = false;
-  double global_point_stamp;
 
   for (; it_x != it_x.end(); ++it_x, ++it_y, ++it_z, ++it_time_stamp) {
     bool is_twist_valid = true;
     bool is_imu_valid = true;
 
-    global_point_stamp =
+    const double global_point_stamp =
       pointcloud.header.stamp.sec + 1e-9 * (pointcloud.header.stamp.nanosec + *it_time_stamp);
 
     // Get closest twist information
