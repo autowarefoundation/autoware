@@ -652,7 +652,8 @@ std::pair<TurnSignalInfo, bool> TurnSignalDecider::getBehaviorTurnSignalInfo(
   const std::shared_ptr<RouteHandler> route_handler,
   const BehaviorPathPlannerParameters & parameters, const Odometry::ConstSharedPtr self_odometry,
   const double current_shift_length, const bool is_driving_forward, const bool egos_lane_is_shifted,
-  const bool override_ego_stopped_check, const bool is_pull_out) const
+  const bool override_ego_stopped_check, const bool is_pull_out, const bool is_lane_change,
+  const bool is_pull_over) const
 {
   using autoware::universe_utils::getPose;
 
@@ -770,15 +771,18 @@ std::pair<TurnSignalInfo, bool> TurnSignalDecider::getBehaviorTurnSignalInfo(
     right_same_direction_lane.has_value() || !right_opposite_lanes.empty();
 
   if (
-    !is_pull_out && !existShiftSideLane(
-                      start_shift_length, end_shift_length, !has_left_lane, !has_right_lane,
-                      p.turn_signal_shift_length_threshold)) {
+    (!is_pull_out && !is_lane_change && !is_pull_over) &&
+    !existShiftSideLane(
+      start_shift_length, end_shift_length, !has_left_lane, !has_right_lane,
+      p.turn_signal_shift_length_threshold)) {
     return std::make_pair(TurnSignalInfo(p_path_start, p_path_end), true);
   }
 
   // Check if the ego will cross lane bounds.
   // Note that pull out requires blinkers, even if the ego does not cross lane bounds
-  if (!is_pull_out && !straddleRoadBound(path, shift_line, current_lanelets, p.vehicle_info)) {
+  if (
+    (!is_pull_out && !is_pull_over) &&
+    !straddleRoadBound(path, shift_line, current_lanelets, p.vehicle_info)) {
     return std::make_pair(TurnSignalInfo(p_path_start, p_path_end), true);
   }
 

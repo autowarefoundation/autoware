@@ -603,10 +603,12 @@ TurnSignalInfo NormalLaneChange::updateOutputTurnSignal() const
   // The getBehaviorTurnSignalInfo method expects the shifted line to be generated off of the ego's
   // current lane, lane change is different, so we set this flag to false.
   constexpr bool egos_lane_is_shifted = false;
+  constexpr bool is_pull_out = false;
+  constexpr bool is_lane_change = true;
 
   const auto [new_signal, is_ignore] = planner_data_->getBehaviorTurnSignalInfo(
     shift_path, shift_line, current_lanes, current_shift_length, is_driving_forward,
-    egos_lane_is_shifted);
+    egos_lane_is_shifted, is_pull_out, is_lane_change);
   return new_signal;
 }
 

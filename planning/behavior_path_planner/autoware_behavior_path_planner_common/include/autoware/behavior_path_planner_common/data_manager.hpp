@@ -174,7 +174,8 @@ struct PlannerData
     const PathWithLaneId & path, const size_t shift_start_idx, const size_t shift_end_idx,
     const lanelet::ConstLanelets & current_lanelets, const double current_shift_length,
     const bool is_driving_forward, const bool egos_lane_is_shifted,
-    const bool override_ego_stopped_check = false, const bool is_pull_out = false) const
+    const bool override_ego_stopped_check = false, const bool is_pull_out = false,
+    const bool is_lane_change = false, const bool is_pull_over = false) const
   {
     if (shift_start_idx + 1 > path.points.size()) {
       RCLCPP_WARN(rclcpp::get_logger(__func__), "index inconsistency.");
@@ -211,7 +212,7 @@ struct PlannerData
     return turn_signal_decider.getBehaviorTurnSignalInfo(
       shifted_path, shift_line, current_lanelets, route_handler, parameters, self_odometry,
       current_shift_length, is_driving_forward, egos_lane_is_shifted, override_ego_stopped_check,
-      is_pull_out);
+      is_pull_out, is_lane_change, is_pull_over);
   }
 
   std::pair<TurnSignalInfo, bool> getBehaviorTurnSignalInfo(

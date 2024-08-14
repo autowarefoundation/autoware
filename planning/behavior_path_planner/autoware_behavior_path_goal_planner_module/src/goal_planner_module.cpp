@@ -1957,6 +1957,8 @@ TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo()
   constexpr bool is_driving_forward = true;
 
   constexpr bool is_pull_out = false;
+  constexpr bool is_lane_change = false;
+  constexpr bool is_pull_over = true;
   const bool override_ego_stopped_check = std::invoke([&]() {
     if (thread_safe_data_.getPullOverPlannerType() == PullOverPlannerType::SHIFT) {
       return false;
@@ -1972,7 +1974,7 @@ TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo()
 
   const auto [new_signal, is_ignore] = planner_data_->getBehaviorTurnSignalInfo(
     path, shift_start_idx, shift_end_idx, current_lanes, current_shift_length, is_driving_forward,
-    egos_lane_is_shifted, override_ego_stopped_check, is_pull_out);
+    egos_lane_is_shifted, override_ego_stopped_check, is_pull_out, is_lane_change, is_pull_over);
   ignore_signal_ = update_ignore_signal(closest_lanelet.id(), is_ignore);
 
   return new_signal;
