@@ -42,4 +42,4 @@ This stage provides a [development container](https://containers.dev) to Autowar
 
 ### `runtime`
 
-This stage is an Autoware runtime container. It only includes the dependencies required to run Autoware and the binaries built in the `autoware-universe` stage.
+This stage is an Autoware runtime container. It only includes the dependencies given by `/rosdep-exec-depend-packages.txt`, the binaries built in the `autoware-universe` stage, and artifacts.
