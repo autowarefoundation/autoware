@@ -124,6 +124,7 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
+# TODO(youtalk): Remove this when https://github.com/autowarefoundation/autoware/issues/5089 is resolved
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends \
