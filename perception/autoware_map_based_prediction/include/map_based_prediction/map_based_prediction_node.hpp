@@ -25,6 +25,7 @@
 #include <autoware/universe_utils/ros/published_time_publisher.hpp>
 #include <autoware/universe_utils/ros/transform_listener.hpp>
 #include <autoware/universe_utils/ros/uuid_helper.hpp>
+#include <autoware/universe_utils/system/lru_cache.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
 #include <autoware/universe_utils/system/time_keeper.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -41,6 +42,7 @@
 #include <lanelet2_core/Forward.h>
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/Forward.h>
+#include <lanelet2_routing/LaneletPath.h>
 #include <lanelet2_traffic_rules/TrafficRules.h>
 
 #include <algorithm>
@@ -54,6 +56,27 @@
 #include <utility>
 #include <vector>
 
+namespace std
+{
+template <>
+struct hash<lanelet::routing::LaneletPaths>
+{
+  // 0x9e3779b9 is a magic number. See
+  // https://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
+  size_t operator()(const lanelet::routing::LaneletPaths & paths) const
+  {
+    size_t seed = 0;
+    for (const auto & path : paths) {
+      for (const auto & lanelet : path) {
+        seed ^= hash<int64_t>{}(lanelet.id()) + 0x9e3779b9 + (seed << 6U) + (seed >> 2U);
+      }
+      // Add a separator between paths
+      seed ^= hash<int>{}(0) + 0x9e3779b9 + (seed << 6U) + (seed >> 2U);
+    }
+    return seed;
+  }
+};
+}  // namespace std
 namespace autoware::map_based_prediction
 {
 struct LateralKinematicsToLanelet
@@ -291,7 +314,10 @@ private:
     const float path_probability, const ManeuverProbability & maneuver_probability,
     const Maneuver & maneuver, std::vector<PredictedRefPath> & reference_paths,
     const double speed_limit = 0.0);
-  std::vector<PosePath> convertPathType(const lanelet::routing::LaneletPaths & paths);
+
+  mutable universe_utils::LRUCache<lanelet::routing::LaneletPaths, std::vector<PosePath>>
+    lru_cache_of_convert_path_type_{1000};
+  std::vector<PosePath> convertPathType(const lanelet::routing::LaneletPaths & paths) const;
 
   void updateFuturePossibleLanelets(
     const TrackedObject & object, const lanelet::routing::LaneletPaths & paths);
