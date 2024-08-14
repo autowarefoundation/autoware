@@ -124,6 +124,13 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update \
+  && apt-get install -y --no-install-recommends \
+    ros-"$ROS_DISTRO"-rosbag2-storage \
+    ros-"$ROS_DISTRO"-rosbag2-storage-mcap \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+
 # Build Autoware
 RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src,target=/autoware/src \
   --mount=type=cache,target=${CCACHE_DIR} \
