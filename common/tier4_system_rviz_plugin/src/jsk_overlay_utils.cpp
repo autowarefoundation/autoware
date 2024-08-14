@@ -113,7 +113,7 @@ OverlayObject::OverlayObject(const std::string & name) : name_(name)
 
 OverlayObject::~OverlayObject()
 {
-  hide();
+  OverlayObject::hide();
   panel_material_->unload();
   Ogre::MaterialManager::getSingleton().remove(panel_material_->getName());
   // Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
