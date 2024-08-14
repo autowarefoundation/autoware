@@ -19,6 +19,7 @@ This stage performs only the basic setup required for all Autoware images.
 ### `rosdep-depend`
 
 The following three ROS dependency package list files will be generated:
+
 - `/rosdep-core-depend-packages.txt`: A dependency package list file for the packages under the `core` directory of `autoware.repos`.
 - `/rosdep-universe-depend-packages.txt`: A dependency package list file for the packages under the `universe` directory of `autoware.repos`.
 - `/rosdep-exec-depend-packages.txt`: A dependency package list file required for running Autoware.
