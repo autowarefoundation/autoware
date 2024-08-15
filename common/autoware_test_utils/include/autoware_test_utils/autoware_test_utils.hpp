@@ -48,6 +48,7 @@
 
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -402,6 +403,7 @@ void createPublisherWithQoS(
   rclcpp::Node::SharedPtr test_node, std::string topic_name,
   std::shared_ptr<rclcpp::Publisher<T>> & publisher)
 {
+  // override QoS settings for specific message types
   if constexpr (
     std::is_same_v<T, LaneletRoute> || std::is_same_v<T, LaneletMapBin> ||
     std::is_same_v<T, OperationModeState>) {
@@ -443,18 +445,23 @@ void setPublisher(
  * @param topic_name The name of the topic to subscribe to.
  * @param callback The callback function to call when a message is received.
  * @param subscriber A reference to the subscription to be created.
+ * @param qos The QoS settings for the subscription (optional).
  */
 template <typename T>
 void createSubscription(
-  rclcpp::Node::SharedPtr test_node, std::string topic_name,
+  rclcpp::Node::SharedPtr test_node, const std::string & topic_name,
   std::function<void(const typename T::ConstSharedPtr)> callback,
-  std::shared_ptr<rclcpp::Subscription<T>> & subscriber)
+  std::shared_ptr<rclcpp::Subscription<T>> & subscriber,
+  std::optional<rclcpp::QoS> qos = std::nullopt)
 {
-  if constexpr (std::is_same_v<T, Trajectory>) {
-    subscriber = test_node->create_subscription<T>(topic_name, rclcpp::QoS{1}, callback);
-  } else {
-    subscriber = test_node->create_subscription<T>(topic_name, 10, callback);
+  if (!qos.has_value()) {
+    if constexpr (std::is_same_v<T, Trajectory>) {
+      qos = rclcpp::QoS{1};
+    } else {
+      qos = rclcpp::QoS{10};
+    }
   }
+  subscriber = test_node->create_subscription<T>(topic_name, *qos, callback);
 }
 
 /**
@@ -467,14 +474,17 @@ void createSubscription(
  * @param topic_name The name of the topic to subscribe to.
  * @param subscriber A reference to the subscription to be set.
  * @param count A reference to a counter that increments on message receipt.
+ * @param qos The QoS settings for the subscription (optional).
  */
 template <typename T>
 void setSubscriber(
   rclcpp::Node::SharedPtr test_node, std::string topic_name,
-  std::shared_ptr<rclcpp::Subscription<T>> & subscriber, size_t & count)
+  std::shared_ptr<rclcpp::Subscription<T>> & subscriber, size_t & count,
+  std::optional<rclcpp::QoS> qos = std::nullopt)
 {
   createSubscription(
-    test_node, topic_name, [&count](const typename T::ConstSharedPtr) { count++; }, subscriber);
+    test_node, topic_name, [&count](const typename T::ConstSharedPtr) { count++; }, subscriber,
+    qos);
 }
 
 /**
@@ -535,27 +545,39 @@ public:
   void test_pub_msg(
     rclcpp::Node::SharedPtr target_node, const std::string & topic_name, MessageType & msg)
   {
+    rclcpp::QoS qos(rclcpp::KeepLast(10));
+    test_pub_msg(target_node, topic_name, msg, qos);
+  }
+
+  template <typename MessageType>
+  void test_pub_msg(
+    rclcpp::Node::SharedPtr target_node, const std::string & topic_name, MessageType & msg,
+    rclcpp::QoS qos)
+  {
     if (publishers_.find(topic_name) == publishers_.end()) {
-      auto publisher = test_node_->create_publisher<MessageType>(topic_name, 10);
+      auto publisher = test_node_->create_publisher<MessageType>(topic_name, qos);
       publishers_[topic_name] = std::static_pointer_cast<rclcpp::PublisherBase>(publisher);
     }
 
     auto publisher =
       std::dynamic_pointer_cast<rclcpp::Publisher<MessageType>>(publishers_[topic_name]);
 
-    autoware::test_utils::publishToTargetNode(test_node_, target_node, topic_name, publisher, msg);
+    publisher->publish(msg);
+    const int repeat_count = 3;
+    autoware::test_utils::spinSomeNodes(test_node_, target_node, repeat_count);
     RCLCPP_INFO(test_node_->get_logger(), "Published message on topic '%s'", topic_name.c_str());
   }
 
   template <typename MessageType>
   void set_subscriber(
     const std::string & topic_name,
-    std::function<void(const typename MessageType::ConstSharedPtr)> callback)
+    std::function<void(const typename MessageType::ConstSharedPtr)> callback,
+    std::optional<rclcpp::QoS> qos = std::nullopt)
   {
     if (subscribers_.find(topic_name) == subscribers_.end()) {
       std::shared_ptr<rclcpp::Subscription<MessageType>> subscriber;
       autoware::test_utils::createSubscription<MessageType>(
-        test_node_, topic_name, callback, subscriber);
+        test_node_, topic_name, callback, subscriber, qos);
       subscribers_[topic_name] = std::static_pointer_cast<rclcpp::SubscriptionBase>(subscriber);
     } else {
       RCLCPP_WARN(test_node_->get_logger(), "Subscriber %s already set.", topic_name.c_str());
