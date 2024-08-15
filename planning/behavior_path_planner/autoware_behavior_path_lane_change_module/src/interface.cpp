@@ -265,6 +265,15 @@ bool LaneChangeInterface::canTransitFailureState()
     return true;
   }
 
+  if (module_type_->is_near_terminal()) {
+    log_debug_throttled("Unsafe, but ego is approaching terminal. Continue lane change");
+
+    if (module_type_->isRequiredStop(post_process_safety_status_.is_trailing_object)) {
+      log_debug_throttled("Module require stopping");
+    }
+    return false;
+  }
+
   if (module_type_->isCancelEnabled() && module_type_->isEgoOnPreparePhase()) {
     if (module_type_->isStoppedAtRedTrafficLight()) {
       log_debug_throttled("Stopping at traffic light while in prepare phase. Cancel lane change");

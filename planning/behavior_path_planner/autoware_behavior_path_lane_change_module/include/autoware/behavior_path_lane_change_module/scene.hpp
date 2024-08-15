@@ -92,6 +92,8 @@ public:
 
   bool isAbleToReturnCurrentLane() const override;
 
+  bool is_near_terminal() const final;
+
   bool isEgoOnPreparePhase() const override;
 
   bool isAbleToStopSafely() const override;

@@ -1,3 +1,4 @@
+
 // Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,5 +42,16 @@ double calc_dist_from_pose_to_terminal_end(
     return utils::getSignedDistance(src_pose, goal_pose, lanes);
   }
   return utils::getDistanceToEndOfLane(src_pose, lanes);
+}
+
+double calc_stopping_distance(const LCParamPtr & lc_param_ptr)
+{
+  // v^2 = u^2 + 2ad
+  const auto min_lc_vel = lc_param_ptr->minimum_lane_changing_velocity;
+  const auto min_lon_acc = lc_param_ptr->min_longitudinal_acc;
+  const auto min_back_dist = std::abs((min_lc_vel * min_lc_vel) / (2 * min_lon_acc));
+
+  const auto param_back_dist = lc_param_ptr->backward_length_buffer_for_end_of_lane;
+  return std::max(min_back_dist, param_back_dist);
 }
 }  // namespace autoware::behavior_path_planner::utils::lane_change::calculation

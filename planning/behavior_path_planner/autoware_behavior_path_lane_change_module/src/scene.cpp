@@ -765,6 +765,31 @@ bool NormalLaneChange::isAbleToReturnCurrentLane() const
   return true;
 }
 
+bool NormalLaneChange::is_near_terminal() const
+{
+  const auto & current_lanes = common_data_ptr_->lanes_ptr->current;
+
+  if (current_lanes.empty()) {
+    return true;
+  }
+
+  const auto & current_lanes_terminal = current_lanes.back();
+  const auto & lc_param_ptr = common_data_ptr_->lc_param_ptr;
+  const auto direction = common_data_ptr_->direction;
+  const auto & route_handler_ptr = common_data_ptr_->route_handler_ptr;
+  const auto min_lane_changing_distance = calcMinimumLaneChangeLength(
+    route_handler_ptr, current_lanes_terminal, *lc_param_ptr, direction);
+
+  const auto backward_buffer = calculation::calc_stopping_distance(lc_param_ptr);
+
+  const auto min_lc_dist_with_buffer =
+    backward_buffer + min_lane_changing_distance + lc_param_ptr->lane_change_finish_judge_buffer;
+  const auto dist_from_ego_to_terminal_end =
+    calculation::calc_ego_dist_to_terminal_end(common_data_ptr_);
+
+  return dist_from_ego_to_terminal_end < min_lc_dist_with_buffer;
+}
+
 bool NormalLaneChange::isEgoOnPreparePhase() const
 {
   const auto & start_position = status_.lane_change_path.info.shift_line.start.position;

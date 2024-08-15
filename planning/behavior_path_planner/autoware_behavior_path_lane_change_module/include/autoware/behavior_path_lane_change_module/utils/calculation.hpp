@@ -19,6 +19,7 @@
 namespace autoware::behavior_path_planner::utils::lane_change::calculation
 {
 using behavior_path_planner::lane_change::CommonDataPtr;
+using behavior_path_planner::lane_change::LCParamPtr;
 
 /**
  * @brief Calculates the distance from the ego vehicle to the terminal point.
@@ -40,6 +41,23 @@ double calc_ego_dist_to_terminal_end(const CommonDataPtr & common_data_ptr);
 double calc_dist_from_pose_to_terminal_end(
   const CommonDataPtr & common_data_ptr, const lanelet::ConstLanelets & lanes,
   const Pose & src_pose);
+
+/**
+ * @brief Calculates the minimum stopping distance to terminal start.
+ *
+ * This function computes the minimum stopping distance to terminal start based on the
+ * minimum lane changing velocity and the minimum longitudinal acceleration. It then
+ * compares this calculated distance with a pre-defined backward length buffer parameter
+ * and returns the larger of the two values to ensure safe lane changing.
+ *
+ * @param lc_param_ptr Shared pointer to an LCParam structure, which should include:
+ *  - `minimum_lane_changing_velocity`: The minimum velocity required for lane changing.
+ *  - `min_longitudinal_acc`: The minimum longitudinal acceleration used for deceleration.
+ *  - `backward_length_buffer_for_end_of_lane`: A predefined backward buffer length parameter.
+ *
+ * @return The required backward buffer distance in meters.
+ */
+double calc_stopping_distance(const LCParamPtr & lc_param_ptr);
 }  // namespace autoware::behavior_path_planner::utils::lane_change::calculation
 
 #endif  // AUTOWARE__BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__CALCULATION_HPP_
