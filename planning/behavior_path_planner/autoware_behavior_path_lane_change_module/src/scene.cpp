@@ -295,6 +295,7 @@ BehaviorModuleOutput NormalLaneChange::generateOutput()
   universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   if (!status_.is_valid_path) {
     RCLCPP_DEBUG(logger_, "No valid path found. Returning previous module's path as output.");
+    insertStopPoint(get_current_lanes(), prev_module_output_.path);
     return prev_module_output_;
   }
 
