@@ -1184,7 +1184,7 @@ FilteredByLanesObjects NormalLaneChange::filterObjectsByLanelets(
     };
 
     if (
-      check_optional_polygon(object, lanes_polygon.expanded_target) && is_lateral_far &&
+      check_optional_polygon(object, lanes_polygon.target) && is_lateral_far &&
       is_before_terminal()) {
       const auto ahead_of_ego =
         utils::lane_change::is_ahead_of_ego(common_data_ptr_, current_lanes_ref_path, object);
@@ -1194,6 +1194,20 @@ FilteredByLanesObjects NormalLaneChange::filterObjectsByLanelets(
         target_lane_trailing_objects.push_back(object);
       }
       continue;
+    }
+
+    if (
+      check_optional_polygon(object, lanes_polygon.expanded_target) && is_lateral_far &&
+      is_before_terminal()) {
+      const auto ahead_of_ego =
+        utils::lane_change::is_ahead_of_ego(common_data_ptr_, current_lanes_ref_path, object);
+      constexpr double stopped_obj_vel_th = 1.0;
+      if (object.kinematics.initial_twist_with_covariance.twist.linear.x < stopped_obj_vel_th) {
+        if (ahead_of_ego) {
+          target_lane_leading_objects.push_back(object);
+          continue;
+        }
+      }
     }
 
     const auto is_overlap_target_backward = std::invoke([&]() -> bool {
