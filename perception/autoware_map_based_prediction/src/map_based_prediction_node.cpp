@@ -359,28 +359,6 @@ CrosswalkEdgePoints getCrosswalkEdgePoints(const lanelet::ConstLanelet & crosswa
                              back_center_point,  r_p_back,  l_p_back};
 }
 
-bool withinLanelet(
-  const TrackedObject & object, const lanelet::ConstLanelet & lanelet,
-  const bool use_yaw_information = false, const float yaw_threshold = 0.6)
-{
-  using Point = boost::geometry::model::d2::point_xy<double>;
-
-  const auto & obj_pos = object.kinematics.pose_with_covariance.pose.position;
-  const Point p_object{obj_pos.x, obj_pos.y};
-
-  auto polygon = lanelet.polygon2d().basicPolygon();
-  boost::geometry::correct(polygon);
-  bool with_in_polygon = boost::geometry::within(p_object, polygon);
-
-  if (!use_yaw_information) return with_in_polygon;
-
-  // use yaw angle to compare
-  const double abs_yaw_diff = calcAbsYawDiffBetweenLaneletAndObject(object, lanelet);
-  if (abs_yaw_diff < yaw_threshold) return with_in_polygon;
-
-  return false;
-}
-
 bool withinRoadLanelet(
   const TrackedObject & object, const lanelet::LaneletMapPtr & lanelet_map_ptr,
   const bool use_yaw_information = false)
@@ -392,9 +370,12 @@ bool withinRoadLanelet(
   const auto surrounding_lanelets =
     lanelet::geometry::findNearest(lanelet_map_ptr->laneletLayer, search_point, search_radius);
 
-  for (const auto & lanelet : surrounding_lanelets) {
-    if (lanelet.second.hasAttribute(lanelet::AttributeName::Subtype)) {
-      lanelet::Attribute attr = lanelet.second.attribute(lanelet::AttributeName::Subtype);
+  for (const auto & lanelet_with_dist : surrounding_lanelets) {
+    const auto & dist = lanelet_with_dist.first;
+    const auto & lanelet = lanelet_with_dist.second;
+
+    if (lanelet.hasAttribute(lanelet::AttributeName::Subtype)) {
+      lanelet::Attribute attr = lanelet.attribute(lanelet::AttributeName::Subtype);
       if (
         attr.value() == lanelet::AttributeValueString::Crosswalk ||
         attr.value() == lanelet::AttributeValueString::Walkway) {
@@ -402,7 +383,13 @@ bool withinRoadLanelet(
       }
     }
 
-    if (withinLanelet(object, lanelet.second, use_yaw_information)) {
+    constexpr float yaw_threshold = 0.6;
+    bool within_lanelet = std::abs(dist) < 1e-5;
+    if (use_yaw_information) {
+      within_lanelet =
+        within_lanelet && calcAbsYawDiffBetweenLaneletAndObject(object, lanelet) < yaw_threshold;
+    }
+    if (within_lanelet) {
       return true;
     }
   }
@@ -1439,7 +1426,7 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
       attr.value() == lanelet::AttributeValueString::Walkway) {
       const auto & crosswalk = lanelet;
       surrounding_crosswalks.push_back(crosswalk);
-      if (withinLanelet(object, crosswalk)) {
+      if (std::abs(dist) < 1e-5) {
         crossing_crosswalk = crosswalk;
       }
     }
