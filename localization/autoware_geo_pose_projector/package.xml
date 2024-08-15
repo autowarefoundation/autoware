@@ -17,10 +17,10 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_geography_utils</depend>
   <depend>component_interface_specs</depend>
   <depend>component_interface_utils</depend>
   <depend>geographic_msgs</depend>
-  <depend>geography_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

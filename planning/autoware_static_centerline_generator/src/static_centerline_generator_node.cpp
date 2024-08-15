@@ -30,9 +30,9 @@
 #include "type_alias.hpp"
 #include "utils.hpp"
 
+#include <autoware/geography_utils/lanelet2_projector.hpp>
 #include <autoware/mission_planner/mission_planner_plugin.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
-#include <geography_utils/lanelet2_projector.hpp>
 #include <pluginlib/class_loader.hpp>
 
 #include "std_msgs/msg/empty.hpp"
@@ -871,7 +871,8 @@ void StaticCenterlineGeneratorNode::save_map()
 
   // save map with modified center line
   std::filesystem::create_directory("/tmp/autoware_static_centerline_generator");
-  const auto map_projector = geography_utils::get_lanelet2_projector(*map_projector_info_);
+  const auto map_projector =
+    autoware::geography_utils::get_lanelet2_projector(*map_projector_info_);
   lanelet::write(lanelet2_output_file_path, *original_map_ptr_, *map_projector);
   RCLCPP_INFO(
     get_logger(), "Saved map in %s", "/tmp/autoware_static_centerline_generator/lanelet2_map.osm");

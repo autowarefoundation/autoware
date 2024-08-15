@@ -12,21 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef GEOGRAPHY_UTILS__LANELET2_PROJECTOR_HPP_
-#define GEOGRAPHY_UTILS__LANELET2_PROJECTOR_HPP_
+#ifndef AUTOWARE__GEOGRAPHY_UTILS__PROJECTION_HPP_
+#define AUTOWARE__GEOGRAPHY_UTILS__PROJECTION_HPP_
 
+#include <geographic_msgs/msg/geo_point.hpp>
+#include <geometry_msgs/msg/point.hpp>
 #include <tier4_map_msgs/msg/map_projector_info.hpp>
 
-#include <lanelet2_io/Projection.h>
-
-#include <memory>
-
-namespace geography_utils
+namespace autoware::geography_utils
 {
 using MapProjectorInfo = tier4_map_msgs::msg::MapProjectorInfo;
+using GeoPoint = geographic_msgs::msg::GeoPoint;
+using LocalPoint = geometry_msgs::msg::Point;
 
-std::unique_ptr<lanelet::Projector> get_lanelet2_projector(const MapProjectorInfo & projector_info);
+LocalPoint project_forward(const GeoPoint & geo_point, const MapProjectorInfo & projector_info);
+GeoPoint project_reverse(const LocalPoint & local_point, const MapProjectorInfo & projector_info);
 
-}  // namespace geography_utils
+}  // namespace autoware::geography_utils
 
-#endif  // GEOGRAPHY_UTILS__LANELET2_PROJECTOR_HPP_
+#endif  // AUTOWARE__GEOGRAPHY_UTILS__PROJECTION_HPP_

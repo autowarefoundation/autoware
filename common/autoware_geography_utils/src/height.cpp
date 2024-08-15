@@ -13,14 +13,14 @@
 // limitations under the License.
 
 #include <GeographicLib/Geoid.hpp>
-#include <geography_utils/height.hpp>
+#include <autoware/geography_utils/height.hpp>
 
 #include <map>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-namespace geography_utils
+namespace autoware::geography_utils
 {
 
 double convert_wgs84_to_egm2008(const double height, const double latitude, const double longitude)
@@ -60,4 +60,4 @@ double convert_height(
   }
 }
 
-}  // namespace geography_utils
+}  // namespace autoware::geography_utils

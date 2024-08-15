@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <geography_utils/projection.hpp>
+#include <autoware/geography_utils/projection.hpp>
 
 #include <gtest/gtest.h>
 
@@ -41,7 +41,7 @@ TEST(GeographyUtilsProjection, ProjectForwardToMGRS)
 
   // conversion
   const geometry_msgs::msg::Point converted_point =
-    geography_utils::project_forward(geo_point, projector_info);
+    autoware::geography_utils::project_forward(geo_point, projector_info);
 
   EXPECT_NEAR(converted_point.x, local_point.x, 1.0);
   EXPECT_NEAR(converted_point.y, local_point.y, 1.0);
@@ -70,7 +70,7 @@ TEST(GeographyUtilsProjection, ProjectReverseFromMGRS)
 
   // conversion
   const geographic_msgs::msg::GeoPoint converted_point =
-    geography_utils::project_reverse(local_point, projector_info);
+    autoware::geography_utils::project_reverse(local_point, projector_info);
 
   EXPECT_NEAR(converted_point.latitude, geo_point.latitude, 0.0001);
   EXPECT_NEAR(converted_point.longitude, geo_point.longitude, 0.0001);
@@ -93,9 +93,9 @@ TEST(GeographyUtilsProjection, ProjectForwardAndReverseMGRS)
 
   // conversion
   const geometry_msgs::msg::Point converted_local_point =
-    geography_utils::project_forward(geo_point, projector_info);
+    autoware::geography_utils::project_forward(geo_point, projector_info);
   const geographic_msgs::msg::GeoPoint converted_geo_point =
-    geography_utils::project_reverse(converted_local_point, projector_info);
+    autoware::geography_utils::project_reverse(converted_local_point, projector_info);
 
   EXPECT_NEAR(converted_geo_point.latitude, geo_point.latitude, 0.0001);
   EXPECT_NEAR(converted_geo_point.longitude, geo_point.longitude, 0.0001);
@@ -126,7 +126,7 @@ TEST(GeographyUtilsProjection, ProjectForwardToLocalCartesianUTMOrigin)
 
   // conversion
   const geometry_msgs::msg::Point converted_point =
-    geography_utils::project_forward(geo_point, projector_info);
+    autoware::geography_utils::project_forward(geo_point, projector_info);
 
   EXPECT_NEAR(converted_point.x, local_point.x, 1.0);
   EXPECT_NEAR(converted_point.y, local_point.y, 1.0);
@@ -151,9 +151,9 @@ TEST(GeographyUtilsProjection, ProjectForwardAndReverseLocalCartesianUTMOrigin)
 
   // conversion
   const geometry_msgs::msg::Point converted_local_point =
-    geography_utils::project_forward(geo_point, projector_info);
+    autoware::geography_utils::project_forward(geo_point, projector_info);
   const geographic_msgs::msg::GeoPoint converted_geo_point =
-    geography_utils::project_reverse(converted_local_point, projector_info);
+    autoware::geography_utils::project_reverse(converted_local_point, projector_info);
 
   EXPECT_NEAR(converted_geo_point.latitude, geo_point.latitude, 0.0001);
   EXPECT_NEAR(converted_geo_point.longitude, geo_point.longitude, 0.0001);

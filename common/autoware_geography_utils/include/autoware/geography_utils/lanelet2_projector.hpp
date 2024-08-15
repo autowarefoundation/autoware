@@ -12,15 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "geography_utils/height.hpp"
-#include "geography_utils/lanelet2_projector.hpp"
-#include "geography_utils/projection.hpp"
+#ifndef AUTOWARE__GEOGRAPHY_UTILS__LANELET2_PROJECTOR_HPP_
+#define AUTOWARE__GEOGRAPHY_UTILS__LANELET2_PROJECTOR_HPP_
 
-#include <gtest/gtest.h>
+#include <tier4_map_msgs/msg/map_projector_info.hpp>
 
-int main(int argc, char * argv[])
+#include <lanelet2_io/Projection.h>
+
+#include <memory>
+
+namespace autoware::geography_utils
 {
-  testing::InitGoogleTest(&argc, argv);
-  bool result = RUN_ALL_TESTS();
-  return result;
-}
+using MapProjectorInfo = tier4_map_msgs::msg::MapProjectorInfo;
+
+std::unique_ptr<lanelet::Projector> get_lanelet2_projector(const MapProjectorInfo & projector_info);
+
+}  // namespace autoware::geography_utils
+
+#endif  // AUTOWARE__GEOGRAPHY_UTILS__LANELET2_PROJECTOR_HPP_

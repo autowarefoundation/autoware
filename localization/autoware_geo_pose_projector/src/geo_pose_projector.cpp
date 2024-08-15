@@ -14,8 +14,8 @@
 
 #include "geo_pose_projector.hpp"
 
-#include <geography_utils/height.hpp>
-#include <geography_utils/projection.hpp>
+#include <autoware/geography_utils/height.hpp>
+#include <autoware/geography_utils/projection.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -66,8 +66,8 @@ void GeoPoseProjector::on_geo_pose(const GeoPoseWithCovariance::ConstSharedPtr m
   gps_point.longitude = msg->pose.pose.position.longitude;
   gps_point.altitude = msg->pose.pose.position.altitude;
   geometry_msgs::msg::Point position =
-    geography_utils::project_forward(gps_point, projector_info_.value());
-  position.z = geography_utils::convert_height(
+    autoware::geography_utils::project_forward(gps_point, projector_info_.value());
+  position.z = autoware::geography_utils::convert_height(
     position.z, gps_point.latitude, gps_point.longitude, MapProjectorInfo::Message::WGS84,
     projector_info_.value().vertical_datum);
 

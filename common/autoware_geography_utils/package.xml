@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>geography_utils</name>
+  <name>autoware_geography_utils</name>
   <version>0.1.0</version>
-  <description>The geography_utils package</description>
+  <description>The autoware_geography_utils package</description>
   <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
   <license>Apache License 2.0</license>
 

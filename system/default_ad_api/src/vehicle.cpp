@@ -14,8 +14,8 @@
 
 #include "vehicle.hpp"
 
-#include <geography_utils/height.hpp>
-#include <geography_utils/projection.hpp>
+#include <autoware/geography_utils/height.hpp>
+#include <autoware/geography_utils/projection.hpp>
 
 #include <geographic_msgs/msg/geo_point.hpp>
 
@@ -143,15 +143,17 @@ void VehicleNode::publish_kinematics()
   vehicle_kinematics.twist.header.frame_id = kinematic_state_msgs_->child_frame_id;
   vehicle_kinematics.twist.twist = kinematic_state_msgs_->twist;
   if (map_projector_info_->projector_type != MapProjectorInfo::LOCAL) {
-    const geographic_msgs::msg::GeoPoint projected_gps_point = geography_utils::project_reverse(
-      kinematic_state_msgs_->pose.pose.position, *map_projector_info_);
+    const geographic_msgs::msg::GeoPoint projected_gps_point =
+      autoware::geography_utils::project_reverse(
+        kinematic_state_msgs_->pose.pose.position, *map_projector_info_);
     vehicle_kinematics.geographic_pose.header = kinematic_state_msgs_->header;
     vehicle_kinematics.geographic_pose.header.frame_id = "global";
     vehicle_kinematics.geographic_pose.position.latitude = projected_gps_point.latitude;
     vehicle_kinematics.geographic_pose.position.longitude = projected_gps_point.longitude;
-    vehicle_kinematics.geographic_pose.position.altitude = geography_utils::convert_height(
-      projected_gps_point.altitude, projected_gps_point.latitude, projected_gps_point.longitude,
-      map_projector_info_->vertical_datum, MapProjectorInfo::WGS84);
+    vehicle_kinematics.geographic_pose.position.altitude =
+      autoware::geography_utils::convert_height(
+        projected_gps_point.altitude, projected_gps_point.latitude, projected_gps_point.longitude,
+        map_projector_info_->vertical_datum, MapProjectorInfo::WGS84);
   } else {
     vehicle_kinematics.geographic_pose.position.latitude = std::numeric_limits<double>::quiet_NaN();
     vehicle_kinematics.geographic_pose.position.longitude =

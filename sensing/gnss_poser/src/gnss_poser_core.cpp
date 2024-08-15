@@ -14,8 +14,8 @@
 
 #include "gnss_poser/gnss_poser_core.hpp"
 
-#include <geography_utils/height.hpp>
-#include <geography_utils/projection.hpp>
+#include <autoware/geography_utils/height.hpp>
+#include <autoware/geography_utils/projection.hpp>
 
 #include <autoware_sensing_msgs/msg/gnss_ins_orientation_stamped.hpp>
 
@@ -116,8 +116,9 @@ void GNSSPoser::callback_nav_sat_fix(
   gps_point.latitude = nav_sat_fix_msg_ptr->latitude;
   gps_point.longitude = nav_sat_fix_msg_ptr->longitude;
   gps_point.altitude = nav_sat_fix_msg_ptr->altitude;
-  geometry_msgs::msg::Point position = geography_utils::project_forward(gps_point, projector_info_);
-  position.z = geography_utils::convert_height(
+  geometry_msgs::msg::Point position =
+    autoware::geography_utils::project_forward(gps_point, projector_info_);
+  position.z = autoware::geography_utils::convert_height(
     position.z, gps_point.latitude, gps_point.longitude, MapProjectorInfo::Message::WGS84,
     projector_info_.vertical_datum);
 

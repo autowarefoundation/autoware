@@ -13,13 +13,13 @@
 // limitations under the License.
 
 #include <GeographicLib/Geoid.hpp>
+#include <autoware/geography_utils/lanelet2_projector.hpp>
 #include <autoware_lanelet2_extension/projection/mgrs_projector.hpp>
 #include <autoware_lanelet2_extension/projection/transverse_mercator_projector.hpp>
-#include <geography_utils/lanelet2_projector.hpp>
 
 #include <lanelet2_projection/UTM.h>
 
-namespace geography_utils
+namespace autoware::geography_utils
 {
 
 std::unique_ptr<lanelet::Projector> get_lanelet2_projector(const MapProjectorInfo & projector_info)
@@ -51,4 +51,4 @@ std::unique_ptr<lanelet::Projector> get_lanelet2_projector(const MapProjectorInf
   throw std::invalid_argument(error_msg);
 }
 
-}  // namespace geography_utils
+}  // namespace autoware::geography_utils

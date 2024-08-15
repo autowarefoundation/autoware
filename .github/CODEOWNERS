@@ -1,6 +1,7 @@
 ### Automatically generated from package.xml ###
 common/autoware_ad_api_specs/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp
 common/autoware_auto_common/** opensource@apex.ai satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
+common/autoware_geography_utils/** koji.minoda@tier4.jp
 common/autoware_grid_map_utils/** maxime.clement@tier4.jp
 common/autoware_motion_utils/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp mamoru.sobue@tier4.jp satoshi.ota@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 common/autoware_overlay_rviz_plugin/autoware_mission_details_overlay_rviz_plugin/** ahmed.ebrahim@leodrive.ai
@@ -17,7 +18,6 @@ common/component_interface_tools/** isamu.takagi@tier4.jp
 common/component_interface_utils/** isamu.takagi@tier4.jp yukihiro.saito@tier4.jp
 common/cuda_utils/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp
 common/fake_test_node/** opensource@apex.ai satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
-common/geography_utils/** koji.minoda@tier4.jp
 common/global_parameter_loader/** ryohsuke.mitsudome@tier4.jp
 common/glog_component/** takamasa.horibe@tier4.jp
 common/goal_distance_calculator/** taiki.tanaka@tier4.jp

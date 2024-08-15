@@ -13,11 +13,11 @@
 // limitations under the License.
 
 #include <GeographicLib/Geoid.hpp>
+#include <autoware/geography_utils/lanelet2_projector.hpp>
+#include <autoware/geography_utils/projection.hpp>
 #include <autoware_lanelet2_extension/projection/mgrs_projector.hpp>
-#include <geography_utils/lanelet2_projector.hpp>
-#include <geography_utils/projection.hpp>
 
-namespace geography_utils
+namespace autoware::geography_utils
 {
 
 Eigen::Vector3d to_basic_point_3d_pt(const LocalPoint src)
@@ -92,4 +92,4 @@ GeoPoint project_reverse(const LocalPoint & local_point, const MapProjectorInfo 
   return geo_point;
 }
 
-}  // namespace geography_utils
+}  // namespace autoware::geography_utils

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <geography_utils/height.hpp>
+#include <autoware/geography_utils/height.hpp>
 
 #include <gtest/gtest.h>
 
@@ -28,7 +28,7 @@ TEST(GeographyUtils, SameSourceTargetDatum)
   const std::string datum = "WGS84";
 
   double converted_height =
-    geography_utils::convert_height(height, latitude, longitude, datum, datum);
+    autoware::geography_utils::convert_height(height, latitude, longitude, datum, datum);
 
   EXPECT_DOUBLE_EQ(height, converted_height);
 }
@@ -44,7 +44,7 @@ TEST(GeographyUtils, ValidSourceTargetDatum)
   const double target_height = -30.18;
 
   double converted_height =
-    geography_utils::convert_height(height, latitude, longitude, "WGS84", "EGM2008");
+    autoware::geography_utils::convert_height(height, latitude, longitude, "WGS84", "EGM2008");
 
   EXPECT_NEAR(target_height, converted_height, 0.1);
 }
@@ -57,7 +57,7 @@ TEST(GeographyUtils, InvalidSourceTargetDatum)
   const double longitude = 139.0;
 
   EXPECT_THROW(
-    geography_utils::convert_height(height, latitude, longitude, "INVALID1", "INVALID2"),
+    autoware::geography_utils::convert_height(height, latitude, longitude, "INVALID1", "INVALID2"),
     std::invalid_argument);
 }
 
@@ -69,7 +69,7 @@ TEST(GeographyUtils, InvalidSourceDatum)
   const double longitude = 139.0;
 
   EXPECT_THROW(
-    geography_utils::convert_height(height, latitude, longitude, "INVALID1", "WGS84"),
+    autoware::geography_utils::convert_height(height, latitude, longitude, "INVALID1", "WGS84"),
     std::invalid_argument);
 }
 
@@ -81,6 +81,6 @@ TEST(GeographyUtils, InvalidTargetDatum)
   const double longitude = 139.0;
 
   EXPECT_THROW(
-    geography_utils::convert_height(height, latitude, longitude, "WGS84", "INVALID2"),
+    autoware::geography_utils::convert_height(height, latitude, longitude, "WGS84", "INVALID2"),
     std::invalid_argument);
 }
