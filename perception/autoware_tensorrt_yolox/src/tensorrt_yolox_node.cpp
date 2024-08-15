@@ -14,8 +14,8 @@
 
 #include "autoware/tensorrt_yolox/tensorrt_yolox_node.hpp"
 
-#include "autoware/tensorrt_yolox/utils.hpp"
 #include "object_recognition_utils/object_classification.hpp"
+#include "perception_utils/run_length_encoder.hpp"
 
 #include <autoware_perception_msgs/msg/object_classification.hpp>
 
@@ -184,7 +184,7 @@ void TrtYoloXNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
         .toImageMsg();
     out_mask_msg->header = msg->header;
 
-    std::vector<std::pair<uint8_t, int>> compressed_data = runLengthEncoder(mask);
+    std::vector<std::pair<uint8_t, int>> compressed_data = perception_utils::runLengthEncoder(mask);
     int step = sizeof(uint8_t) + sizeof(int);
     out_mask_msg->data.resize(static_cast<int>(compressed_data.size()) * step);
     for (size_t i = 0; i < compressed_data.size(); ++i) {

@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE__TENSORRT_YOLOX__UTILS_HPP_
-#define AUTOWARE__TENSORRT_YOLOX__UTILS_HPP_
+#ifndef PERCEPTION_UTILS__RUN_LENGTH_ENCODER_HPP_
+
+#define PERCEPTION_UTILS__RUN_LENGTH_ENCODER_HPP_
 #include <opencv2/opencv.hpp>
 
 #include <utility>
 #include <vector>
 
-namespace autoware::tensorrt_yolox
+namespace perception_utils
 {
 std::vector<std::pair<uint8_t, int>> runLengthEncoder(const cv::Mat & mask);
 cv::Mat runLengthDecoder(const std::vector<uint8_t> & rle_data, const int rows, const int cols);
-}  // namespace autoware::tensorrt_yolox
+}  // namespace perception_utils
 
-#endif  // AUTOWARE__TENSORRT_YOLOX__UTILS_HPP_
+#endif  // PERCEPTION_UTILS__RUN_LENGTH_ENCODER_HPP_

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/tensorrt_yolox/utils.hpp"
+#include "perception_utils/run_length_encoder.hpp"
 
-namespace autoware::tensorrt_yolox
+namespace perception_utils
 {
 
 std::vector<std::pair<uint8_t, int>> runLengthEncoder(const cv::Mat & image)
@@ -62,4 +62,4 @@ cv::Mat runLengthDecoder(const std::vector<uint8_t> & rle_data, const int rows, 
   return mask;
 }
 
-}  // namespace autoware::tensorrt_yolox
+}  // namespace perception_utils

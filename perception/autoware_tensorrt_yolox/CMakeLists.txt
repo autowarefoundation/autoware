@@ -143,7 +143,6 @@ rclcpp_components_register_node(yolox_single_image_inference_node
 )
 
 ament_auto_add_library(${PROJECT_NAME}_node SHARED
-  src/utils.cpp
   src/tensorrt_yolox_node.cpp
 )
 
