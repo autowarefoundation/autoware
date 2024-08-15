@@ -32,6 +32,7 @@
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/geometry/Lanelet.h>
+#include <lanelet2_core/geometry/LaneletMap.h>
 #include <lanelet2_core/geometry/Point.h>
 #include <lanelet2_routing/RoutingGraph.h>
 #include <tf2/utils.h>
@@ -360,20 +361,11 @@ CrosswalkEdgePoints getCrosswalkEdgePoints(const lanelet::ConstLanelet & crosswa
 }
 
 bool withinRoadLanelet(
-  const TrackedObject & object, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+  const TrackedObject & object,
+  const std::vector<std::pair<double, lanelet::Lanelet>> & surrounding_lanelets_with_dist,
   const bool use_yaw_information = false)
 {
-  const auto & obj_pos = object.kinematics.pose_with_covariance.pose.position;
-  lanelet::BasicPoint2d search_point(obj_pos.x, obj_pos.y);
-  // nearest lanelet
-  constexpr double search_radius = 10.0;  // [m]
-  const auto surrounding_lanelets =
-    lanelet::geometry::findNearest(lanelet_map_ptr->laneletLayer, search_point, search_radius);
-
-  for (const auto & lanelet_with_dist : surrounding_lanelets) {
-    const auto & dist = lanelet_with_dist.first;
-    const auto & lanelet = lanelet_with_dist.second;
-
+  for (const auto & [dist, lanelet] : surrounding_lanelets_with_dist) {
     if (lanelet.hasAttribute(lanelet::AttributeName::Subtype)) {
       lanelet::Attribute attr = lanelet.attribute(lanelet::AttributeName::Subtype);
       if (
@@ -395,6 +387,20 @@ bool withinRoadLanelet(
   }
 
   return false;
+}
+
+bool withinRoadLanelet(
+  const TrackedObject & object, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+  const bool use_yaw_information = false)
+{
+  const auto & obj_pos = object.kinematics.pose_with_covariance.pose.position;
+  lanelet::BasicPoint2d search_point(obj_pos.x, obj_pos.y);
+  // nearest lanelet
+  constexpr double search_radius = 10.0;  // [m]
+  const auto surrounding_lanelets_with_dist =
+    lanelet::geometry::findWithin2d(lanelet_map_ptr->laneletLayer, search_point, search_radius);
+
+  return withinRoadLanelet(object, surrounding_lanelets_with_dist, use_yaw_information);
 }
 
 boost::optional<CrosswalkEdgePoints> isReachableCrosswalkEdgePoints(
@@ -1411,9 +1417,7 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
   const auto & obj_vel = object.kinematics.twist_with_covariance.twist.linear;
   const auto estimated_velocity = std::hypot(obj_vel.x, obj_vel.y);
   const auto velocity = std::max(min_crosswalk_user_velocity_, estimated_velocity);
-  // TODO(Mamoru Sobue): 3rd argument of findNearest is the number of lanelets, not radius, so past
-  // implementation has been wrong.
-  const auto surrounding_lanelets_with_dist = lanelet::geometry::findNearest(
+  const auto surrounding_lanelets_with_dist = lanelet::geometry::findWithin2d(
     lanelet_map_ptr_->laneletLayer, lanelet::BasicPoint2d{obj_pos.x, obj_pos.y},
     prediction_time_horizon_.pedestrian * velocity);
   lanelet::ConstLanelets surrounding_lanelets;
@@ -1458,7 +1462,7 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
 
     // If the object is not crossing the crosswalk, in the road lanelets, try to find the closest
     // crosswalk and generate path to the crosswalk edge
-  } else if (withinRoadLanelet(object, lanelet_map_ptr_)) {
+  } else if (withinRoadLanelet(object, surrounding_lanelets_with_dist)) {
     lanelet::ConstLanelet closest_crosswalk{};
     const auto & obj_pose = object.kinematics.pose_with_covariance.pose;
     const auto found_closest_crosswalk =
