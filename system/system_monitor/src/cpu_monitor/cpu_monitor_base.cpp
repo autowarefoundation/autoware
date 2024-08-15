@@ -175,14 +175,6 @@ void CPUMonitorBase::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & st
     return;
   }
 
-  std::string cpu_name;
-  float usr{0.0};
-  float nice{0.0};
-  float sys{0.0};
-  float iowait{0.0};
-  float idle{0.0};
-  float usage{0.0};
-  float total{0.0};
   int level = DiagStatus::OK;
   int whole_level = DiagStatus::OK;
 
@@ -202,6 +194,15 @@ void CPUMonitorBase::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & st
           bool get_cpu_name = false;
 
           CpuStatus cpu_status;
+
+          std::string cpu_name;
+          float usr{0.0};
+          float nice{0.0};
+          float sys{0.0};
+          float iowait{0.0};
+          float idle{0.0};
+          float usage{0.0};
+          float total{0.0};
 
           if (boost::optional<std::string> v = cpu_load.get_optional<std::string>("cpu")) {
             cpu_name = v.get();

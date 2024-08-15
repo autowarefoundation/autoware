@@ -127,8 +127,6 @@ void ProcessMonitor::getTasksSummary(
   }
   bp::pipe p{p_fd[0], p_fd[1]};
 
-  std::string line;
-
   // Echo output for grep
   {
     int out_fd[2];
@@ -179,6 +177,7 @@ void ProcessMonitor::getTasksSummary(
       return;
     }
 
+    std::string line;
     std::getline(is_out, line);
     std::cmatch match;
     const std::regex filter(
