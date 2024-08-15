@@ -1,0 +1,232 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for freespace_planner",
+  "type": "object",
+  "definitions": {
+    "freespace_planner_params": {
+      "type": "object",
+      "properties": {
+        "planning_algorithm": {
+          "type": "string",
+          "enum": ["astar", "rrtstar"],
+          "default": "astar",
+          "description": "Planning algorithm to use, options: astar, rrtstar."
+        },
+        "waypoints_velocity": {
+          "type": "number",
+          "default": 5.0,
+          "description": "velocity in output trajectory (currently, only constant velocity is supported."
+        },
+        "update_rate": {
+          "type": "number",
+          "default": 10.0,
+          "description": "timer's update rate"
+        },
+        "th_arrived_distance_m": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Threshold for considering the vehicle has arrived at its goal."
+        },
+        "th_stopped_time_sec": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Time threshold for considering the vehicle as stopped."
+        },
+        "th_stopped_velocity_mps": {
+          "type": "number",
+          "default": 0.01,
+          "description": "Velocity threshold for considering the vehicle as stopped."
+        },
+        "th_course_out_distance_m": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Threshold distance for considering the vehicle has deviated from its course."
+        },
+        "vehicle_shape_margin_m": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Margin around the vehicle shape for planning."
+        },
+        "replan_when_obstacle_found": {
+          "type": "boolean",
+          "default": true,
+          "description": "Replan path when an obstacle is found."
+        },
+        "replan_when_course_out": {
+          "type": "boolean",
+          "default": true,
+          "description": "Replan path when the vehicle deviates from its course."
+        },
+        "time_limit": {
+          "type": "number",
+          "default": 30000.0,
+          "description": "Time limit for the planner."
+        },
+        "max_turning_ratio": {
+          "type": "number",
+          "default": 0.5,
+          "description": "Maximum turning ratio, relative to the actual turning limit of the vehicle."
+        },
+        "turning_steps": {
+          "type": "number",
+          "default": 1,
+          "description": "Number of steps for turning."
+        },
+        "theta_size": {
+          "type": "number",
+          "default": 144,
+          "description": "Number of discretized angles for search."
+        },
+        "angle_goal_range": {
+          "type": "number",
+          "default": 6.0,
+          "description": "Range of acceptable angles at the goal."
+        },
+        "lateral_goal_range": {
+          "type": "number",
+          "default": 0.5,
+          "description": "Lateral range of acceptable goal positions."
+        },
+        "longitudinal_goal_range": {
+          "type": "number",
+          "default": 2.0,
+          "description": "Longitudinal range of acceptable goal positions."
+        },
+        "curve_weight": {
+          "type": "number",
+          "default": 0.5,
+          "description": "Weight for curves in the cost function."
+        },
+        "reverse_weight": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Weight for reverse movement in the cost function."
+        },
+        "direction_change_weight": {
+          "type": "number",
+          "default": 1.5,
+          "description": "Weight for direction changes in the cost function."
+        },
+        "obstacle_threshold": {
+          "type": "number",
+          "default": 100,
+          "description": "Threshold for considering an obstacle in the costmap."
+        },
+        "astar": {
+          "type": "object",
+          "properties": {
+            "only_behind_solutions": {
+              "type": "boolean",
+              "default": false,
+              "description": "Consider only solutions behind the vehicle."
+            },
+            "use_back": {
+              "type": "boolean",
+              "default": true,
+              "description": "Allow reverse motion in A* search."
+            },
+            "expansion_distance": {
+              "type": "number",
+              "default": 0.5,
+              "description": "Distance for expanding nodes in A* search."
+            },
+            "distance_heuristic_weight": {
+              "type": "number",
+              "default": 1.0,
+              "description": "Weight for the distance heuristic in A* search."
+            },
+            "smoothness_weight": {
+              "type": "number",
+              "default": 0.5,
+              "description": "Weight for the smoothness heuristic in A* search."
+            }
+          },
+          "required": [
+            "only_behind_solutions",
+            "use_back",
+            "expansion_distance",
+            "distance_heuristic_weight",
+            "smoothness_weight"
+          ]
+        },
+        "rrtstar": {
+          "type": "object",
+          "properties": {
+            "enable_update": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable updates in RRT*."
+            },
+            "use_informed_sampling": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use informed sampling in RRT*."
+            },
+            "max_planning_time": {
+              "type": "number",
+              "default": 150.0,
+              "description": "Maximum planning time for RRT*."
+            },
+            "neighbor_radius": {
+              "type": "number",
+              "default": 8.0,
+              "description": "Radius for neighboring nodes in RRT*."
+            },
+            "margin": {
+              "type": "number",
+              "default": 0.1,
+              "description": "Margin for RRT* sampling."
+            }
+          },
+          "required": [
+            "enable_update",
+            "use_informed_sampling",
+            "max_planning_time",
+            "neighbor_radius",
+            "margin"
+          ]
+        }
+      },
+      "required": [
+        "planning_algorithm",
+        "waypoints_velocity",
+        "update_rate",
+        "th_arrived_distance_m",
+        "th_stopped_time_sec",
+        "th_stopped_velocity_mps",
+        "th_course_out_distance_m",
+        "vehicle_shape_margin_m",
+        "replan_when_obstacle_found",
+        "replan_when_course_out",
+        "time_limit",
+        "max_turning_ratio",
+        "turning_steps",
+        "theta_size",
+        "angle_goal_range",
+        "lateral_goal_range",
+        "longitudinal_goal_range",
+        "curve_weight",
+        "reverse_weight",
+        "direction_change_weight",
+        "obstacle_threshold",
+        "astar",
+        "rrtstar"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/freespace_planner_params"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

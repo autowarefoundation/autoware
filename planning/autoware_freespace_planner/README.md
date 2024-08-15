@@ -38,6 +38,8 @@ None
 
 ### Parameters
 
+{{json_to_markdown("planning/autoware_freespace_planner/schema/freespace_planner.schema.json")}}
+
 #### Node parameters
 
 | Parameter                    | Type   | Description                                                                     |
