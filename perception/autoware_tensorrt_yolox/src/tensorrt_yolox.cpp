@@ -772,8 +772,6 @@ void TrtYoloX::multiScalePreprocess(const cv::Mat & image, const std::vector<cv:
 bool TrtYoloX::doInferenceWithRoi(
   const std::vector<cv::Mat> & images, ObjectArrays & objects, const std::vector<cv::Rect> & rois)
 {
-  std::vector<cv::Mat> masks;
-  std::vector<cv::Mat> color_masks;
   if (!trt_common_->isInitialized()) {
     return false;
   }
@@ -784,6 +782,8 @@ bool TrtYoloX::doInferenceWithRoi(
   }
 
   if (needs_output_decode_) {
+    std::vector<cv::Mat> masks;
+    std::vector<cv::Mat> color_masks;
     return feedforwardAndDecode(images, objects, masks, color_masks);
   } else {
     return feedforward(images, objects);
