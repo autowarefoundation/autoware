@@ -24,9 +24,13 @@
   when: not install_result.changed
 
 - name: Add RMW_IMPLEMENTATION to .bashrc
+  become: true
   ansible.builtin.lineinfile:
-    dest: ~/.bashrc
+    dest: "{{ item }}"
     line: export RMW_IMPLEMENTATION={{ rmw_implementation }}
     state: present
     create: true
     mode: 0644
+  loop:
+    - ~/.bashrc
+    - /etc/skel/.bashrc

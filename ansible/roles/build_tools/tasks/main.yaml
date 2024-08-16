@@ -13,6 +13,15 @@
     create: true
     mode: 0644
 
+- name: Add CCACHE_DIR to .bashrc of local user
+  become: true
+  ansible.builtin.lineinfile:
+    dest: /etc/skel/.bashrc
+    line: export CCACHE_DIR="$HOME/.ccache"
+    state: present
+    create: true
+    mode: 0644
+
 - name: Export CC to ccache
   ansible.builtin.lineinfile:
     dest: ~/.bashrc
