@@ -647,3 +647,15 @@ This module is activated when the following conditions are met:
 ### Known Issue
 
 If ego go over the stop line for a certain distance, then it will not transit from STOP.
+
+## Test Maps
+
+The intersections lanelet map consist of a variety of intersections including:
+
+- 4-way crossing with traffic light
+- 4-way crossing without traffic light
+- T-shape crossing without traffic light
+- intersection with a loop
+- complicated intersection
+
+![intersection_test](./docs/intersection_test_map.png)
