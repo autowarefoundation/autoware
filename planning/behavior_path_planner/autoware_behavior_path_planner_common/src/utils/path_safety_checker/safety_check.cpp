@@ -129,6 +129,7 @@ Polygon2d createExtendedPolygon(
     autoware::universe_utils::calcOffsetPose(base_link_pose, backward_lon_offset, lat_offset, 0.0);
 
   Polygon2d polygon;
+  polygon.outer().reserve(5);
   appendPointToPolygon(polygon, p1.position);
   appendPointToPolygon(polygon, p2.position);
   appendPointToPolygon(polygon, p3.position);
@@ -140,13 +141,14 @@ Polygon2d createExtendedPolygon(
 }
 
 Polygon2d createExtendedPolygon(
-  const Pose & obj_pose, const Shape & shape, const double lon_length, const double lat_margin,
-  const bool is_stopped_obj, CollisionCheckDebug & debug)
+  const PoseWithVelocityAndPolygonStamped & obj_pose_with_poly, const double lon_length,
+  const double lat_margin, const bool is_stopped_obj, CollisionCheckDebug & debug)
 {
-  const auto obj_polygon = autoware::universe_utils::toPolygon2d(obj_pose, shape);
+  const auto & obj_polygon = obj_pose_with_poly.poly;
   if (obj_polygon.outer().empty()) {
     return obj_polygon;
   }
+  const auto & obj_pose = obj_pose_with_poly.pose;
 
   double max_x = std::numeric_limits<double>::lowest();
   double min_x = std::numeric_limits<double>::max();
@@ -186,6 +188,7 @@ Polygon2d createExtendedPolygon(
     autoware::universe_utils::calcOffsetPose(obj_pose, backward_lon_offset, left_lat_offset, 0.0);
 
   Polygon2d polygon;
+  polygon.outer().reserve(5);
   appendPointToPolygon(polygon, p1.position);
   appendPointToPolygon(polygon, p2.position);
   appendPointToPolygon(polygon, p3.position);
@@ -670,10 +673,9 @@ std::vector<Polygon2d> getCollidedPolygons(
       throw std::domain_error("invalid rss parameter. please select 'rectangle' or 'along_path'.");
     }();
     const auto & extended_obj_polygon =
-      is_object_front
-        ? obj_polygon
-        : createExtendedPolygon(
-            obj_pose, target_object.shape, lon_offset, lat_margin, is_stopped_object, debug);
+      is_object_front ? obj_polygon
+                      : createExtendedPolygon(
+                          obj_pose_with_poly, lon_offset, lat_margin, is_stopped_object, debug);
 
     // check overlap with extended polygon
     if (boost::geometry::overlaps(extended_ego_polygon, extended_obj_polygon)) {

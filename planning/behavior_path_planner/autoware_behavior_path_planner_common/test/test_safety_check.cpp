@@ -161,8 +161,14 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedObjPolygon)
     const bool is_stopped_object = false;
 
     CollisionCheckDebug debug;
+
+    using autoware::behavior_path_planner::utils::path_safety_checker::
+      PoseWithVelocityAndPolygonStamped;
+
+    PoseWithVelocityAndPolygonStamped obj_pose_with_poly(
+      0.0, obj_pose, 0.0, autoware::universe_utils::toPolygon2d(obj_pose, shape));
     const auto polygon =
-      createExtendedPolygon(obj_pose, shape, lon_length, lat_margin, is_stopped_object, debug);
+      createExtendedPolygon(obj_pose_with_poly, lon_length, lat_margin, is_stopped_object, debug);
 
     EXPECT_EQ(polygon.outer().size(), static_cast<unsigned int>(5));
 
