@@ -1,6 +1,6 @@
-# hadolint global ignore=DL3006
 ARG BASE_IMAGE
 
+# hadolint ignore=DL3006
 FROM $BASE_IMAGE AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -32,6 +32,7 @@ RUN --mount=type=ssh \
 # Create entrypoint
 CMD ["/bin/bash"]
 
+# hadolint ignore=DL3006
 FROM $BASE_IMAGE AS rosdep-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -93,10 +94,9 @@ RUN --mount=type=ssh \
 
 # Install rosdep dependencies
 COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
-# hadolint ignore=SC2002
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
-  && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get install -y --no-install-recommends < /tmp/rosdep-core-depend-packages.txt \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
@@ -117,10 +117,9 @@ ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
 COPY --from=rosdep-depend /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
-# hadolint ignore=SC2002
 RUN --mount=type=ssh \
   apt-get update \
-  && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get install -y --no-install-recommends < /tmp/rosdep-universe-depend-packages.txt \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
@@ -161,13 +160,12 @@ ARG SETUP_ARGS
 
 # Set up runtime environment and artifacts
 COPY --from=rosdep-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
-# hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
-  && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get install -y --no-install-recommends < /tmp/rosdep-exec-depend-packages.txt \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
   && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
