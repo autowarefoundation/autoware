@@ -99,6 +99,11 @@ void NormalLaneChange::update_lanes(const bool is_approved)
   *common_data_ptr_->lanes_polygon_ptr = create_lanes_polygon(common_data_ptr_);
 }
 
+void NormalLaneChange::update_filtered_objects()
+{
+  filtered_objects_ = filterObjects();
+}
+
 void NormalLaneChange::updateLaneChangeStatus()
 {
   universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
@@ -1412,8 +1417,7 @@ bool NormalLaneChange::getLaneChangePaths(
     return false;
   }
 
-  const auto filtered_objects = filterObjects();
-  const auto target_objects = getTargetObjects(filtered_objects, current_lanes);
+  const auto target_objects = getTargetObjects(filtered_objects_, current_lanes);
 
   const auto prepare_durations = calcPrepareDuration(current_lanes, target_lanes);
 
@@ -1661,7 +1665,7 @@ bool NormalLaneChange::getLaneChangePaths(
 
         if (
           !is_stuck && !utils::lane_change::passed_parked_objects(
-                         common_data_ptr_, *candidate_path, filtered_objects.target_lane_leading,
+                         common_data_ptr_, *candidate_path, filtered_objects_.target_lane_leading,
                          lane_change_buffer, lane_change_debug_.collision_check_objects)) {
           debug_print_lat(
             "Reject: parking vehicle exists in the target lane, and the ego is not in stuck. Skip "
@@ -1849,8 +1853,7 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
     return {true, true};
   }
 
-  const auto filtered_objects = filterObjects();
-  const auto target_objects = getTargetObjects(filtered_objects, current_lanes);
+  const auto target_objects = getTargetObjects(filtered_objects_, current_lanes);
 
   CollisionCheckDebugMap debug_data;
 
@@ -1859,7 +1862,7 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
     common_data_ptr_->route_handler_ptr->getLateralIntervalsToPreferredLane(current_lanes.back()));
 
   const auto has_passed_parked_objects = utils::lane_change::passed_parked_objects(
-    common_data_ptr_, path, filtered_objects.target_lane_leading, min_lc_length, debug_data);
+    common_data_ptr_, path, filtered_objects_.target_lane_leading, min_lc_length, debug_data);
 
   if (!has_passed_parked_objects) {
     RCLCPP_DEBUG(logger_, "Lane change has been delayed.");

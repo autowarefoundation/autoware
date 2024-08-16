@@ -67,6 +67,8 @@ public:
 
   virtual void update_lanes(const bool is_approved) = 0;
 
+  virtual void update_filtered_objects() = 0;
+
   virtual void updateLaneChangeStatus() = 0;
 
   virtual std::pair<bool, bool> getSafePath(LaneChangePath & safe_path) const = 0;
@@ -252,6 +254,7 @@ protected:
   std::shared_ptr<LaneChangePath> abort_path_{};
   std::shared_ptr<const PlannerData> planner_data_{};
   lane_change::CommonDataPtr common_data_ptr_{};
+  FilteredByLanesExtendedObjects filtered_objects_{};
   BehaviorModuleOutput prev_module_output_{};
   std::optional<Pose> lane_change_stop_pose_{std::nullopt};
 

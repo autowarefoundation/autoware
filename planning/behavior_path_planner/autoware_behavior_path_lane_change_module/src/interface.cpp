@@ -76,6 +76,7 @@ void LaneChangeInterface::updateData()
   universe_utils::ScopedTimeTrack st(__func__, *getTimeKeeper());
   module_type_->setPreviousModuleOutput(getPreviousModuleOutput());
   module_type_->update_lanes(getCurrentStatus() == ModuleStatus::RUNNING);
+  module_type_->update_filtered_objects();
   module_type_->updateSpecialData();
 
   if (isWaitingApproval() || module_type_->isAbortState()) {
