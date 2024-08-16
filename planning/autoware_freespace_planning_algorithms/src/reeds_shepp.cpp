@@ -676,7 +676,7 @@ ReedsSheppStateSpace::StateXYT ReedsSheppStateSpace::interpolate(
   }
 
   StateXYT s_out;
-  double phi, v;
+  double v;
 
   s_out.x = s_out.y = 0.0;
   s_out.yaw = s0.yaw;
@@ -689,7 +689,7 @@ ReedsSheppStateSpace::StateXYT ReedsSheppStateSpace::interpolate(
       v = std::min(seg, path.length_[i]);
       seg -= v;
     }
-    phi = s_out.yaw;
+    double phi = s_out.yaw;
     switch (path.type_[i]) {
       case RS_LEFT:
         s_out.x += (sin(phi + v) - std::sin(phi));
