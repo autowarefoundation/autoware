@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for external_cmd_selector",
+  "type": "object",
+  "definitions": {
+    "external_cmd_selector_node": {
+      "type": "object",
+      "properties": {
+        "update_rate": {
+          "type": "number",
+          "default": 10.0,
+          "description": "The rate in Hz at which the external command selector node updates."
+        },
+        "initial_selector_mode": {
+          "type": "string",
+          "enum": ["local", "remote"],
+          "default": "local",
+          "description": "The initial mode for command selection, either 'local' or 'remote'."
+        }
+      },
+      "required": ["update_rate", "initial_selector_mode"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/external_cmd_selector_node"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

@@ -32,3 +32,7 @@ The current mode is set via service, `remote` is remotely operated, `local` is t
 | `/external/selected/hazard_lights_cmd`                 | autoware_vehicle_msgs::msg::HazardLightsCommand   | Pass through hazard light with current mode.    |
 | `/external/selected/heartbeat`                         | TBD                                               | Pass through heartbeat with current mode.       |
 | `/external/selected/turn_indicators_cmd`               | autoware_vehicle_msgs::msg::TurnIndicatorsCommand | Pass through turn indicator with current mode.  |
+
+## Parameters
+
+{{json_to_markdown("control/autoware_external_cmd_selector/schema/external_cmd_selector.schema.json")}}
