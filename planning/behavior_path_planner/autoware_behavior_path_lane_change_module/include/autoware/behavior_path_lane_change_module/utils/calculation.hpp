@@ -58,6 +58,23 @@ double calc_dist_from_pose_to_terminal_end(
  * @return The required backward buffer distance in meters.
  */
 double calc_stopping_distance(const LCParamPtr & lc_param_ptr);
+
+/**
+ * @brief Calculates the distance to last fit width position along the lane
+ *
+ * This function computes the distance from the current ego position to the last
+ * position along the lane where the ego foot prints stays within the lane
+ * boundaries.
+ *
+ * @param lanelets current ego lanelets
+ * @param src_pose source pose to calculate distance from
+ * @param bpp_param common parameters used in behavior path planner.
+ * @param margin additional margin for checking lane width
+ * @return distance to last fit width position along the lane
+ */
+double calc_dist_to_last_fit_width(
+  const lanelet::ConstLanelets lanelets, const Pose & src_pose,
+  const BehaviorPathPlannerParameters & bpp_param, const double margin = 0.1);
 }  // namespace autoware::behavior_path_planner::utils::lane_change::calculation
 
 #endif  // AUTOWARE__BEHAVIOR_PATH_LANE_CHANGE_MODULE__UTILS__CALCULATION_HPP_

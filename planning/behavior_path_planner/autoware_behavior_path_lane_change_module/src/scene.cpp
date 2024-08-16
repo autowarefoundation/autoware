@@ -397,6 +397,14 @@ void NormalLaneChange::insertStopPoint(
   const auto target_objects = filterObjects();
   double stopping_distance = distance_to_terminal - lane_change_buffer - stop_point_buffer;
 
+  const auto & curr_lanes_poly = common_data_ptr_->lanes_polygon_ptr->current.value();
+  if (utils::isEgoWithinOriginalLane(curr_lanes_poly, getEgoPose(), planner_data_->parameters)) {
+    const double distance_to_last_fit_width =
+      utils::lane_change::calculation::calc_dist_to_last_fit_width(
+        lanelets, path.points.front().point.pose, planner_data_->parameters);
+    stopping_distance = std::min(stopping_distance, distance_to_last_fit_width);
+  }
+
   const auto & lc_start_point = status_.lane_change_path.info.lane_changing_start;
 
   if (!is_valid_start_point(common_data_ptr_, lc_start_point)) {
@@ -737,8 +745,9 @@ bool NormalLaneChange::isAbleToReturnCurrentLane() const
     return false;
   }
 
+  const auto & curr_lanes_poly = common_data_ptr_->lanes_polygon_ptr->current.value();
   if (!utils::isEgoWithinOriginalLane(
-        get_current_lanes(), getEgoPose(), planner_data_->parameters,
+        curr_lanes_poly, getEgoPose(), planner_data_->parameters,
         lane_change_parameters_->cancel.overhang_tolerance)) {
     lane_change_debug_.is_able_to_return_to_current_lane = false;
     return false;
@@ -759,7 +768,7 @@ bool NormalLaneChange::isAbleToReturnCurrentLane() const
     if (dist > estimated_travel_dist) {
       const auto & estimated_pose = status_.lane_change_path.path.points.at(idx + 1).point.pose;
       auto is_ego_within_original_lane = utils::isEgoWithinOriginalLane(
-        get_current_lanes(), estimated_pose, planner_data_->parameters,
+        curr_lanes_poly, estimated_pose, planner_data_->parameters,
         lane_change_parameters_->cancel.overhang_tolerance);
       lane_change_debug_.is_able_to_return_to_current_lane = is_ego_within_original_lane;
       return is_ego_within_original_lane;
@@ -817,13 +826,14 @@ bool NormalLaneChange::isAbleToStopSafely() const
   const auto stop_dist =
     -(current_velocity * current_velocity / (2.0 * planner_data_->parameters.min_acc));
 
+  const auto & curr_lanes_poly = common_data_ptr_->lanes_polygon_ptr->current.value();
   double dist = 0.0;
   for (size_t idx = nearest_idx; idx < status_.lane_change_path.path.points.size() - 1; ++idx) {
     dist += calcSignedArcLength(status_.lane_change_path.path.points, idx, idx + 1);
     if (dist > stop_dist) {
       const auto & estimated_pose = status_.lane_change_path.path.points.at(idx + 1).point.pose;
       return utils::isEgoWithinOriginalLane(
-        get_current_lanes(), estimated_pose, planner_data_->parameters);
+        curr_lanes_poly, estimated_pose, planner_data_->parameters);
     }
   }
   return true;

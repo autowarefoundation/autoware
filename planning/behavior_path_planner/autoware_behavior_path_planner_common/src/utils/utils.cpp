@@ -559,19 +559,24 @@ bool isEgoWithinOriginalLane(
   const lanelet::ConstLanelets & current_lanes, const Pose & current_pose,
   const BehaviorPathPlannerParameters & common_param, const double outer_margin)
 {
-  const auto lane_length = lanelet::utils::getLaneletLength2d(current_lanes);
-  const auto lane_poly = lanelet::utils::getPolygonFromArcLength(current_lanes, 0, lane_length);
-  const auto base_link2front = common_param.base_link2front;
-  const auto base_link2rear = common_param.base_link2rear;
-  const auto vehicle_width = common_param.vehicle_width;
+  const auto combined_lane = lanelet::utils::combineLaneletsShape(current_lanes);
+  const auto lane_polygon = combined_lane.polygon2d().basicPolygon();
+  return isEgoWithinOriginalLane(lane_polygon, current_pose, common_param, outer_margin);
+}
+
+bool isEgoWithinOriginalLane(
+  const lanelet::BasicPolygon2d & lane_polygon, const Pose & current_pose,
+  const BehaviorPathPlannerParameters & common_param, const double outer_margin)
+{
   const auto vehicle_poly = autoware::universe_utils::toFootprint(
-    current_pose, base_link2front, base_link2rear, vehicle_width);
+    current_pose, common_param.base_link2front, common_param.base_link2rear,
+    common_param.vehicle_width);
 
   // Check if the ego vehicle is entirely within the lane with a given outer margin.
   for (const auto & p : vehicle_poly.outer()) {
     // When the point is in the polygon, the distance is 0. When it is out of the polygon, return a
     // positive value.
-    const auto dist = boost::geometry::distance(p, lanelet::utils::to2D(lane_poly).basicPolygon());
+    const auto dist = boost::geometry::distance(p, lane_polygon);
     if (dist > std::max(outer_margin, 0.0)) {
       return false;  // out of polygon
     }
@@ -816,25 +821,29 @@ PathPointWithLaneId insertStopPoint(const double length, PathWithLaneId & path)
   return path.points.at(*insert_idx);
 }
 
+double getSignedDistanceFromLaneBoundary(
+  const lanelet::ConstLanelet & lanelet, const Point & position, bool left_side)
+{
+  const auto lanelet_point = lanelet::utils::conversion::toLaneletPoint(position);
+  const auto & boundary_line_2d = left_side ? lanelet.leftBound2d() : lanelet.rightBound2d();
+  const auto arc_coordinates = lanelet::geometry::toArcCoordinates(
+    boundary_line_2d, lanelet::utils::to2D(lanelet_point).basicPoint());
+  return arc_coordinates.distance;
+}
+
 double getSignedDistanceFromBoundary(
   const lanelet::ConstLanelets & lanelets, const Pose & pose, bool left_side)
 {
   lanelet::ConstLanelet closest_lanelet;
-  lanelet::ArcCoordinates arc_coordinates;
+
   if (lanelet::utils::query::getClosestLanelet(lanelets, pose, &closest_lanelet)) {
-    const auto lanelet_point = lanelet::utils::conversion::toLaneletPoint(pose.position);
-    const auto & boundary_line_2d = left_side
-                                      ? lanelet::utils::to2D(closest_lanelet.leftBound3d())
-                                      : lanelet::utils::to2D(closest_lanelet.rightBound3d());
-    arc_coordinates = lanelet::geometry::toArcCoordinates(
-      boundary_line_2d, lanelet::utils::to2D(lanelet_point).basicPoint());
-  } else {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("utils"),
-      "closest shoulder lanelet not found.");
+    return getSignedDistanceFromLaneBoundary(closest_lanelet, pose.position, left_side);
   }
 
-  return arc_coordinates.distance;
+  RCLCPP_ERROR_STREAM(
+    rclcpp::get_logger("behavior_path_planner").get_child("utils"), "closest lanelet not found.");
+
+  return 0.0;
 }
 
 std::optional<double> getSignedDistanceFromBoundary(
@@ -1211,7 +1220,6 @@ PathWithLaneId setDecelerationVelocity(
   const auto stop_point_length =
     autoware::motion_utils::calcSignedArcLength(reference_path.points, 0, target_pose.position) +
     buffer;
-  constexpr double eps{0.01};
   if (std::abs(target_velocity) < eps && stop_point_length > 0.0) {
     const auto stop_point = utils::insertStopPoint(stop_point_length, reference_path);
   }
