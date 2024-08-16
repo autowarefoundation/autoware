@@ -8,22 +8,26 @@
       "properties": {
         "topic": {
           "type": "string",
-          "description": "The ROS topic name for the input channel."
+          "description": "The ROS topic name for the input channel.",
+          "default": "/perception/object_recognition/detection/objects"
         },
         "can_spawn_new_tracker": {
           "type": "boolean",
-          "description": "Indicates if the input channel can spawn new trackers."
+          "description": "Indicates if the input channel can spawn new trackers.",
+          "default": true
         },
         "optional": {
           "type": "object",
           "properties": {
             "name": {
               "type": "string",
-              "description": "The name of the input channel."
+              "description": "The name of the input channel.",
+              "default": "detected_objects"
             },
             "short_name": {
               "type": "string",
-              "description": "The short name of the input channel."
+              "description": "The short name of the input channel.",
+              "default": "all"
             }
           }
         }
