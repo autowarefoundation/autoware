@@ -1,4 +1,4 @@
-# hadolint global ignore=DL3006,DL3008,DL3013
+# hadolint global ignore=DL3006
 ARG BASE_IMAGE
 
 FROM $BASE_IMAGE AS base
@@ -84,7 +84,6 @@ ARG ROS_DISTRO
 ARG SETUP_ARGS
 ENV CCACHE_DIR="/root/.ccache"
 
-# cspell: ignore libcu libnv
 # Set up development environment
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
