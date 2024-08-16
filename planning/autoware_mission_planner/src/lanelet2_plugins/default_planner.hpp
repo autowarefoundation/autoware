@@ -44,6 +44,8 @@ struct DefaultPlannerParameters
 class DefaultPlanner : public mission_planner::PlannerPlugin
 {
 public:
+  DefaultPlanner() : is_graph_ready_(false), route_handler_(), param_(), node_(nullptr) {}
+
   void initialize(rclcpp::Node * node) override;
   void initialize(rclcpp::Node * node, const LaneletMapBin::ConstSharedPtr msg) override;
   bool ready() const override;
