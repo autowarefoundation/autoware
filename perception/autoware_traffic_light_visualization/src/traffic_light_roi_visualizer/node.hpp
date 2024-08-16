@@ -36,7 +36,9 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <sstream>
 #include <string>
+#include <vector>
 
 namespace autoware::traffic_light
 {
@@ -44,6 +46,15 @@ struct ClassificationResult
 {
   float prob = 0.0;
   std::string label;
+};
+
+/**
+ * @brief A struct to represent parsed traffic light shape information.
+ */
+struct TrafficLightShapeInfo
+{
+  cv::Scalar color;                 //!< Color associated with "circle".
+  std::vector<std::string> shapes;  //!< Shape names.
 };
 
 class TrafficLightRoiVisualizerNode : public rclcpp::Node
@@ -78,6 +89,8 @@ private:
     {tier4_perception_msgs::msg::TrafficLightElement::RIGHT_ARROW, "right"},
     {tier4_perception_msgs::msg::TrafficLightElement::UP_ARROW, "straight"},
     {tier4_perception_msgs::msg::TrafficLightElement::DOWN_ARROW, "down"},
+    {tier4_perception_msgs::msg::TrafficLightElement::UP_LEFT_ARROW, "straight_left"},
+    {tier4_perception_msgs::msg::TrafficLightElement::UP_RIGHT_ARROW, "straight_right"},
     {tier4_perception_msgs::msg::TrafficLightElement::DOWN_LEFT_ARROW, "down_left"},
     {tier4_perception_msgs::msg::TrafficLightElement::DOWN_RIGHT_ARROW, "down_right"},
     {tier4_perception_msgs::msg::TrafficLightElement::CROSS, "cross"},
@@ -85,18 +98,48 @@ private:
     {tier4_perception_msgs::msg::TrafficLightElement::UNKNOWN, "unknown"},
   };
 
-  std::string extractShapeName(const std::string & label)
+  /**
+   * @brief Return RGB color from color string associated with "circle".
+   * @param color Color string.
+   * @return RGB color.
+   */
+  static cv::Scalar strToColor(const std::string & color)
   {
-    size_t start_pos = label.find('-');
-    if (start_pos != std::string::npos) {
-      start_pos++;                                  // Start after the hyphen
-      size_t end_pos = label.find(',', start_pos);  // Find the next comma after the hyphen
-      if (end_pos == std::string::npos) {  // If no comma is found, take the rest of the string
-        end_pos = label.length();
-      }
-      return label.substr(start_pos, end_pos - start_pos);
+    if (color == "red") {
+      return {254, 149, 149};
+    } else if (color == "yellow") {
+      return {254, 250, 149};
+    } else if (color == "green") {
+      return {149, 254, 161};
+    } else {
+      return {250, 250, 250};
     }
-    return "unknown";  // Return "unknown" if no hyphen is found
+  }
+
+  /**
+   * @brief Extract color and shape names from label.
+   * @param label String formatted as `<Color0>-<Shape0>,<Color1>-<Shape1>,...,<ColorN>-<ShapeN>`.
+   * @return Extracted information includes a color associated with "circle" and shape names.
+   */
+  static TrafficLightShapeInfo extractShapeInfo(const std::string & label)
+  {
+    cv::Scalar color{255, 255, 255};
+    std::vector<std::string> shapes;
+
+    std::stringstream ss(label);
+    std::string segment;
+    while (std::getline(ss, segment, ',')) {
+      size_t hyphen_pos = segment.find('-');
+      if (hyphen_pos != std::string::npos) {
+        auto shape = segment.substr(hyphen_pos + 1);
+        if (shape == "circle") {
+          const auto color_str = segment.substr(0, hyphen_pos);
+          color = strToColor(color_str);
+        }
+        shapes.emplace_back(shape);
+      }
+    }
+    return {color, shapes};
   }
 
   bool createRect(

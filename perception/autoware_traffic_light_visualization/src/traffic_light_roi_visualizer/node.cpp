@@ -20,7 +20,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 namespace autoware::traffic_light
 {
@@ -103,26 +102,18 @@ bool TrafficLightRoiVisualizerNode::createRect(
   cv::Mat & image, const tier4_perception_msgs::msg::TrafficLightRoi & tl_roi,
   const ClassificationResult & result)
 {
-  cv::Scalar color;
-  if (result.label.find("red") != std::string::npos) {
-    color = cv::Scalar{254, 149, 149};
-  } else if (result.label.find("yellow") != std::string::npos) {
-    color = cv::Scalar{254, 250, 149};
-  } else if (result.label.find("green") != std::string::npos) {
-    color = cv::Scalar{149, 254, 161};
-  } else {
-    color = cv::Scalar{250, 250, 250};
-  }
+  const auto info = extractShapeInfo(result.label);
 
   cv::rectangle(
     image, cv::Point(tl_roi.roi.x_offset, tl_roi.roi.y_offset),
     cv::Point(tl_roi.roi.x_offset + tl_roi.roi.width, tl_roi.roi.y_offset + tl_roi.roi.height),
-    color, 2);
+    info.color, 2);
 
-  std::string shape_name = extractShapeName(result.label);
+  constexpr int shape_img_size = 16;
+  const auto position = cv::Point(tl_roi.roi.x_offset, tl_roi.roi.y_offset);
 
   visualization::drawTrafficLightShape(
-    image, shape_name, cv::Point(tl_roi.roi.x_offset, tl_roi.roi.y_offset), color, 16, result.prob);
+    image, info.shapes, shape_img_size, position, info.color, result.prob);
 
   return true;
 }
