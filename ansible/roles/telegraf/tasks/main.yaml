@@ -15,10 +15,12 @@
 - name: Convert the key to gpg format
   ansible.builtin.command: gpg --dearmor -o /tmp/influxdata-archive_compat.gpg /tmp/influxdata-archive_compat.key
   become: true
+  when: true
 
 - name: Move the gpg key to trusted.gpg.d
   ansible.builtin.command: mv /tmp/influxdata-archive_compat.gpg /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg
   become: true
+  when: true
 
 - name: Add InfluxData repository
   become: true
@@ -44,7 +46,9 @@
     state: present
 
 - name: Set up influxDB v2
+  become: true
   ansible.builtin.command: influx setup -f --name default --username autoware --password autoware --token autowaretoken --org autowarefondation --bucket autoware --retention 0
+  when: true
 
 - name: Install Telegraf
   ansible.builtin.apt:
