@@ -4,12 +4,12 @@
     dest: /tmp/influxdata-archive_compat.key
 
 - name: Verify the checksum of the key file
-  command: "sha256sum -c"
+  command: 'sha256sum -c'
   args:
     chdir: /tmp
-    stdin: "393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c  influxdata-archive_compat.key"
+    stdin: '393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c  influxdata-archive_compat.key'
   register: checksum_result
-  failed_when: "checksum_result.rc != 0"
+  failed_when: 'checksum_result.rc != 0'
   changed_when: false
 
 - name: Convert the key to gpg format
@@ -22,58 +22,61 @@
 
 - name: Add InfluxData repository
   become: true
-  apt_repository:
-    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main"
+  ansible.builtin.apt_repository:
+    repo: 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main'
     state: present
-    filename: "influxdata.list"
+    filename: 'influxdata.list'
 
 - name: Update apt cache
   become: true
-  apt:
+  ansible.builtin.apt:
     update_cache: true
     cache_valid_time: 3600
 
 - name: Install InfluxDB v2
-  apt:
+  ansible.builtin.apt:
     name: influxdb2
     state: present
 
 - name: Install InfluxDB v2 CLI
-  apt:
+  ansible.builtin.apt:
     name: influxdb2-cli
     state: present
 
+- name: Set up influxDB v2
+  command: influx setup -f --name default --username autoware --password autoware --token autowaretoken --org autowarefondation --bucket autoware --retention 0
+
 - name: Install Telegraf
-  apt:
+  ansible.builtin.apt:
     name: telegraf
     state: present
 
 - name: Copy get_telegraf_proccpu_json.sh to /opt/autoware/bin
   become: true
   copy:
-    src: "{{ role_path }}/files/get_telegraf_proccpu_json.sh"
+    src: '{{ role_path }}/files/get_telegraf_proccpu_json.sh'
     dest: /opt/autoware/bin/get_telegraf_proccpu_json.sh
     owner: root
     group: root
-    mode: "0755"
+    mode: '0755'
 
 - name: Copy get_telegraf_procmem_json.sh to /opt/autoware/bin
   become: true
   copy:
-    src: "{{ role_path }}/files/get_telegraf_procmem_json.sh"
+    src: '{{ role_path }}/files/get_telegraf_procmem_json.sh'
     dest: /opt/autoware/bin/get_telegraf_procmem_json.sh
     owner: root
     group: root
-    mode: "0755"
+    mode: '0755'
 
 - name: Copy telegraf.conf to /opt/autoware/bin
   become: true
   copy:
-    src: "{{ role_path }}/files/telegraf.conf"
+    src: '{{ role_path }}/files/telegraf.conf'
     dest: /etc/telegraf/telegraf.conf
     owner: root
     group: root
-    mode: "0644"
+    mode: '0644'
     backup: true
   notify:
     - Restart telegraf
