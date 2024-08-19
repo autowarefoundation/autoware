@@ -1,0 +1,4 @@
+- ansible.builtin.import_playbook: autoware.dev_env.universe
+- hosts: localhost
+connection: local
+roles:
