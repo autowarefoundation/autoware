@@ -1,4 +1,5 @@
 - name: Download influxdata-archive_compat.key
+  become: true
   ansible.builtin.get_url:
     url: https://repos.influxdata.com/influxdata-archive_compat.key
     dest: /tmp/influxdata-archive_compat.key
@@ -12,15 +13,27 @@
   failed_when: checksum_result.rc != 0
   changed_when: false
 
-- name: Convert the key to gpg format
-  ansible.builtin.command: gpg --dearmor -o /tmp/influxdata-archive_compat.gpg /tmp/influxdata-archive_compat.key
-  become: true
-  when: true
+- name: Check if GPG key is already converted
+  ansible.builtin.stat:
+    path: /tmp/influxdata-archive_compat.gpg
+  register: gpg_key_stat
 
-- name: Move the gpg key to trusted.gpg.d
-  ansible.builtin.command: mv /tmp/influxdata-archive_compat.gpg /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg
+- name: Convert the key to gpg format
+  ansible.builtin.command:
+    cmd: gpg --dearmor -o /tmp/influxdata-archive_compat.gpg /tmp/influxdata-archive_compat.key
   become: true
-  when: true
+  when: not gpg_key_stat.stat.exists
+
+- name: Check if GPG key is already moved
+  ansible.builtin.stat:
+    path: /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg
+  register: moved_key_stat
+  
+- name: Move the gpg key to trusted.gpg.d
+  ansible.builtin.command: 
+    cmd: mv /tmp/influxdata-archive_compat.gpg /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg
+  become: true
+  when: not moved_key_stat.stat.exists
 
 - name: Add InfluxData repository
   become: true
@@ -45,10 +58,18 @@
     name: influxdb2-cli
     state: present
 
+- name: Check if InfluxDB is already set up
+  become: true
+  ansible.builtin.command: 
+    cmd: influx setup --bucket-status
+  register: influx_setup_status
+  ignore_errors: true
+
 - name: Set up influxDB v2
   become: true
-  ansible.builtin.command: influx setup -f --name default --username autoware --password autoware --token autowaretoken --org autowarefondation --bucket autoware --retention 0
-  when: true
+  ansible.builtin.command: 
+    cmd: influx setup -f --name default --username autoware --password autoware --token autowaretoken --org autowarefondation --bucket autoware --retention 0
+  when: influx_setup_status.rc != 0
 
 - name: Install Telegraf
   ansible.builtin.apt:
