@@ -111,7 +111,7 @@
                     }
                   }
                 },
-                "lidar_pointpainitng": {
+                "lidar_pointpainting": {
                   "$ref": "#/definitions/input_channel",
                   "default": {
                     "topic": "/perception/object_recognition/detection/pointpainting/objects",
@@ -185,7 +185,7 @@
                 "lidar_centerpoint_validated",
                 "lidar_apollo",
                 "lidar_apollo_validated",
-                "lidar_pointpainitng",
+                "lidar_pointpainting",
                 "lidar_pointpainting_validated",
                 "camera_lidar_fusion",
                 "detection_by_tracker",
