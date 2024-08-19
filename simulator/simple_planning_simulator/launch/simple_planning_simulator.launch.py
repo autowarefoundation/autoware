@@ -41,6 +41,50 @@ def launch_setup(context, *args, **kwargs):
         param_file=simulator_model_param_path, allow_substs=True
     )
 
+    # Base remappings
+    remappings = [
+        ("input/vector_map", "/map/vector_map"),
+        ("input/initialpose", "/initialpose3d"),
+        ("input/ackermann_control_command", "/control/command/control_cmd"),
+        ("input/actuation_command", "/control/command/actuation_cmd"),
+        ("input/manual_ackermann_control_command", "/vehicle/command/manual_control_cmd"),
+        ("input/gear_command", "/control/command/gear_cmd"),
+        ("input/manual_gear_command", "/vehicle/command/manual_gear_command"),
+        ("input/turn_indicators_command", "/control/command/turn_indicators_cmd"),
+        ("input/hazard_lights_command", "/control/command/hazard_lights_cmd"),
+        ("input/trajectory", "/planning/scenario_planning/trajectory"),
+        ("input/engage", "/vehicle/engage"),
+        ("input/control_mode_request", "/control/control_mode_request"),
+        ("output/twist", "/vehicle/status/velocity_status"),
+        ("output/imu", "/sensing/imu/imu_data"),
+        ("output/steering", "/vehicle/status/steering_status"),
+        ("output/gear_report", "/vehicle/status/gear_status"),
+        ("output/turn_indicators_report", "/vehicle/status/turn_indicators_status"),
+        ("output/hazard_lights_report", "/vehicle/status/hazard_lights_status"),
+        ("output/control_mode_report", "/vehicle/status/control_mode"),
+    ]
+
+    # Additional remappings
+    if LaunchConfiguration("motion_publish_mode").perform(context) == "pose_only":
+        remappings.extend(
+            [
+                ("output/odometry", "/simulation/debug/localization/kinematic_state"),
+                ("output/acceleration", "/simulation/debug/localization/acceleration"),
+                ("output/pose", "/localization/pose_estimator/pose_with_covariance"),
+            ]
+        )
+    elif LaunchConfiguration("motion_publish_mode").perform(context) == "full_motion":
+        remappings.extend(
+            [
+                ("output/odometry", "/localization/kinematic_state"),
+                ("output/acceleration", "/localization/acceleration"),
+                (
+                    "output/pose",
+                    "/simulation/debug/localization/pose_estimator/pose_with_covariance",
+                ),
+            ]
+        )
+
     simple_planning_simulator_node = Node(
         package="simple_planning_simulator",
         executable="simple_planning_simulator_exe",
@@ -55,29 +99,7 @@ def launch_setup(context, *args, **kwargs):
                 "initial_engage_state": LaunchConfiguration("initial_engage_state"),
             },
         ],
-        remappings=[
-            ("input/vector_map", "/map/vector_map"),
-            ("input/initialpose", "/initialpose3d"),
-            ("input/ackermann_control_command", "/control/command/control_cmd"),
-            ("input/actuation_command", "/control/command/actuation_cmd"),
-            ("input/manual_ackermann_control_command", "/vehicle/command/manual_control_cmd"),
-            ("input/gear_command", "/control/command/gear_cmd"),
-            ("input/manual_gear_command", "/vehicle/command/manual_gear_command"),
-            ("input/turn_indicators_command", "/control/command/turn_indicators_cmd"),
-            ("input/hazard_lights_command", "/control/command/hazard_lights_cmd"),
-            ("input/trajectory", "/planning/scenario_planning/trajectory"),
-            ("input/engage", "/vehicle/engage"),
-            ("input/control_mode_request", "/control/control_mode_request"),
-            ("output/twist", "/vehicle/status/velocity_status"),
-            ("output/odometry", "/localization/kinematic_state"),
-            ("output/acceleration", "/localization/acceleration"),
-            ("output/imu", "/sensing/imu/imu_data"),
-            ("output/steering", "/vehicle/status/steering_status"),
-            ("output/gear_report", "/vehicle/status/gear_status"),
-            ("output/turn_indicators_report", "/vehicle/status/turn_indicators_status"),
-            ("output/hazard_lights_report", "/vehicle/status/hazard_lights_status"),
-            ("output/control_mode_report", "/vehicle/status/control_mode"),
-        ],
+        remappings=remappings,
     )
 
     # Determine if we should launch raw_vehicle_cmd_converter based on the vehicle_model_type

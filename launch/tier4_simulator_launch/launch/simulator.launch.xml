@@ -5,13 +5,18 @@
   <arg name="laserscan_based_occupancy_grid_map_param_path"/>
   <arg name="occupancy_grid_map_updater"/>
   <arg name="occupancy_grid_map_updater_param_path"/>
+
+  <arg name="localization_error_monitor_param_path"/>
+  <arg name="ekf_localizer_param_path"/>
   <arg name="pose_initializer_param_path"/>
+  <arg name="twist2accel_param_path"/>
+
   <arg name="launch_simulator_perception_modules" default="true"/>
   <arg name="launch_dummy_perception"/>
   <arg name="launch_dummy_vehicle"/>
   <arg
     name="localization_sim_mode"
-    description="Select localization mode. Options are 'none' or 'api'. 'api' starts an external API for initial position estimation. 'none' does not start any localization-related process."
+    description="Select localization mode. Options are 'none', 'api' or 'pose_twist_estimator'. 'pose_twist_estimator' starts most of the localization modules except for the ndt_scan_matcher. 'api' starts an external API for initial position estimation. 'none' does not start any localization-related process."
   />
   <arg name="launch_dummy_doors"/>
   <arg name="launch_diagnostic_converter"/>
@@ -130,7 +135,7 @@
     </group>
   </group>
 
-  <!-- Dummy localization -->
+  <!-- localization -->
   <group if="$(eval '&quot;$(var localization_sim_mode)&quot;==&quot;none&quot;')">
     <!-- Do nothing -->
   </group>
@@ -148,6 +153,50 @@
     </include>
   </group>
 
+  <group if="$(eval '&quot;$(var localization_sim_mode)&quot;==&quot;pose_twist_estimator&quot;')">
+    <group>
+      <!-- start name space localization -->
+      <push-ros-namespace namespace="localization"/>
+      <group>
+        <push-ros-namespace namespace="util"/>
+        <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
+          <arg name="user_defined_initial_pose/enable" value="false"/>
+          <arg name="user_defined_initial_pose/pose" value="[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]"/>
+          <arg name="ndt_enabled" value="false"/>
+          <arg name="gnss_enabled" value="false"/>
+          <arg name="ekf_enabled" value="true"/>
+          <arg name="yabloc_enabled" value="false"/>
+          <arg name="stop_check_enabled" value="false"/>
+          <arg name="config_file" value="$(var pose_initializer_param_path)"/>
+        </include>
+      </group>
+
+      <group>
+        <push-ros-namespace namespace="twist_estimator"/>
+        <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/gyro_odometer.launch.xml"/>
+      </group>
+
+      <!-- pose_twist_fusion_filter module -->
+      <group>
+        <push-ros-namespace namespace="pose_twist_fusion_filter"/>
+        <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_fusion_filter/pose_twist_fusion_filter.launch.xml"/>
+      </group>
+    </group>
+    <!-- end name space localization -->
+    <group>
+      <push-ros-namespace namespace="sensing"/>
+      <arg name="input_vehicle_velocity_topic" default="/vehicle/status/velocity_status"/>
+      <arg name="output_twist_with_covariance" default="/sensing/vehicle_velocity_converter/twist_with_covariance"/>
+      <arg name="config_file" default="$(find-pkg-share vehicle_velocity_converter)/config/vehicle_velocity_converter.param.yaml"/>
+
+      <node pkg="vehicle_velocity_converter" exec="vehicle_velocity_converter_node" output="both">
+        <param from="$(var config_file)"/>
+        <remap from="velocity_status" to="$(var input_vehicle_velocity_topic)"/>
+        <remap from="twist_with_covariance" to="$(var output_twist_with_covariance)"/>
+      </node>
+    </group>
+  </group>
+
   <!-- Dummy doors -->
   <group if="$(var launch_dummy_doors)">
     <include file="$(find-pkg-share vehicle_door_simulator)/launch/vehicle_door_simulator.launch.xml"/>
@@ -163,11 +212,15 @@
   <!-- Simulator model -->
   <group if="$(var launch_dummy_vehicle)">
     <arg name="simulator_model" default="$(var vehicle_model_pkg)/config/simulator_model.param.yaml" description="path to the file of simulator model"/>
+    <!-- 'pose_only' mode publishes the pose topic as an alternative to ndt_localizer. 'full_motion' mode publishes the odometry and acceleration topics as an alternative to localization modules. -->
+    <let name="motion_publish_mode" value="pose_only" if="$(eval '&quot;$(var localization_sim_mode)&quot;==&quot;pose_twist_estimator&quot;')"/>
+    <let name="motion_publish_mode" value="full_motion" unless="$(eval '&quot;$(var localization_sim_mode)&quot;==&quot;pose_twist_estimator&quot;')"/>
     <include file="$(find-pkg-share simple_planning_simulator)/launch/simple_planning_simulator.launch.py">
       <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
       <arg name="simulator_model_param_file" value="$(var simulator_model)"/>
       <arg name="initial_engage_state" value="$(var initial_engage_state)"/>
       <arg name="raw_vehicle_cmd_converter_param_path" value="$(var raw_vehicle_cmd_converter_param_path)"/>
+      <arg name="motion_publish_mode" value="$(var motion_publish_mode)"/>
     </include>
   </group>
 </launch>

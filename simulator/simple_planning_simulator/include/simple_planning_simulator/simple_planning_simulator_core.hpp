@@ -137,7 +137,7 @@ private:
   rclcpp::Publisher<TurnIndicatorsReport>::SharedPtr pub_turn_indicators_report_;
   rclcpp::Publisher<HazardLightsReport>::SharedPtr pub_hazard_lights_report_;
   rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr pub_tf_;
-  rclcpp::Publisher<PoseStamped>::SharedPtr pub_current_pose_;
+  rclcpp::Publisher<PoseWithCovarianceStamped>::SharedPtr pub_current_pose_;
 
   rclcpp::Subscription<GearCommand>::SharedPtr sub_gear_cmd_;
   rclcpp::Subscription<GearCommand>::SharedPtr sub_manual_gear_cmd_;
@@ -345,6 +345,12 @@ private:
    * @param [in] odometry The odometry to publish
    */
   void publish_odometry(const Odometry & odometry);
+
+  /**
+   * @brief publish pose
+   * @param [in] odometry The odometry to publish its pose
+   */
+  void publish_pose(const Odometry & odometry);
 
   /**
    * @brief publish steering

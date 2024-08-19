@@ -165,7 +165,7 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
     create_publisher<TurnIndicatorsReport>("output/turn_indicators_report", QoS{1});
   pub_hazard_lights_report_ =
     create_publisher<HazardLightsReport>("output/hazard_lights_report", QoS{1});
-  pub_current_pose_ = create_publisher<PoseStamped>("output/debug/pose", QoS{1});
+  pub_current_pose_ = create_publisher<PoseWithCovarianceStamped>("output/pose", QoS{1});
   pub_velocity_ = create_publisher<VelocityReport>("output/twist", QoS{1});
   pub_odom_ = create_publisher<Odometry>("output/odometry", QoS{1});
   pub_steer_ = create_publisher<SteeringReport>("output/steering", QoS{1});
@@ -444,6 +444,7 @@ void SimplePlanningSimulator::on_timer()
 
   // publish vehicle state
   publish_odometry(current_odometry_);
+  publish_pose(current_odometry_);
   publish_velocity(current_velocity_);
   publish_steering(current_steer_);
   publish_acceleration();
@@ -747,6 +748,26 @@ void SimplePlanningSimulator::publish_odometry(const Odometry & odometry)
   msg.header.stamp = get_clock()->now();
   msg.child_frame_id = simulated_frame_id_;
   pub_odom_->publish(msg);
+}
+
+void SimplePlanningSimulator::publish_pose(const Odometry & odometry)
+{
+  geometry_msgs::msg::PoseWithCovarianceStamped msg;
+
+  msg.pose = odometry.pose;
+  using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  constexpr auto COV_POS = 0.0225;      // same value as current ndt output
+  constexpr auto COV_ANGLE = 0.000625;  // same value as current ndt output
+  msg.pose.covariance.at(COV_IDX::X_X) = COV_POS;
+  msg.pose.covariance.at(COV_IDX::Y_Y) = COV_POS;
+  msg.pose.covariance.at(COV_IDX::Z_Z) = COV_POS;
+  msg.pose.covariance.at(COV_IDX::ROLL_ROLL) = COV_ANGLE;
+  msg.pose.covariance.at(COV_IDX::PITCH_PITCH) = COV_ANGLE;
+  msg.pose.covariance.at(COV_IDX::YAW_YAW) = COV_ANGLE;
+
+  msg.header.frame_id = origin_frame_id_;
+  msg.header.stamp = get_clock()->now();
+  pub_current_pose_->publish(msg);
 }
 
 void SimplePlanningSimulator::publish_steering(const SteeringReport & steer)
