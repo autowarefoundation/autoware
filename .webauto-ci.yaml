@@ -6,6 +6,24 @@ artifacts:
       type: tier4/universe/main/amd64/v1
 
 simulations:
+ - name: perception
+   type: perception
+   simulator:
+    deployment:
+     type: container
+     artifact: main
+    runtime:
+     type: gpu1/amd64/large
+    pre_tasks:
+     - exec: source /home/autoware/autoware.proj/install/setup.bash && ros2 launch lidar_centerpointlidar_centerpoint.launch.xml model_name:=centerpoint_tiny
+model_path:=/home/autoware/autoware_data/lidar_centerpoint model_param_path:=$(ros2 pkg prefixlidar_centerpoint --share)/config/centerpoint_tiny.param.yaml build_only:=true
+      mounts:
+       - volume: model
+    volumes:
+     - name: model
+       path: /home/autoware/autoware_data/lidar_centerpoint
+       preserve_original_files: true
+
   - name: lexus_planning_sim
     type: planning_sim_v2
     simulator:
