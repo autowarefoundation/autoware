@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(kalman_filter)
+project(autoware_kalman_filter)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -12,18 +12,18 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
-ament_auto_add_library(kalman_filter SHARED
+ament_auto_add_library(${PROJECT_NAME} SHARED
   src/kalman_filter.cpp
   src/time_delay_kalman_filter.cpp
-  include/kalman_filter/kalman_filter.hpp
-  include/kalman_filter/time_delay_kalman_filter.hpp
+  include/autoware/kalman_filter/kalman_filter.hpp
+  include/autoware/kalman_filter/time_delay_kalman_filter.hpp
 )
 
 if(BUILD_TESTING)
   file(GLOB_RECURSE test_files test/*.cpp)
-  ament_add_ros_isolated_gtest(test_kalman_filter ${test_files})
+  ament_add_ros_isolated_gtest(test_${PROJECT_NAME} ${test_files})
 
-  target_link_libraries(test_kalman_filter kalman_filter)
+  target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})
 endif()
 
 ament_auto_package()

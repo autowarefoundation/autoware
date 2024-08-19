@@ -15,8 +15,8 @@
 #ifndef AUTOWARE_RADAR_OBJECT_TRACKER__TRACKER__MODEL__LINEAR_MOTION_TRACKER_HPP_
 #define AUTOWARE_RADAR_OBJECT_TRACKER__TRACKER__MODEL__LINEAR_MOTION_TRACKER_HPP_
 
+#include "autoware/kalman_filter/kalman_filter.hpp"
 #include "autoware_radar_object_tracker/tracker/model/tracker_base.hpp"
-#include "kalman_filter/kalman_filter.hpp"
 
 #include <string>
 
@@ -24,6 +24,8 @@ namespace autoware::radar_object_tracker
 {
 
 using Label = autoware_perception_msgs::msg::ObjectClassification;
+using autoware::kalman_filter::KalmanFilter;
+
 class LinearMotionTracker : public Tracker
 {
 private:

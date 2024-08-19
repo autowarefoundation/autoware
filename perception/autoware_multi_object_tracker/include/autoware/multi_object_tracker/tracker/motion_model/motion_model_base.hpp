@@ -19,7 +19,7 @@
 #ifndef AUTOWARE__MULTI_OBJECT_TRACKER__TRACKER__MOTION_MODEL__MOTION_MODEL_BASE_HPP_
 #define AUTOWARE__MULTI_OBJECT_TRACKER__TRACKER__MOTION_MODEL__MOTION_MODEL_BASE_HPP_
 
-#include "kalman_filter/kalman_filter.hpp"
+#include "autoware/kalman_filter/kalman_filter.hpp"
 
 #include <Eigen/Core>
 #include <rclcpp/rclcpp.hpp>
@@ -33,6 +33,7 @@
 
 namespace autoware::multi_object_tracker
 {
+using autoware::kalman_filter::KalmanFilter;
 
 class MotionModel
 {

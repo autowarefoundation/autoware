@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KALMAN_FILTER__KALMAN_FILTER_HPP_
-#define KALMAN_FILTER__KALMAN_FILTER_HPP_
+#ifndef AUTOWARE__KALMAN_FILTER__KALMAN_FILTER_HPP_
+#define AUTOWARE__KALMAN_FILTER__KALMAN_FILTER_HPP_
 
 #include <Eigen/Core>
 #include <Eigen/LU>
+
+namespace autoware::kalman_filter
+{
 
 /**
  * @file kalman_filter.h
@@ -207,4 +210,5 @@ protected:
   Eigen::MatrixXd R_;  //!< @brief covariance matrix for measurement model y[k] = C * x[k]
   Eigen::MatrixXd P_;  //!< @brief covariance of estimated state
 };
-#endif  // KALMAN_FILTER__KALMAN_FILTER_HPP_
+}  // namespace autoware::kalman_filter
+#endif  // AUTOWARE__KALMAN_FILTER__KALMAN_FILTER_HPP_

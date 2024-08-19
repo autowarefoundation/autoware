@@ -22,11 +22,11 @@
 
   <build_depend>eigen</build_depend>
 
+  <depend>autoware_kalman_filter</depend>
   <depend>autoware_universe_utils</depend>
   <depend>diagnostic_msgs</depend>
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
-  <depend>kalman_filter</depend>
   <depend>localization_util</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>

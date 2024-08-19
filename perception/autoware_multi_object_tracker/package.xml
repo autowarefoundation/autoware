@@ -13,12 +13,12 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
+  <depend>autoware_kalman_filter</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>autoware_universe_utils</depend>
   <depend>diagnostic_updater</depend>
   <depend>eigen</depend>
   <depend>glog</depend>
-  <depend>kalman_filter</depend>
   <depend>mussp</depend>
   <depend>object_recognition_utils</depend>
   <depend>rclcpp</depend>

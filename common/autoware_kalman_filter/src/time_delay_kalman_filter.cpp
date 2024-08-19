@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kalman_filter/time_delay_kalman_filter.hpp"
+#include "autoware/kalman_filter/time_delay_kalman_filter.hpp"
 
+namespace autoware::kalman_filter
+{
 TimeDelayKalmanFilter::TimeDelayKalmanFilter()
 {
 }
@@ -102,3 +104,4 @@ bool TimeDelayKalmanFilter::updateWithDelay(
 
   return true;
 }
+}  // namespace autoware::kalman_filter

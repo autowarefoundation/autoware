@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kalman_filter/kalman_filter.hpp"
+#include "autoware/kalman_filter/kalman_filter.hpp"
 
+namespace autoware::kalman_filter
+{
 KalmanFilter::KalmanFilter()
 {
 }
@@ -156,3 +158,4 @@ bool KalmanFilter::update(const Eigen::MatrixXd & y)
 {
   return update(y, C_, R_);
 }
+}  // namespace autoware::kalman_filter

@@ -38,8 +38,7 @@
 
 #pragma once
 
-// #include "kalman_filter.h"
-#include <kalman_filter/kalman_filter.hpp>
+#include <autoware/kalman_filter/kalman_filter.hpp>
 #include <opencv2/opencv.hpp>
 
 #include <boost/uuid/uuid.hpp>
@@ -48,6 +47,8 @@
 #include <vector>
 
 enum TrackState { New = 0, Tracked, Lost, Removed };
+
+using autoware::kalman_filter::KalmanFilter;
 
 /** manage one tracklet*/
 class STrack

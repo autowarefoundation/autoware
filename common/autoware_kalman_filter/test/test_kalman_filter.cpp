@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kalman_filter/kalman_filter.hpp"
+#include "autoware/kalman_filter/kalman_filter.hpp"
 
 #include <gtest/gtest.h>
+
+using autoware::kalman_filter::KalmanFilter;
 
 TEST(kalman_filter, kf)
 {

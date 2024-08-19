@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KALMAN_FILTER__TIME_DELAY_KALMAN_FILTER_HPP_
-#define KALMAN_FILTER__TIME_DELAY_KALMAN_FILTER_HPP_
+#ifndef AUTOWARE__KALMAN_FILTER__TIME_DELAY_KALMAN_FILTER_HPP_
+#define AUTOWARE__KALMAN_FILTER__TIME_DELAY_KALMAN_FILTER_HPP_
 
-#include "kalman_filter/kalman_filter.hpp"
+#include "autoware/kalman_filter/kalman_filter.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/LU>
 
 #include <iostream>
 
+namespace autoware::kalman_filter
+{
 /**
  * @file time_delay_kalman_filter.h
  * @brief kalman filter with delayed measurement class
@@ -83,4 +85,5 @@ private:
   int dim_x_;           //!< @brief dimension of latest state
   int dim_x_ex_;        //!< @brief dimension of extended state with dime delay
 };
-#endif  // KALMAN_FILTER__TIME_DELAY_KALMAN_FILTER_HPP_
+}  // namespace autoware::kalman_filter
+#endif  // AUTOWARE__KALMAN_FILTER__TIME_DELAY_KALMAN_FILTER_HPP_

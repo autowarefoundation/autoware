@@ -19,8 +19,8 @@
 #include "ekf_localizer/state_index.hpp"
 #include "ekf_localizer/warning.hpp"
 
-#include <kalman_filter/kalman_filter.hpp>
-#include <kalman_filter/time_delay_kalman_filter.hpp>
+#include <autoware/kalman_filter/kalman_filter.hpp>
+#include <autoware/kalman_filter/time_delay_kalman_filter.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -33,6 +33,8 @@
 
 #include <memory>
 #include <vector>
+
+using autoware::kalman_filter::TimeDelayKalmanFilter;
 
 struct EKFDiagnosticInfo
 {
