@@ -75,6 +75,8 @@ void RoiDetectedObjectFusionNode::fuseOnSingleImage(
   const sensor_msgs::msg::CameraInfo & camera_info,
   DetectedObjects & output_object_msg __attribute__((unused)))
 {
+  if (!checkCameraInfo(camera_info)) return;
+
   Eigen::Affine3d object2camera_affine;
   {
     const auto transform_stamped_optional = getTransformStamped(

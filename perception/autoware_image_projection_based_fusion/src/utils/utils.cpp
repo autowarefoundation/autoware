@@ -14,8 +14,32 @@
 
 #include "autoware/image_projection_based_fusion/utils/utils.hpp"
 
+#include <sensor_msgs/distortion_models.hpp>
+
 namespace autoware::image_projection_based_fusion
 {
+bool checkCameraInfo(const sensor_msgs::msg::CameraInfo & camera_info)
+{
+  const bool is_supported_model =
+    (camera_info.distortion_model == sensor_msgs::distortion_models::PLUMB_BOB ||
+     camera_info.distortion_model == sensor_msgs::distortion_models::RATIONAL_POLYNOMIAL);
+  if (!is_supported_model) {
+    RCLCPP_ERROR_STREAM(
+      rclcpp::get_logger("image_projection_based_fusion"),
+      "checkCameraInfo: Unsupported distortion model: " << camera_info.distortion_model);
+    return false;
+  }
+  const bool is_supported_distortion_param =
+    (camera_info.d.size() == 5 || camera_info.d.size() == 8);
+  if (!is_supported_distortion_param) {
+    RCLCPP_ERROR_STREAM(
+      rclcpp::get_logger("image_projection_based_fusion"),
+      "checkCameraInfo: Unsupported distortion coefficients size: " << camera_info.d.size());
+    return false;
+  }
+  return true;
+}
+
 Eigen::Vector2d calcRawImageProjectedPoint(
   const image_geometry::PinholeCameraModel & pinhole_camera_model, const cv::Point3d & point3d)
 {

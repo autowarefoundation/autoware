@@ -82,6 +82,8 @@ void RoiPointCloudFusionNode::fuseOnSingleImage(
   if (input_pointcloud_msg.data.empty()) {
     return;
   }
+  if (!checkCameraInfo(camera_info)) return;
+
   std::vector<DetectedObjectWithFeature> output_objs;
   // select ROIs for fusion
   for (const auto & feature_obj : input_roi_msg.feature_objects) {

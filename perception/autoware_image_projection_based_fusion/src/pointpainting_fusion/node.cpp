@@ -271,6 +271,8 @@ void PointPaintingFusionNode::fuseOnSingleImage(
     return;
   }
 
+  if (!checkCameraInfo(camera_info)) return;
+
   std::vector<sensor_msgs::msg::RegionOfInterest> debug_image_rois;
   std::vector<Eigen::Vector2d> debug_image_points;
 

@@ -57,6 +57,8 @@ void SegmentPointCloudFusionNode::fuseOnSingleImage(
   if (input_pointcloud_msg.data.empty()) {
     return;
   }
+  if (!checkCameraInfo(camera_info)) return;
+
   cv_bridge::CvImagePtr in_image_ptr;
   try {
     in_image_ptr = cv_bridge::toCvCopy(

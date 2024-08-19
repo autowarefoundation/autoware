@@ -41,6 +41,7 @@
 
 #include "autoware_perception_msgs/msg/shape.hpp"
 #include "tier4_perception_msgs/msg/detected_object_with_feature.hpp"
+#include <sensor_msgs/msg/camera_info.hpp>
 
 #include <image_geometry/pinhole_camera_model.h>
 #include <pcl/point_cloud.h>
@@ -61,6 +62,8 @@ struct PointData
   float distance;
   size_t orig_index;
 };
+
+bool checkCameraInfo(const sensor_msgs::msg::CameraInfo & camera_info);
 
 Eigen::Vector2d calcRawImageProjectedPoint(
   const image_geometry::PinholeCameraModel & pinhole_camera_model, const cv::Point3d & point3d);
