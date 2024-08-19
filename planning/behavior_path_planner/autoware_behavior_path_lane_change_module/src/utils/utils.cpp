@@ -92,8 +92,9 @@ double calcMinimumLaneChangeLength(
   }
 
   const auto min_vel = lane_change_parameters.minimum_lane_changing_velocity;
-  const auto [min_lat_acc, max_lat_acc] =
-    lane_change_parameters.lane_change_lat_acc_map.find(min_vel);
+  const auto min_max_lat_acc = lane_change_parameters.lane_change_lat_acc_map.find(min_vel);
+  // const auto min_lat_acc = std::get<0>(min_max_lat_acc);
+  const auto max_lat_acc = std::get<1>(min_max_lat_acc);
   const auto lat_jerk = lane_change_parameters.lane_changing_lateral_jerk;
   const auto finish_judge_buffer = lane_change_parameters.lane_change_finish_judge_buffer;
 

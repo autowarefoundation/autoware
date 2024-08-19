@@ -207,7 +207,7 @@ void GoalSearcher::countObjectsToAvoid(
   const double backward_length = parameters_.backward_goal_search_length;
 
   // calculate search start/end pose in pull over lanes
-  const auto [search_start_pose, search_end_pose] = std::invoke([&]() -> std::pair<Pose, Pose> {
+  const auto search_start_end_poses = std::invoke([&]() -> std::pair<Pose, Pose> {
     const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
       *route_handler, left_side_parking_, parameters_.backward_goal_search_length,
       parameters_.forward_goal_search_length);
@@ -221,6 +221,8 @@ void GoalSearcher::countObjectsToAvoid(
     return std::make_pair(
       center_line_path.points.front().point.pose, center_line_path.points.back().point.pose);
   });
+  const auto search_start_pose = std::get<0>(search_start_end_poses);
+  const auto search_end_pose = std::get<1>(search_start_end_poses);
 
   // generate current lane center line path to check collision with objects
   const auto current_lanes = utils::getExtendedCurrentLanes(
