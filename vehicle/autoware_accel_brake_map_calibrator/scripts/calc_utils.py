@@ -37,7 +37,7 @@ def get_map_list(y_num, x_num):
 class CalcUtils:
     @staticmethod
     def average_filter(data, average_num):
-        if type(average_num) != int:
+        if not isinstance(average_num, int):
             print(
                 "Error in average_filter(data, average_num):\
                 Type of average_num must be int"
