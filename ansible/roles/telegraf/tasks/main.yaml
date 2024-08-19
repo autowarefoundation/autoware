@@ -44,7 +44,7 @@
     state: present
 
 - name: Set up influxDB v2
-  command: influx setup -f --name default --username autoware --password autoware --token autowaretoken --org autowarefondation --bucket autoware --retention 0
+  ansible.builtin.command: influx setup -f --name default --username autoware --password autoware --token autowaretoken --org autowarefondation --bucket autoware --retention 0
 
 - name: Install Telegraf
   ansible.builtin.apt:
@@ -53,7 +53,7 @@
 
 - name: Copy get_telegraf_proccpu_json.sh to /opt/autoware/bin
   become: true
-  copy:
+  ansible.builtin.copy:
     src: '{{ role_path }}/files/get_telegraf_proccpu_json.sh'
     dest: /opt/autoware/bin/get_telegraf_proccpu_json.sh
     owner: root
@@ -62,7 +62,7 @@
 
 - name: Copy get_telegraf_procmem_json.sh to /opt/autoware/bin
   become: true
-  copy:
+  ansible.builtin.copy:
     src: '{{ role_path }}/files/get_telegraf_procmem_json.sh'
     dest: /opt/autoware/bin/get_telegraf_procmem_json.sh
     owner: root
@@ -71,7 +71,7 @@
 
 - name: Copy telegraf.conf to /opt/autoware/bin
   become: true
-  copy:
+  ansible.builtin.copy:
     src: '{{ role_path }}/files/telegraf.conf'
     dest: /etc/telegraf/telegraf.conf
     owner: root
@@ -82,7 +82,7 @@
     - Restart telegraf
 
 - name: Ensure telegraf is running and enabled
-  systemd:
+  ansible.builtin.systemd:
     name: telegraf
     enabled: true
     state: started
