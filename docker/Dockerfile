@@ -1,6 +1,6 @@
-# hadolint global ignore=DL3006,DL3008,DL3013
 ARG BASE_IMAGE
 
+# hadolint ignore=DL3006
 FROM $BASE_IMAGE AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -32,6 +32,7 @@ RUN --mount=type=ssh \
 # Create entrypoint
 CMD ["/bin/bash"]
 
+# hadolint ignore=DL3006
 FROM $BASE_IMAGE AS rosdep-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -84,7 +85,6 @@ ARG ROS_DISTRO
 ARG SETUP_ARGS
 ENV CCACHE_DIR="/root/.ccache"
 
-# cspell: ignore libcu libnv
 # Set up development environment
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
