@@ -1,31 +1,31 @@
 - name: Download influxdata-archive_compat.key
-  get_url:
+  ansible.builtin.get_url:
     url: https://repos.influxdata.com/influxdata-archive_compat.key
     dest: /tmp/influxdata-archive_compat.key
 
 - name: Verify the checksum of the key file
-  command: 'sha256sum -c'
+  ansible.builtin.command: sha256sum -c
   args:
     chdir: /tmp
-    stdin: '393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c  influxdata-archive_compat.key'
+    stdin: 393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c  influxdata-archive_compat.key
   register: checksum_result
-  failed_when: 'checksum_result.rc != 0'
+  failed_when: checksum_result.rc != 0
   changed_when: false
 
 - name: Convert the key to gpg format
-  command: gpg --dearmor -o /tmp/influxdata-archive_compat.gpg /tmp/influxdata-archive_compat.key
-  become: yes
+  ansible.builtin.command: gpg --dearmor -o /tmp/influxdata-archive_compat.gpg /tmp/influxdata-archive_compat.key
+  become: true
 
 - name: Move the gpg key to trusted.gpg.d
-  command: mv /tmp/influxdata-archive_compat.gpg /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg
-  become: yes
+  ansible.builtin.command: mv /tmp/influxdata-archive_compat.gpg /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg
+  become: true
 
 - name: Add InfluxData repository
   become: true
   ansible.builtin.apt_repository:
-    repo: 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main'
+    repo: deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main
     state: present
-    filename: 'influxdata.list'
+    filename: influxdata.list
 
 - name: Update apt cache
   become: true
