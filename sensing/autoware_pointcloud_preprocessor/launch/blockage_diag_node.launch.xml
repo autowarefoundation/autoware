@@ -1,0 +1,10 @@
+<launch>
+  <arg name="input_topic_name" default="pointcloud_raw_ex"/>
+  <arg name="output_topic_name" default="blockage_diag/pointcloud"/>
+  <arg name="blockage_diagnostics_param_file" default="$(find-pkg-share autoware_pointcloud_preprocessor)/config/blockage_diag_node.param.yaml"/>
+  <node pkg="autoware_pointcloud_preprocessor" exec="blockage_diag_node" name="blockage_diag_node">
+    <remap from="input" to="$(var input_topic_name)"/>
+    <remap from="output" to="$(var output_topic_name)"/>
+    <param from="$(var blockage_diagnostics_param_file)"/>
+  </node>
+</launch>

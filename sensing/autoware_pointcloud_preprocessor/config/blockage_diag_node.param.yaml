@@ -14,3 +14,7 @@
     max_distance_range: 200.0
     horizontal_resolution: 0.4
     blockage_kernel: 10
+    angle_range: [0.0, 360.0]
+    vertical_bins: 40
+    is_channel_order_top2down: true
+    horizontal_ring_id: 18

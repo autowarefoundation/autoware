@@ -1,4 +1,4 @@
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/pointcloud_preprocessor/blockage_diag/blockage_diag_nodelet.hpp"
+#include "autoware/pointcloud_preprocessor/blockage_diag/blockage_diag_node.hpp"
 
 #include "autoware_point_types/types.hpp"
 

@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Blockage Diag Node",
+  "type": "object",
+  "definitions": {
+    "blockage_diag": {
+      "type": "object",
+      "properties": {
+        "blockage_ratio_threshold": {
+          "type": "number",
+          "description": "The threshold of blockage area ratio. If the blockage value exceeds this threshold, the diagnostic state will be set to ERROR.",
+          "default": "0.1",
+          "minimum": 0
+        },
+        "blockage_count_threshold": {
+          "type": "number",
+          "description": "The threshold of number continuous blockage frames",
+          "default": "50",
+          "minimum": 0
+        },
+        "blockage_buffering_frames": {
+          "type": "integer",
+          "description": "The number of buffering about blockage detection [range:1-200]",
+          "default": "2",
+          "minimum": 1,
+          "maximum": 200
+        },
+        "blockage_buffering_interval": {
+          "type": "integer",
+          "description": "The interval of buffering about blockage detection",
+          "default": "1",
+          "minimum": 0
+        },
+        "enable_dust_diag": {
+          "type": "boolean",
+          "description": "enable dust diagnostic",
+          "default": "false"
+        },
+        "publish_debug_image": {
+          "type": "boolean",
+          "description": "publish debug image",
+          "default": "false"
+        },
+        "dust_ratio_threshold": {
+          "type": "number",
+          "description": "The threshold of dusty area ratio",
+          "default": "0.2",
+          "minimum": 0
+        },
+        "dust_count_threshold": {
+          "type": "integer",
+          "description": "The threshold of number continuous frames include dusty area",
+          "default": "10",
+          "minimum": 0
+        },
+        "dust_kernel_size": {
+          "type": "integer",
+          "description": "The kernel size of morphology processing in dusty area detection",
+          "default": "2",
+          "minimum": 0
+        },
+        "dust_buffering_frames": {
+          "type": "integer",
+          "description": "The number of buffering about dusty area detection [range:1-200]",
+          "default": "10",
+          "minimum": 1,
+          "maximum": 200
+        },
+        "dust_buffering_interval": {
+          "type": "integer",
+          "description": "The interval of buffering about dusty area detection",
+          "default": "1",
+          "minimum": 0
+        },
+        "max_distance_range": {
+          "type": "number",
+          "description": "Maximum view range for the LiDAR",
+          "default": "200.0",
+          "minimum": 0
+        },
+        "horizontal_resolution": {
+          "type": "number",
+          "description": "The horizontal resolution of depth map image [deg/pixel]",
+          "default": "0.4",
+          "minimum": 0
+        },
+        "blockage_kernel": {
+          "type": "integer",
+          "description": "The kernel size of morphology processing the detected blockage area",
+          "default": "10",
+          "minimum": 0
+        },
+        "angle_range": {
+          "type": "array",
+          "description": "The effective range of LiDAR",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 360.0
+          }
+        },
+        "vertical_bins": {
+          "type": "integer",
+          "description": "The LiDAR channel",
+          "default": "40",
+          "minimum": 0
+        },
+        "is_channel_order_top2down": {
+          "type": "boolean",
+          "description": "If the lidar channels are indexed from top to down",
+          "default": "true"
+        },
+        "horizontal_ring_id": {
+          "type": "integer",
+          "description": "The id of horizontal ring of the LiDAR",
+          "default": "18",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "blockage_ratio_threshold",
+        "blockage_count_threshold",
+        "blockage_buffering_frames",
+        "blockage_buffering_interval",
+        "enable_dust_diag",
+        "publish_debug_image",
+        "dust_ratio_threshold",
+        "dust_count_threshold",
+        "dust_kernel_size",
+        "dust_buffering_frames",
+        "dust_buffering_interval",
+        "max_distance_range",
+        "horizontal_resolution",
+        "blockage_kernel",
+        "angle_range",
+        "vertical_bins",
+        "is_channel_order_top2down",
+        "horizontal_ring_id"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/blockage_diag"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
