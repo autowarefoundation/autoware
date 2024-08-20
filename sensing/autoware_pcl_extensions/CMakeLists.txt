@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(tier4_pcl_extensions)
+project(autoware_pcl_extensions)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -16,10 +16,10 @@ include_directories(
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-ament_auto_add_library(tier4_pcl_extensions SHARED
+ament_auto_add_library(autoware_pcl_extensions SHARED
   src/voxel_grid_nearest_centroid.cpp
 )
 
-target_link_libraries(tier4_pcl_extensions ${PCL_LIBRARIES})
+target_link_libraries(autoware_pcl_extensions ${PCL_LIBRARIES})
 
 ament_auto_package()

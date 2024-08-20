@@ -1,8 +1,8 @@
-# tier4_pcl_extensions
+# autoware_pcl_extensions
 
 ## Purpose
 
-The `tier4_pcl_extensions` is a pcl extension library. The voxel grid filter in this package works with a different algorithm than the original one.
+The `autoware_pcl_extensions` is a pcl extension library. The voxel grid filter in this package works with a different algorithm than the original one.
 
 ## Inner-workings / Algorithms
 

@@ -25,6 +25,7 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_lanelet2_extension</depend>
+  <depend>autoware_pcl_extensions</depend>
   <depend>autoware_point_types</depend>
   <depend>autoware_universe_utils</depend>
   <depend>cgal</depend>
@@ -49,7 +50,6 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>tier4_debug_msgs</depend>
-  <depend>tier4_pcl_extensions</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

@@ -53,7 +53,7 @@
 
 #include "autoware/pointcloud_preprocessor/filter.hpp"
 
-#include <tier4_pcl_extensions/voxel_grid_nearest_centroid.hpp>
+#include <autoware/pcl_extensions/voxel_grid_nearest_centroid.hpp>
 
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/search/pcl_search.h>

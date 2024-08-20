@@ -49,7 +49,7 @@
  *
  */
 
-#include "tier4_pcl_extensions/voxel_grid_nearest_centroid_impl.hpp"
+#include "autoware/pcl_extensions/voxel_grid_nearest_centroid_impl.hpp"
 
 #include <pcl/filters/impl/voxel_grid.hpp>
 
