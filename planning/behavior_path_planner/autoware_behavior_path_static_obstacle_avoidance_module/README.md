@@ -20,6 +20,10 @@ This module allows developers to design vehicle behavior in avoidance planning u
 
 This module executes avoidance over lanes, and the decision requires the lane structure information to take care of traffic rules (e.g. it needs to send an indicator signal when the vehicle crosses a lane). The difference between motion and behavior module in the planning stack is whether the planner takes traffic rules into account, which is why this avoidance module exists in the behavior module.
 
+<br>
+
+If you would like to know the overview rather than the detail, please skip the next section and refer to [FAQ](#frequently-asked-questions).
+
 ## Inner-workings / Algorithms
 
 This module mainly has two parts, target filtering part and path generation part. At first, all objects are filtered by several conditions. In this step, this module checks avoidance feasibility and necessity as well. After that, this module generates avoidance path outline, whom we call **shift line**, based on filtered objects. The shift lines are set into [path shifter](../autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design.md), which is a library for path generation, to create smooth shift path. Additionally, this module has feature to check non-target objects so that the ego can avoid target object safely. This feature receives generated avoidance path and surround objects and judges current situation. Lastly, this module update current ego behavior.
@@ -1100,6 +1104,113 @@ To print the debug message, just run the following
 ```bash
 ros2 topic echo /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/avoidance_debug_message_array
 ```
+
+## Frequently asked questions
+
+### Target objects
+
+#### Does it avoid static objects and dynamic objects?
+
+This module avoids static (stopped) objects and does not support dynamic (moving) objects avoidance. Dynamic objects are coped within the [dynamic obstacle avoidance module](../autoware_behavior_path_dynamic_obstacle_avoidance_module/README.md).
+
+#### What type (class) of object would it avoid?
+
+It avoids car, truck, bus, trailer, bicycle, motorcycle, pedestrian, and unknown objects by default. Details are in the [Target object filtering section](#target-object-filtering).
+The above objects are divided into vehicle type objects and non-vehicle type objects; the target object filtering would differ for vehicle types and non-vehicle types.
+-Vehicle type objects: Car, Truck, Bus, Trailer, Motorcycle
+-Non-vehicle type objects: Pedestrian, Bicycle
+
+#### How does it judge if it is a target object or not?
+
+The conditions for vehicle type objects and non-vehicle type objects are different, though the main idea is that static objects on road shoulders within the planned path would be avoided.
+Below are some examples when avoidance path is generated for vehicle type objects.
+
+- Vehicle stopping on ego lane with pulling over to the side of the road
+- Vehicle stopping on adjacent lane
+
+For more detail refer to [vehicle type object](#conditions-for-vehicle-type-objects) and [non-vehicle object](#conditions-for-non-vehicle-type-objects).
+
+#### What is an ambiguous target?
+
+An ambiguous target refers to objects that may not be clearly identifiable as avoidance target due to limitations of current Autoware (ex. parked vehicle in the center of a lane).
+This module will avoid clearly defined static objects automatically, whereas ambiguous targets would need some operator intervention.
+
+#### How can I visualize the target object?
+
+Target objects can be visualized using RViz, where the module's outputs, such as detected obstacles and planned avoidance paths, are displayed. For further information refer to the [debug marker section](#visualize-debug-markers).
+
+#### How can I check the lateral distance to an obstacle?
+
+Currently, there isn't any topic that outputs the relative position with the ego vehicle and target object.
+Visual confirmation on RViz would be the only solution for now.
+
+#### Does it avoid multiple objects at once?
+
+Yes, the module is capable of avoiding multiple static objects simultaneously.
+It generates multiple shift lines and calculates an avoidance path that navigates around each object.
+Details are explained in the [How to decide path shape section](#multiple-obstacle-case-one-direction).
+
+### Area used when avoiding
+
+#### Which lanes are used to avoid objects?
+
+This module is able to use not only current lane but also adjacent lanes and opposite lanes. Usable lanes could be selected by the configuration file as noted in the [shift length calculation section](#shift-length-calculation).
+It is assumed that there is no parking vehicles on the central lane in a situation where there are lanes on the left and right.
+
+#### Would it avoid objects inside intersections?
+
+Basically the module assumes that there isn't any parked vehicle within intersection. Vehicles that follow the lane or merging to ego lane are non-target objects.
+Vehicles waiting to make a right/left turn within the intersection could be avoided by expanding the drivable area in the configuration file, as noted in the [drivable area expansion section](#drivable-area-expansion).
+
+#### Does it generate avoidance paths for any road type?
+
+Drivable area can be expanded in the configuration file, as noted in the [drivable area expansion section](#drivable-area-expansion).
+
+### Path generation
+
+#### How is the avoidance path generated?
+
+The avoidance path is generated by modifying the current reference path to navigate around detected static objects.
+This is done using a rule-based shift line approach that ensures the vehicle remains within safe boundaries and follows the road while avoiding obstacles.
+Details are explained in the [appendix](#appendix-shift-line-generation-pipeline).
+
+#### Which way (right or left) is the avoidance path generated?
+
+The behavior of avoiding depends on the target vehicle's center of gravity.
+If the target object is on the left side of the ego lane the avoidance would be generated on the right side.
+Currently, avoiding left-shifted obstacles from the left side is not supported (same for right-shifted objects).
+
+#### Why is an envelope polygon used for the target object?
+
+It is employed to reduce the influence of the perception/tracking noise for each target objects.
+The envelope polygon is a rectangle box, whose size depends on object's polygon and buffer parameter and is always parallel to the reference path.
+The envelope polygon is created by using the latest one-shot envelope polygon and the previous envelope polygon.
+Details are explained in [How to prevent shift line chattering that is caused by perception noise section](#how-to-prevent-shift-line-chattering-that-is-caused-by-perception-noise).
+
+#### What happens if the module cannot find a safe avoidance path?
+
+If the module cannot find a safe avoidance path, the vehicle may stop or continue along its current path without performing an avoidance maneuver.
+If there is a target object and there is enough space to avoid, the ego vehicle would stop at a position where an avoidance path could be generated; this is called the [yield manuever](#yield-maneuver).
+On the other hand, where there is not enough space, this module has nothing to do and the [obstacle cruise planner](../../autoware_obstacle_cruise_planner/README.md) would be in charge of the object.
+
+#### There seems to be an avoidance path, though the vehicle stops. What is happening?
+
+This situation occurs when the module is operating in AUTO mode and the target object is ambiguous or when operated in MANUAL mode.
+The generated avoidance path is presented as a candidate and requires operator approval before execution.
+If the operator does not approve the path the ego vehicle would stop where it is possible to generate a avoidance path.
+
+### Operation
+
+#### What are the benefits of using MANUAL mode over AUTO mode?
+
+MANUAL mode allows the operator to have direct control over the approval of avoidance paths, which is particularly useful in situations where sensor data may be unreliable or ambiguous.
+This mode helps prevent unnecessary or incorrect avoidance maneuvers by requiring human validation before execution.
+It is recommended for environments where false positives are likely or when the sensor/perception system's performance is limited.
+
+#### Can this module be customized for specific vehicle types or environments?
+
+The module can be customized by adjusting the rules and parameters that define how it identifies and avoids obstacles.
+The avoidance manuever would not be changed by specific vehicle types.
 
 ## Appendix: Shift line generation pipeline
 
