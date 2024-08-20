@@ -283,9 +283,9 @@ std::optional<size_t> findIndexOutOfGoalSearchRange(
 
   // find goal index
   size_t min_dist_index;
-  double min_dist = std::numeric_limits<double>::max();
   {
     bool found = false;
+    double min_dist = std::numeric_limits<double>::max();
     for (size_t i = 0; i < points.size(); ++i) {
       const auto & lane_ids = points.at(i).lane_ids;
 
