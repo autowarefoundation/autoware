@@ -5,6 +5,7 @@
   <description>Package to adjust velocities of a trajectory in order for the ride to feel safe</description>
 
   <maintainer email="maxime.clement@tier4.jp">Maxime CLEMENT</maintainer>
+  <maintainer email="alqudah.mohammad@tier4.jp">Alqudah Mohammad</maintainer>
 
   <license>Apache License 2.0</license>
 
