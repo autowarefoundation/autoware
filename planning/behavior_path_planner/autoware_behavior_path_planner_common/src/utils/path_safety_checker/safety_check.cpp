@@ -822,4 +822,54 @@ std::pair<bool, bool> checkObjectsCollisionRough(
   return has_collision;
 }
 
+double calculateRoughDistanceToObjects(
+  const PathWithLaneId & path, const PredictedObjects & objects,
+  const BehaviorPathPlannerParameters & parameters, const bool use_offset_ego_point,
+  const std::string & distance_type)
+{
+  const auto & points = path.points;
+
+  const double ego_length = std::invoke([&]() -> double {
+    const auto & p = parameters;
+    if (distance_type == "min") {
+      return std::max(
+        std::hypot(p.vehicle_width / 2, p.front_overhang),
+        std::hypot(p.vehicle_width / 2, p.rear_overhang));
+    } else if (distance_type == "max") {
+      return std::min({p.vehicle_width / 2, p.front_overhang / 2, p.rear_overhang / 2});
+    }
+    throw std::invalid_argument("Invalid distance type");
+  });
+
+  double min_distance = std::numeric_limits<double>::max();
+  for (const auto & object : objects.objects) {
+    const double object_length = std::invoke([&]() -> double {
+      if (distance_type == "min") {
+        return calcObstacleMaxLength(object.shape);
+      } else if (distance_type == "max") {
+        return calcObstacleMinLength(object.shape);
+      }
+      throw std::invalid_argument("Invalid distance type");
+    });
+    const Point & object_point = object.kinematics.initial_pose_with_covariance.pose.position;
+    const double distance = std::invoke([&]() -> double {
+      if (use_offset_ego_point) {
+        const size_t nearest_segment_idx = findNearestSegmentIndex(points, object_point);
+        const double offset_length =
+          calcLongitudinalOffsetToSegment(points, nearest_segment_idx, object_point);
+        const auto offset_point =
+          calcLongitudinalOffsetPoint(points, nearest_segment_idx, offset_length);
+        const Point ego_point =
+          offset_point ? offset_point.value()
+                       : points.at(findNearestIndex(points, object_point)).point.pose.position;
+        return std::max(calcDistance2d(ego_point, object_point) - object_length - ego_length, 0.0);
+      }
+      const Point ego_point = points.at(findNearestIndex(points, object_point)).point.pose.position;
+      return std::max(calcDistance2d(ego_point, object_point) - object_length - ego_length, 0.0);
+    });
+    min_distance = std::min(min_distance, distance);
+  }
+  return min_distance;
+}
+
 }  // namespace autoware::behavior_path_planner::utils::path_safety_checker
