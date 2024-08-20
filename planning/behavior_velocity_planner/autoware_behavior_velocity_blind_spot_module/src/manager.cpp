@@ -32,7 +32,7 @@ BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterfaceWithRTC(
     node, getModuleName(), getEnableRTC(node, std::string(getModuleName()) + ".enable_rtc"))
 {
-  const std::string ns(getModuleName());
+  const std::string ns(BlindSpotModuleManager::getModuleName());
   planner_param_.use_pass_judge_line =
     getOrDeclareParameter<bool>(node, ns + ".use_pass_judge_line");
   planner_param_.stop_line_margin = getOrDeclareParameter<double>(node, ns + ".stop_line_margin");

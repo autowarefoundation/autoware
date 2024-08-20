@@ -32,7 +32,7 @@ using lanelet::autoware::Crosswalk;
 WalkwayModuleManager::WalkwayModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
 {
-  const std::string ns(getModuleName());
+  const std::string ns(WalkwayModuleManager::getModuleName());
 
   // for walkway parameters
   auto & wp = walkway_planner_param_;

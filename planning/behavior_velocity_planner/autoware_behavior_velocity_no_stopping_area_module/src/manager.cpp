@@ -37,7 +37,7 @@ NoStoppingAreaModuleManager::NoStoppingAreaModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterfaceWithRTC(
     node, getModuleName(), getEnableRTC(node, std::string(getModuleName()) + ".enable_rtc"))
 {
-  const std::string ns(getModuleName());
+  const std::string ns(NoStoppingAreaModuleManager::getModuleName());
   auto & pp = planner_param_;
   const auto & vi = autoware::vehicle_info_utils::VehicleInfoUtils(node).getVehicleInfo();
   pp.state_clear_time = getOrDeclareParameter<double>(node, ns + ".state_clear_time");

@@ -33,7 +33,7 @@ using autoware::universe_utils::getOrDeclareParameter;
 TemplateModuleManager::TemplateModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
 {
-  std::string ns(getModuleName());
+  std::string ns(TemplateModuleManager::getModuleName());
   dummy_parameter_ = getOrDeclareParameter<double>(node, ns + ".dummy");
 }
 

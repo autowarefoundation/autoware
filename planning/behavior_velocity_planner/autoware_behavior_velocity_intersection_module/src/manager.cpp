@@ -40,7 +40,7 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
     &node, "intersection_occlusion",
     getEnableRTC(node, std::string(getModuleName()) + ".enable_rtc.intersection_to_occlusion"))
 {
-  const std::string ns(getModuleName());
+  const std::string ns(IntersectionModuleManager::getModuleName());
   auto & ip = intersection_param_;
 
   // common

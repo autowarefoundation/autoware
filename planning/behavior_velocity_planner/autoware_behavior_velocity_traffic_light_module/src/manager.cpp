@@ -33,7 +33,7 @@ TrafficLightModuleManager::TrafficLightModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterfaceWithRTC(
     node, getModuleName(), getEnableRTC(node, std::string(getModuleName()) + ".enable_rtc"))
 {
-  const std::string ns(getModuleName());
+  const std::string ns(TrafficLightModuleManager::getModuleName());
   planner_param_.stop_margin = getOrDeclareParameter<double>(node, ns + ".stop_margin");
   planner_param_.tl_state_timeout = getOrDeclareParameter<double>(node, ns + ".tl_state_timeout");
   planner_param_.stop_time_hysteresis =

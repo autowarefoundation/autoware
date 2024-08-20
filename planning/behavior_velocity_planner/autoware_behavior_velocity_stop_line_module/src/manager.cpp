@@ -29,7 +29,7 @@ using lanelet::TrafficSign;
 StopLineModuleManager::StopLineModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
 {
-  const std::string ns(getModuleName());
+  const std::string ns(StopLineModuleManager::getModuleName());
   auto & p = planner_param_;
   p.stop_margin = getOrDeclareParameter<double>(node, ns + ".stop_margin");
   p.hold_stop_margin_distance =

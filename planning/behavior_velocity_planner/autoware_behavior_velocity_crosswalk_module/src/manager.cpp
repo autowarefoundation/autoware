@@ -34,7 +34,7 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterfaceWithRTC(
     node, getModuleName(), getEnableRTC(node, std::string(getModuleName()) + ".common.enable_rtc"))
 {
-  const std::string ns(getModuleName());
+  const std::string ns(CrosswalkModuleManager::getModuleName());
 
   // for crosswalk parameters
   auto & cp = crosswalk_planner_param_;

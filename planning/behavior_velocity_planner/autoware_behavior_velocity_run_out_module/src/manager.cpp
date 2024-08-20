@@ -38,7 +38,7 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
     p.left_overhang = vehicle_info.left_overhang_m;
   }
 
-  const std::string ns(getModuleName());
+  const std::string ns(RunOutModuleManager::getModuleName());
 
   {
     auto & p = planner_param_.smoother;

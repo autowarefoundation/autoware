@@ -34,7 +34,7 @@ using occlusion_spot_utils::PASS_JUDGE;
 OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
 {
-  const std::string ns(getModuleName());
+  const std::string ns(OcclusionSpotModuleManager::getModuleName());
   auto & pp = planner_param_;
   // for detection type
   {

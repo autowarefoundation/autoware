@@ -36,7 +36,7 @@ using lanelet::autoware::SpeedBump;
 SpeedBumpModuleManager::SpeedBumpModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
 {
-  std::string ns(getModuleName());
+  std::string ns(SpeedBumpModuleManager::getModuleName());
   planner_param_.slow_start_margin = getOrDeclareParameter<double>(node, ns + ".slow_start_margin");
   planner_param_.slow_end_margin = getOrDeclareParameter<double>(node, ns + ".slow_end_margin");
   planner_param_.print_debug_info = getOrDeclareParameter<bool>(node, ns + ".print_debug_info");

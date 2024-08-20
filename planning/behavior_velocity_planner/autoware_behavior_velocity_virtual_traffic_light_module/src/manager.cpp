@@ -39,7 +39,7 @@ using lanelet::autoware::VirtualTrafficLight;
 VirtualTrafficLightModuleManager::VirtualTrafficLightModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
 {
-  const std::string ns(getModuleName());
+  const std::string ns(VirtualTrafficLightModuleManager::getModuleName());
 
   {
     auto & p = planner_param_;
