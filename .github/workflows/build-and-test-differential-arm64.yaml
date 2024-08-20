@@ -8,6 +8,10 @@ on:
       - reopened
       - labeled
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   make-sure-label-is-present:
     uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
@@ -17,7 +21,7 @@ jobs:
   build-and-test-differential-arm64:
     needs: make-sure-label-is-present
     if: ${{ needs.make-sure-label-is-present.outputs.result == 'true' }}
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-arm-3.0-large
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
       fail-fast: false
@@ -44,6 +48,9 @@ jobs:
       - name: Show disk space before the tasks
         run: df -h
 
+      - name: Show machine specs
+        run: lscpu && free -h
+
       - name: Remove exec_depend
         uses: autowarefoundation/autoware-github-actions/remove-exec-depend@v1
 
@@ -69,6 +76,7 @@ jobs:
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
           build-depends-repos: ${{ matrix.build-depends-repos }}
           cache-key-element: ${{ env.BUILD_TYPE_CUDA_STATE }}
+          build-pre-command: taskset --cpu-list 0-6
 
       - name: Test
         id: test

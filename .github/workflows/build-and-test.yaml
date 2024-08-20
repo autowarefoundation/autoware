@@ -6,13 +6,17 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 env:
   CC: /usr/lib/ccache/gcc
   CXX: /usr/lib/ccache/g++
 
 jobs:
   build-and-test:
-    runs-on: [self-hosted, linux, X64, gpu]
+    runs-on: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
       fail-fast: false
@@ -33,6 +37,9 @@ jobs:
 
       - name: Show disk space before the tasks
         run: df -h
+
+      - name: Show machine specs
+        run: lscpu && free -h
 
       - name: Remove exec_depend
         uses: autowarefoundation/autoware-github-actions/remove-exec-depend@v1
@@ -84,6 +91,7 @@ jobs:
           target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
           build-depends-repos: ${{ matrix.build-depends-repos }}
           cache-key-element: ${{ env.BUILD_TYPE_CUDA_STATE }}
+          build-pre-command: taskset --cpu-list 0-6
 
       - name: Show ccache stats after build
         run: du -sh ${CCACHE_DIR} && ccache -s

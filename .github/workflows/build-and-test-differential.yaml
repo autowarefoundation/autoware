@@ -8,6 +8,10 @@ on:
       - reopened
       - labeled
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 env:
   CC: /usr/lib/ccache/gcc
   CXX: /usr/lib/ccache/g++
@@ -36,9 +40,11 @@ jobs:
             container: ghcr.io/autowarefoundation/autoware:latest-autoware-universe
             build-depends-repos: build_depends.repos
           - container-suffix: -cuda
-            runner: [self-hosted, linux, X64, cpu]
+            runner: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
+            build-pre-command: taskset --cpu-list 0-6
           - container-suffix: ""
             runner: ubuntu-latest
+            build-pre-command: ""
     steps:
       - name: Set PR fetch depth
         run: echo "PR_FETCH_DEPTH=$(( ${{ github.event.pull_request.commits }} + 1 ))" >> "${GITHUB_ENV}"
@@ -51,6 +57,9 @@ jobs:
 
       - name: Show disk space before the tasks
         run: df -h
+
+      - name: Show machine specs
+        run: lscpu && free -h
 
       - name: Remove exec_depend
         uses: autowarefoundation/autoware-github-actions/remove-exec-depend@v1
@@ -74,14 +83,6 @@ jobs:
           restore-keys: |
             ccache-main-${{ runner.arch }}-${{ matrix.rosdistro }}-
 
-      # Limit ccache size only for CUDA builds to avoid running out of disk space
-      - name: Limit ccache size
-        if: ${{ matrix.container-suffix == '-cuda' }}
-        run: |
-          rm -f "${CCACHE_DIR}/ccache.conf"
-          echo -e "# Set maximum cache size\nmax_size = 1MB" >> "${CCACHE_DIR}/ccache.conf"
-        shell: bash
-
       - name: Show ccache stats before build
         run: du -sh ${CCACHE_DIR} && ccache -s
         shell: bash
@@ -104,6 +105,7 @@ jobs:
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
           build-depends-repos: ${{ matrix.build-depends-repos }}
           cache-key-element: ${{ env.BUILD_TYPE_CUDA_STATE }}
+          build-pre-command: ${{ matrix.build-pre-command }}
 
       - name: Show ccache stats after build
         run: du -sh ${CCACHE_DIR} && ccache -s
