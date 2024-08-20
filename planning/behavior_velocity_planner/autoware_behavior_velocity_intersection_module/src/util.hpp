@@ -110,14 +110,34 @@ geometry_msgs::msg::Pose getObjectPoseWithVelocityDirection(
  * @brief this function sorts the set of lanelets topologically using topological sort and merges
  * the lanelets from each root to each end. each branch is merged and returned with the original
  * lanelets
- * @param[in] lanelets the set of lanelets
- * @param[in] routing_graph_ptr the routing graph
- * @return the pair of merged lanelets and their corresponding original lanelets
+ *
+ * @param lanelets The set of input lanelets to be processed
+ * @param terminal_lanelets The set of lanelets considered as terminal
+ * @param routing_graph_ptr Pointer to the routing graph used for determining lanelet
+ * connections
+ *
+ * @return A pair containing:
+ *         - First: A vector of merged lanelets, where each element represents a merged lanelet from
+ * a branch
+ *         - Second: A vector of vectors, where each inner vector contains the original lanelets
+ * that were merged to form the corresponding merged lanelet
  */
 std::pair<lanelet::ConstLanelets, std::vector<lanelet::ConstLanelets>>
 mergeLaneletsByTopologicalSort(
-  const lanelet::ConstLanelets & lanelets,
+  const lanelet::ConstLanelets & lanelets, const lanelet::ConstLanelets & terminal_lanelets,
   const lanelet::routing::RoutingGraphPtr routing_graph_ptr);
+
+/**
+ * @brief Retrieves all paths from the given source to terminal nodes on the tree
+ *
+ * @param adjacency A 2D vector representing the adjacency matrix of the graph
+ * @param src_ind The index of the current source node being processed
+ *
+ * @return A vector of vectors, where each inner vector represents a path from the source node to a
+ * terminal node.
+ */
+std::vector<std::vector<size_t>> retrievePathsBackward(
+  const std::vector<std::vector<bool>> & adjacency, size_t start_node);
 
 /**
  * @brief find the index of the first point where vehicle footprint intersects with the given

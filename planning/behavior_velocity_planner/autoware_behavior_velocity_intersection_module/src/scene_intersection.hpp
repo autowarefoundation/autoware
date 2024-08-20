@@ -590,7 +590,8 @@ private:
    * @brief generate discretized detection lane linestring.
    */
   std::vector<lanelet::ConstLineString3d> generateDetectionLaneDivisions(
-    lanelet::ConstLanelets detection_lanelets_all,
+    const lanelet::ConstLanelets & occlusion_detection_lanelets,
+    const lanelet::ConstLanelets & conflicting_detection_lanelets,
     const lanelet::routing::RoutingGraphPtr routing_graph_ptr, const double resolution) const;
   /** @} */
 

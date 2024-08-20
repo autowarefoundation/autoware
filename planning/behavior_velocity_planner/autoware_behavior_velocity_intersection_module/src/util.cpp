@@ -32,12 +32,10 @@
 
 #include <algorithm>
 #include <cmath>
-#include <limits>
-#include <map>
-#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace autoware::behavior_velocity_planner::util
@@ -214,98 +212,106 @@ std::optional<size_t> getFirstPointInsidePolygon(
   }
   return std::nullopt;
 }
+std::vector<std::vector<size_t>> retrievePathsBackward(
+  const std::vector<std::vector<bool>> & adjacency, size_t start_node)
+{
+  std::vector<std::vector<size_t>> paths;
+  std::vector<size_t> current_path;
+  std::unordered_set<size_t> visited;
+
+  std::function<void(size_t)> retrieve_paths_backward_impl = [&](size_t src_ind) {
+    current_path.push_back(src_ind);
+    visited.insert(src_ind);
+
+    bool is_terminal = true;
+    const auto & nexts = adjacency[src_ind];
+
+    for (size_t next = 0; next < nexts.size(); ++next) {
+      if (nexts[next]) {
+        is_terminal = false;
+        if (visited.find(next) == visited.end()) {
+          retrieve_paths_backward_impl(next);
+        } else {
+          // Loop detected
+          paths.push_back(current_path);
+        }
+      }
+    }
+
+    if (is_terminal) {
+      paths.push_back(current_path);
+    }
+
+    current_path.pop_back();
+    visited.erase(src_ind);
+  };
+
+  retrieve_paths_backward_impl(start_node);
+  return paths;
+}
 
 std::pair<lanelet::ConstLanelets, std::vector<lanelet::ConstLanelets>>
 mergeLaneletsByTopologicalSort(
-  const lanelet::ConstLanelets & lanelets,
+  const lanelet::ConstLanelets & lanelets, const lanelet::ConstLanelets & terminal_lanelets,
   const lanelet::routing::RoutingGraphPtr routing_graph_ptr)
 {
-  const int n_node = lanelets.size();
-  std::vector<std::vector<int>> adjacency(n_node);
-  for (int dst = 0; dst < n_node; ++dst) {
-    adjacency[dst].resize(n_node);
-    for (int src = 0; src < n_node; ++src) {
-      adjacency[dst][src] = false;
-    }
-  }
-  std::set<lanelet::Id> lanelet_ids;
-  std::unordered_map<lanelet::Id, int> id2ind;
-  std::unordered_map<int, lanelet::Id> ind2id;
-  std::unordered_map<lanelet::Id, lanelet::ConstLanelet> id2lanelet;
-  int ind = 0;
+  std::set<lanelet::Id> lanelet_Ids;
+  std::unordered_map<lanelet::Id, size_t> Id2ind;
+  std::unordered_map<size_t, lanelet::Id> ind2Id;
+  std::unordered_map<lanelet::Id, lanelet::ConstLanelet> Id2lanelet;
   for (const auto & lanelet : lanelets) {
-    lanelet_ids.insert(lanelet.id());
-    const auto id = lanelet.id();
-    id2ind[id] = ind;
-    ind2id[ind] = id;
-    id2lanelet[id] = lanelet;
-    ind++;
+    size_t ind = ind2Id.size();
+    const auto Id = lanelet.id();
+    lanelet_Ids.insert(Id);
+    Id2ind[Id] = ind;
+    ind2Id[ind] = Id;
+    Id2lanelet[Id] = lanelet;
   }
-  // NOTE: this function aims to traverse the detection lanelet backward from ego side to farthest
-  // side, so if lane B follows lane A on the routing_graph, adj[B][A] = true
+  std::set<size_t> terminal_inds;
+  for (const auto & terminal_lanelet : terminal_lanelets) {
+    terminal_inds.insert(Id2ind[terminal_lanelet.id()]);
+  }
+
+  // create adjacency matrix
+  const auto n_node = lanelets.size();
+  std::vector<std::vector<bool>> adjacency(n_node, std::vector<bool>(n_node, false));
+
+  // NOTE: this function aims to traverse the detection lanelet in the lane direction, so if lane B
+  // follows lane A on the routing_graph, adj[A][B] = true
   for (const auto & lanelet : lanelets) {
     const auto & followings = routing_graph_ptr->following(lanelet);
-    const int dst = lanelet.id();
+    const auto src = lanelet.id();
     for (const auto & following : followings) {
-      if (const int src = following.id(); lanelet_ids.find(src) != lanelet_ids.end()) {
-        adjacency[(id2ind[src])][(id2ind[dst])] = true;
+      if (const auto dst = following.id(); lanelet_Ids.find(dst) != lanelet_Ids.end()) {
+        adjacency[(Id2ind[dst])][(Id2ind[src])] = true;
       }
     }
   }
-  // terminal node
-  std::map<lanelet::Id, std::vector<lanelet::Id>> branches;
-  auto has_no_previous = [&](const int node) {
-    for (int dst = 0; dst < n_node; dst++) {
-      if (adjacency[dst][node]) {
-        return false;
-      }
-    }
-    return true;
-  };
-  for (int src = 0; src < n_node; src++) {
-    if (!has_no_previous(src)) {
-      continue;
-    }
-    // So `src` has no previous lanelets
-    branches[(ind2id[src])] = std::vector<lanelet::Id>{};
-    auto & branch = branches[(ind2id[src])];
-    lanelet::Id node_iter = ind2id[src];
-    std::set<lanelet::Id> visited_ids;
-    while (true) {
-      const auto & destinations = adjacency[(id2ind[node_iter])];
-      // NOTE: assuming detection lanelets have only one "previous"(on the routing_graph) lanelet
-      const auto next = std::find(destinations.begin(), destinations.end(), true);
-      if (next == destinations.end()) {
-        branch.push_back(node_iter);
-        break;
-      }
-      if (visited_ids.find(node_iter) != visited_ids.end()) {
-        // loop detected
-        break;
-      }
-      branch.push_back(node_iter);
-      visited_ids.insert(node_iter);
-      node_iter = ind2id[std::distance(destinations.begin(), next)];
-    }
+
+  std::unordered_map<size_t, std::vector<std::vector<size_t>>> branches;
+  for (const auto & terminal_ind : terminal_inds) {
+    branches[terminal_ind] = retrievePathsBackward(adjacency, terminal_ind);
   }
-  for (decltype(branches)::iterator it = branches.begin(); it != branches.end(); it++) {
-    auto & branch = it->second;
-    std::reverse(branch.begin(), branch.end());
+
+  for (auto & [terminal_ind, paths] : branches) {
+    for (auto & path : paths) {
+      std::reverse(path.begin(), path.end());
+    }
   }
   lanelet::ConstLanelets merged;
   std::vector<lanelet::ConstLanelets> originals;
-  for (const auto & [id, sub_ids] : branches) {
-    if (sub_ids.size() == 0) {
+  for (const auto & [ind, sub_branches] : branches) {
+    if (sub_branches.empty()) {
       continue;
     }
-    lanelet::ConstLanelets merge;
-    originals.push_back(lanelet::ConstLanelets({}));
-    auto & original = originals.back();
-    for (const auto sub_id : sub_ids) {
-      merge.push_back(id2lanelet[sub_id]);
-      original.push_back(id2lanelet[sub_id]);
+    for (const auto & sub_inds : sub_branches) {
+      lanelet::ConstLanelets to_merge;
+      for (const auto & sub_ind : sub_inds) {
+        to_merge.push_back(Id2lanelet[ind2Id[sub_ind]]);
+      }
+      originals.push_back(to_merge);
+      merged.push_back(lanelet::utils::combineLaneletsShape(to_merge));
     }
-    merged.push_back(lanelet::utils::combineLaneletsShape(merge));
   }
   return {merged, originals};
 }
