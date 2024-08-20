@@ -1,4 +1,4 @@
-// Copyright 2023 TIER IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@
  *
  */
 
-#include "autoware/pointcloud_preprocessor/downsample_filter/voxel_grid_downsample_filter_nodelet.hpp"
+#include "autoware/pointcloud_preprocessor/downsample_filter/voxel_grid_downsample_filter_node.hpp"
 
 #include "autoware/pointcloud_preprocessor/downsample_filter/faster_voxel_grid_downsample_filter.hpp"
 
@@ -66,9 +66,9 @@ VoxelGridDownsampleFilterComponent::VoxelGridDownsampleFilterComponent(
 {
   // set initial parameters
   {
-    voxel_size_x_ = static_cast<float>(declare_parameter("voxel_size_x", 0.3));
-    voxel_size_y_ = static_cast<float>(declare_parameter("voxel_size_y", 0.3));
-    voxel_size_z_ = static_cast<float>(declare_parameter("voxel_size_z", 0.1));
+    voxel_size_x_ = declare_parameter<float>("voxel_size_x");
+    voxel_size_y_ = declare_parameter<float>("voxel_size_y");
+    voxel_size_z_ = declare_parameter<float>("voxel_size_z");
   }
 
   using std::placeholders::_1;
