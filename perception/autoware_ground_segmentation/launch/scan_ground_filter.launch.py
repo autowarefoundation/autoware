@@ -33,6 +33,15 @@ def launch_setup(context, *args, **kwargs):
     with open(vehicle_info_param_path, "r") as f:
         vehicle_info_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
+    ground_segmentation_param_path = os.path.join(
+        get_package_share_directory("autoware_ground_segmentation"),
+        "config",
+        "ground_segmentation.param.yaml",
+    )
+
+    with open(ground_segmentation_param_path, "r") as f:
+        ground_segmentation_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+
     nodes = [
         ComposableNode(
             package="autoware_ground_segmentation",
@@ -43,12 +52,9 @@ def launch_setup(context, *args, **kwargs):
                 ("output", LaunchConfiguration("output/pointcloud")),
             ],
             parameters=[
-                {
-                    "global_slope_max_angle_deg": 10.0,
-                    "local_slope_max_angle_deg": 30.0,
-                    "split_points_distance_tolerance": 0.2,
-                    "split_height_distance": 0.2,
-                },
+                ground_segmentation_param["common_ground_filter"]["parameters"],
+                {"input_frame": "base_link"},
+                {"output_frame": "base_link"},
                 vehicle_info_param,
             ],
         ),
