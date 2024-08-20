@@ -535,10 +535,10 @@ bool AnalyticalJerkConstrainedSmoother::applyBackwardDecelFilter(
 
   RCLCPP_DEBUG(logger_, "Search decel start index");
   size_t decel_start_index = output_start_index;
-  bool is_enough_dist = false;
-  double stop_dist;
   if (output_planning_jerk == params.backward.start_jerk) {
     for (size_t i = decel_target_index - 1; i >= output_start_index; --i) {
+      bool is_enough_dist = false;
+      double stop_dist;
       if (calcEnoughDistForDecel(
             output_trajectory, i, decel_target_vel, output_planning_jerk, params,
             output_dist_to_target, is_enough_dist, output_type, output_times, stop_dist)) {
