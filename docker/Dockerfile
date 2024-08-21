@@ -100,13 +100,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
-RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
-  --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && colcon build --cmake-args \
     " -Wno-dev" \
     " --no-warn-unused-cli" \
+    --merge-install \
+    --install-base /opt/autoware \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s
 
@@ -125,13 +127,20 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
-RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src,target=/autoware/src \
-  --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \
+  --mount=type=bind,source=src/param,target=/autoware/src/param \
+  --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
+  --mount=type=bind,source=src/sensor_kit,target=/autoware/src/sensor_kit \
+  --mount=type=bind,source=src/universe,target=/autoware/src/universe \
+  --mount=type=bind,source=src/vehicle,target=/autoware/src/vehicle \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && colcon build --cmake-args \
     " -Wno-dev" \
     " --no-warn-unused-cli" \
+    --merge-install \
+    --install-base /opt/autoware \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s
 
