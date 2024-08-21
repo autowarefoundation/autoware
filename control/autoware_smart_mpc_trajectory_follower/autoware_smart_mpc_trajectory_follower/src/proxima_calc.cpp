@@ -26,10 +26,6 @@ Eigen::VectorXd tanh(const Eigen::VectorXd & v)
 {
   return v.array().tanh();
 }
-Eigen::VectorXd d_tanh(const Eigen::VectorXd & v)
-{
-  return 1 / (v.array().cosh() * v.array().cosh());
-}
 Eigen::VectorXd sigmoid(const Eigen::VectorXd & v)
 {
   return 0.5 * (0.5 * v).array().tanh() + 0.5;
@@ -43,16 +39,6 @@ Eigen::VectorXd relu(const Eigen::VectorXd & x)
     }
   }
   return x_;
-}
-Eigen::VectorXd d_relu(const Eigen::VectorXd & x)
-{
-  Eigen::VectorXd result = Eigen::VectorXd::Ones(x.size());
-  for (int i = 0; i < x.size(); i++) {
-    if (x[i] < 0) {
-      result[i] = 0;
-    }
-  }
-  return result;
 }
 Eigen::MatrixXd d_relu_product(const Eigen::MatrixXd & m, const Eigen::VectorXd & x)
 {
