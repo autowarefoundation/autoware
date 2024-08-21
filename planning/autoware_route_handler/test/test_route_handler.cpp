@@ -204,6 +204,15 @@ TEST_F(TestRouteHandler, testGetCenterLinePath)
     ASSERT_EQ(center_line_path.points.back().lane_ids.at(1), 4785);
   }
   {
+    // The input is in middle of range.
+    const auto center_line_path = route_handler_->getCenterLinePath(current_lanes, 14.5, 60.5);
+    ASSERT_EQ(center_line_path.points.size(), 48);
+    ASSERT_EQ(center_line_path.points.front().lane_ids.size(), 1);
+    ASSERT_EQ(center_line_path.points.back().lane_ids.size(), 1);
+    ASSERT_EQ(center_line_path.points.front().lane_ids.at(0), 4424);
+    ASSERT_EQ(center_line_path.points.back().lane_ids.at(0), 4785);
+  }
+  {
     // The input is broken.
     // s_start is negative, and s_end is over the boundary.
     const auto center_line_path = route_handler_->getCenterLinePath(current_lanes, -1.0, 200.0);
@@ -288,5 +297,21 @@ TEST_F(TestRouteHandler, testGetLaneChangeTargetLanes)
     ASSERT_TRUE(lane_change_lane.has_value());
     ASSERT_EQ(lane_change_lane.value().id(), 9598ul);
   }
+}
+
+TEST_F(TestRouteHandler, testGetShoulderLaneletsAtPose)
+{
+  set_route_handler("overlap_map.osm");
+
+  geometry_msgs::msg::Pose pose;
+  pose.position.x = 3719.5;
+  pose.position.y = 73765.6;
+  auto shoulder_lanelets = route_handler_->getShoulderLaneletsAtPose(pose);
+  ASSERT_FALSE(shoulder_lanelets.empty());
+  ASSERT_EQ(shoulder_lanelets.front().id(), 359ul);
+
+  pose.position.y = 73768.6;
+  shoulder_lanelets = route_handler_->getShoulderLaneletsAtPose(pose);
+  ASSERT_TRUE(shoulder_lanelets.empty());
 }
 }  // namespace autoware::route_handler::test
