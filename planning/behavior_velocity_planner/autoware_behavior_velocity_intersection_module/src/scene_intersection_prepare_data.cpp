@@ -934,6 +934,14 @@ std::vector<lanelet::ConstLineString3d> IntersectionModule::generateDetectionLan
     detection_lanelets.push_back(detection_lanelet);
   }
 
+  std::vector<lanelet::ConstLineString3d> detection_divisions;
+  if (detection_lanelets.empty()) {
+    // NOTE(soblin): due to the above filtering detection_lanelets may be empty or do not contain
+    // conflicting_detection_lanelets
+    // OK to return empty detction_divsions
+    return detection_divisions;
+  }
+
   // (1) tsort detection_lanelets
   const auto [merged_detection_lanelets, originals] = util::mergeLaneletsByTopologicalSort(
     detection_lanelets, conflicting_detection_lanelets, routing_graph_ptr);
@@ -952,7 +960,6 @@ std::vector<lanelet::ConstLineString3d> IntersectionModule::generateDetectionLan
   }
 
   // (3) discretize each merged lanelet
-  std::vector<lanelet::ConstLineString3d> detection_divisions;
   for (const auto & [merged_lanelet, area] : merged_lanelet_with_area) {
     const double length = bg::length(merged_lanelet.centerline());
     const double width = area / length;

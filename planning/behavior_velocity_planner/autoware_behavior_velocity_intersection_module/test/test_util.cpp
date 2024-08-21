@@ -42,16 +42,16 @@ TEST(TestUtil, retrievePathsBackward)
   };
   {
     const size_t src_ind = 6;
-    auto paths =
-      autoware::behavior_velocity_planner::util::retrievePathsBackward(adjacency, src_ind);
+    std::vector<std::vector<size_t>> paths;
+    autoware::behavior_velocity_planner::util::retrievePathsBackward(adjacency, src_ind, {}, paths);
     EXPECT_EQ(paths.size(), 1);
     EXPECT_EQ(paths.at(0).size(), 1);
     EXPECT_EQ(paths.at(0).at(0), 6);
   }
   {
     const size_t src_ind = 4;
-    auto paths =
-      autoware::behavior_velocity_planner::util::retrievePathsBackward(adjacency, src_ind);
+    std::vector<std::vector<size_t>> paths;
+    autoware::behavior_velocity_planner::util::retrievePathsBackward(adjacency, src_ind, {}, paths);
     EXPECT_EQ(paths.size(), 2);
     // 4 --> 6
     EXPECT_EQ(paths.at(0).size(), 2);
@@ -64,8 +64,8 @@ TEST(TestUtil, retrievePathsBackward)
   }
   {
     const size_t src_ind = 0;
-    auto paths =
-      autoware::behavior_velocity_planner::util::retrievePathsBackward(adjacency, src_ind);
+    std::vector<std::vector<size_t>> paths;
+    autoware::behavior_velocity_planner::util::retrievePathsBackward(adjacency, src_ind, {}, paths);
     EXPECT_EQ(paths.size(), 3);
     // 0 --> 1 --> 2 --> 4 --> 6
     EXPECT_EQ(paths.at(0).size(), 5);
