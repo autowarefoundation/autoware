@@ -30,6 +30,8 @@ namespace diagnostic_graph_aggregator
 class UnitLink
 {
 public:
+  UnitLink() : parent_(nullptr), child_(nullptr), struct_(), status_() {}
+
   void initialize_object(BaseUnit * parent, BaseUnit * child);
   void initialize_struct();
   void initialize_status();  // cppcheck-suppress functionStatic
