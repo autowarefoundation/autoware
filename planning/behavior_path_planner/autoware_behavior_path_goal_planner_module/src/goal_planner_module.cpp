@@ -32,6 +32,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <algorithm>
+#include <cstddef>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -845,60 +846,65 @@ BehaviorModuleOutput GoalPlannerModule::plan()
   return fixed_goal_planner_->plan(planner_data_);
 }
 
-std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPriority(
+std::optional<std::pair<PullOverPath, GoalCandidate>> GoalPlannerModule::selectPullOverPath(
   const std::vector<PullOverPath> & pull_over_path_candidates,
   const GoalCandidates & goal_candidates) const
 {
   universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
-  // ==========================================================================================
-  // print path priority for debug
-  const auto debugPrintPathPriority =
-    [this](
-      const std::vector<PullOverPath> & sorted_pull_over_path_candidates,
-      const std::map<size_t, size_t> & goal_id_to_index, const GoalCandidates & goal_candidates,
-      const std::map<size_t, double> & path_id_to_margin_map,
-      const std::function<bool(const PullOverPath &)> & isSoftMargin,
-      const std::function<bool(const PullOverPath &)> & isHighCurvature) {
-      std::stringstream ss;
-
-      // unsafe goal and it's priority are not visible as debug marker in rviz,
-      // so exclude unsafe goal from goal_priority
-      std::map<size_t, int> goal_id_and_priority;
-      {
-        int priority = 0;
-        for (const auto & goal_candidate : goal_candidates) {
-          goal_id_and_priority[goal_candidate.id] = goal_candidate.is_safe ? priority++ : -1;
-        }
-      }
-
-      ss << "\n---------------------- path priority ----------------------\n";
-      for (size_t i = 0; i < sorted_pull_over_path_candidates.size(); ++i) {
-        const auto & path = sorted_pull_over_path_candidates[i];
-
-        // goal_index is same to goal priority including unsafe goal
-        const int goal_index = static_cast<int>(goal_id_to_index.at(path.goal_id));
-        const bool is_safe_goal = goal_candidates[goal_index].is_safe;
-        const int goal_priority = goal_id_and_priority[path.goal_id];
-
-        ss << "path_priority: " << i << ", path_type: " << magic_enum::enum_name(path.type)
-           << ", path_id: " << path.id << ", goal_id: " << path.goal_id
-           << ", goal_priority: " << (is_safe_goal ? std::to_string(goal_priority) : "unsafe")
-           << ", margin: " << path_id_to_margin_map.at(path.id)
-           << (isSoftMargin(path) ? " (soft)" : " (hard)")
-           << ", curvature: " << path.getParkingPathMaxCurvature()
-           << (isHighCurvature(path) ? " (high)" : " (low)");
-        ss << "\n";
-      }
-      ss << "-----------------------------------------------------------\n";
-      RCLCPP_DEBUG_STREAM(getLogger(), ss.str());
-    };
-  // ==========================================================================================
-
+  const auto & goal_pose = planner_data_->route_handler->getOriginalGoalPose();
+  const double backward_length =
+    parameters_->backward_goal_search_length + parameters_->decide_path_distance;
+  const auto & prev_module_output_path = getPreviousModuleOutput().path;
   const auto & soft_margins = parameters_->object_recognition_collision_check_soft_margins;
   const auto & hard_margins = parameters_->object_recognition_collision_check_hard_margins;
 
-  // (1) Sort pull_over_path_candidates based on the order in goal_candidates
+  // STEP1: Filter valid paths before sorting
+  // NOTE: Since copying pull over path takes time, it is handled by indices
+  std::vector<size_t> sorted_path_indices;
+  sorted_path_indices.reserve(pull_over_path_candidates.size());
+
+  // STEP1-1: Extract paths which have safe goal
+  // Create a map of goal_id to GoalCandidate for quick access
+  std::unordered_map<int, GoalCandidate> goal_candidate_map;
+  for (const auto & goal_candidate : goal_candidates) {
+    goal_candidate_map[goal_candidate.id] = goal_candidate;
+  }
+  for (size_t i = 0; i < pull_over_path_candidates.size(); ++i) {
+    const auto & path = pull_over_path_candidates[i];
+    const auto goal_candidate_it = goal_candidate_map.find(path.goal_id);
+    if (goal_candidate_it != goal_candidate_map.end() && goal_candidate_it->second.is_safe) {
+      sorted_path_indices.push_back(i);
+    }
+  }
+
+  // STEP1-2: Remove paths which do not have enough distance
+  const double prev_path_front_to_goal_dist = calcSignedArcLength(
+    prev_module_output_path.points, prev_module_output_path.points.front().point.pose.position,
+    goal_pose.position);
+  const auto & long_tail_reference_path = [&]() {
+    if (prev_path_front_to_goal_dist > backward_length) {
+      return prev_module_output_path;
+    }
+    // get road lanes which is at least backward_length[m] behind the goal
+    const auto road_lanes = utils::getExtendedCurrentLanesFromPath(
+      prev_module_output_path, planner_data_, backward_length, 0.0, false);
+    const auto goal_pose_length = lanelet::utils::getArcCoordinates(road_lanes, goal_pose).length;
+    return planner_data_->route_handler->getCenterLinePath(
+      road_lanes, std::max(0.0, goal_pose_length - backward_length),
+      goal_pose_length + parameters_->forward_goal_search_length);
+  }();
+
+  sorted_path_indices.erase(
+    std::remove_if(
+      sorted_path_indices.begin(), sorted_path_indices.end(),
+      [&](const size_t i) {
+        return !hasEnoughDistance(pull_over_path_candidates[i], long_tail_reference_path);
+      }),
+    sorted_path_indices.end());
+
+  // STEP2: Sort pull over path candidates
+  // STEP2-1: Sort pull_over_path_candidates based on the order in goal_candidates
   // Create a map of goal_id to its index in goal_candidates
   std::map<size_t, size_t> goal_id_to_index;
   for (size_t i = 0; i < goal_candidates.size(); ++i) {
@@ -906,10 +912,11 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
   }
 
   // Sort pull_over_path_candidates based on the order in goal_candidates
-  auto sorted_pull_over_path_candidates = pull_over_path_candidates;
   std::stable_sort(
-    sorted_pull_over_path_candidates.begin(), sorted_pull_over_path_candidates.end(),
-    [&goal_id_to_index](const auto & a, const auto & b) {
+    sorted_path_indices.begin(), sorted_path_indices.end(),
+    [&](const size_t a_i, const size_t b_i) {
+      const auto & a = pull_over_path_candidates[a_i];
+      const auto & b = pull_over_path_candidates[b_i];
       return goal_id_to_index[a.goal_id] < goal_id_to_index[b.goal_id];
     });
 
@@ -923,74 +930,68 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
 
   // if object recognition is enabled, sort by collision check margin
   if (parameters_->use_object_recognition) {
-    // (2) Sort by collision check margins
-    const std::vector<double> margins = std::invoke([&]() {
-      std::vector<double> combined_margins = soft_margins;
-      combined_margins.insert(combined_margins.end(), hard_margins.begin(), hard_margins.end());
-      return combined_margins;
-    });
+    // STEP2-2: Sort by collision check margins
+    const auto [margins, margins_with_zero] =
+      std::invoke([&]() -> std::tuple<std::vector<double>, std::vector<double>> {
+        std::vector<double> margins = soft_margins;
+        margins.insert(margins.end(), hard_margins.begin(), hard_margins.end());
+        std::vector<double> margins_with_zero = margins;
+        margins_with_zero.push_back(0.0);
+        return std::make_tuple(margins, margins_with_zero);
+      });
 
     // Create a map of PullOverPath pointer to largest collision check margin
-    auto calcLargestMargin = [&](const PullOverPath & pull_over_path) {
-      // check has safe goal
-      const auto goal_candidate_it = std::find_if(
-        goal_candidates.begin(), goal_candidates.end(),
-        [pull_over_path](const auto & goal_candidate) {
-          return goal_candidate.id == pull_over_path.goal_id;
-        });
-      if (goal_candidate_it != goal_candidates.end() && !goal_candidate_it->is_safe) {
-        return 0.0;
+    std::map<size_t, double> path_id_to_rough_margin_map;
+    const auto target_objects = thread_safe_data_.get_static_target_objects();
+    for (const size_t i : sorted_path_indices) {
+      const auto & path = pull_over_path_candidates[i];
+      const double distance = utils::path_safety_checker::calculateRoughDistanceToObjects(
+        path.getParkingPath(), target_objects, planner_data_->parameters, false, "max");
+      auto it = std::lower_bound(
+        margins_with_zero.begin(), margins_with_zero.end(), distance, std::greater<double>());
+      if (it == margins_with_zero.end()) {
+        path_id_to_rough_margin_map[path.id] = margins_with_zero.back();
+      } else {
+        path_id_to_rough_margin_map[path.id] = *it;
       }
-      // check path collision margin
-      const PathWithLaneId parking_path = pull_over_path.getParkingPath();
-      const std::vector<double> parking_path_curvatures = pull_over_path.getParkingPathCurvatures();
-      for (const auto & margin : margins) {
-        if (!checkObjectsCollision(
-              parking_path, parking_path_curvatures, planner_data_, *parameters_, margin,
-              /*extract_static_objects=*/true)) {
-          return margin;
-        }
-      }
-      return 0.0;
-    };
-
-    // Create a map of PullOverPath pointer to largest collision check margin
-    std::map<size_t, double> path_id_to_margin_map;
-    for (const auto & path : sorted_pull_over_path_candidates) {
-      path_id_to_margin_map[path.id] = calcLargestMargin(path);
     }
 
     // sorts in descending order so the item with larger margin comes first
     std::stable_sort(
-      sorted_pull_over_path_candidates.begin(), sorted_pull_over_path_candidates.end(),
-      [&path_id_to_margin_map](const PullOverPath & a, const PullOverPath & b) {
-        if (std::abs(path_id_to_margin_map[a.id] - path_id_to_margin_map[b.id]) < 0.01) {
+      sorted_path_indices.begin(), sorted_path_indices.end(),
+      [&](const size_t a_i, const size_t b_i) {
+        const auto & a = pull_over_path_candidates[a_i];
+        const auto & b = pull_over_path_candidates[b_i];
+        if (
+          std::abs(path_id_to_rough_margin_map[a.id] - path_id_to_rough_margin_map[b.id]) < 0.01) {
           return false;
         }
-        return path_id_to_margin_map[a.id] > path_id_to_margin_map[b.id];
+        return path_id_to_rough_margin_map[a.id] > path_id_to_rough_margin_map[b.id];
       });
 
-    // (3) Sort by curvature
+    // STEP2-3: Sort by curvature
     // If the curvature is less than the threshold, prioritize the path.
     const auto isHighCurvature = [&](const PullOverPath & path) -> bool {
       return path.getParkingPathMaxCurvature() >= parameters_->high_curvature_threshold;
     };
 
     const auto isSoftMargin = [&](const PullOverPath & path) -> bool {
-      const double margin = path_id_to_margin_map[path.id];
+      const double margin = path_id_to_rough_margin_map[path.id];
       return std::any_of(
         soft_margins.begin(), soft_margins.end(),
         [margin](const double soft_margin) { return std::abs(margin - soft_margin) < 0.01; });
     };
     const auto isSameHardMargin = [&](const PullOverPath & a, const PullOverPath & b) -> bool {
       return !isSoftMargin(a) && !isSoftMargin(b) &&
-             std::abs(path_id_to_margin_map[a.id] - path_id_to_margin_map[b.id]) < 0.01;
+             std::abs(path_id_to_rough_margin_map[a.id] - path_id_to_rough_margin_map[b.id]) < 0.01;
     };
 
     // NOTE: this is just partition sort based on curvature threshold within each sub partitions
     std::stable_sort(
-      sorted_pull_over_path_candidates.begin(), sorted_pull_over_path_candidates.end(),
-      [&](const PullOverPath & a, const PullOverPath & b) {
+      sorted_path_indices.begin(), sorted_path_indices.end(),
+      [&](const size_t a_i, const size_t b_i) {
+        const auto & a = pull_over_path_candidates[a_i];
+        const auto & b = pull_over_path_candidates[b_i];
         // if both are soft margin or both are same hard margin, prioritize the path with lower
         // curvature.
         if ((isSoftMargin(a) && isSoftMargin(b)) || isSameHardMargin(a, b)) {
@@ -1000,109 +1001,71 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
         return false;
       });
 
-    // (4) Sort pull_over_path_candidates based on the order in efficient_path_order keeping the
-    // collision check margin and curvature priority.
+    // STEP2-4: Sort pull_over_path_candidates based on the order in efficient_path_order keeping
+    // the collision check margin and curvature priority.
     if (parameters_->path_priority == "efficient_path") {
       std::stable_sort(
-        sorted_pull_over_path_candidates.begin(), sorted_pull_over_path_candidates.end(),
-        [&](const auto & a, const auto & b) {
+        sorted_path_indices.begin(), sorted_path_indices.end(),
+        [&](const size_t a_i, const size_t b_i) {
           // if any of following conditions are met, sort by path type priority
           // - both are soft margin
           // - both are same hard margin
+          const auto & a = pull_over_path_candidates[a_i];
+          const auto & b = pull_over_path_candidates[b_i];
           if ((isSoftMargin(a) && isSoftMargin(b)) || isSameHardMargin(a, b)) {
             return comparePathTypePriority(a, b);
           }
           // otherwise, keep the order.
           return false;
         });
-
-      // debug print path priority sorted by
-      // - efficient_path_order
-      // - collision check margin
-      // - curvature
-      debugPrintPathPriority(
-        sorted_pull_over_path_candidates, goal_id_to_index, goal_candidates, path_id_to_margin_map,
-        isSoftMargin, isHighCurvature);
     }
+
+    // debug print path priority sorted by
+    // - efficient_path_order
+    // - collision check margin
+    // - curvature
+    const std::string path_priority_info_str = goal_planner_utils::makePathPriorityDebugMessage(
+      sorted_path_indices, pull_over_path_candidates, goal_id_to_index, goal_candidates,
+      path_id_to_rough_margin_map, isSoftMargin, isHighCurvature);
+    RCLCPP_DEBUG_STREAM(getLogger(), path_priority_info_str);
   } else {
     /**
-     *  NOTE: use_object_recognition=false is not recommended. This option will be deprecated in the
+     * NOTE: use_object_recognition=false is not recommended. This option will be deprecated in the
      * future. sort by curvature is not implemented yet.
      * Sort pull_over_path_candidates based on the order in efficient_path_order
      */
     if (parameters_->path_priority == "efficient_path") {
       std::stable_sort(
-        sorted_pull_over_path_candidates.begin(), sorted_pull_over_path_candidates.end(),
-        [&](const auto & a, const auto & b) { return comparePathTypePriority(a, b); });
+        sorted_path_indices.begin(), sorted_path_indices.end(),
+        [&](const size_t a_i, const size_t b_i) {
+          const auto & a = pull_over_path_candidates[a_i];
+          const auto & b = pull_over_path_candidates[b_i];
+          return comparePathTypePriority(a, b);
+        });
     }
   }
 
-  return sorted_pull_over_path_candidates;
-}
-
-std::optional<std::pair<PullOverPath, GoalCandidate>> GoalPlannerModule::selectPullOverPath(
-  const std::vector<PullOverPath> & pull_over_path_candidates,
-  const GoalCandidates & goal_candidates, const double collision_check_margin) const
-{
-  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
-
-  const auto & goal_pose = planner_data_->route_handler->getOriginalGoalPose();
-  const double backward_length =
-    parameters_->backward_goal_search_length + parameters_->decide_path_distance;
-  const auto & prev_module_output_path = getPreviousModuleOutput().path;
-  const double prev_path_front_to_goal_dist = calcSignedArcLength(
-    prev_module_output_path.points, prev_module_output_path.points.front().point.pose.position,
-    goal_pose.position);
-  const auto & long_tail_reference_path = [&]() {
-    if (prev_path_front_to_goal_dist > backward_length) {
-      return prev_module_output_path;
-    }
-    // get road lanes which is at least backward_length[m] behind the goal
-    const auto road_lanes = utils::getExtendedCurrentLanesFromPath(
-      prev_module_output_path, planner_data_, backward_length, 0.0,
-      /*forward_only_in_route*/ false);
-    const auto goal_pose_length = lanelet::utils::getArcCoordinates(road_lanes, goal_pose).length;
-    return planner_data_->route_handler->getCenterLinePath(
-      road_lanes, std::max(0.0, goal_pose_length - backward_length),
-      goal_pose_length + parameters_->forward_goal_search_length);
-  }();
-  for (const auto & pull_over_path : pull_over_path_candidates) {
-    // check if goal is safe
-    const auto goal_candidate_it = std::find_if(
-      goal_candidates.begin(), goal_candidates.end(),
-      [pull_over_path](const auto & goal_candidate) {
-        return goal_candidate.id == pull_over_path.goal_id;
-      });
-    if (goal_candidate_it != goal_candidates.end() && !goal_candidate_it->is_safe) {
-      continue;
-    }
-
-    if (!hasEnoughDistance(pull_over_path, long_tail_reference_path)) {
-      continue;
-    }
-
-    // const auto resampled_path = utils::resamplePathWithSpline(pull_over_path.getParkingPath(),
-    // 0.5);
-    const PathWithLaneId parking_path = pull_over_path.getParkingPath();
-    const std::vector<double> parking_path_curvatures = pull_over_path.getParkingPathCurvatures();
+  // STEP3: Select the final pull over path by checking collision to make it as high priority as
+  // possible
+  const double collision_check_margin =
+    parameters_->object_recognition_collision_check_hard_margins.back();
+  for (const size_t i : sorted_path_indices) {
+    const auto & path = pull_over_path_candidates[i];
+    const PathWithLaneId parking_path = path.getParkingPath();
+    const auto parking_path_curvatures = path.getParkingPathCurvatures();
     if (
-      parameters_->use_object_recognition &&
-      checkObjectsCollision(
-        parking_path, parking_path_curvatures, planner_data_, *parameters_, collision_check_margin,
-        /*extract_static_objects=*/true,
-        /*update_debug_data=*/true)) {
+      parameters_->use_object_recognition && checkObjectsCollision(
+                                               parking_path, parking_path_curvatures, planner_data_,
+                                               *parameters_, collision_check_margin, true, true)) {
       continue;
     }
-
     if (
       parameters_->use_occupancy_grid_for_path_collision_check &&
       checkOccupancyGridCollision(parking_path, occupancy_grid_map_)) {
       continue;
     }
-
-    return std::make_pair(pull_over_path, *goal_candidate_it);
+    return std::make_pair(path, goal_candidates.at(goal_id_to_index.at(path.goal_id)));
   }
-
   return {};
 }
 
@@ -1456,6 +1419,9 @@ BehaviorModuleOutput GoalPlannerModule::planPullOverAsOutput()
 {
   universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
+  std::chrono::system_clock::time_point start;
+  start = std::chrono::system_clock::now();
+
   // if pull over path candidates generation is not finished, use previous module output
   if (thread_safe_data_.get_pull_over_path_candidates().empty()) {
     return getPreviousModuleOutput();
@@ -1478,26 +1444,20 @@ BehaviorModuleOutput GoalPlannerModule::planPullOverAsOutput()
     auto goal_candidates = thread_safe_data_.get_goal_candidates();
     goal_searcher_->update(goal_candidates, occupancy_grid_map_, planner_data_);
 
-    // update pull over path candidates
-    const auto pull_over_path_candidates = sortPullOverPathCandidatesByGoalPriority(
-      thread_safe_data_.get_pull_over_path_candidates(), goal_candidates);
-
-    // select pull over path which is safe against static objects and get it's goal
-    const auto path_and_goal_opt = selectPullOverPath(
-      pull_over_path_candidates, goal_candidates,
-      parameters_->object_recognition_collision_check_hard_margins.back());
+    // Select a path that is as safe as possible and has a high priority.
+    const auto pull_over_path_candidates = thread_safe_data_.get_pull_over_path_candidates();
+    const auto path_and_goal_opt = selectPullOverPath(pull_over_path_candidates, goal_candidates);
 
     // update thread_safe_data_
     if (path_and_goal_opt) {
       auto [pull_over_path, modified_goal] = *path_and_goal_opt;
       deceleratePath(pull_over_path);
-      thread_safe_data_.set(
-        goal_candidates, pull_over_path_candidates, pull_over_path, modified_goal);
+      thread_safe_data_.set(goal_candidates, pull_over_path, modified_goal);
       RCLCPP_DEBUG(
         getLogger(), "selected pull over path: path_id: %ld, goal_id: %ld", pull_over_path.id,
         modified_goal.id);
     } else {
-      thread_safe_data_.set(goal_candidates, pull_over_path_candidates);
+      thread_safe_data_.set(goal_candidates);
     }
   }
 
@@ -1514,6 +1474,7 @@ BehaviorModuleOutput GoalPlannerModule::planPullOverAsOutput()
 
   // For debug
   setDebugData();
+
   if (parameters_->print_debug_info) {
     // For evaluations
     printParkingPositionError();
@@ -2133,6 +2094,8 @@ double GoalPlannerModule::calcSignedArcLengthFromEgo(
 
 void GoalPlannerModule::deceleratePath(PullOverPath & pull_over_path) const
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   // decelerate before the search area start
   const auto closest_goal_candidate = goal_searcher_->getClosetGoalCandidateAlongLanes(
     thread_safe_data_.get_goal_candidates(), planner_data_);

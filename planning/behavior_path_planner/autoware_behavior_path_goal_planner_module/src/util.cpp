@@ -21,6 +21,7 @@
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <autoware_lanelet2_extension/utility/query.hpp>
 #include <autoware_lanelet2_extension/utility/utilities.hpp>
+#include <magic_enum.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <boost/geometry/algorithms/dispatch/distance.hpp>
@@ -448,6 +449,43 @@ std::vector<Polygon2d> createPathFootPrints(
       autoware::universe_utils::toFootprint(pose, base_to_front, base_to_rear, width));
   }
   return footprints;
+}
+
+std::string makePathPriorityDebugMessage(
+  const std::vector<size_t> & sorted_path_indices,
+  const std::vector<PullOverPath> & pull_over_path_candidates,
+  const std::map<size_t, size_t> & goal_id_to_index, const GoalCandidates & goal_candidates,
+  const std::map<size_t, double> & path_id_to_rough_margin_map,
+  const std::function<bool(const PullOverPath &)> & isSoftMargin,
+  const std::function<bool(const PullOverPath &)> & isHighCurvature)
+{
+  std::stringstream ss;
+
+  // Unsafe goal and its priority are not visible as debug marker in rviz,
+  // so exclude unsafe goal from goal_priority
+  std::map<size_t, int> goal_id_and_priority;
+  for (size_t i = 0; i < goal_candidates.size(); ++i) {
+    goal_id_and_priority[goal_candidates[i].id] = goal_candidates[i].is_safe ? i : -1;
+  }
+
+  ss << "\n---------------------- path priority ----------------------\n";
+  for (size_t i = 0; i < sorted_path_indices.size(); ++i) {
+    const auto & path = pull_over_path_candidates[sorted_path_indices[i]];
+    // goal_index is same to goal priority including unsafe goal
+    const int goal_index = static_cast<int>(goal_id_to_index.at(path.goal_id));
+    const bool is_safe_goal = goal_candidates[goal_index].is_safe;
+    const int goal_priority = goal_id_and_priority[path.goal_id];
+
+    ss << "path_priority: " << i << ", path_type: " << magic_enum::enum_name(path.type)
+       << ", path_id: " << path.id << ", goal_id: " << path.goal_id
+       << ", goal_priority: " << (is_safe_goal ? std::to_string(goal_priority) : "unsafe")
+       << ", margin: " << path_id_to_rough_margin_map.at(path.id)
+       << (isSoftMargin(path) ? " (soft)" : " (hard)")
+       << ", curvature: " << path.getParkingPathMaxCurvature()
+       << (isHighCurvature(path) ? " (high)" : " (low)") << "\n";
+  }
+  ss << "-----------------------------------------------------------\n";
+  return ss.str();
 }
 
 }  // namespace autoware::behavior_path_planner::goal_planner_utils

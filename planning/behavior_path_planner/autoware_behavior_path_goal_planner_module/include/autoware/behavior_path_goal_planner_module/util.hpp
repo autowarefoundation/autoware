@@ -16,6 +16,7 @@
 #define AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__UTIL_HPP_
 
 #include "autoware/behavior_path_goal_planner_module/goal_searcher_base.hpp"
+#include "autoware/behavior_path_goal_planner_module/pull_over_planner_base.hpp"
 #include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
 
 #include <autoware/lane_departure_checker/lane_departure_checker.hpp>
@@ -29,6 +30,7 @@
 
 #include <lanelet2_core/Forward.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -109,6 +111,13 @@ MarkerArray createLaneletPolygonMarkerArray(
 MarkerArray createNumObjectsToAvoidTextsMarkerArray(
   const GoalCandidates & goal_candidates, std::string && ns,
   const std_msgs::msg::ColorRGBA & color);
+std::string makePathPriorityDebugMessage(
+  const std::vector<size_t> & sorted_path_indices,
+  const std::vector<PullOverPath> & pull_over_path_candidates,
+  const std::map<size_t, size_t> & goal_id_to_index, const GoalCandidates & goal_candidates,
+  const std::map<size_t, double> & path_id_to_rough_margin_map,
+  const std::function<bool(const PullOverPath &)> & isSoftMargin,
+  const std::function<bool(const PullOverPath &)> & isHighCurvature);
 }  // namespace autoware::behavior_path_planner::goal_planner_utils
 
 #endif  // AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__UTIL_HPP_

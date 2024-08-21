@@ -620,9 +620,6 @@ private:
   BehaviorModuleOutput planPullOverAsCandidate();
   std::optional<std::pair<PullOverPath, GoalCandidate>> selectPullOverPath(
     const std::vector<PullOverPath> & pull_over_path_candidates,
-    const GoalCandidates & goal_candidates, const double collision_check_margin) const;
-  std::vector<PullOverPath> sortPullOverPathCandidatesByGoalPriority(
-    const std::vector<PullOverPath> & pull_over_path_candidates,
     const GoalCandidates & goal_candidates) const;
 
   // lanes and drivable area
