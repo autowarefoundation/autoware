@@ -775,6 +775,7 @@ void AutowareStatePanel::onSwitchStateChanged(int state)
 void AutowareStatePanel::onClickVelocityLimit()
 {
   auto velocity_limit = std::make_shared<tier4_planning_msgs::msg::VelocityLimit>();
+  velocity_limit->stamp = raw_node_->now();
   velocity_limit->max_velocity = velocity_limit_value_label_->text().toDouble() / 3.6;
   pub_velocity_limit_->publish(*velocity_limit);
 }
