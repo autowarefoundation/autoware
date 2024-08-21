@@ -422,7 +422,7 @@ void NormalLaneChange::insertStopPoint(
     for (const auto & object : target_objects.current_lane) {
       // check if stationary
       const auto obj_v = std::abs(object.initial_twist.twist.linear.x);
-      if (obj_v > lane_change_parameters_->stop_velocity_threshold) {
+      if (obj_v > lane_change_parameters_->stopped_object_velocity_threshold) {
         continue;
       }
 
@@ -476,7 +476,7 @@ void NormalLaneChange::insertStopPoint(
       target_objects.target_lane_leading.begin(), target_objects.target_lane_leading.end(),
       [&](const auto & o) {
         const auto v = std::abs(o.initial_twist.twist.linear.x);
-        if (v > lane_change_parameters_->stop_velocity_threshold) {
+        if (v > lane_change_parameters_->stopped_object_velocity_threshold) {
           return false;
         }
 
@@ -1216,7 +1216,8 @@ FilteredByLanesObjects NormalLaneChange::filterObjectsByLanelets(
       is_before_terminal()) {
       const auto ahead_of_ego =
         utils::lane_change::is_ahead_of_ego(common_data_ptr_, current_lanes_ref_path, object);
-      constexpr double stopped_obj_vel_th = 1.0;
+      const auto stopped_obj_vel_th =
+        common_data_ptr_->lc_param_ptr->stopped_object_velocity_threshold;
       if (object.kinematics.initial_twist_with_covariance.twist.linear.x < stopped_obj_vel_th) {
         if (ahead_of_ego) {
           target_lane_leading_objects.push_back(object);
@@ -2157,11 +2158,10 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
     const auto obj_predicted_paths = utils::path_safety_checker::getPredictedPathFromObj(
       obj, lane_change_parameters_->use_all_predicted_path);
     auto is_safe = true;
-    const auto selected_rss_param =
-      (obj.initial_twist.twist.linear.x <=
-       lane_change_parameters_->prepare_segment_ignore_object_velocity_thresh)
-        ? lane_change_parameters_->rss_params_for_parked
-        : rss_params;
+    const auto selected_rss_param = (obj.initial_twist.twist.linear.x <=
+                                     lane_change_parameters_->stopped_object_velocity_threshold)
+                                      ? lane_change_parameters_->rss_params_for_parked
+                                      : rss_params;
     for (const auto & obj_path : obj_predicted_paths) {
       const auto collided_polygons = utils::path_safety_checker::getCollidedPolygons(
         path, ego_predicted_path, obj, obj_path, common_parameters, selected_rss_param, 1.0,

@@ -106,7 +106,7 @@
         general_lanes: false
         intersection: true
         turns: true
-      prepare_segment_ignore_object_velocity_thresh: 0.1 # [m/s]
+      stopped_object_velocity_threshold: 1.0 # [m/s]
       check_objects_on_current_lanes: true
       check_objects_on_other_lanes: true
       use_all_predicted_path: true
