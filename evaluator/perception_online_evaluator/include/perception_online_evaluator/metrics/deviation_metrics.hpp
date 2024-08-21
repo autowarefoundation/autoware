@@ -45,8 +45,6 @@ double calcLateralDeviation(const std::vector<Pose> & ref_path, const Pose & tar
  */
 double calcYawDeviation(const std::vector<Pose> & ref_path, const Pose & target_pose);
 
-std::vector<double> calcPredictedPathDeviation(
-  const std::vector<Pose> & ref_path, const PredictedPath & pred_path);
 }  // namespace metrics
 }  // namespace perception_diagnostics
 

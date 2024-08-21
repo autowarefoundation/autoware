@@ -47,21 +47,5 @@ double calcYawDeviation(const std::vector<Pose> & ref_path, const Pose & target_
   return std::abs(autoware::universe_utils::calcYawDeviation(ref_path[nearest_index], target_pose));
 }
 
-std::vector<double> calcPredictedPathDeviation(
-  const std::vector<Pose> & ref_path, const PredictedPath & pred_path)
-{
-  std::vector<double> deviations;
-
-  if (ref_path.empty() || pred_path.path.empty()) {
-    return {};
-  }
-  for (const Pose & p : pred_path.path) {
-    const size_t nearest_index = autoware::motion_utils::findNearestIndex(ref_path, p.position);
-    deviations.push_back(
-      autoware::universe_utils::calcDistance2d(ref_path[nearest_index].position, p.position));
-  }
-
-  return deviations;
-}
 }  // namespace metrics
 }  // namespace perception_diagnostics
