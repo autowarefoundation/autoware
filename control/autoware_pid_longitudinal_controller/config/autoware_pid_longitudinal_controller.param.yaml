@@ -54,6 +54,7 @@
     # stopped state
     stopped_vel: 0.0
     stopped_acc: -3.4 # denotes pedal position
+    stopped_jerk: -5.0
 
     # emergency state
     emergency_vel: 0.0

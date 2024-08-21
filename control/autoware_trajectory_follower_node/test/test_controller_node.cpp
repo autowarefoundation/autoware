@@ -64,8 +64,8 @@ rclcpp::NodeOptions makeNodeOptions(const bool enable_keep_stopped_until_steer_c
   node_options.arguments(
     {"--ros-args", "--params-file",
      lateral_share_dir + "/param/lateral_controller_defaults.param.yaml", "--params-file",
-     longitudinal_share_dir + "/param/longitudinal_controller_defaults.param.yaml", "--params-file",
-     share_dir + "/test/test_vehicle_info.param.yaml", "--params-file",
+     longitudinal_share_dir + "/config/autoware_pid_longitudinal_controller.param.yaml",
+     "--params-file", share_dir + "/test/test_vehicle_info.param.yaml", "--params-file",
      share_dir + "/test/test_nearest_search.param.yaml", "--params-file",
      share_dir + "/param/trajectory_follower_node.param.yaml"});
 

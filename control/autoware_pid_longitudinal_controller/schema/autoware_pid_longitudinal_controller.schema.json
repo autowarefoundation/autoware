@@ -1,0 +1,383 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "autoware_pid_longitudinal_controller parameters",
+  "type": "object",
+  "definitions": {
+    "autoware_pid_longitudinal_controller": {
+      "type": "object",
+      "properties": {
+        "delay_compensation_time": {
+          "type": "number",
+          "description": "delay for longitudinal control [s]",
+          "default": "0.17"
+        },
+        "enable_smooth_stop": {
+          "type": "boolean",
+          "description": "flag to enable transition to STOPPING",
+          "default": "true"
+        },
+        "enable_overshoot_emergency": {
+          "type": "boolean",
+          "description": "flag to enable transition to EMERGENCY when the ego is over the stop line with a certain distance. See `emergency_state_overshoot_stop_dist`",
+          "default": "true"
+        },
+        "enable_large_tracking_error_emergency": {
+          "type": "boolean",
+          "description": "flag to enable transition to EMERGENCY when the closest trajectory point search is failed due to a large deviation between trajectory and ego pose",
+          "default": "true"
+        },
+        "enable_slope_compensation": {
+          "type": "boolean",
+          "description": "flag to modify output acceleration for slope compensation. The source of the slope angle can be selected from ego-pose or trajectory angle",
+          "default": "true"
+        },
+        "enable_keep_stopped_until_steer_convergence": {
+          "type": "boolean",
+          "description": "flag to keep stopped condition until until the steer converges",
+          "default": "true"
+        },
+        "drive_state_stop_dist": {
+          "type": "number",
+          "description": "The state will transit to DRIVE when the distance to the stop point is longer than `drive_state_stop_dist` + `drive_state_offset_stop_dist` [m]",
+          "default": "0.5"
+        },
+        "drive_state_offset_stop_dist": {
+          "type": "number",
+          "description": "The state will transit to DRIVE when the distance to the stop point is longer than `drive_state_stop_dist` + `drive_state_offset_stop_dist` [m]",
+          "default": "1.0"
+        },
+        "stopping_state_stop_dist": {
+          "type": "number",
+          "description": "The state will transit to STOPPING when the distance to the stop point is shorter than `stopping_state_stop_dist` [m]",
+          "default": "0.5"
+        },
+        "stopped_state_entry_duration_time": {
+          "type": "number",
+          "description": "threshold of the ego velocity in transition to the STOPPED state [s]",
+          "default": "0.1"
+        },
+        "stopped_state_entry_vel": {
+          "type": "number",
+          "description": "threshold of the ego velocity in transition to the STOPPED state [m/s]",
+          "default": "0.01"
+        },
+        "stopped_state_entry_acc": {
+          "type": "number",
+          "description": "threshold of the ego acceleration in transition to the STOPPED state [m/s^2]",
+          "default": "0.1"
+        },
+        "emergency_state_overshoot_stop_dist": {
+          "type": "number",
+          "description": "If `enable_overshoot_emergency` is true and the ego is `emergency_state_overshoot_stop_dist`-meter ahead of the stop point, the state will transit to EMERGENCY. [m]",
+          "default": "1.5"
+        },
+        "emergency_state_traj_trans_dev": {
+          "type": "number",
+          "description": "If the ego's position is `emergency_state_traj_trans_dev` meter away from the nearest trajectory point, the state will transit to EMERGENCY. [m]",
+          "default": "3.0"
+        },
+        "emergency_state_traj_rot_dev": {
+          "type": "number",
+          "description": "If the ego's orientation is `emergency_state_traj_rot_dev` rad away from the nearest trajectory point orientation, the state will transit to EMERGENCY. [rad]",
+          "default": "0.7854"
+        },
+        "kp": {
+          "type": "number",
+          "description": "p gain for longitudinal control",
+          "default": "1.0"
+        },
+        "ki": {
+          "type": "number",
+          "description": "i gain for longitudinal control",
+          "default": "0.1"
+        },
+        "kd": {
+          "type": "number",
+          "description": "d gain for longitudinal control",
+          "default": "0.0"
+        },
+        "max_out": {
+          "type": "number",
+          "description": "max value of PID's output acceleration during DRIVE state [m/s^2]",
+          "default": "1.0"
+        },
+        "min_out": {
+          "type": "number",
+          "description": "min value of PID's output acceleration during DRIVE state [m/s^2]",
+          "default": "-1.0"
+        },
+        "max_p_effort": {
+          "type": "number",
+          "description": "max value of acceleration with p gain",
+          "default": "1.0"
+        },
+        "min_p_effort": {
+          "type": "number",
+          "description": "min value of acceleration with p gain",
+          "default": "-1.0"
+        },
+        "max_i_effort": {
+          "type": "number",
+          "description": "max value of acceleration with i gain ",
+          "default": "0.3"
+        },
+        "min_i_effort": {
+          "type": "number",
+          "description": "min value of acceleration with i gain",
+          "default": "-0.3"
+        },
+        "max_d_effort": {
+          "type": "number",
+          "description": "max value of acceleration with d gain",
+          "default": "0.0"
+        },
+        "min_d_effort": {
+          "type": "number",
+          "description": "min value of acceleration with d gain ",
+          "default": "0.0"
+        },
+        "lpf_vel_error_gain": {
+          "type": "number",
+          "description": "gain of low-pass filter for velocity",
+          "default": "0.9"
+        },
+        "enable_integration_at_low_speed": {
+          "type": "boolean",
+          "description": "Whether to enable integration of acceleration errors when the vehicle speed is lower than `current_vel_threshold_pid_integration` or not.",
+          "default": "false"
+        },
+        "current_vel_threshold_pid_integration": {
+          "type": "number",
+          "description": "Velocity error is integrated for I-term only when the absolute value of current velocity is larger than this parameter. [m/s]",
+          "default": "0.5"
+        },
+        "time_threshold_before_pid_integration": {
+          "type": "number",
+          "description": "How much time without the vehicle moving must past to enable PID error integration. [s]",
+          "default": "2.0"
+        },
+        "enable_brake_keeping_before_stop": {
+          "type": "boolean",
+          "description": "flag to keep a certain acceleration during DRIVE state before the ego stops. See [Brake keeping]",
+          "default": "false"
+        },
+        "brake_keeping_acc": {
+          "type": "number",
+          "description": "If `enable_brake_keeping_before_stop` is true, a certain acceleration is kept during DRIVE state before the ego stops [m/s^2] See [Brake keeping]",
+          "default": "-0.2"
+        },
+        "smooth_stop_max_strong_acc": {
+          "type": "number",
+          "description": "max strong acceleration [m/s^2]",
+          "default": "-0.5"
+        },
+        "smooth_stop_min_strong_acc": {
+          "type": "number",
+          "description": "min strong acceleration [m/s^2]",
+          "default": "-0.8"
+        },
+        "smooth_stop_weak_acc": {
+          "type": "number",
+          "description": "weak acceleration [m/s^2]",
+          "default": "-0.3"
+        },
+        "smooth_stop_weak_stop_acc": {
+          "type": "number",
+          "description": "weak acceleration to stop right now [m/s^2]",
+          "default": "-0.8"
+        },
+        "smooth_stop_strong_stop_acc": {
+          "type": "number",
+          "description": "strong acceleration to be output when the ego is `smooth_stop_strong_stop_dist`-meter over the stop point. [m/s^2]",
+          "default": "-3.4"
+        },
+        "smooth_stop_max_fast_vel": {
+          "type": "number",
+          "description": "max fast vel to judge the ego is running fast [m/s]. If the ego is running fast, strong acceleration will be output.",
+          "default": "0.5"
+        },
+        "smooth_stop_min_running_vel": {
+          "type": "number",
+          "description": "min ego velocity to judge if the ego is running or not [m/s]",
+          "default": "0.01"
+        },
+        "smooth_stop_min_running_acc": {
+          "type": "number",
+          "description": "min ego acceleration to judge if the ego is running or not [m/s^2]",
+          "default": "0.01"
+        },
+        "smooth_stop_weak_stop_time": {
+          "type": "number",
+          "description": "max time to output weak acceleration [s]. After this, strong acceleration will be output.",
+          "default": "0.8"
+        },
+        "smooth_stop_weak_stop_dist": {
+          "type": "number",
+          "description": "Weak acceleration will be output when the ego is `smooth_stop_weak_stop_dist`-meter before the stop point. [m]",
+          "default": "-0.3"
+        },
+        "smooth_stop_strong_stop_dist": {
+          "type": "number",
+          "description": "Strong acceleration will be output when the ego is `smooth_stop_strong_stop_dist`-meter over the stop point. [m]",
+          "default": "-0.5"
+        },
+        "stopped_vel": {
+          "type": "number",
+          "description": "target velocity in STOPPED state [m/s]",
+          "default": "0.0"
+        },
+        "stopped_acc": {
+          "type": "number",
+          "description": "target acceleration in STOPPED state [m/s^2]",
+          "default": "-3.4"
+        },
+        "stopped_jerk": {
+          "type": "number",
+          "description": "target jerk in STOPPED state [m/s^3]",
+          "default": "-5.0"
+        },
+        "emergency_vel": {
+          "type": "number",
+          "description": "target velocity in EMERGENCY state [m/s]",
+          "default": "0.00"
+        },
+        "emergency_acc": {
+          "type": "number",
+          "description": "target acceleration in an EMERGENCY state [m/s^2]",
+          "default": "-5.0"
+        },
+        "emergency_jerk": {
+          "type": "number",
+          "description": "target jerk in an EMERGENCY state [m/s^3]",
+          "default": "-3.0"
+        },
+        "max_acc": {
+          "type": "number",
+          "description": "max value of output acceleration [m/s^2]",
+          "default": "3.0"
+        },
+        "min_acc": {
+          "type": "number",
+          "description": "min value of output acceleration [m/s^2]",
+          "default": "-5.0"
+        },
+        "max_jerk": {
+          "type": "number",
+          "description": "max value of jerk of output acceleration [m/s^3]",
+          "default": "2.0"
+        },
+        "min_jerk": {
+          "type": "number",
+          "description": "min value of jerk of output acceleration [m/s^3]",
+          "default": "-5.0"
+        },
+        "max_acc_cmd_diff": {
+          "type": "number",
+          "description": "max difference between the current and previous acceleration command [m/s^2 * s^-1]",
+          "default": "50"
+        },
+        "lpf_pitch_gain": {
+          "type": "number",
+          "description": "gain of low-pass filter for pitch estimation",
+          "default": "0.95"
+        },
+        "slope_source": {
+          "type": "string",
+          "description": "source of slope angle.",
+          "default": "raw_pitch"
+        },
+        "adaptive_trajectory_velocity_th": {
+          "type": "number",
+          "description": "threshold of the ego velocity to use adaptive trajectory velocity [m/s]",
+          "default": "1.0"
+        },
+        "max_pitch_rad": {
+          "type": "number",
+          "description": "max value of estimated pitch [rad]",
+          "default": "0.1"
+        },
+        "min_pitch_rad": {
+          "type": "number",
+          "description": "min value of estimated pitch [rad]",
+          "default": "-0.1"
+        }
+      },
+      "required": [
+        "delay_compensation_time",
+        "enable_smooth_stop",
+        "enable_overshoot_emergency",
+        "enable_large_tracking_error_emergency",
+        "enable_slope_compensation",
+        "enable_keep_stopped_until_steer_convergence",
+        "drive_state_stop_dist",
+        "drive_state_offset_stop_dist",
+        "stopping_state_stop_dist",
+        "stopped_state_entry_duration_time",
+        "stopped_state_entry_vel",
+        "stopped_state_entry_acc",
+        "emergency_state_overshoot_stop_dist",
+        "emergency_state_traj_trans_dev",
+        "emergency_state_traj_rot_dev",
+        "kp",
+        "ki",
+        "kd",
+        "max_out",
+        "min_out",
+        "max_p_effort",
+        "min_p_effort",
+        "max_i_effort",
+        "min_i_effort",
+        "max_d_effort",
+        "min_d_effort",
+        "lpf_vel_error_gain",
+        "enable_integration_at_low_speed",
+        "current_vel_threshold_pid_integration",
+        "time_threshold_before_pid_integration",
+        "enable_brake_keeping_before_stop",
+        "brake_keeping_acc",
+        "smooth_stop_max_strong_acc",
+        "smooth_stop_min_strong_acc",
+        "smooth_stop_weak_acc",
+        "smooth_stop_weak_stop_acc",
+        "smooth_stop_strong_stop_acc",
+        "smooth_stop_max_fast_vel",
+        "smooth_stop_min_running_vel",
+        "smooth_stop_min_running_acc",
+        "smooth_stop_weak_stop_time",
+        "smooth_stop_weak_stop_dist",
+        "smooth_stop_strong_stop_dist",
+        "stopped_vel",
+        "stopped_acc",
+        "stopped_jerk",
+        "emergency_vel",
+        "emergency_acc",
+        "emergency_jerk",
+        "max_acc",
+        "min_acc",
+        "max_jerk",
+        "min_jerk",
+        "max_acc_cmd_diff",
+        "lpf_pitch_gain",
+        "slope_source",
+        "adaptive_trajectory_velocity_th",
+        "max_pitch_rad",
+        "min_pitch_rad"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/autoware_pid_longitudinal_controller"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
