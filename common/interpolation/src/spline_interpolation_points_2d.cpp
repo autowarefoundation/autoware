@@ -71,28 +71,6 @@ std::array<std::vector<double>, 4> getBaseValues(
 namespace interpolation
 {
 
-std::array<std::vector<double>, 3> slerp2dFromXY(
-  const std::vector<double> & base_keys, const std::vector<double> & base_x_values,
-  const std::vector<double> & base_y_values, const std::vector<double> & query_keys)
-{
-  // calculate spline coefficients
-  SplineInterpolation interpolator_x(base_keys, base_x_values);
-  SplineInterpolation interpolator_y(base_keys, base_y_values);
-  const auto diff_x = interpolator_x.getSplineInterpolatedDiffValues(query_keys);
-  const auto diff_y = interpolator_y.getSplineInterpolatedDiffValues(query_keys);
-
-  // calculate yaw
-  std::vector<double> yaw_vec;
-  for (size_t i = 0; i < diff_x.size(); i++) {
-    double yaw = std::atan2(diff_y[i], diff_x[i]);
-    yaw_vec.push_back(yaw);
-  }
-  // interpolate base_keys at query_keys
-  return {
-    interpolator_x.getSplineInterpolatedValues(query_keys),
-    interpolator_y.getSplineInterpolatedValues(query_keys), yaw_vec};
-}
-
 template <typename T>
 std::vector<double> splineYawFromPoints(const std::vector<T> & points)
 {

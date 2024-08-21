@@ -21,9 +21,6 @@
 
 namespace interpolation
 {
-std::array<std::vector<double>, 3> slerp2dFromXY(
-  const std::vector<double> & base_keys, const std::vector<double> & base_x_values,
-  const std::vector<double> & base_y_values, const std::vector<double> & query_keys);
 
 template <typename T>
 std::vector<double> splineYawFromPoints(const std::vector<T> & points);
