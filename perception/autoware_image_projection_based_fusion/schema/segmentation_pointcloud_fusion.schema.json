@@ -114,9 +114,18 @@
           "description": "A maximum distance of pointcloud to apply filter [m].",
           "default": 60.0,
           "minimum": 0.0
+        },
+        "is_publish_debug_mask": {
+          "type": "boolean",
+          "description": "If true, debug mask image will be published.",
+          "default": false
         }
       },
-      "required": ["filter_semantic_label_target", "filter_distance_threshold"]
+      "required": [
+        "filter_semantic_label_target",
+        "filter_distance_threshold",
+        "is_publish_debug_mask"
+      ]
     }
   },
   "properties": {

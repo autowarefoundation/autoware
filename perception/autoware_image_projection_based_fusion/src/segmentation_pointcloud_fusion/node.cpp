@@ -17,6 +17,8 @@
 #include "autoware/image_projection_based_fusion/utils/geometry.hpp"
 #include "autoware/image_projection_based_fusion/utils/utils.hpp"
 
+#include <perception_utils/run_length_encoder.hpp>
+
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
@@ -38,6 +40,8 @@ SegmentPointCloudFusionNode::SegmentPointCloudFusionNode(const rclcpp::NodeOptio
     RCLCPP_INFO(
       this->get_logger(), "filter_semantic_label_target: %s %d", item.first.c_str(), item.second);
   }
+  is_publish_debug_mask_ = declare_parameter<bool>("is_publish_debug_mask");
+  pub_debug_mask_ptr_ = image_transport::create_publisher(this, "~/debug/mask");
 }
 
 void SegmentPointCloudFusionNode::preprocess(__attribute__((unused)) PointCloud2 & pointcloud_msg)
@@ -58,19 +62,18 @@ void SegmentPointCloudFusionNode::fuseOnSingleImage(
     return;
   }
   if (!checkCameraInfo(camera_info)) return;
-
-  cv_bridge::CvImagePtr in_image_ptr;
-  try {
-    in_image_ptr = cv_bridge::toCvCopy(
-      std::make_shared<sensor_msgs::msg::Image>(input_mask), input_mask.encoding);
-  } catch (const std::exception & e) {
-    RCLCPP_ERROR(this->get_logger(), "cv_bridge exception:%s", e.what());
+  if (input_mask.height == 0 || input_mask.width == 0) {
     return;
   }
+  std::vector<uint8_t> mask_data(input_mask.data.begin(), input_mask.data.end());
+  cv::Mat mask = perception_utils::runLengthDecoder(mask_data, input_mask.height, input_mask.width);
 
-  cv::Mat mask = in_image_ptr->image;
-  if (mask.cols == 0 || mask.rows == 0) {
-    return;
+  // publish debug mask
+  if (is_publish_debug_mask_) {
+    sensor_msgs::msg::Image::SharedPtr debug_mask_msg =
+      cv_bridge::CvImage(std_msgs::msg::Header(), "mono8", mask).toImageMsg();
+    debug_mask_msg->header = input_mask.header;
+    pub_debug_mask_ptr_.publish(debug_mask_msg);
   }
   const int orig_width = camera_info.width;
   const int orig_height = camera_info.height;

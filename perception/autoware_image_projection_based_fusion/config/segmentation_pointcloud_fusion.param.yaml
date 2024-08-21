@@ -22,3 +22,6 @@
 
     # the maximum distance of pointcloud to be applied filter
     filter_distance_threshold: 60.0
+
+    # Avoid using debug mask in case of multiple camera semantic segmentation fusion
+    is_publish_debug_mask: false
