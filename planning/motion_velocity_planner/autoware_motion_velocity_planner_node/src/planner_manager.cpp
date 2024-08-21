@@ -71,13 +71,60 @@ void MotionVelocityPlannerManager::update_module_parameters(
   for (auto & plugin : loaded_plugins_) plugin->update_parameters(parameters);
 }
 
+std::shared_ptr<DiagnosticStatus> MotionVelocityPlannerManager::make_diagnostic(
+  const std::string & module_name, const std::string & reason, const bool is_decided)
+{
+  auto status = std::make_shared<DiagnosticStatus>();
+  status->level = status->OK;
+  status->name = module_name + '.' + reason;
+  diagnostic_msgs::msg::KeyValue key_value;
+  {
+    // Decision
+    key_value.key = "decision";
+    if (is_decided)
+      key_value.value = reason;
+    else
+      key_value.value = "none";
+    status->values.push_back(key_value);
+  }
+  // Add other information to the status if necessary in the future.
+  return status;
+}
+
+std::shared_ptr<DiagnosticArray> MotionVelocityPlannerManager::get_diagnostics(
+  const rclcpp::Time & current_time) const
+{
+  auto diagnostics = std::make_shared<DiagnosticArray>();
+
+  for (const auto & ds_ptr : diagnostics_) {
+    if (
+      !ds_ptr->values.empty() && ds_ptr->values[0].key == "decision" &&
+      ds_ptr->values[0].value != "none") {
+      diagnostics->status.push_back(*ds_ptr);
+    }
+  }
+  diagnostics->header.stamp = current_time;
+  diagnostics->header.frame_id = "map";
+  return diagnostics;
+}
+
 std::vector<VelocityPlanningResult> MotionVelocityPlannerManager::plan_velocities(
   const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
   const std::shared_ptr<const PlannerData> planner_data)
 {
   std::vector<VelocityPlanningResult> results;
-  for (auto & plugin : loaded_plugins_)
-    results.push_back(plugin->plan(ego_trajectory_points, planner_data));
+  for (auto & plugin : loaded_plugins_) {
+    VelocityPlanningResult res = plugin->plan(ego_trajectory_points, planner_data);
+    results.push_back(res);
+
+    const auto stop_reason_diag =
+      make_diagnostic(plugin->get_module_name(), "stop", res.stop_points.size() > 0);
+    diagnostics_.push_back(stop_reason_diag);
+
+    const auto slow_down_reason_diag =
+      make_diagnostic(plugin->get_module_name(), "slow_down", res.slowdown_intervals.size() > 0);
+    diagnostics_.push_back(slow_down_reason_diag);
+  }
   return results;
 }
 }  // namespace autoware::motion_velocity_planner
