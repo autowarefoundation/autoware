@@ -675,8 +675,6 @@ inline Vector2d operator*(const double & s, const Vector2d & v)
   return {s * v.x(), s * v.y()};
 }
 
-Point2d from_geom(const geometry_msgs::msg::Point & point);
-
 Point2d from_boost(const autoware::universe_utils::Point2d & point);
 
 ConvexPolygon2d from_boost(const autoware::universe_utils::Polygon2d & polygon);

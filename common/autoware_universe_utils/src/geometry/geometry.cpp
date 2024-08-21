@@ -394,10 +394,6 @@ bool intersects_convex(const Polygon2d & convex_polygon1, const Polygon2d & conv
 
 namespace alt
 {
-Point2d from_geom(const geometry_msgs::msg::Point & point)
-{
-  return {point.x, point.y};
-}
 
 Point2d from_boost(const autoware::universe_utils::Point2d & point)
 {
