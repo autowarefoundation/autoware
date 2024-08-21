@@ -26,9 +26,6 @@ namespace yabloc::common
 {
 cv::Mat decompress_to_cv_mat(const sensor_msgs::msg::Image & img);
 
-sensor_msgs::msg::Image::ConstSharedPtr decompress_to_ros_msg(
-  const sensor_msgs::msg::CompressedImage & compressed_img, const std::string & encoding = "bgr8");
-
 cv::Mat decompress_to_cv_mat(const sensor_msgs::msg::CompressedImage & compressed_img);
 
 }  // namespace yabloc::common

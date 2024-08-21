@@ -18,6 +18,7 @@
 
 namespace yabloc::ground_server
 {
+// cppcheck-suppress unusedFunction
 pcl::PointCloud<pcl::PointXYZ> sample_from_polygons(const lanelet::PolygonLayer & polygons)
 {
   // NOTE: Under construction
