@@ -1732,8 +1732,8 @@ void compensateLostTargetObjects(
   const std::shared_ptr<AvoidanceParameters> & parameters)
 {
   const auto include = [](const auto & objects, const auto & search_id) {
-    return std::all_of(objects.begin(), objects.end(), [&search_id](const auto & o) {
-      return o.object.object_id != search_id;
+    return std::any_of(objects.begin(), objects.end(), [&search_id](const auto & o) {
+      return o.object.object_id == search_id;
     });
   };
 
