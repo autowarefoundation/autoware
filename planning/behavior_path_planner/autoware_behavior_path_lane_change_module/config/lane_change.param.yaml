@@ -120,6 +120,7 @@
         max_lateral_jerk: 1000.0            # [m/s3]
         overhang_tolerance: 0.0             # [m]
         unsafe_hysteresis_threshold: 10     # [/]
+        deceleration_sampling_num: 5 # [/]
 
       lane_change_finish_judge_buffer: 2.0      # [m]
       finish_judge_lateral_threshold: 0.1        # [m]

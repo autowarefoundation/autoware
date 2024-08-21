@@ -573,6 +573,8 @@ detach
 @enduml
 ```
 
+During a lane change, a safety check is made in consideration of the deceleration of the ego vehicle, and a safety check is made for `cancel.deceleration_sampling_num` deceleration patterns, and the lane change will be canceled if the abort condition is satisfied for all deceleration patterns.
+
 To preventive measure for lane change path oscillations caused by alternating safe and unsafe conditions, an additional hysteresis count check is implemented before executing an abort or cancel maneuver. If unsafe, the `unsafe_hysteresis_count_` is incremented and compared against `unsafe_hysteresis_threshold`; exceeding it prompts an abort condition check, ensuring decisions are made with consideration to recent safety assessments as shown in flow chart above. This mechanism stabilizes decision-making, preventing abrupt changes due to transient unsafe conditions.
 
 ```plantuml
@@ -823,7 +825,8 @@ The following parameters are configurable in `lane_change.param.yaml`.
 | `cancel.duration`                      | [s]     | double  | The time taken to complete returning to the center line.                                                         | 3.0           |
 | `cancel.max_lateral_jerk`              | [m/sss] | double  | The maximum lateral jerk for abort path                                                                          | 1000.0        |
 | `cancel.overhang_tolerance`            | [m]     | double  | Lane change cancel is prohibited if the vehicle head exceeds the lane boundary more than this tolerance distance | 0.0           |
-| `unsafe_hysteresis_threshold`          | [-]     | int     | threshold that helps prevent frequent switching between safe and unsafe decisions                                | 10            |
+| `cancel.unsafe_hysteresis_threshold`   | [-]     | int     | threshold that helps prevent frequent switching between safe and unsafe decisions                                | 10            |
+| `cancel.deceleration_sampling_num`     | [-]     | int     | Number of deceleration patterns to check safety to cancel lane change                                            | 5             |
 
 ### Debug
 

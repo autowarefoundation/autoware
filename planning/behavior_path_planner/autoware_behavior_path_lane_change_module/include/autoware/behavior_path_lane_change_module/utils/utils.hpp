@@ -160,7 +160,7 @@ std::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
 
 std::vector<PoseWithVelocityStamped> convertToPredictedPath(
   const LaneChangePath & lane_change_path, const Twist & vehicle_twist, const Pose & pose,
-  const BehaviorPathPlannerParameters & common_parameters,
+  const double lane_changing_acceleration, const BehaviorPathPlannerParameters & common_parameters,
   const LaneChangeParameters & lane_change_parameters, const double resolution);
 
 bool isParkedObject(

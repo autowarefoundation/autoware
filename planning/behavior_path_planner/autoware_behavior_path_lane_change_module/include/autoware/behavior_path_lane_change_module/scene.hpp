@@ -37,6 +37,7 @@ using geometry_msgs::msg::Twist;
 using lane_change::LanesPolygon;
 using tier4_planning_msgs::msg::PathWithLaneId;
 using utils::path_safety_checker::ExtendedPredictedObjects;
+using utils::path_safety_checker::RSSparams;
 
 class NormalLaneChange : public LaneChangeBase
 {
@@ -171,7 +172,17 @@ protected:
     const LaneChangePath & lane_change_path,
     const lane_change::TargetObjects & collision_check_objects,
     const utils::path_safety_checker::RSSparams & rss_params,
+    const size_t deceleration_sampling_num, CollisionCheckDebugMap & debug_data) const;
+
+  bool has_collision_with_decel_patterns(
+    const LaneChangePath & lane_change_path, const ExtendedPredictedObjects & objects,
+    const size_t deceleration_sampling_num, const RSSparams & rss_param,
     CollisionCheckDebugMap & debug_data) const;
+
+  bool is_collided(
+    const PathWithLaneId & lane_change_path, const ExtendedPredictedObject & obj,
+    const std::vector<PoseWithVelocityStamped> & ego_predicted_path,
+    const RSSparams & selected_rss_param, CollisionCheckDebugMap & debug_data) const;
 
   //! @brief Check if the ego vehicle is in stuck by a stationary obstacle.
   //! @param obstacle_check_distance Distance to check ahead for any objects that might be
@@ -220,6 +231,7 @@ protected:
   }
 
   double stop_time_{0.0};
+  static constexpr double floating_err_th{1e-3};
 };
 }  // namespace autoware::behavior_path_planner
 #endif  // AUTOWARE__BEHAVIOR_PATH_LANE_CHANGE_MODULE__SCENE_HPP_

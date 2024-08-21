@@ -94,6 +94,8 @@ struct CancelParameters
   // number of unsafe exceeds unsafe_hysteresis_threshold, the lane change will be cancelled or
   // aborted.
   int unsafe_hysteresis_threshold{2};
+
+  int deceleration_sampling_num{5};
 };
 
 struct Parameters

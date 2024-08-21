@@ -238,6 +238,8 @@ void LaneChangeModuleManager::initParams(rclcpp::Node * node)
     getOrDeclareParameter<double>(*node, parameter("cancel.overhang_tolerance"));
   p.cancel.unsafe_hysteresis_threshold =
     getOrDeclareParameter<int>(*node, parameter("cancel.unsafe_hysteresis_threshold"));
+  p.cancel.deceleration_sampling_num =
+    getOrDeclareParameter<int>(*node, parameter("cancel.deceleration_sampling_num"));
 
   // finish judge parameters
   p.lane_change_finish_judge_buffer =
