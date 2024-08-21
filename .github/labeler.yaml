@@ -39,3 +39,8 @@
   - tools/**/*
 "component:vehicle":
   - vehicle/**/*
+"tag:require-cuda-build-and-test":
+  - perception/**/*
+  - sensing/**/*
+  - common/cuda_utils/**/*
+  - common/tensorrt_common/**/*
