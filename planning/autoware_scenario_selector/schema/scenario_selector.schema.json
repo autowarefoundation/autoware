@@ -35,6 +35,11 @@
           "description": "threshold velocity to check if vehicle is stopped",
           "default": "0.01",
           "minimum": 0.0
+        },
+        "enable_mode_switching": {
+          "type": "boolean",
+          "description": "enable switching between scenario modes when ego is stuck in parking area",
+          "default": true
         }
       },
       "required": [
@@ -42,7 +47,8 @@
         "th_max_message_delay_sec",
         "th_arrived_distance_m",
         "th_stopped_time_sec",
-        "th_stopped_velocity_mps"
+        "th_stopped_velocity_mps",
+        "enable_mode_switching"
       ]
     }
   },

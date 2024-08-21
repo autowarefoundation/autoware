@@ -52,19 +52,17 @@ bool isInLane(
   const std::shared_ptr<lanelet::LaneletMap> & lanelet_map_ptr,
   const geometry_msgs::msg::Point & current_pos)
 {
-  const auto & p = current_pos;
-  const lanelet::Point3d search_point(lanelet::InvalId, p.x, p.y, p.z);
+  const lanelet::BasicPoint2d search_point(current_pos.x, current_pos.y);
 
   std::vector<std::pair<double, lanelet::Lanelet>> nearest_lanelets =
-    lanelet::geometry::findNearest(lanelet_map_ptr->laneletLayer, search_point.basicPoint2d(), 1);
+    lanelet::geometry::findNearest(lanelet_map_ptr->laneletLayer, search_point, 1);
 
-  if (nearest_lanelets.empty()) {
-    return false;
-  }
+  if (nearest_lanelets.empty()) return false;
 
-  const auto nearest_lanelet = nearest_lanelets.front().second;
+  const auto dist_to_nearest_lanelet = nearest_lanelets.front().first;
+  static constexpr double margin = 0.01;
 
-  return lanelet::geometry::within(search_point, nearest_lanelet.polygon3d());
+  return dist_to_nearest_lanelet < margin;
 }
 
 bool isInParkingLot(
@@ -176,10 +174,78 @@ void ScenarioSelectorNode::updateCurrentScenario()
     current_scenario_ = selectScenarioByPosition();
   }
 
+  if (enable_mode_switching_) {
+    if (isCurrentLaneDriving()) {
+      current_scenario_ = isSwitchToParking(is_stopped)
+                            ? tier4_planning_msgs::msg::Scenario::PARKING
+                            : current_scenario_;
+    } else if (isCurrentParking()) {
+      current_scenario_ = isSwitchToLaneDriving() ? tier4_planning_msgs::msg::Scenario::LANEDRIVING
+                                                  : current_scenario_;
+    }
+  }
+
   if (current_scenario_ != prev_scenario) {
+    lane_driving_stop_time_ = {};
+    empty_parking_trajectory_time_ = {};
     RCLCPP_DEBUG_STREAM(
       this->get_logger(), "scenario changed: " << prev_scenario << " -> " << current_scenario_);
   }
+}
+
+bool ScenarioSelectorNode::isSwitchToParking(const bool is_stopped)
+{
+  const auto is_in_parking_lot =
+    isInParkingLot(route_handler_->getLaneletMapPtr(), current_pose_->pose.pose);
+  const auto is_goal_in_lane =
+    isInLane(route_handler_->getLaneletMapPtr(), route_->goal_pose.position);
+
+  if (!is_stopped || !isAutonomous() || !is_in_parking_lot || is_goal_in_lane) {
+    lane_driving_stop_time_ = {};
+    return false;
+  }
+
+  if (!lane_driving_stop_time_) {
+    lane_driving_stop_time_ = this->now();
+    return false;
+  }
+
+  return (this->now() - lane_driving_stop_time_.get()).seconds() > lane_stopping_timeout_s;
+}
+
+bool ScenarioSelectorNode::isSwitchToLaneDriving()
+{
+  const auto is_in_lane =
+    isInLane(route_handler_->getLaneletMapPtr(), current_pose_->pose.pose.position);
+
+  if (!isEmptyParkingTrajectory() || !is_in_lane) {
+    empty_parking_trajectory_time_ = {};
+    return false;
+  }
+
+  if (!empty_parking_trajectory_time_) {
+    empty_parking_trajectory_time_ = this->now();
+    return false;
+  }
+
+  const auto duration = (this->now() - empty_parking_trajectory_time_.get()).seconds();
+
+  return duration > empty_parking_trajectory_timeout_s;
+}
+
+bool ScenarioSelectorNode::isAutonomous() const
+{
+  return operation_mode_state_->mode ==
+           autoware_adapi_v1_msgs::msg::OperationModeState::AUTONOMOUS &&
+         operation_mode_state_->is_autoware_control_enabled;
+}
+
+bool ScenarioSelectorNode::isEmptyParkingTrajectory() const
+{
+  if (parking_trajectory_) {
+    return parking_trajectory_->points.size() <= 1;
+  }
+  return false;
 }
 
 void ScenarioSelectorNode::onMap(const autoware_map_msgs::msg::LaneletMapBin::ConstSharedPtr msg)
@@ -245,6 +311,12 @@ bool ScenarioSelectorNode::isDataReady()
     return false;
   }
 
+  if (!operation_mode_state_) {
+    RCLCPP_INFO_THROTTLE(
+      this->get_logger(), *this->get_clock(), 5000, "Waiting for operation mode state.");
+    return false;
+  }
+
   // Check route handler is ready
   route_handler_->setRoute(*route_);
   if (!route_handler_->isHandlerReady()) {
@@ -268,6 +340,11 @@ void ScenarioSelectorNode::updateData()
     for (const auto & msg : msgs) {
       onOdom(msg);
     }
+  }
+
+  {
+    auto msg = sub_operation_mode_state_->takeData();
+    if (msg) operation_mode_state_ = msg;
   }
 }
 
@@ -343,8 +420,12 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
   th_arrived_distance_m_(this->declare_parameter<double>("th_arrived_distance_m")),
   th_stopped_time_sec_(this->declare_parameter<double>("th_stopped_time_sec")),
   th_stopped_velocity_mps_(this->declare_parameter<double>("th_stopped_velocity_mps")),
+  enable_mode_switching_(this->declare_parameter<bool>("enable_mode_switching")),
   is_parking_completed_(false)
 {
+  lane_driving_stop_time_ = {};
+  empty_parking_trajectory_time_ = {};
+
   // Input
   sub_lane_driving_trajectory_ = this->create_subscription<autoware_planning_msgs::msg::Trajectory>(
     "input/lane_driving/trajectory", rclcpp::QoS{1},
@@ -367,6 +448,10 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
 
   sub_parking_state_ = decltype(sub_parking_state_)::element_type::create_subscription(
     this, "is_parking_completed", rclcpp::QoS{1});
+
+  sub_operation_mode_state_ =
+    decltype(sub_operation_mode_state_)::element_type::create_subscription(
+      this, "input/operation_mode_state", rclcpp::QoS{1});
 
   // Output
   pub_scenario_ =

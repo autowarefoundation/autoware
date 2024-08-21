@@ -42,6 +42,11 @@
           "default": 1.0,
           "description": "Threshold distance for considering the vehicle has deviated from its course."
         },
+        "th_obstacle_time_sec": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Time threshold for checking obstacles along the trajectory."
+        },
         "vehicle_shape_margin_m": {
           "type": "number",
           "default": 1.0,
@@ -195,6 +200,7 @@
         "th_stopped_time_sec",
         "th_stopped_velocity_mps",
         "th_course_out_distance_m",
+        "th_obstacle_time_sec",
         "vehicle_shape_margin_m",
         "replan_when_obstacle_found",
         "replan_when_course_out",

@@ -34,6 +34,7 @@
 
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/geometry/pose_deviation.hpp>
 
 #include <algorithm>
 #include <deque>
@@ -234,6 +235,7 @@ FreespacePlannerNode::FreespacePlannerNode(const rclcpp::NodeOptions & node_opti
     p.th_stopped_time_sec = declare_parameter<double>("th_stopped_time_sec");
     p.th_stopped_velocity_mps = declare_parameter<double>("th_stopped_velocity_mps");
     p.th_course_out_distance_m = declare_parameter<double>("th_course_out_distance_m");
+    p.th_obstacle_time_sec = declare_parameter<double>("th_obstacle_time_sec");
     p.vehicle_shape_margin_m = declare_parameter<double>("vehicle_shape_margin_m");
     p.replan_when_obstacle_found = declare_parameter<bool>("replan_when_obstacle_found");
     p.replan_when_course_out = declare_parameter<bool>("replan_when_course_out");
@@ -254,17 +256,9 @@ FreespacePlannerNode::FreespacePlannerNode(const rclcpp::NodeOptions & node_opti
   initializePlanningAlgorithm();
 
   // Subscribers
-  {
-    route_sub_ = create_subscription<LaneletRoute>(
-      "~/input/route", rclcpp::QoS{1}.transient_local(),
-      std::bind(&FreespacePlannerNode::onRoute, this, _1));
-    occupancy_grid_sub_ = create_subscription<OccupancyGrid>(
-      "~/input/occupancy_grid", 1, std::bind(&FreespacePlannerNode::onOccupancyGrid, this, _1));
-    scenario_sub_ = create_subscription<Scenario>(
-      "~/input/scenario", 1, std::bind(&FreespacePlannerNode::onScenario, this, _1));
-    odom_sub_ = create_subscription<Odometry>(
-      "~/input/odometry", 100, std::bind(&FreespacePlannerNode::onOdometry, this, _1));
-  }
+  route_sub_ = create_subscription<LaneletRoute>(
+    "~/input/route", rclcpp::QoS{1}.transient_local(),
+    std::bind(&FreespacePlannerNode::onRoute, this, _1));
 
   // Publishers
   {
@@ -315,69 +309,15 @@ PlannerCommonParam FreespacePlannerNode::getPlannerCommonParam()
   return p;
 }
 
-void FreespacePlannerNode::onRoute(const LaneletRoute::ConstSharedPtr msg)
-{
-  route_ = msg;
-
-  goal_pose_.header = msg->header;
-  goal_pose_.pose = msg->goal_pose;
-
-  is_new_parking_cycle_ = true;
-
-  reset();
-}
-
-void FreespacePlannerNode::onOccupancyGrid(const OccupancyGrid::ConstSharedPtr msg)
-{
-  occupancy_grid_ = msg;
-}
-
-void FreespacePlannerNode::onScenario(const Scenario::ConstSharedPtr msg)
-{
-  scenario_ = msg;
-}
-
-void FreespacePlannerNode::onOdometry(const Odometry::ConstSharedPtr msg)
-{
-  odom_ = msg;
-
-  odom_buffer_.push_back(msg);
-
-  // Delete old data in buffer
-  while (true) {
-    const auto time_diff =
-      rclcpp::Time(msg->header.stamp) - rclcpp::Time(odom_buffer_.front()->header.stamp);
-
-    if (time_diff.seconds() < node_param_.th_stopped_time_sec) {
-      break;
-    }
-
-    odom_buffer_.pop_front();
-  }
-}
-
 bool FreespacePlannerNode::isPlanRequired()
 {
   if (trajectory_.points.empty()) {
     return true;
   }
 
-  if (node_param_.replan_when_obstacle_found) {
-    algo_->setMap(*occupancy_grid_);
-
-    const size_t nearest_index_partial = autoware::motion_utils::findNearestIndex(
-      partial_trajectory_.points, current_pose_.pose.position);
-    const size_t end_index_partial = partial_trajectory_.points.size() - 1;
-
-    const auto forward_trajectory =
-      getPartialTrajectory(partial_trajectory_, nearest_index_partial, end_index_partial);
-
-    const bool is_obstacle_found =
-      algo_->hasObstacleOnTrajectory(trajectory2PoseArray(forward_trajectory));
-    if (is_obstacle_found) {
-      RCLCPP_DEBUG(get_logger(), "Found obstacle");
-      return true;
-    }
+  if (node_param_.replan_when_obstacle_found && checkCurrentTrajectoryCollision()) {
+    RCLCPP_DEBUG(get_logger(), "Found obstacle");
+    return true;
   }
 
   if (node_param_.replan_when_course_out) {
@@ -392,11 +332,34 @@ bool FreespacePlannerNode::isPlanRequired()
   return false;
 }
 
+bool FreespacePlannerNode::checkCurrentTrajectoryCollision()
+{
+  algo_->setMap(*occupancy_grid_);
+
+  const size_t nearest_index_partial = autoware::motion_utils::findNearestIndex(
+    partial_trajectory_.points, current_pose_.pose.position);
+  const size_t end_index_partial = partial_trajectory_.points.size() - 1;
+  const auto forward_trajectory =
+    getPartialTrajectory(partial_trajectory_, nearest_index_partial, end_index_partial);
+
+  const bool is_obs_found =
+    algo_->hasObstacleOnTrajectory(trajectory2PoseArray(forward_trajectory));
+
+  if (!is_obs_found) {
+    obs_found_time_ = {};
+    return false;
+  }
+
+  if (!obs_found_time_) obs_found_time_ = get_clock()->now();
+
+  return (get_clock()->now() - obs_found_time_.get()).seconds() > node_param_.th_obstacle_time_sec;
+}
+
 void FreespacePlannerNode::updateTargetIndex()
 {
-  const auto is_near_target =
-    autoware::universe_utils::calcDistance2d(trajectory_.points.at(target_index_), current_pose_) <
-    node_param_.th_arrived_distance_m;
+  const double long_disp_to_target = autoware::universe_utils::calcLongitudinalDeviation(
+    trajectory_.points.at(target_index_).pose, current_pose_.pose.position);
+  const auto is_near_target = std::abs(long_disp_to_target) < node_param_.th_arrived_distance_m;
 
   const auto is_stopped = isStopped(odom_buffer_, node_param_.th_stopped_velocity_mps);
 
@@ -420,10 +383,82 @@ void FreespacePlannerNode::updateTargetIndex()
   }
 }
 
+void FreespacePlannerNode::onRoute(const LaneletRoute::ConstSharedPtr msg)
+{
+  route_ = msg;
+
+  goal_pose_.header = msg->header;
+  goal_pose_.pose = msg->goal_pose;
+
+  is_new_parking_cycle_ = true;
+
+  reset();
+}
+
+void FreespacePlannerNode::onOdometry(const Odometry::ConstSharedPtr msg)
+{
+  odom_ = msg;
+
+  odom_buffer_.push_back(msg);
+
+  // Delete old data in buffer
+  while (true) {
+    const auto time_diff =
+      rclcpp::Time(msg->header.stamp) - rclcpp::Time(odom_buffer_.front()->header.stamp);
+
+    if (time_diff.seconds() < node_param_.th_stopped_time_sec) {
+      break;
+    }
+
+    odom_buffer_.pop_front();
+  }
+}
+
+void FreespacePlannerNode::updateData()
+{
+  occupancy_grid_ = occupancy_grid_sub_.takeData();
+  scenario_ = scenario_sub_.takeData();
+
+  {
+    auto msgs = odom_sub_.takeData();
+    for (const auto & msg : msgs) {
+      onOdometry(msg);
+    }
+  }
+}
+
+bool FreespacePlannerNode::isDataReady()
+{
+  bool is_ready = true;
+
+  if (!route_) {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "Waiting for route data.");
+    is_ready = false;
+  }
+
+  if (!occupancy_grid_) {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "Waiting for occupancy grid.");
+    is_ready = false;
+  }
+
+  if (!scenario_) {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "Waiting for scenario.");
+    is_ready = false;
+  }
+
+  if (!odom_) {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "Waiting for odometry.");
+    is_ready = false;
+  }
+
+  return is_ready;
+}
+
 void FreespacePlannerNode::onTimer()
 {
-  // Check all inputs are ready
-  if (!occupancy_grid_ || !route_ || !scenario_ || !odom_) {
+  updateData();
+
+  if (!isDataReady()) {
     return;
   }
 
@@ -550,6 +585,7 @@ void FreespacePlannerNode::reset()
   std_msgs::msg::Bool is_completed_msg;
   is_completed_msg.data = is_completed_;
   parking_state_pub_->publish(is_completed_msg);
+  obs_found_time_ = {};
 }
 
 TransformStamped FreespacePlannerNode::getTransform(

@@ -4,6 +4,7 @@
   <arg name="input_lanelet_map"/>
   <arg name="input_route"/>
   <arg name="input_odometry"/>
+  <arg name="input_operation_mode_state"/>
   <arg name="is_parking_completed"/>
 
   <arg name="output_scenario"/>
@@ -17,6 +18,7 @@
     <remap from="input/lanelet_map" to="$(var input_lanelet_map)"/>
     <remap from="input/route" to="$(var input_route)"/>
     <remap from="input/odometry" to="$(var input_odometry)"/>
+    <remap from="input/operation_mode_state" to="$(var input_operation_mode_state)"/>
     <remap from="is_parking_completed" to="$(var is_parking_completed)"/>
 
     <remap from="output/scenario" to="$(var output_scenario)"/>

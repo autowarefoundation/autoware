@@ -46,6 +46,7 @@ std::shared_ptr<ScenarioSelectorNode> generateNode()
   node_options.append_parameter_override("th_arrived_distance_m", 1.0);
   node_options.append_parameter_override("th_stopped_time_sec", 1.0);
   node_options.append_parameter_override("th_stopped_velocity_mps", 0.01);
+  node_options.append_parameter_override("enable_mode_switching", true);
   auto test_target_node = std::make_shared<ScenarioSelectorNode>(node_options);
 
   return std::make_shared<ScenarioSelectorNode>(node_options);
@@ -61,6 +62,7 @@ void publishMandatoryTopics(
   test_manager->publishTrajectory(test_target_node, "input/parking/trajectory");
   test_manager->publishMap(test_target_node, "input/lanelet_map");
   test_manager->publishRoute(test_target_node, "input/route");
+  test_manager->publishOperationModeState(test_target_node, "input/operation_mode_state");
 }
 
 TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectoryLaneDrivingMode)
