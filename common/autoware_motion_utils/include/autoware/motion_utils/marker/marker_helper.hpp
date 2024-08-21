@@ -45,9 +45,6 @@ visualization_msgs::msg::MarkerArray createDeletedStopVirtualWallMarker(
 
 visualization_msgs::msg::MarkerArray createDeletedSlowDownVirtualWallMarker(
   const rclcpp::Time & now, const int32_t id);
-
-visualization_msgs::msg::MarkerArray createDeletedDeadLineVirtualWallMarker(
-  const rclcpp::Time & now, const int32_t id);
 }  // namespace autoware::motion_utils
 
 #endif  // AUTOWARE__MOTION_UTILS__MARKER__MARKER_HELPER_HPP_
