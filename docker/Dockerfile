@@ -1,7 +1,7 @@
-# hadolint global ignore=DL3006,DL3008,DL3013
 ARG BASE_IMAGE
 
-FROM $BASE_IMAGE as base
+# hadolint ignore=DL3006
+FROM $BASE_IMAGE AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
@@ -32,7 +32,8 @@ RUN --mount=type=ssh \
 # Create entrypoint
 CMD ["/bin/bash"]
 
-FROM $BASE_IMAGE as rosdep-depend
+# hadolint ignore=DL3006
+FROM $BASE_IMAGE AS rosdep-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
@@ -78,13 +79,12 @@ RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
     > /rosdep-exec-depend-packages.txt \
     && cat /rosdep-exec-depend-packages.txt
 
-FROM base as autoware-core
+FROM base AS autoware-core
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG SETUP_ARGS
 ENV CCACHE_DIR="/root/.ccache"
 
-# cspell: ignore libcu libnv
 # Set up development environment
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -110,7 +110,7 @@ RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autow
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s
 
-FROM autoware-core as autoware-universe
+FROM autoware-core AS autoware-universe
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG SETUP_ARGS
@@ -137,7 +137,7 @@ RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src,target=/autoware/s
 
 CMD ["/bin/bash"]
 
-FROM autoware-universe as devel
+FROM autoware-universe AS devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install development tools and artifacts
@@ -154,7 +154,7 @@ RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base as runtime
+FROM base AS runtime
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR

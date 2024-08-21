@@ -46,10 +46,11 @@ repositories:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
     version: tier4/universe
+  # Fix the version not to merge https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs/pull/9
   universe/external/morai_msgs:
     type: git
     url: https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs.git
-    version: main
+    version: e2e75fc1603a9798773e467a679edf68b448e705
   universe/external/muSSP:
     type: git
     url: https://github.com/tier4/muSSP.git
