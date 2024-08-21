@@ -119,6 +119,8 @@ TrackedObject ObjectInfo::toTrackedObject(
   tracked_object.shape.dimensions.y = width;
   tracked_object.shape.dimensions.z = height;
   tracked_object.object_id = object.id;
+  tracked_object.kinematics.orientation_availability =
+    autoware_perception_msgs::msg::TrackedObjectKinematics::SIGN_UNKNOWN;
   return tracked_object;
 }
 
@@ -282,7 +284,7 @@ void DummyPerceptionPublisherNode::timerCallback()
       feature_object.object.kinematics.twist_with_covariance =
         object.initial_state.twist_covariance;
       feature_object.object.kinematics.orientation_availability =
-        autoware_perception_msgs::msg::DetectedObjectKinematics::UNAVAILABLE;
+        autoware_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN;
       feature_object.object.kinematics.has_twist = false;
       tf2::toMsg(
         tf_base_link2noised_moved_object,
