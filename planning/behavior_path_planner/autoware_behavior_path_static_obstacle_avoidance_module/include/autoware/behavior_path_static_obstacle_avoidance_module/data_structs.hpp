@@ -90,6 +90,8 @@ struct ObjectParameter
   double lateral_hard_margin_for_parked_vehicle{1.0};
 
   double longitudinal_margin{0.0};
+
+  double th_error_eclipse_long_radius{0.0};
 };
 
 struct AvoidanceParameters
@@ -421,6 +423,9 @@ struct ObjectData  // avoidance target
 
   // to stop line distance
   double to_stop_line{std::numeric_limits<double>::infinity()};
+
+  // long radius of the covariance error ellipse
+  double error_eclipse_max{std::numeric_limits<double>::infinity()};
 
   // if lateral margin is NOT enough, the ego must avoid the object.
   bool avoid_required{false};

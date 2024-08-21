@@ -175,6 +175,8 @@ double calcDistanceToAvoidStartLine(
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters);
 
+double calcErrorEclipseLongRadius(const PoseWithCovariance & pose);
+
 }  // namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance
 
 #endif  // AUTOWARE__BEHAVIOR_PATH_STATIC_OBSTACLE_AVOIDANCE_MODULE__UTILS_HPP_

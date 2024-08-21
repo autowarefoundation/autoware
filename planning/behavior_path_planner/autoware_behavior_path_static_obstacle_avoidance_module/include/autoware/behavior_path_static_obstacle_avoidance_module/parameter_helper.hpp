@@ -69,6 +69,8 @@ AvoidanceParameters getParameter(rclcpp::Node * node)
       param.lateral_hard_margin_for_parked_vehicle =
         getOrDeclareParameter<double>(*node, ns + "lateral_margin.hard_margin_for_parked_vehicle");
       param.longitudinal_margin = getOrDeclareParameter<double>(*node, ns + "longitudinal_margin");
+      param.th_error_eclipse_long_radius =
+        getOrDeclareParameter<double>(*node, ns + "th_error_eclipse_long_radius");
       return param;
     };
 

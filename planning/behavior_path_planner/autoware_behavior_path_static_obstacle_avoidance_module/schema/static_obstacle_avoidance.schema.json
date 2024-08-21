@@ -96,6 +96,11 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
+                },
+                "th_error_eclipse_long_radius": {
+                  "type": "number",
+                  "description": "This value will be applied to judge whether the eclipse error is to large",
+                  "default": 0.6
                 }
               },
               "required": [
@@ -104,7 +109,8 @@
                 "longitudinal_margin",
                 "lateral_margin",
                 "envelope_buffer_margin",
-                "max_expand_ratio"
+                "max_expand_ratio",
+                "th_error_eclipse_long_radius"
               ],
               "additionalProperties": false
             },
@@ -158,6 +164,11 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
+                },
+                "th_error_eclipse_long_radius": {
+                  "type": "number",
+                  "description": "This value will be applied to judge whether the eclipse error is to large",
+                  "default": 0.6
                 }
               },
               "required": [
@@ -166,7 +177,8 @@
                 "longitudinal_margin",
                 "lateral_margin",
                 "envelope_buffer_margin",
-                "max_expand_ratio"
+                "max_expand_ratio",
+                "th_error_eclipse_long_radius"
               ],
               "additionalProperties": false
             },
@@ -220,6 +232,11 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
+                },
+                "th_error_eclipse_long_radius": {
+                  "type": "number",
+                  "description": "This value will be applied to judge whether the eclipse error is to large",
+                  "default": 0.6
                 }
               },
               "required": [
@@ -228,7 +245,8 @@
                 "longitudinal_margin",
                 "lateral_margin",
                 "envelope_buffer_margin",
-                "max_expand_ratio"
+                "max_expand_ratio",
+                "th_error_eclipse_long_radius"
               ],
               "additionalProperties": false
             },
@@ -282,6 +300,11 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
+                },
+                "th_error_eclipse_long_radius": {
+                  "type": "number",
+                  "description": "This value will be applied to judge whether the eclipse error is to large",
+                  "default": 0.6
                 }
               },
               "required": [
@@ -290,7 +313,8 @@
                 "longitudinal_margin",
                 "lateral_margin",
                 "envelope_buffer_margin",
-                "max_expand_ratio"
+                "max_expand_ratio",
+                "th_error_eclipse_long_radius"
               ],
               "additionalProperties": false
             },
@@ -344,6 +368,11 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
+                },
+                "th_error_eclipse_long_radius": {
+                  "type": "number",
+                  "description": "This value will be applied to judge whether the eclipse error is to large",
+                  "default": 0.6
                 }
               },
               "required": [
@@ -352,7 +381,8 @@
                 "longitudinal_margin",
                 "lateral_margin",
                 "envelope_buffer_margin",
-                "max_expand_ratio"
+                "max_expand_ratio",
+                "th_error_eclipse_long_radius"
               ],
               "additionalProperties": false
             },
@@ -406,6 +436,11 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
+                },
+                "th_error_eclipse_long_radius": {
+                  "type": "number",
+                  "description": "This value will be applied to judge whether the eclipse error is to large",
+                  "default": 0.6
                 }
               },
               "required": [
@@ -414,7 +449,8 @@
                 "longitudinal_margin",
                 "lateral_margin",
                 "envelope_buffer_margin",
-                "max_expand_ratio"
+                "max_expand_ratio",
+                "th_error_eclipse_long_radius"
               ],
               "additionalProperties": false
             },
@@ -468,6 +504,11 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
+                },
+                "th_error_eclipse_long_radius": {
+                  "type": "number",
+                  "description": "This value will be applied to judge whether the eclipse error is to large",
+                  "default": 0.6
                 }
               },
               "required": [
@@ -476,7 +517,8 @@
                 "longitudinal_margin",
                 "lateral_margin",
                 "envelope_buffer_margin",
-                "max_expand_ratio"
+                "max_expand_ratio",
+                "th_error_eclipse_long_radius"
               ],
               "additionalProperties": false
             },
@@ -530,6 +572,11 @@
                   "type": "number",
                   "description": "This value will be applied envelope_buffer_margin according to the distance between the ego and object.",
                   "default": 0.0
+                },
+                "th_error_eclipse_long_radius": {
+                  "type": "number",
+                  "description": "This value will be applied to judge whether the eclipse error is to large",
+                  "default": 0.6
                 }
               },
               "required": [
@@ -538,7 +585,8 @@
                 "longitudinal_margin",
                 "lateral_margin",
                 "envelope_buffer_margin",
-                "max_expand_ratio"
+                "max_expand_ratio",
+                "th_error_eclipse_long_radius"
               ],
               "additionalProperties": false
             },

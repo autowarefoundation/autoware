@@ -60,6 +60,8 @@ void StaticObstacleAvoidanceModuleManager::updateModuleParams(
       parameters, ns + "lateral_margin.hard_margin_for_parked_vehicle",
       config.lateral_hard_margin_for_parked_vehicle);
     updateParam<double>(parameters, ns + "longitudinal_margin", config.longitudinal_margin);
+    updateParam<double>(
+      parameters, ns + "th_error_eclipse_long_radius", config.th_error_eclipse_long_radius);
   };
 
   {

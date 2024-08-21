@@ -41,6 +41,7 @@ using tier4_planning_msgs::msg::PathWithLaneId;
 // ROS 2 general msgs
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
+using geometry_msgs::msg::PoseWithCovariance;
 using geometry_msgs::msg::TransformStamped;
 using geometry_msgs::msg::Vector3;
 using std_msgs::msg::ColorRGBA;
