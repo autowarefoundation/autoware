@@ -19,7 +19,7 @@
 namespace autoware::lidar_centerpoint
 {
 // cspell: ignore divup
-std::size_t divup(const std::size_t a, const std::size_t b)
+std::size_t divup(const std::size_t a, const std::size_t b)  // cppcheck-suppress unusedFunction
 {
   if (a == 0) {
     throw std::runtime_error("A dividend of divup isn't positive.");
