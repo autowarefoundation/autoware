@@ -110,7 +110,8 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --merge-install \
     --install-base /opt/autoware \
     --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && rm -rf /autoware/build
 
 FROM autoware-core AS autoware-universe
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -144,7 +145,8 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --merge-install \
     --install-base /opt/autoware \
     --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && rm -rf /autoware/build
 
 CMD ["/bin/bash"]
 
