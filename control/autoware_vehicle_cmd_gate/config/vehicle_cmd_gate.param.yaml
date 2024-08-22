@@ -4,7 +4,6 @@
     system_emergency_heartbeat_timeout: 0.5
     use_emergency_handling: false
     check_external_emergency_heartbeat: $(var check_external_emergency_heartbeat)
-    use_start_request: false
     enable_cmd_limit_filter: true
     filter_activated_count_threshold: 5
     filter_activated_velocity_threshold: 1.0
@@ -12,7 +11,6 @@
     stop_hold_acceleration: -1.5
     emergency_acceleration: -2.4
     moderate_stop_service_acceleration: -1.5
-    stopped_state_entry_duration_time: 0.1
     stop_check_duration: 1.0
     nominal:
       vel_lim: 25.0
