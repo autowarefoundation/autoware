@@ -87,6 +87,7 @@ public:
   };
   void set_proc_dev(const double proc_dev) { proc_dev_x_c_ = proc_dev; }
   [[nodiscard]] double get_x() const { return x_; }
+  [[nodiscard]] double get_dev() const { return dev_; }
 
 private:
   bool initialized_;

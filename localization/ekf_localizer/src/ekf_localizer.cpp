@@ -365,6 +365,12 @@ void EKFLocalizer::publish_estimate_result(
   pose_cov.header.frame_id = current_ekf_pose.header.frame_id;
   pose_cov.pose.pose = current_ekf_pose.pose;
   pose_cov.pose.covariance = ekf_module_->get_current_pose_covariance();
+
+  using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  pose_cov.pose.covariance[COV_IDX::Z_Z] = z_filter_.get_dev();
+  pose_cov.pose.covariance[COV_IDX::ROLL_ROLL] = roll_filter_.get_dev();
+  pose_cov.pose.covariance[COV_IDX::PITCH_PITCH] = pitch_filter_.get_dev();
+
   pub_pose_cov_->publish(pose_cov);
 
   geometry_msgs::msg::PoseWithCovarianceStamped biased_pose_cov = pose_cov;
