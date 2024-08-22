@@ -109,12 +109,14 @@
     - Restart telegraf
 
 - name: Ensure telegraf is running and enabled
+  become: true
   ansible.builtin.systemd:
     name: telegraf
     enabled: true
     state: started
     
 - name: Ensure InfluxDB service is running
+  become: true
   ansible.builtin.service:
     name: influxdb
     state: started
