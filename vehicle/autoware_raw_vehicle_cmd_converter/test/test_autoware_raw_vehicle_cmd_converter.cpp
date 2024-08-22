@@ -17,6 +17,7 @@
 #include "autoware_raw_vehicle_cmd_converter/brake_map.hpp"
 #include "autoware_raw_vehicle_cmd_converter/pid.hpp"
 #include "autoware_raw_vehicle_cmd_converter/steer_map.hpp"
+#include "autoware_raw_vehicle_cmd_converter/vgr.hpp"
 #include "gtest/gtest.h"
 
 #include <cmath>
@@ -52,6 +53,7 @@ using autoware::raw_vehicle_cmd_converter::AccelMap;
 using autoware::raw_vehicle_cmd_converter::BrakeMap;
 using autoware::raw_vehicle_cmd_converter::PIDController;
 using autoware::raw_vehicle_cmd_converter::SteerMap;
+using autoware::raw_vehicle_cmd_converter::VGR;
 double epsilon = 1e-4;
 // may throw PackageNotFoundError exception for invalid package
 const auto map_path =
@@ -296,4 +298,50 @@ TEST(PIDTests, calculateFB)
   EXPECT_NEAR(pid_contributions.at(0), 8.0, epsilon);
   EXPECT_NEAR(pid_contributions.at(1), 0.21825, epsilon);
   EXPECT_NEAR(pid_contributions.at(2), -0.15, epsilon);
+}
+
+TEST(VGRTests, roundTrip)
+{
+  VGR vgr;
+  vgr.setCoefficients(15.713, 0.053, 0.042);
+  double vel = 5.0;
+  double steer_wheel = 0.1;
+  double gear_ratio = vgr.calculateVariableGearRatio(vel, steer_wheel);
+  double steer = vgr.calculateSteeringTireState(vel, steer_wheel);
+  double steer_wheel2 = steer * gear_ratio;
+  EXPECT_NEAR(steer_wheel, steer_wheel2, epsilon);
+}
+
+TEST(VGRTests, boundaryValues)
+{
+  VGR vgr;
+  vgr.setCoefficients(15.713, 0.053, 0.042);
+
+  const double vel = 0.0;
+  const double steer_wheel = 0.0;
+  const double gear_ratio = vgr.calculateVariableGearRatio(vel, steer_wheel);
+  EXPECT_NEAR(gear_ratio, 15.713, epsilon);
+
+  const double steer_wheel_small = 1e-5;
+  const double steer = vgr.calculateSteeringTireState(vel, steer_wheel_small);
+  const double steer_wheel2 = steer * gear_ratio;
+  EXPECT_NEAR(steer_wheel, steer_wheel2, epsilon);
+}
+
+TEST(VGRTests, zeroCoefficients)
+{
+  VGR vgr;
+  vgr.setCoefficients(0.0, 0.0, 0.0);
+
+  const double vel = 10.0;
+  const double steer_wheel = 0.5;
+
+  // Gear ratio should return the minimum value since all coefficients are zero
+  const double gear_ratio = vgr.calculateVariableGearRatio(vel, steer_wheel);
+  EXPECT_EQ(gear_ratio, 1e-5);
+
+  // Steering tire state calculation is also performed with the minimum gear ratio
+  const double steer = vgr.calculateSteeringTireState(vel, steer_wheel);
+  const double steer_wheel2 = steer * gear_ratio;
+  EXPECT_NEAR(steer_wheel, steer_wheel2, epsilon);
 }

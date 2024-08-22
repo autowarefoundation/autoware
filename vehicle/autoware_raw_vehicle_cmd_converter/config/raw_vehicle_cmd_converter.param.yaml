@@ -26,3 +26,8 @@
       max_d: 0.0
       min_d: 0.0
       invalid_integration_decay: 0.97
+    convert_steer_cmd_method: "vgr"  # "vgr" or "steer_map"
+    vgr_coef_a: 15.713
+    vgr_coef_b: 0.053
+    vgr_coef_c: 0.042
+    convert_actuation_to_steering_status: true

@@ -154,6 +154,32 @@
             "min_d",
             "invalid_integration_decay"
           ]
+        },
+        "convert_steer_cmd_method": {
+          "type": "string",
+          "description": "method for converting steer command",
+          "default": "vgr",
+          "enum": ["vgr", "steer_map"]
+        },
+        "vgr_coef_a": {
+          "type": "number",
+          "default": "15.713",
+          "description": "coefficient a for variable gear ratio"
+        },
+        "vgr_coef_b": {
+          "type": "number",
+          "default": "0.053",
+          "description": "coefficient b for variable gear ratio"
+        },
+        "vgr_coef_c": {
+          "type": "number",
+          "default": "0.042",
+          "description": "coefficient c for variable gear ratio"
+        },
+        "convert_actuation_to_steering_status": {
+          "type": "boolean",
+          "default": "true",
+          "description": "convert actuation to steering status or not. Whether to subscribe to actuation_status and calculate and publish steering_status For example, receive the steering wheel angle and calculate the steering wheel angle based on the gear ratio. If false, the vehicle interface must publish steering_status."
         }
       },
       "required": [
@@ -169,7 +195,12 @@
         "max_throttle",
         "max_brake",
         "max_steer",
-        "steer_pid"
+        "steer_pid",
+        "convert_steer_cmd_method",
+        "vgr_coef_a",
+        "vgr_coef_b",
+        "vgr_coef_c",
+        "convert_actuation_to_steering_status"
       ]
     }
   },

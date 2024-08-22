@@ -10,6 +10,7 @@ ament_auto_add_library(actuation_map_converter SHARED
   src/steer_map.cpp
   src/csv_loader.cpp
   src/pid.cpp
+  src/vgr.cpp
 )
 
 ament_auto_add_library(autoware_raw_vehicle_cmd_converter_node_component SHARED

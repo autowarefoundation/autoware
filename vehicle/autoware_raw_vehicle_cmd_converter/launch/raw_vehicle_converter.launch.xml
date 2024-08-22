@@ -3,7 +3,9 @@
   <arg name="input_control_cmd" default="/control/command/control_cmd"/>
   <arg name="input_odometry" default="/localization/kinematic_state"/>
   <arg name="input_steering" default="/vehicle/status/steering_status"/>
+  <arg name="input_actuation_status" default="/vehicle/status/actuation_status"/>
   <arg name="output_actuation_cmd" default="/control/command/actuation_cmd"/>
+  <arg name="output_steering_status" default="/vehicle/status/steering_status"/>
   <!-- Parameter -->
   <arg name="config_file" default="$(find-pkg-share autoware_raw_vehicle_cmd_converter)/config/raw_vehicle_cmd_converter.param.yaml"/>
 
@@ -12,6 +14,8 @@
     <remap from="~/input/control_cmd" to="$(var input_control_cmd)"/>
     <remap from="~/input/odometry" to="$(var input_odometry)"/>
     <remap from="~/input/steering" to="$(var input_steering)"/>
+    <remap from="~/input/actuation_status" to="$(var input_actuation_status)"/>
     <remap from="~/output/actuation_cmd" to="$(var output_actuation_cmd)"/>
+    <remap from="~/output/steering_status" to="$(var output_steering_status)"/>
   </node>
 </launch>
