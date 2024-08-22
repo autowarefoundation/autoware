@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameter for common in autoware_obstacle_stop_planner",
+  "type": "object",
+  "definitions": {
+    "common": {
+      "type": "object",
+      "properties": {
+        "max_vel": {
+          "type": "number",
+          "description": "max velocity limit [m/s]",
+          "default": "11.1"
+        },
+        "normal": {
+          "type": "object",
+          "properties": {
+            "min_acc": {
+              "type": "number",
+              "description": "min deceleration [m/ss]",
+              "default": "-0.5"
+            },
+            "max_acc": {
+              "type": "number",
+              "description": "max acceleration [m/ss]",
+              "default": "1.0"
+            },
+            "min_jerk": {
+              "type": "number",
+              "description": "min jerk [m/sss]",
+              "default": "-0.5"
+            },
+            "max_jerk": {
+              "type": "number",
+              "description": "max jerk [m/sss]",
+              "default": "1.0"
+            }
+          },
+          "required": ["min_acc", "max_acc", "min_jerk", "max_jerk"]
+        },
+        "limit": {
+          "type": "object",
+          "properties": {
+            "min_acc": {
+              "type": "number",
+              "description": "min deceleration limit [m/ss]",
+              "default": "-2.5"
+            },
+            "max_acc": {
+              "type": "number",
+              "description": "max acceleration [m/ss]",
+              "default": "1.0"
+            },
+            "min_jerk": {
+              "type": "number",
+              "description": "min jerk [m/sss]",
+              "default": "-1.5"
+            },
+            "max_jerk": {
+              "type": "number",
+              "description": "max jerk [m/sss]",
+              "default": "1.5"
+            }
+          },
+          "required": ["min_acc", "max_acc", "min_jerk", "max_jerk"]
+        }
+      },
+      "required": ["max_vel", "normal", "limit"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/common"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

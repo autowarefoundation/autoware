@@ -1,0 +1,322 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameter for obstacle stop planner",
+  "type": "object",
+  "definitions": {
+    "obstacle_stop_planner": {
+      "type": "object",
+      "properties": {
+        "chattering_threshold": {
+          "type": "number",
+          "description": "even if the obstacle disappears, the stop judgment continues for chattering_threshold [s]",
+          "default": "0.5"
+        },
+        "max_velocity": {
+          "type": "number",
+          "description": "max velocity [m/s]",
+          "default": "20.0"
+        },
+        "ego_nearest_dist_threshold": {
+          "type": "number",
+          "description": "[m]",
+          "default": "3.0"
+        },
+        "ego_nearest_yaw_threshold": {
+          "type": "number",
+          "description": "[rad] = 60 [deg]",
+          "default": "1.046"
+        },
+        "enable_slow_down": {
+          "type": "boolean",
+          "description": "whether to use slow down planner [-]",
+          "default": "false"
+        },
+        "enable_z_axis_obstacle_filtering": {
+          "type": "boolean",
+          "description": "filter obstacles in z axis (height) [-]",
+          "default": "true"
+        },
+        "z_axis_filtering_buffer": {
+          "type": "number",
+          "description": "additional buffer for z axis filtering [m]",
+          "default": "0.0"
+        },
+        "voxel_grid_x": {
+          "type": "number",
+          "description": "voxel grid x parameter for filtering pointcloud [m]",
+          "default": "0.05"
+        },
+        "voxel_grid_y": {
+          "type": "number",
+          "description": "voxel grid y parameter for filtering pointcloud [m]",
+          "default": "0.05"
+        },
+        "voxel_grid_z": {
+          "type": "number",
+          "description": "voxel grid z parameter for filtering pointcloud [m]",
+          "default": "100000.0"
+        },
+        "use_predicted_objects": {
+          "type": "boolean",
+          "description": "whether to use predicted objects [-]",
+          "default": "false"
+        },
+        "publish_obstacle_polygon": {
+          "type": "boolean",
+          "description": "whether to publish obstacle polygon [-]",
+          "default": "false"
+        },
+        "predicted_object_filtering_threshold": {
+          "type": "number",
+          "description": "threshold for filtering predicted objects (valid only publish_obstacle_polygon true) [m]",
+          "default": "1.5"
+        },
+        "stop_planner": {
+          "type": "object",
+          "properties": {
+            "stop_position": {
+              "type": "object",
+              "properties": {
+                "max_longitudinal_margin": {
+                  "type": "number",
+                  "description": "stop margin distance from obstacle on the path [m]",
+                  "default": "5.0"
+                },
+                "max_longitudinal_margin_behind_goal": {
+                  "type": "number",
+                  "description": "stop margin distance from obstacle behind the goal on the path [m]",
+                  "default": "3.0"
+                },
+                "min_longitudinal_margin": {
+                  "type": "number",
+                  "description": "stop margin distance when any other stop point is inserted in stop margin [m]",
+                  "default": "2.0"
+                },
+                "hold_stop_margin_distance": {
+                  "type": "number",
+                  "description": "the ego keeps stopping if the ego is in this margin [m]",
+                  "default": "0.0"
+                }
+              },
+              "required": [
+                "max_longitudinal_margin",
+                "max_longitudinal_margin_behind_goal",
+                "min_longitudinal_margin",
+                "hold_stop_margin_distance"
+              ]
+            },
+            "detection_area": {
+              "type": "object",
+              "properties": {
+                "lateral_margin": {
+                  "type": "number",
+                  "description": "margin [m]",
+                  "default": "0.0"
+                },
+                "vehicle_lateral_margin": {
+                  "type": "number",
+                  "description": "margin of vehicle footprint [m]",
+                  "default": "0.0"
+                },
+                "pedestrian_lateral_margin": {
+                  "type": "number",
+                  "description": "margin of pedestrian footprint [m]",
+                  "default": "0.0"
+                },
+                "unknown_lateral_margin": {
+                  "type": "number",
+                  "description": "margin of unknown footprint [m]",
+                  "default": "0.0"
+                },
+                "step_length": {
+                  "type": "number",
+                  "description": "step length for pointcloud search range [m]",
+                  "default": "1.0"
+                },
+                "enable_stop_behind_goal_for_obstacle": {
+                  "type": "boolean",
+                  "description": "enable extend trajectory after goal lane for obstacle detection",
+                  "default": "true"
+                }
+              },
+              "required": [
+                "lateral_margin",
+                "vehicle_lateral_margin",
+                "pedestrian_lateral_margin",
+                "unknown_lateral_margin",
+                "step_length",
+                "enable_stop_behind_goal_for_obstacle"
+              ]
+            }
+          },
+          "required": ["stop_position", "detection_area"]
+        },
+        "slow_down_planner": {
+          "type": "object",
+          "properties": {
+            "slow_down_section": {
+              "type": "object",
+              "properties": {
+                "longitudinal_forward_margin": {
+                  "type": "number",
+                  "description": "margin distance from slow down point to vehicle front [m]",
+                  "default": "5.0"
+                },
+                "longitudinal_backward_margin": {
+                  "type": "number",
+                  "description": "margin distance from slow down point to vehicle rear [m]",
+                  "default": "5.0"
+                },
+                "longitudinal_margin_span": {
+                  "type": "number",
+                  "description": "fineness param for relaxing slow down margin (use this param if consider_constraints is True) [m/s]",
+                  "default": "-0.1"
+                },
+                "min_longitudinal_forward_margin": {
+                  "type": "number",
+                  "description": "min margin for relaxing slow down margin (use this param if consider_constraints is True) [m/s]",
+                  "default": "1.0"
+                }
+              },
+              "required": [
+                "longitudinal_forward_margin",
+                "longitudinal_backward_margin",
+                "longitudinal_margin_span",
+                "min_longitudinal_forward_margin"
+              ]
+            },
+            "detection_area": {
+              "type": "object",
+              "properties": {
+                "lateral_margin": {
+                  "type": "number",
+                  "description": "offset from vehicle side edge for expanding the search area of the surrounding point cloud [m]",
+                  "default": "1.0"
+                },
+                "vehicle_lateral_margin": {
+                  "type": "number",
+                  "description": "offset from vehicle side edge for expanding the search area of the surrounding point cloud [m]",
+                  "default": "1.0"
+                },
+                "pedestrian_lateral_margin": {
+                  "type": "number",
+                  "description": "offset from pedestrian side edge for expanding the search area of the surrounding point cloud [m]",
+                  "default": "1.0"
+                },
+                "unknown_lateral_margin": {
+                  "type": "number",
+                  "description": "offset from unknown side edge for expanding the search area of the surrounding point cloud [m]",
+                  "default": "1.0"
+                }
+              },
+              "required": [
+                "lateral_margin",
+                "vehicle_lateral_margin",
+                "pedestrian_lateral_margin",
+                "unknown_lateral_margin"
+              ]
+            },
+            "target_velocity": {
+              "type": "object",
+              "properties": {
+                "max_slow_down_velocity": {
+                  "type": "number",
+                  "description": "max slow down velocity (use this param if consider_constraints is False)[m/s]",
+                  "default": "1.38"
+                },
+                "min_slow_down_velocity": {
+                  "type": "number",
+                  "description": "offset from vehicle side edge for expanding the search area of the surrounding point cloud [m]",
+                  "default": "0.28"
+                },
+                "slow_down_velocity": {
+                  "type": "number",
+                  "description": "target slow down velocity (use this param if consider_constraints is True)[m/s]",
+                  "default": "1.38"
+                }
+              },
+              "required": ["max_slow_down_velocity", "min_slow_down_velocity", "slow_down_velocity"]
+            },
+            "constraints": {
+              "type": "object",
+              "properties": {
+                "jerk_min_slow_down": {
+                  "type": "number",
+                  "description": "min slow down jerk constraint [m/sss]",
+                  "default": "-0.3"
+                },
+                "jerk_span": {
+                  "type": "number",
+                  "description": "fineness param for planning deceleration jerk [m/sss]",
+                  "default": "-0.01"
+                },
+                "jerk_start": {
+                  "type": "number",
+                  "description": "init jerk used for deceleration planning [m/sss]",
+                  "default": "-0.1"
+                }
+              },
+              "required": ["jerk_min_slow_down", "jerk_span", "jerk_start"]
+            },
+            "consider_constraints": {
+              "type": "boolean",
+              "description": "set 'True', if no decel plan found under jerk/dec constrains, relax target slow down vel [-]",
+              "default": "false"
+            },
+            "velocity_threshold_decel_complete": {
+              "type": "number",
+              "description": "use for judge whether the ego velocity converges the target slow down velocity [m/s]",
+              "default": "0.2"
+            },
+            "acceleration_threshold_decel_complete": {
+              "type": "number",
+              "description": "use for judge whether the ego velocity converges the target slow down velocity [m/ss]",
+              "default": "0.1"
+            }
+          },
+          "required": [
+            "slow_down_section",
+            "detection_area",
+            "target_velocity",
+            "constraints",
+            "consider_constraints",
+            "velocity_threshold_decel_complete",
+            "acceleration_threshold_decel_complete"
+          ]
+        }
+      },
+      "required": [
+        "chattering_threshold",
+        "max_velocity",
+        "ego_nearest_dist_threshold",
+        "ego_nearest_yaw_threshold",
+        "enable_slow_down",
+        "enable_z_axis_obstacle_filtering",
+        "z_axis_filtering_buffer",
+        "voxel_grid_x",
+        "voxel_grid_y",
+        "voxel_grid_z",
+        "use_predicted_objects",
+        "publish_obstacle_polygon",
+        "predicted_object_filtering_threshold",
+        "stop_planner",
+        "slow_down_planner"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/obstacle_stop_planner"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

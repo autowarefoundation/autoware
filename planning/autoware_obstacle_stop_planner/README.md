@@ -31,6 +31,8 @@
 
 ### Common Parameter
 
+{{ json_to_markdown("planning/autoware_obstacle_stop_planner/schema/common.schema.json") }}
+
 | Parameter                              | Type   | Description                                                                               |
 | -------------------------------------- | ------ | ----------------------------------------------------------------------------------------- |
 | `enable_slow_down`                     | bool   | enable slow down planner [-]                                                              |
@@ -102,6 +104,8 @@ stopped due to other factors.
 </figure>
 
 ### Parameters
+
+{{ json_to_markdown("planning/autoware_obstacle_stop_planner/schema/obstacle_stop_planner.schema.json") }}
 
 #### Stop position
 
@@ -185,6 +189,8 @@ down section.
 </figure>
 
 ### Parameters
+
+{{ json_to_markdown("planning/autoware_obstacle_stop_planner/schema/adaptive_cruise_control.schema.json") }}
 
 #### Slow down section
 

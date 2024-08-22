@@ -1,0 +1,216 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameter for adaptive cruise control",
+  "type": "object",
+  "definitions": {
+    "adaptive_cruise_control": {
+      "type": "object",
+      "properties": {
+        "adaptive_cruise_control": {
+          "type": "object",
+          "properties": {
+            "use_object_to_estimate_vel": {
+              "type": "boolean",
+              "description": "use tracking objects for estimating object velocity or not",
+              "default": "true"
+            },
+            "use_pcl_to_estimate_vel": {
+              "type": "boolean",
+              "description": "use pcl for estimating object velocity or not",
+              "default": "true"
+            },
+            "consider_obj_velocity": {
+              "type": "boolean",
+              "description": "consider forward vehicle velocity to ACC or not",
+              "default": "true"
+            },
+            "obstacle_velocity_thresh_to_start_acc": {
+              "type": "number",
+              "description": "start adaptive cruise control when the velocity of the forward obstacle exceeds this value [m/s]",
+              "default": "1.5"
+            },
+            "obstacle_velocity_thresh_to_stop_acc": {
+              "type": "number",
+              "description": "stop adaptive cruise control when the velocity of the forward obstacle falls below this value [m/s]",
+              "default": "1.0"
+            },
+            "emergency_stop_acceleration": {
+              "type": "number",
+              "description": "supposed minimum acceleration (deceleration) in emergency stop [m/ss]",
+              "default": "-5.0"
+            },
+            "emergency_stop_idling_time": {
+              "type": "number",
+              "description": "supposed idling time to start emergency stop [s]",
+              "default": "0.5"
+            },
+            "min_dist_stop": {
+              "type": "number",
+              "description": "minimum distance of emergency stop [m]",
+              "default": "4.0"
+            },
+            "obstacle_emergency_stop_acceleration": {
+              "type": "number",
+              "description": "supposed minimum acceleration (deceleration) in emergency stop [m/ss]",
+              "default": "-5.0"
+            },
+            "max_standard_acceleration": {
+              "type": "number",
+              "description": "supposed maximum acceleration in active cruise control [m/ss]",
+              "default": "0.5"
+            },
+            "min_standard_acceleration": {
+              "type": "number",
+              "description": "supposed minimum acceleration (deceleration) in active cruise control",
+              "default": "-1.0"
+            },
+            "standard_idling_time": {
+              "type": "number",
+              "description": "supposed idling time to react object in active cruise control [s]",
+              "default": "0.5"
+            },
+            "min_dist_standard": {
+              "type": "number",
+              "description": "minimum distance in active cruise control [m]",
+              "default": "4.0"
+            },
+            "obstacle_min_standard_acceleration": {
+              "type": "number",
+              "description": "supposed minimum acceleration of forward obstacle [m/ss]",
+              "default": "-1.5"
+            },
+            "margin_rate_to_change_vel": {
+              "type": "number",
+              "description": "margin to insert upper velocity [-]",
+              "default": "0.3"
+            },
+            "use_time_compensation_to_calc_distance": {
+              "type": "boolean",
+              "description": "use time-compensation to calculate distance to forward vehicle",
+              "default": "true"
+            },
+            "p_coefficient_positive": {
+              "type": "number",
+              "description": "coefficient P in PID control (used when target dist -current_dist >=0) [-]",
+              "default": "0.1"
+            },
+            "p_coefficient_negative": {
+              "type": "number",
+              "description": "coefficient P in PID control (used when target dist -current_dist <0) [-]",
+              "default": "0.3"
+            },
+            "d_coefficient_positive": {
+              "type": "number",
+              "description": "coefficient D in PID control (used when delta_dist >=0) [-]",
+              "default": "0.0"
+            },
+            "d_coefficient_negative": {
+              "type": "number",
+              "description": "coefficient D in PID control (used when delta_dist <0) [-]",
+              "default": "0.2"
+            },
+            "object_polygon_length_margin": {
+              "type": "number",
+              "description": "The distance to extend the polygon length the object in pointcloud-object matching [m]",
+              "default": "2.0"
+            },
+            "object_polygon_width_margin": {
+              "type": "number",
+              "description": "The distance to extend the polygon width the object in pointcloud-object matching [m]",
+              "default": "0.5"
+            },
+            "valid_estimated_vel_diff_time": {
+              "type": "number",
+              "description": "Maximum time difference treated as continuous points in speed estimation using a point cloud [s]",
+              "default": "1.0"
+            },
+            "valid_vel_que_time": {
+              "type": "number",
+              "description": "Time width of information used for speed estimation in speed estimation using a point cloud [s]",
+              "default": "0.5"
+            },
+            "valid_estimated_vel_max": {
+              "type": "number",
+              "description": "Maximum value of valid speed estimation results in speed estimation using a point cloud [m/s]",
+              "default": "20.0"
+            },
+            "valid_estimated_vel_min": {
+              "type": "number",
+              "description": "Minimum value of valid speed estimation results in speed estimation using a point cloud [m/s]",
+              "default": "-20.0"
+            },
+            "thresh_vel_to_stop": {
+              "type": "number",
+              "description": "Embed a stop line if the maximum speed calculated by ACC is lower than this speed [m/s]",
+              "default": "1.5"
+            },
+            "lowpass_gain_of_upper_velocity": {
+              "type": "number",
+              "description": "Lowpass-gain of upper velocity",
+              "default": "0.75"
+            },
+            "use_rough_velocity_estimation": {
+              "type": "boolean",
+              "description": "Use rough estimated velocity if the velocity estimation is failed (#### If this parameter is true, the vehicle may collide with the front car. Be careful. ####)",
+              "default": "false"
+            },
+            "rough_velocity_rate": {
+              "type": "number",
+              "description": "In the rough velocity estimation, the velocity of front car is estimated as self current velocity * this value",
+              "default": "0.9"
+            }
+          },
+          "required": [
+            "use_object_to_estimate_vel",
+            "use_pcl_to_estimate_vel",
+            "consider_obj_velocity",
+            "obstacle_velocity_thresh_to_start_acc",
+            "obstacle_velocity_thresh_to_stop_acc",
+            "emergency_stop_acceleration",
+            "emergency_stop_idling_time",
+            "min_dist_stop",
+            "obstacle_emergency_stop_acceleration",
+            "max_standard_acceleration",
+            "min_standard_acceleration",
+            "standard_idling_time",
+            "min_dist_standard",
+            "obstacle_min_standard_acceleration",
+            "margin_rate_to_change_vel",
+            "use_time_compensation_to_calc_distance",
+            "p_coefficient_positive",
+            "p_coefficient_negative",
+            "d_coefficient_positive",
+            "d_coefficient_negative",
+            "object_polygon_length_margin",
+            "object_polygon_width_margin",
+            "valid_estimated_vel_diff_time",
+            "valid_vel_que_time",
+            "valid_estimated_vel_max",
+            "valid_estimated_vel_min",
+            "thresh_vel_to_stop",
+            "lowpass_gain_of_upper_velocity",
+            "use_rough_velocity_estimation",
+            "rough_velocity_rate"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": ["adaptive_cruise_control"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/adaptive_cruise_control"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
