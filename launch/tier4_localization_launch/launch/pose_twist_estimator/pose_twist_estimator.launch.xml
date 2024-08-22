@@ -93,7 +93,7 @@
 
   <!-- Pose Estimator Arbiter Launch -->
   <group if="$(var multi_localizer_mode)">
-    <include file="$(find-pkg-share pose_estimator_arbiter)/launch/pose_estimator_arbiter.launch.xml">
+    <include file="$(find-pkg-share autoware_pose_estimator_arbiter)/launch/pose_estimator_arbiter.launch.xml">
       <arg name="pose_sources" value="$(var pose_sources)"/>
       <arg name="input_pointcloud" value="$(var input_pointcloud)"/>
     </include>

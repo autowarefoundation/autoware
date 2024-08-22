@@ -22,12 +22,12 @@
   <exec_depend>autoware_geo_pose_projector</exec_depend>
   <exec_depend>autoware_gyro_odometer</exec_depend>
   <exec_depend>autoware_pointcloud_preprocessor</exec_depend>
+  <exec_depend>autoware_pose_estimator_arbiter</exec_depend>
   <exec_depend>eagleye_geo_pose_fusion</exec_depend>
   <exec_depend>eagleye_gnss_converter</exec_depend>
   <exec_depend>eagleye_rt</exec_depend>
   <exec_depend>ekf_localizer</exec_depend>
   <exec_depend>ndt_scan_matcher</exec_depend>
-  <exec_depend>pose_estimator_arbiter</exec_depend>
   <exec_depend>pose_initializer</exec_depend>
   <exec_depend>pose_instability_detector</exec_depend>
   <exec_depend>topic_tools</exec_depend>

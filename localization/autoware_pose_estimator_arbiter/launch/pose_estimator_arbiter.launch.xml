@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="pose_sources" description=""/>
+  <arg name="input_pointcloud" description=""/>
+
+  <node pkg="autoware_pose_estimator_arbiter" exec="autoware_pose_estimator_arbiter_node" output="both">
+    <param name="pose_sources" value="$(var pose_sources)"/>
+
+    <!-- ndt -->
+    <remap from="~/input/ndt/pointcloud" to="$(var input_pointcloud)"/>
+    <remap from="~/output/ndt/pointcloud" to="$(var input_pointcloud)/relay"/>
+    <!-- artag -->
+    <remap from="~/input/artag/image" to="/sensing/camera/traffic_light/image_raw"/>
+    <remap from="~/output/artag/image" to="/sensing/camera/traffic_light/image_raw/artag_relay"/>
+    <!-- yabloc -->
+    <remap from="~/input/yabloc/image" to="/sensing/camera/traffic_light/image_raw"/>
+    <remap from="~/output/yabloc/image" to="/sensing/camera/traffic_light/image_raw/yabloc_relay"/>
+    <remap from="~/yabloc_trigger_srv" to="/localization/pose_estimator/yabloc/pf/yabloc_trigger_srv"/>
+    <!-- eagleye -->
+    <remap from="~/input/eagleye/pose_with_covariance" to="/localization/pose_estimator/eagleye/pose_with_covariance/to_relay"/>
+    <remap from="~/output/eagleye/pose_with_covariance" to="/localization/pose_estimator/pose_with_covariance"/>
+
+    <!-- switching rule -->
+    <remap from="~/input/pointcloud_map" to="/map/pointcloud_map"/>
+    <remap from="~/input/vector_map" to="/map/vector_map"/>
+    <remap from="~/input/pose_with_covariance" to="/localization/pose_with_covariance"/>
+    <remap from="~/input/initialization_state" to="/localization/initialization_state"/>
+  </node>
+</launch>
