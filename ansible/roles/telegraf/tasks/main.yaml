@@ -49,19 +49,34 @@
     cache_valid_time: 3600
 
 - name: Install InfluxDB v2
+  become: true
   ansible.builtin.apt:
     name: influxdb2
     state: present
 
 - name: Install InfluxDB v2 CLI
+  become: true
   ansible.builtin.apt:
     name: influxdb2-cli
     state: present
 
 - name: Install Telegraf
+  become: true
   ansible.builtin.apt:
     name: telegraf
     state: present
+
+
+- name: Create telegraf_binary directory
+  ansible.builtin.file:
+    path: /opt/autoware/bin
+    state: directory
+    mode: 0755
+  become: true
+
+- name: Debug role_path
+  debug:
+    msg: "Role path is {{ role_path }}"
 
 - name: Copy get_telegraf_proccpu_json.sh to /opt/autoware/bin
   become: true
@@ -115,5 +130,5 @@
 - name: Set up influxDB v2
   become: true
   ansible.builtin.command: 
-    cmd: influx setup -f --name default --username autoware --password autoware --token autowaretoken --org autowarefondation --bucket autoware --retention 0
+    cmd: influx setup -f --name default --username autoware --password autoware --token autowaretoken --org autowarefoundation --bucket autoware --retention 0
   when: influx_setup_status.rc != 0
