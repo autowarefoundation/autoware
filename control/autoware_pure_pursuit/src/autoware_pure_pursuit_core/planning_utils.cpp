@@ -50,13 +50,6 @@ double calcCurvature(
   }
 }
 
-double calcDistance2D(const geometry_msgs::msg::Point & p, const geometry_msgs::msg::Point & q)
-{
-  const double dx = p.x - q.x;
-  const double dy = p.y - q.y;
-  return sqrt(dx * dx + dy * dy);
-}
-
 double calcDistSquared2D(const geometry_msgs::msg::Point & p, const geometry_msgs::msg::Point & q)
 {
   const double dx = p.x - q.x;
@@ -169,18 +162,6 @@ int8_t getLaneDirection(const std::vector<geometry_msgs::msg::Pose> & poses, dou
 
   RCLCPP_ERROR(rclcpp::get_logger(PLANNING_UTILS_LOGGER), "lane is something wrong");
   return 2;
-}
-
-bool isDirectionForward(
-  const geometry_msgs::msg::Pose & prev, const geometry_msgs::msg::Pose & next)
-{
-  return (transformToRelativeCoordinate2D(next.position, prev).x > 0.0) ? true : false;
-}
-
-bool isDirectionForward(
-  const geometry_msgs::msg::Pose & prev, const geometry_msgs::msg::Point & next)
-{
-  return transformToRelativeCoordinate2D(next, prev).x > 0.0;
 }
 
 template <>

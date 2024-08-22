@@ -55,7 +55,6 @@ double calcArcLengthFromWayPoint(
   const size_t dst_idx);
 double calcCurvature(
   const geometry_msgs::msg::Point & target, const geometry_msgs::msg::Pose & curr_pose);
-double calcDistance2D(const geometry_msgs::msg::Point & p, const geometry_msgs::msg::Point & q);
 double calcDistSquared2D(const geometry_msgs::msg::Point & p, const geometry_msgs::msg::Point & q);
 double calcStopDistanceWithConstantJerk(const double & v_init, const double & j);
 double calcLateralError2D(
@@ -74,10 +73,6 @@ std::pair<bool, int32_t> findClosestIdxWithDistAngThr(
   const double th_yaw = M_PI_2);
 
 int8_t getLaneDirection(const std::vector<geometry_msgs::msg::Pose> & poses, double th_dist = 0.5);
-bool isDirectionForward(
-  const geometry_msgs::msg::Pose & prev, const geometry_msgs::msg::Pose & next);
-bool isDirectionForward(
-  const geometry_msgs::msg::Pose & prev, const geometry_msgs::msg::Point & next);
 
 // cspell: ignore pointinpoly
 // refer from apache's pointinpoly in http://www.visibone.com/inpoly/
