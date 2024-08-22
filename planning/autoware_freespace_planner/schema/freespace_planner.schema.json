@@ -120,6 +120,12 @@
         "astar": {
           "type": "object",
           "properties": {
+            "search_method": {
+              "type": "string",
+              "enum": ["forward", "backward"],
+              "default": "forward",
+              "description": "Search method to use, options: forward, backward."
+            },
             "only_behind_solutions": {
               "type": "boolean",
               "default": false,
@@ -129,6 +135,11 @@
               "type": "boolean",
               "default": true,
               "description": "Allow reverse motion in A* search."
+            },
+            "adapt_expansion_distance": {
+              "type": "boolean",
+              "default": true,
+              "description": "Allow varying A* expansion distance based on space configuration."
             },
             "expansion_distance": {
               "type": "number",
@@ -143,7 +154,12 @@
             "smoothness_weight": {
               "type": "number",
               "default": 0.5,
-              "description": "Weight for the smoothness heuristic in A* search."
+              "description": "Weight for the smoothness (change in curvature) in A* search."
+            },
+            "obstacle_distance_weight": {
+              "type": "number",
+              "default": 0.5,
+              "description": "Weight for distance to obstacle in A* search."
             }
           },
           "required": [

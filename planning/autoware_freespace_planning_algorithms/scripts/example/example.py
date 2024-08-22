@@ -44,6 +44,7 @@ planner_param.obstacle_threshold = 100
 
 # -- A* search Configurations --
 astar_param = fp.AstarParam()
+astar_param.search_method = "forward"
 astar_param.only_behind_solutions = False
 astar_param.use_back = True
 astar_param.adapt_expansion_distance = True

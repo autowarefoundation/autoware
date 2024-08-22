@@ -29,6 +29,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+#include <algorithm>
 #include <vector>
 
 namespace autoware::freespace_planning_algorithms
@@ -83,6 +84,8 @@ AstarSearch::AstarSearch(
   avg_turning_radius_ =
     kinematic_bicycle_model::getTurningRadius(collision_vehicle_shape_.base_length, avg_steering);
 
+  is_backward_search_ = astar_param_.search_method == "backward";
+
   min_expansion_dist_ = astar_param_.expansion_distance;
   max_expansion_dist_ = collision_vehicle_shape_.base_length * base_length_max_expansion_factor_;
 }
@@ -104,15 +107,15 @@ bool AstarSearch::makePlan(const Pose & start_pose, const Pose & goal_pose)
   start_pose_ = global2local(costmap_, start_pose);
   goal_pose_ = global2local(costmap_, goal_pose);
 
-  if (detectCollision(goal_pose_)) {
-    throw std::logic_error("Invalid goal pose");
+  if (detectCollision(start_pose_) || detectCollision(goal_pose_)) {
+    throw std::logic_error("Invalid start or goal pose");
   }
+
+  if (is_backward_search_) std::swap(start_pose_, goal_pose_);
 
   setCollisionFreeDistanceMap();
 
-  if (!setStartNode()) {
-    throw std::logic_error("Invalid start pose");
-  }
+  setStartNode();
 
   if (!search()) {
     throw std::logic_error("HA* failed to find path to goal");
@@ -174,12 +177,9 @@ void AstarSearch::setCollisionFreeDistanceMap()
   }
 }
 
-bool AstarSearch::setStartNode()
+void AstarSearch::setStartNode()
 {
   const auto index = pose2index(costmap_, start_pose_, planner_common_param_.theta_size);
-
-  if (detectCollision(index)) return false;
-
   // Set start node
   AstarNode * start_node = &graph_[getKey(index)];
   start_node->set(start_pose_, 0.0, estimateCost(start_pose_, index), 0, false);
@@ -191,8 +191,6 @@ bool AstarSearch::setStartNode()
 
   // Push start node to openlist
   openlist_.push(start_node);
-
-  return true;
 }
 
 double AstarSearch::estimateCost(const Pose & pose, const IndexXYT & index) const
@@ -242,7 +240,8 @@ bool AstarSearch::search()
 void AstarSearch::expandNodes(AstarNode & current_node, const bool is_back)
 {
   const auto current_pose = node2pose(current_node);
-  double distance = getExpansionDistance(current_node) * (is_back ? -1.0 : 1.0);
+  const double direction = (is_back == is_backward_search_) ? 1.0 : -1.0;
+  const double distance = getExpansionDistance(current_node) * direction;
   int steering_index = -1 * planner_common_param_.turning_steps;
   for (; steering_index <= planner_common_param_.turning_steps; ++steering_index) {
     // skip expansion back to parent
@@ -333,46 +332,65 @@ void AstarSearch::setPath(const AstarNode & goal_node)
   header.stamp = rclcpp::Clock(RCL_ROS_TIME).now();
   header.frame_id = costmap_.header.frame_id;
 
-  waypoints_.header = header;
-  waypoints_.waypoints.clear();
-
   // From the goal node to the start node
   const AstarNode * node = &goal_node;
+
+  std::vector<PlannerWaypoint> waypoints;
 
   geometry_msgs::msg::PoseStamped pose;
   pose.header = header;
 
-  const auto interpolate = [this, &pose](const AstarNode & node) {
+  const auto interpolate = [this, &waypoints, &pose](const AstarNode & node) {
     if (node.parent == nullptr || !astar_param_.adapt_expansion_distance) return;
     const auto parent_pose = node2pose(*node.parent);
     const double distance_2d = calcDistance2d(node2pose(node), parent_pose);
     const int n = static_cast<int>(distance_2d / min_expansion_dist_);
     for (int i = 1; i < n; ++i) {
-      const double dist = ((distance_2d * i) / n) * (node.is_back ? -1.0 : 1.0);
+      const double dist =
+        ((distance_2d * i) / n) * (node.is_back == is_backward_search_ ? 1.0 : -1.0);
       const double steering = node.steering_index * steering_resolution_;
       const auto local_pose = kinematic_bicycle_model::getPose(
         parent_pose, collision_vehicle_shape_.base_length, steering, dist);
       pose.pose = local2global(costmap_, local_pose);
-      waypoints_.waypoints.push_back({pose, node.is_back});
+      waypoints.push_back({pose, node.is_back});
     }
   };
 
   // push astar nodes poses
   while (node != nullptr) {
     pose.pose = local2global(costmap_, node2pose(*node));
-    waypoints_.waypoints.push_back({pose, node->is_back});
+    waypoints.push_back({pose, node->is_back});
     interpolate(*node);
     // To the next node
     node = node->parent;
   }
 
-  // Reverse the vector to be start to goal order
-  std::reverse(waypoints_.waypoints.begin(), waypoints_.waypoints.end());
+  if (waypoints.empty()) return;
 
-  // Update first point direction
-  if (waypoints_.waypoints.size() > 1) {
-    waypoints_.waypoints.at(0).is_back = waypoints_.waypoints.at(1).is_back;
+  if (waypoints.size() > 1) waypoints.back().is_back = waypoints.rbegin()[1].is_back;
+
+  if (!is_backward_search_) {
+    // Reverse the vector to be start to goal order
+    std::reverse(waypoints.begin(), waypoints.end());
   }
+
+  waypoints_.header = header;
+  waypoints_.waypoints.clear();
+
+  for (size_t i = 0; i < waypoints.size() - 1; ++i) {
+    const auto & current = waypoints[i];
+    const auto & next = waypoints[i + 1];
+
+    waypoints_.waypoints.push_back(current);
+
+    if (current.is_back != next.is_back) {
+      waypoints_.waypoints.push_back(
+        {is_backward_search_ ? next.pose : current.pose,
+         is_backward_search_ ? current.is_back : next.is_back});
+    }
+  }
+
+  waypoints_.waypoints.push_back(waypoints.back());
 }
 
 bool AstarSearch::isGoal(const AstarNode & node) const

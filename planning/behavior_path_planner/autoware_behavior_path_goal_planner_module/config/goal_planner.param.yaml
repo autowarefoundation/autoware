@@ -106,6 +106,7 @@
             obstacle_threshold: 30
           # -- A* search Configurations --
           astar:
+            search_method: "forward"  # options: forward, backward
             only_behind_solutions: false
             use_back: false
             distance_heuristic_weight: 1.0

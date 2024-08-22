@@ -77,6 +77,7 @@ None
 
 | Parameter                   | Type   | Description                                             |
 | --------------------------- | ------ | ------------------------------------------------------- |
+| `search_method`             | string | method of searching, start to goal or vice versa        |
 | `only_behind_solutions`     | bool   | whether restricting the solutions to be behind the goal |
 | `use_back`                  | bool   | whether using backward trajectory                       |
 | `adapt_expansion_distance`  | bool   | if true, adapt expansion distance based on environment  |

@@ -111,6 +111,7 @@ PYBIND11_MODULE(autoware_freespace_planning_algorithms_pybind, p)
   auto pyAstarParam =
     py::class_<freespace_planning_algorithms::AstarParam>(p, "AstarParam", py::dynamic_attr())
       .def(py::init<>())
+      .def_readwrite("search_method", &freespace_planning_algorithms::AstarParam::search_method)
       .def_readwrite(
         "only_behind_solutions", &freespace_planning_algorithms::AstarParam::only_behind_solutions)
       .def_readwrite("use_back", &freespace_planning_algorithms::AstarParam::use_back)

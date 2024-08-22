@@ -167,6 +167,7 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
   //  freespace planner astar
   {
     const std::string ns = "start_planner.freespace_planner.astar.";
+    p.astar_parameters.search_method = node->declare_parameter<std::string>(ns + "search_method");
     p.astar_parameters.only_behind_solutions =
       node->declare_parameter<bool>(ns + "only_behind_solutions");
     p.astar_parameters.use_back = node->declare_parameter<bool>(ns + "use_back");
@@ -501,6 +502,7 @@ void StartPlannerModuleManager::updateModuleParams(
   {
     const std::string ns = "start_planner.freespace_planner.astar.";
 
+    updateParam<std::string>(parameters, ns + "search_method", p->astar_parameters.search_method);
     updateParam<bool>(parameters, ns + "use_back", p->astar_parameters.use_back);
     updateParam<bool>(
       parameters, ns + "only_behind_solutions", p->astar_parameters.only_behind_solutions);

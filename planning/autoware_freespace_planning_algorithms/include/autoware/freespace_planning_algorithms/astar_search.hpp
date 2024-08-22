@@ -41,6 +41,7 @@ enum class NodeStatus : uint8_t { None, Open, Closed };
 struct AstarParam
 {
   // base configs
+  std::string search_method;
   bool only_behind_solutions;  // solutions should be behind the goal
   bool use_back;               // backward search
   bool adapt_expansion_distance;
@@ -99,6 +100,7 @@ public:
   : AstarSearch(
       planner_common_param, collision_vehicle_shape,
       AstarParam{
+        node.declare_parameter<std::string>("astar.search_method"),
         node.declare_parameter<bool>("astar.only_behind_solutions"),
         node.declare_parameter<bool>("astar.use_back"),
         node.declare_parameter<bool>("astar.adapt_expansion_distance"),
@@ -125,7 +127,7 @@ private:
   void expandNodes(AstarNode & current_node, const bool is_back = false);
   void resetData();
   void setPath(const AstarNode & goal);
-  bool setStartNode();
+  void setStartNode();
   double estimateCost(const Pose & pose, const IndexXYT & index) const;
   bool isGoal(const AstarNode & node) const;
   Pose node2pose(const AstarNode & node) const;
@@ -156,6 +158,7 @@ private:
   double avg_turning_radius_;
   double min_expansion_dist_;
   double max_expansion_dist_;
+  bool is_backward_search_;
 
   // the following constexpr values were found to be best by trial and error, through multiple
   // tests, and are not expected to be changed regularly, therefore they were not made into ros

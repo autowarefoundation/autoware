@@ -235,6 +235,7 @@ void GoalPlannerModuleManager::init(rclcpp::Node * node)
   //  freespace parking astar
   {
     const std::string ns = base_ns + "pull_over.freespace_parking.astar.";
+    p.astar_parameters.search_method = node->declare_parameter<std::string>(ns + "search_method");
     p.astar_parameters.only_behind_solutions =
       node->declare_parameter<bool>(ns + "only_behind_solutions");
     p.astar_parameters.use_back = node->declare_parameter<bool>(ns + "use_back");
@@ -623,6 +624,7 @@ void GoalPlannerModuleManager::updateModuleParams(
   //  freespace parking astar
   {
     const std::string ns = base_ns + "pull_over.freespace_parking.astar.";
+    updateParam<std::string>(parameters, ns + "search_method", p->astar_parameters.search_method);
     updateParam<bool>(
       parameters, ns + "only_behind_solutions", p->astar_parameters.only_behind_solutions);
     updateParam<bool>(parameters, ns + "use_back", p->astar_parameters.use_back);

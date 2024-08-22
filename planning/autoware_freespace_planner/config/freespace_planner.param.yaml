@@ -31,6 +31,7 @@
 
     # -- A* search Configurations --
     astar:
+      search_method: "forward"  # options: forward, backward
       only_behind_solutions: false
       use_back: true
       adapt_expansion_distance: true
