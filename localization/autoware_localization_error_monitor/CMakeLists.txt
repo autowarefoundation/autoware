@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(localization_error_monitor)
+project(autoware_localization_error_monitor)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -10,7 +10,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "LocalizationErrorMonitor"
+  PLUGIN "autoware::localization_error_monitor::LocalizationErrorMonitor"
   EXECUTABLE ${PROJECT_NAME}_node
   EXECUTOR SingleThreadedExecutor
 )
@@ -20,7 +20,7 @@ if(BUILD_TESTING)
     get_filename_component(filename ${filepath} NAME)
     string(REGEX REPLACE ".cpp" "" test_name ${filename})
     ament_add_gtest(${test_name} ${filepath})
-    target_include_directories(${test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_include_directories(${test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(${test_name} ${PROJECT_NAME})
     ament_target_dependencies(${test_name} ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS})
   endfunction()

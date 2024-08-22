@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "localization_error_monitor/localization_error_monitor.hpp"
+#include "localization_error_monitor.hpp"
 
-#include "localization_error_monitor/diagnostics.hpp"
+#include "diagnostics.hpp"
 
 #include <Eigen/Dense>
 
@@ -31,7 +31,10 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
+namespace autoware::localization_error_monitor
+{
 LocalizationErrorMonitor::LocalizationErrorMonitor(const rclcpp::NodeOptions & options)
 : Node("localization_error_monitor", options)
 {
@@ -84,6 +87,7 @@ void LocalizationErrorMonitor::on_odom(nav_msgs::msg::Odometry::ConstSharedPtr i
   diag_msg.status.push_back(diag_merged_status);
   diag_pub_->publish(diag_msg);
 }
+}  // namespace autoware::localization_error_monitor
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(LocalizationErrorMonitor)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::localization_error_monitor::LocalizationErrorMonitor)

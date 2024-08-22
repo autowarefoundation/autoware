@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LOCALIZATION_ERROR_MONITOR__LOCALIZATION_ERROR_MONITOR_HPP_
-#define LOCALIZATION_ERROR_MONITOR__LOCALIZATION_ERROR_MONITOR_HPP_
+#ifndef LOCALIZATION_ERROR_MONITOR_HPP_
+#define LOCALIZATION_ERROR_MONITOR_HPP_
 
 #include "localization_util/covariance_ellipse.hpp"
 
@@ -27,6 +27,8 @@
 
 #include <memory>
 
+namespace autoware::localization_error_monitor
+{
 class LocalizationErrorMonitor : public rclcpp::Node
 {
 private:
@@ -50,4 +52,6 @@ private:
 public:
   explicit LocalizationErrorMonitor(const rclcpp::NodeOptions & options);
 };
-#endif  // LOCALIZATION_ERROR_MONITOR__LOCALIZATION_ERROR_MONITOR_HPP_
+}  // namespace autoware::localization_error_monitor
+
+#endif  // LOCALIZATION_ERROR_MONITOR_HPP_

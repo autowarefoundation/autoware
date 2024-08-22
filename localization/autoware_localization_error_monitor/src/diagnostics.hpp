@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LOCALIZATION_ERROR_MONITOR__DIAGNOSTICS_HPP_
-#define LOCALIZATION_ERROR_MONITOR__DIAGNOSTICS_HPP_
+#ifndef DIAGNOSTICS_HPP_
+#define DIAGNOSTICS_HPP_
 
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 
 #include <string>
 #include <vector>
 
+namespace autoware::localization_error_monitor
+{
 diagnostic_msgs::msg::DiagnosticStatus check_localization_accuracy(
   const double ellipse_size, const double warn_ellipse_size, const double error_ellipse_size);
 diagnostic_msgs::msg::DiagnosticStatus check_localization_accuracy_lateral_direction(
@@ -27,5 +29,6 @@ diagnostic_msgs::msg::DiagnosticStatus check_localization_accuracy_lateral_direc
 
 diagnostic_msgs::msg::DiagnosticStatus merge_diagnostic_status(
   const std::vector<diagnostic_msgs::msg::DiagnosticStatus> & stat_array);
+}  // namespace autoware::localization_error_monitor
 
-#endif  // LOCALIZATION_ERROR_MONITOR__DIAGNOSTICS_HPP_
+#endif  // DIAGNOSTICS_HPP_
