@@ -22,8 +22,13 @@ jobs:
     with:
       label: tag:run-build-and-test-differential
 
+  make-sure-require-cuda-label-is-present:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
+    with:
+      label: tag:require-cuda-build-and-test
+
   build-and-test-differential:
-    needs: make-sure-label-is-present
+    needs: [make-sure-label-is-present, make-sure-require-cuda-label-is-present]
     if: ${{ needs.make-sure-label-is-present.outputs.result == 'true' }}
     runs-on: ${{ matrix.runner }}
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
@@ -57,6 +62,7 @@ jobs:
           fetch-depth: ${{ env.PR_FETCH_DEPTH }}
 
       - name: Run build-and-test-differential action
+        if: ${{ !(matrix.container-suffix == '-cuda') || needs.make-sure-require-cuda-label-is-present.outputs.result == 'true' }}
         uses: ./.github/actions/build-and-test-differential
         with:
           rosdistro: ${{ matrix.rosdistro }}
