@@ -152,6 +152,8 @@ std::pair<bool, bool> NormalLaneChange::getSafePath(LaneChangePath & safe_path) 
 
 bool NormalLaneChange::isLaneChangeRequired()
 {
+  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+
   const auto current_lanes =
     utils::getCurrentLanesFromPath(prev_module_output_.path, planner_data_);
 
@@ -161,7 +163,15 @@ bool NormalLaneChange::isLaneChangeRequired()
 
   const auto target_lanes = getLaneChangeLanes(current_lanes, direction_);
 
-  return !target_lanes.empty();
+  if (target_lanes.empty()) {
+    return false;
+  }
+
+  const auto ego_dist_to_target_start =
+    calculation::calc_ego_dist_to_lanes_start(common_data_ptr_, current_lanes, target_lanes);
+  const auto maximum_prepare_length = calculation::calc_maximum_prepare_length(common_data_ptr_);
+
+  return ego_dist_to_target_start <= maximum_prepare_length;
 }
 
 bool NormalLaneChange::isStoppedAtRedTrafficLight() const

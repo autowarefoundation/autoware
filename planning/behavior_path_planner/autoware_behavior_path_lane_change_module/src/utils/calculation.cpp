@@ -101,4 +101,44 @@ double calc_dist_to_last_fit_width(
 
   return std::max(distance - (bpp_param.base_link2front + margin), 0.0);
 }
+
+double calc_maximum_prepare_length(const CommonDataPtr & common_data_ptr)
+{
+  const auto max_prepare_duration = common_data_ptr->lc_param_ptr->lane_change_prepare_duration;
+  const auto ego_max_speed = common_data_ptr->bpp_param_ptr->max_vel;
+
+  return max_prepare_duration * ego_max_speed;
+}
+
+double calc_ego_dist_to_lanes_start(
+  const CommonDataPtr & common_data_ptr, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & target_lanes)
+{
+  const auto & route_handler_ptr = common_data_ptr->route_handler_ptr;
+
+  if (!route_handler_ptr || target_lanes.empty() || current_lanes.empty()) {
+    return std::numeric_limits<double>::max();
+  }
+
+  const auto & target_bound =
+    common_data_ptr->direction == autoware::route_handler::Direction::RIGHT
+      ? target_lanes.front().leftBound()
+      : target_lanes.front().rightBound();
+
+  if (target_bound.empty()) {
+    return std::numeric_limits<double>::max();
+  }
+
+  const auto path =
+    route_handler_ptr->getCenterLinePath(current_lanes, 0.0, std::numeric_limits<double>::max());
+
+  if (path.points.empty()) {
+    return std::numeric_limits<double>::max();
+  }
+
+  const auto target_front_pt = lanelet::utils::conversion::toGeomMsgPt(target_bound.front());
+  const auto ego_position = common_data_ptr->get_ego_pose().position;
+
+  return motion_utils::calcSignedArcLength(path.points, ego_position, target_front_pt);
+}
 }  // namespace autoware::behavior_path_planner::utils::lane_change::calculation
