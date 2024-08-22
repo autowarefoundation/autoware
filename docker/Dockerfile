@@ -127,6 +127,7 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
+# hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/param,target=/autoware/src/param \
