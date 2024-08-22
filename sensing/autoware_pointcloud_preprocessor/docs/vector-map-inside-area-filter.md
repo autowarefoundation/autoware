@@ -33,10 +33,6 @@ This implementation inherits `autoware::pointcloud_preprocessor::Filter` class, 
 
 ### Core Parameters
 
-| Name           | Type   | Description                 |
-| -------------- | ------ | --------------------------- |
-| `polygon_type` | string | polygon type to be filtered |
-| `use_z`        | bool   | use z value for filtering   |
-| `z_threshold`  | float  | z threshold for filtering   |
+{{ json_to_markdown("sensing/autoware_pointcloud_preprocessor/schema/vector_map_inside_area_filter_node.schema.json") }}
 
 ## Assumptions / Known limits

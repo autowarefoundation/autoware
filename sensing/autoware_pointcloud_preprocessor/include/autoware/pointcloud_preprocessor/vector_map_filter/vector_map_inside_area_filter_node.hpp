@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE__POINTCLOUD_PREPROCESSOR__VECTOR_MAP_FILTER__VECTOR_MAP_INSIDE_AREA_FILTER_HPP_
-#define AUTOWARE__POINTCLOUD_PREPROCESSOR__VECTOR_MAP_FILTER__VECTOR_MAP_INSIDE_AREA_FILTER_HPP_
+#ifndef AUTOWARE__POINTCLOUD_PREPROCESSOR__VECTOR_MAP_FILTER__VECTOR_MAP_INSIDE_AREA_FILTER_NODE_HPP_  // NOLINT
+#define AUTOWARE__POINTCLOUD_PREPROCESSOR__VECTOR_MAP_FILTER__VECTOR_MAP_INSIDE_AREA_FILTER_NODE_HPP_  // NOLINT
 
 #include "autoware/pointcloud_preprocessor/filter.hpp"
 #include "autoware/pointcloud_preprocessor/utility/geometry.hpp"
@@ -58,4 +58,6 @@ public:
 
 }  // namespace autoware::pointcloud_preprocessor
 
-#endif  // AUTOWARE__POINTCLOUD_PREPROCESSOR__VECTOR_MAP_FILTER__VECTOR_MAP_INSIDE_AREA_FILTER_HPP_
+// clang-format off
+#endif  // AUTOWARE__POINTCLOUD_PREPROCESSOR__VECTOR_MAP_FILTER__VECTOR_MAP_INSIDE_AREA_FILTER_NODE_HPP_  // NOLINT
+// clang-format on

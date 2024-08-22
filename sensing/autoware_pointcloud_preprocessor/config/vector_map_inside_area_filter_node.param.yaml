@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    polygon_type: "no_obstacle_segmentation_area"
+    use_z_filter: false
+    z_threshold: 0.0
