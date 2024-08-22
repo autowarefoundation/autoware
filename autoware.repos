@@ -41,7 +41,7 @@ repositories:
   universe/autoware.universe:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
-    version: 41fca7e17cdca52030496f7d09748209e157d861
+    version: 96dae8d3bcea24b0a63416f07845e79fef5fe6a9
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
