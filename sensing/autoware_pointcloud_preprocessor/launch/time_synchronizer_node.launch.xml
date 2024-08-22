@@ -1,0 +1,9 @@
+<launch>
+  <arg name="input/twist" default="/sensing/vehicle_velocity_converter/twist_with_covariance"/>
+  <!-- Parameter -->
+  <arg name="param_file" default="$(find-pkg-share autoware_pointcloud_preprocessor)/config/time_synchronizer_node.param.yaml"/>
+  <node pkg="autoware_pointcloud_preprocessor" exec="time_synchronizer_node" name="time_synchronizer_node" output="screen">
+    <remap from="~/input/twist" to="$(var input/twist)"/>
+    <param from="$(var param_file)"/>
+  </node>
+</launch>

@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Concatenate Pointclouds Node",
+  "type": "object",
+  "definitions": {
+    "concatenate_pointclouds": {
+      "type": "object",
+      "properties": {
+        "timeout_sec": {
+          "type": "number",
+          "default": "0.1",
+          "minimum": 0,
+          "description": "Tolerance of time to publish the next pointcloud [s]. When this time limit is exceeded, the filter concatenates and publishes pointcloud, even if not all the point clouds are subscribed."
+        },
+        "input_offset": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "default": [],
+          "description": "This parameter can control waiting time for each input sensor pointcloud [s]. You must to set the same length of offsets with input pointclouds numbers."
+        },
+        "output_frame": {
+          "type": "string",
+          "default": "base_link",
+          "description": "Output frame id."
+        },
+        "input_topics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "List of input topics."
+        },
+        "max_queue_size": {
+          "type": "integer",
+          "default": "5",
+          "minimum": 1,
+          "description": "Max queue size of input/output topics."
+        }
+      },
+      "required": ["timeout_sec", "input_offset", "output_frame", "input_topics", "max_queue_size"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/concatenate_pointclouds"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

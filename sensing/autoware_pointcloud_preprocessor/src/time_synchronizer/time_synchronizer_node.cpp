@@ -1,4 +1,4 @@
-// Copyright 2023 TIER IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
  * @author Yoshi Ri
  */
 
-#include "autoware/pointcloud_preprocessor/time_synchronizer/time_synchronizer_nodelet.hpp"
+#include "autoware/pointcloud_preprocessor/time_synchronizer/time_synchronizer_node.hpp"
 
 #include <pcl_ros/transforms.hpp>
 
@@ -57,14 +57,14 @@ PointCloudDataSynchronizerComponent::PointCloudDataSynchronizerComponent(
   // Set parameters
   std::string synchronized_pointcloud_postfix;
   {
-    output_frame_ = static_cast<std::string>(declare_parameter("output_frame", ""));
+    output_frame_ = declare_parameter<std::string>("output_frame");
     keep_input_frame_in_synchronized_pointcloud_ =
-      static_cast<bool>(declare_parameter("keep_input_frame_in_synchronized_pointcloud", false));
+      declare_parameter<bool>("keep_input_frame_in_synchronized_pointcloud");
     if (output_frame_.empty() && !keep_input_frame_in_synchronized_pointcloud_) {
       RCLCPP_ERROR(get_logger(), "Need an 'output_frame' parameter to be set before continuing!");
       return;
     }
-    declare_parameter("input_topics", std::vector<std::string>());
+    declare_parameter<std::vector<std::string>>("input_topics");
     input_topics_ = get_parameter("input_topics").as_string_array();
     if (input_topics_.empty()) {
       RCLCPP_ERROR(get_logger(), "Need a 'input_topics' parameter to be set before continuing!");
@@ -76,13 +76,12 @@ PointCloudDataSynchronizerComponent::PointCloudDataSynchronizerComponent(
     }
     // output topic name postfix
     synchronized_pointcloud_postfix =
-      declare_parameter("synchronized_pointcloud_postfix", "pointcloud");
+      declare_parameter<std::string>("synchronized_pointcloud_postfix");
 
     // Optional parameters
-    maximum_queue_size_ = static_cast<int>(declare_parameter("max_queue_size", 5));
-    timeout_sec_ = static_cast<double>(declare_parameter("timeout_sec", 0.1));
-
-    input_offset_ = declare_parameter("input_offset", std::vector<double>{});
+    maximum_queue_size_ = declare_parameter<int64_t>("max_queue_size");
+    timeout_sec_ = declare_parameter<double>("timeout_sec");
+    input_offset_ = declare_parameter<std::vector<double>>("input_offset");
 
     // If input_offset_ is not defined, set all offsets to 0
     if (input_offset_.empty()) {

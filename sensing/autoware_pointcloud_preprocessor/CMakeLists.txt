@@ -64,7 +64,7 @@ ament_target_dependencies(faster_voxel_grid_downsample_filter
 ament_auto_add_library(pointcloud_preprocessor_filter SHARED
   src/concatenate_data/concatenate_and_time_sync_nodelet.cpp
   src/concatenate_data/concatenate_pointclouds.cpp
-  src/time_synchronizer/time_synchronizer_nodelet.cpp
+  src/time_synchronizer/time_synchronizer_node.cpp
   src/crop_box_filter/crop_box_filter_nodelet.cpp
   src/downsample_filter/voxel_grid_downsample_filter_node.cpp
   src/downsample_filter/random_downsample_filter_nodelet.cpp

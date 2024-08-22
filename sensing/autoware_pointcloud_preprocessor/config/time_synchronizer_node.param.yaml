@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    input_twist_topic_type: twist
+    output_frame: base_link
+    keep_input_frame_in_synchronized_pointcloud: false
+    input_topics: [
+                    "/sensing/lidar/left/pointcloud_before_sync",
+                    "/sensing/lidar/right/pointcloud_before_sync",
+                    "/sensing/lidar/top/pointcloud_before_sync"
+                ]
+    synchronized_pointcloud_postfix: pointcloud
+    max_queue_size: 5
+    timeout_sec: 0.033
+    input_offset: [0.0, 0.0, 0.0]

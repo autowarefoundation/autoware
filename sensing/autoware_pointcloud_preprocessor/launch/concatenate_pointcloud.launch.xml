@@ -1,0 +1,9 @@
+<launch>
+  <arg name="output" default="/sensing/lidar/concatenated/pointcloud"/>
+  <!-- Parameter -->
+  <arg name="param_file" default="$(find-pkg-share autoware_pointcloud_preprocessor)/config/concatenate_pointclouds.param.yaml"/>
+  <node pkg="autoware_pointcloud_preprocessor" exec="concatenate_pointclouds_node" name="concatenate_pointclouds_node" output="screen">
+    <remap from="output" to="$(var output)"/>
+    <param from="$(var param_file)"/>
+  </node>
+</launch>
