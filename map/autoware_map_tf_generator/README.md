@@ -1,4 +1,4 @@
-# map_tf_generator
+# autoware_map_tf_generator
 
 ## Purpose
 
@@ -17,13 +17,13 @@ The following are the supported methods to calculate the position of the `viewer
 
 ### Input
 
-#### pcd_map_tf_generator
+#### autoware_pcd_map_tf_generator
 
 | Name                  | Type                            | Description                                                       |
 | --------------------- | ------------------------------- | ----------------------------------------------------------------- |
 | `/map/pointcloud_map` | `sensor_msgs::msg::PointCloud2` | Subscribe pointcloud map to calculate position of `viewer` frames |
 
-#### vector_map_tf_generator
+#### autoware_vector_map_tf_generator
 
 | Name              | Type                                    | Description                                                   |
 | ----------------- | --------------------------------------- | ------------------------------------------------------------- |
@@ -43,7 +43,7 @@ None
 
 ### Core Parameters
 
-{{ json_to_markdown("map/map_tf_generator/schema/map_tf_generator.schema.json") }}
+{{ json_to_markdown("map/autoware_map_tf_generator/schema/map_tf_generator.schema.json") }}
 
 ## Assumptions / Known limits
 

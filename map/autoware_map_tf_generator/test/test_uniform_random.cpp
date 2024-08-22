@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "map_tf_generator/uniform_random.hpp"
+#include "uniform_random.hpp"
 
 #include <gmock/gmock.h>
 
@@ -24,7 +24,7 @@ using testing::Lt;
 TEST(uniform_random, uniform_random)
 {
   {
-    const std::vector<size_t> random = uniform_random(4, 0);
+    const std::vector<size_t> random = autoware::map_tf_generator::uniform_random(4, 0);
     ASSERT_EQ(random.size(), static_cast<size_t>(0));
   }
 
@@ -35,7 +35,7 @@ TEST(uniform_random, uniform_random)
     const size_t max_exclusive = 4;
 
     for (int i = 0; i < 50; i++) {
-      const std::vector<size_t> random = uniform_random(4, 10);
+      const std::vector<size_t> random = autoware::map_tf_generator::uniform_random(4, 10);
       ASSERT_EQ(random.size(), 10U);
       ASSERT_THAT(random, Each(AllOf(Ge(min_inclusive), Lt(max_exclusive))));  // in range [0, 4)
     }

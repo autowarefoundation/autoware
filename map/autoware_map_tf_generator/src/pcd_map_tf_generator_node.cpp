@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "map_tf_generator/uniform_random.hpp"
+#include "uniform_random.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -28,6 +28,8 @@
 #include <string>
 #include <variant>
 
+namespace autoware::map_tf_generator
+{
 constexpr size_t n_samples = 20;
 
 class PcdMapTFGeneratorNode : public rclcpp::Node
@@ -95,6 +97,7 @@ private:
                       << ", y:" << coordinate[1] << ", z:" << coordinate[2]);
   }
 };
+}  // namespace autoware::map_tf_generator
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(PcdMapTFGeneratorNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::map_tf_generator::PcdMapTFGeneratorNode)

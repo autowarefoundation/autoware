@@ -1,0 +1,11 @@
+<launch>
+  <arg name="param_file" default="$(find-pkg-share autoware_map_tf_generator)/config/map_tf_generator.param.yaml"/>
+
+  <arg name="input_vector_map_topic" default="/map/vector_map"/>
+
+  <node pkg="autoware_map_tf_generator" exec="autoware_vector_map_tf_generator" name="vector_map_tf_generator" output="both">
+    <remap from="vector_map" to="$(var input_vector_map_topic)"/>
+
+    <param from="$(var param_file)"/>
+  </node>
+</launch>

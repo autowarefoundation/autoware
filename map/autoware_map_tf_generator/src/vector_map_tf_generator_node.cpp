@@ -25,6 +25,8 @@
 #include <memory>
 #include <string>
 
+namespace autoware::map_tf_generator
+{
 class VectorMapTFGeneratorNode : public rclcpp::Node
 {
 public:
@@ -93,6 +95,7 @@ private:
                       << ", y:" << coordinate_y << ", z:" << coordinate_z);
   }
 };
+}  // namespace autoware::map_tf_generator
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(VectorMapTFGeneratorNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::map_tf_generator::VectorMapTFGeneratorNode)

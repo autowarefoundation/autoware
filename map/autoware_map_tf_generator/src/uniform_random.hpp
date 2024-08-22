@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MAP_TF_GENERATOR__UNIFORM_RANDOM_HPP_
-#define MAP_TF_GENERATOR__UNIFORM_RANDOM_HPP_
+#ifndef UNIFORM_RANDOM_HPP_
+#define UNIFORM_RANDOM_HPP_
 
 #include <random>
 #include <vector>
 
+namespace autoware::map_tf_generator
+{
 std::vector<size_t> inline uniform_random(const size_t max_exclusive, const size_t n)
 {
   std::default_random_engine generator;
@@ -29,5 +31,6 @@ std::vector<size_t> inline uniform_random(const size_t max_exclusive, const size
   }
   return v;
 }
+}  // namespace autoware::map_tf_generator
 
-#endif  // MAP_TF_GENERATOR__UNIFORM_RANDOM_HPP_
+#endif  // UNIFORM_RANDOM_HPP_
