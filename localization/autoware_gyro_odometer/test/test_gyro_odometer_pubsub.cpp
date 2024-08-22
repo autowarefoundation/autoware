@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gyro_odometer/gyro_odometer_core.hpp"
+#include "gyro_odometer_core.hpp"
 #include "test_gyro_odometer_helper.hpp"
 
 #include <rclcpp/rclcpp.hpp>

@@ -1,8 +1,8 @@
-# gyro_odometer
+# autoware_gyro_odometer
 
 ## Purpose
 
-`gyro_odometer` is the package to estimate twist by combining imu and vehicle speed.
+`autoware_gyro_odometer` is the package to estimate twist by combining imu and vehicle speed.
 
 ## Inputs / Outputs
 
@@ -21,7 +21,7 @@
 
 ## Parameters
 
-{{ json_to_markdown("localization/gyro_odometer/schema/gyro_odometer.schema.json") }}
+{{ json_to_markdown("localization/autoware_gyro_odometer/schema/gyro_odometer.schema.json") }}
 
 ## Assumptions / Known limits
 

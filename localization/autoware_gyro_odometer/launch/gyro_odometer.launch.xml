@@ -9,9 +9,9 @@
   <arg name="output_twist_topic" default="gyro_twist" description="output twist topic name"/>
   <arg name="output_twist_with_covariance_topic" default="gyro_twist_with_covariance" description="output twist with covariance topic name"/>
 
-  <arg name="config_file" default="$(find-pkg-share gyro_odometer)/config/gyro_odometer.param.yaml"/>
+  <arg name="config_file" default="$(find-pkg-share autoware_gyro_odometer)/config/gyro_odometer.param.yaml"/>
 
-  <node pkg="gyro_odometer" exec="gyro_odometer_node" output="both">
+  <node pkg="autoware_gyro_odometer" exec="autoware_gyro_odometer_node" output="both">
     <remap from="vehicle/twist_with_covariance" to="$(var input_vehicle_twist_with_covariance_topic)"/>
 
     <remap from="imu" to="$(var input_imu_topic)"/>

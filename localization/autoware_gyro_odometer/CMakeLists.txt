@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(gyro_odometer)
+project(autoware_gyro_odometer)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -21,6 +21,9 @@ if(BUILD_TESTING)
   )
   target_link_libraries(test_gyro_odometer
     ${PROJECT_NAME}
+  )
+  target_include_directories(test_gyro_odometer PRIVATE
+    src
   )
 endif()
 

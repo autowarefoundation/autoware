@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <group>
-    <include file="$(find-pkg-share gyro_odometer)/launch/gyro_odometer.launch.xml">
+    <include file="$(find-pkg-share autoware_gyro_odometer)/launch/gyro_odometer.launch.xml">
       <arg name="input_vehicle_twist_with_covariance_topic" value="/sensing/vehicle_velocity_converter/twist_with_covariance"/>
       <arg name="output_twist_with_covariance_topic" value="/localization/twist_estimator/twist_with_covariance"/>
       <arg name="output_twist_with_covariance_raw_topic" value="/localization/twist_estimator/twist_with_covariance_raw"/>
