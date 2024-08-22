@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/pointcloud_preprocessor/vector_map_filter/lanelet2_map_filter_nodelet.hpp"
+#include "autoware/pointcloud_preprocessor/vector_map_filter/lanelet2_map_filter_node.hpp"
 
 #include "autoware/pointcloud_preprocessor/filter.hpp"
 
@@ -39,8 +39,8 @@ Lanelet2MapFilterComponent::Lanelet2MapFilterComponent(const rclcpp::NodeOptions
 
   // Set parameters
   {
-    voxel_size_x_ = declare_parameter("voxel_size_x", 0.04);
-    voxel_size_y_ = declare_parameter("voxel_size_y", 0.04);
+    voxel_size_x_ = declare_parameter<float>("voxel_size_x");
+    voxel_size_y_ = declare_parameter<float>("voxel_size_y");
   }
 
   // Set publisher

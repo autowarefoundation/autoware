@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    voxel_size_x: 0.04
+    voxel_size_y: 0.04

@@ -25,10 +25,7 @@ The `vector_map_filter` is a node that removes points on the outside of lane by 
 
 ### Core Parameters
 
-| Name           | Type   | Default Value | Description |
-| -------------- | ------ | ------------- | ----------- |
-| `voxel_size_x` | double | 0.04          | voxel size  |
-| `voxel_size_y` | double | 0.04          | voxel size  |
+{{ json_to_markdown("sensing/autoware_pointcloud_preprocessor/schema/lanelet2_map_filter_node.schema.json") }}
 
 ## Assumptions / Known limits
 

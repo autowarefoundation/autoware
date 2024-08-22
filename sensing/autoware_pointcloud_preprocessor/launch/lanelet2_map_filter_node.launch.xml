@@ -1,0 +1,12 @@
+<launch>
+  <arg name="input_vector_map" default="/map/vector_map"/>
+  <arg name="input_pointcloud" default="detection_area/pointcloud"/>
+  <arg name="output_pointcloud" default="vector_map_filtered/pointcloud"/>
+  <arg name="lanelet2_map_filter_param_file" default="$(find-pkg-share autoware_pointcloud_preprocessor)/config/lanelet2_map_filter_node.param.yaml"/>
+  <node pkg="autoware_pointcloud_preprocessor" exec="vector_map_filter_node" name="vector_map_filter_node">
+    <param from="$(var lanelet2_map_filter_param_file)"/>
+    <remap from="input/vector_map" to="$(var input_vector_map)"/>
+    <remap from="input/pointcloud" to="$(var input_pointcloud)"/>
+    <remap from="output" to="$(var output_pointcloud)"/>
+  </node>
+</launch>
