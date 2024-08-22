@@ -50,6 +50,60 @@ double ActuationMap::getControlCommand(const double actuation, const double stat
   return interpolation::lerp(actuation_index_, interpolated_control_vec, clamped_actuation);
 }
 
+std::optional<double> AccelMap::getThrottle(const double acc, double vel) const
+{
+  const std::vector<double> & vel_indices = state_index_;
+  const std::vector<double> & throttle_indices = actuation_index_;
+  const std::vector<std::vector<double>> & accel_map = actuation_map_;
+
+  std::vector<double> interpolated_acc_vec;
+  const double clamped_vel = CSVLoader::clampValue(vel, vel_indices);
+
+  // (throttle, vel, acc) map => (throttle, acc) map by fixing vel
+  for (std::vector<double> accelerations : accel_map) {
+    interpolated_acc_vec.push_back(interpolation::lerp(vel_indices, accelerations, clamped_vel));
+  }
+
+  // calculate throttle
+  // When the desired acceleration is smaller than the throttle area, return null => brake sequence
+  // When the desired acceleration is greater than the throttle area, return max throttle
+  if (acc < interpolated_acc_vec.front()) {
+    return std::nullopt;
+  } else if (interpolated_acc_vec.back() < acc) {
+    return throttle_indices.back();
+  }
+
+  return interpolation::lerp(interpolated_acc_vec, throttle_indices, acc);
+}
+
+double BrakeMap::getBrake(const double acc, double vel) const
+{
+  const std::vector<double> & vel_indices = state_index_;
+  const std::vector<double> & brake_indices = actuation_index_;
+  const std::vector<std::vector<double>> & brake_map = actuation_map_;
+
+  std::vector<double> interpolated_acc_vec;
+  const double clamped_vel = CSVLoader::clampValue(vel, vel_indices);
+
+  // (brake, vel, acc) map => (brake, acc) map by fixing vel
+  for (std::vector<double> accelerations : brake_map) {
+    interpolated_acc_vec.push_back(interpolation::lerp(vel_indices, accelerations, clamped_vel));
+  }
+
+  // calculate brake
+  // When the desired acceleration is smaller than the brake area, return max brake on the map
+  // When the desired acceleration is greater than the brake area, return min brake on the map
+  if (acc < interpolated_acc_vec.back()) {
+    return brake_indices.back();
+  } else if (interpolated_acc_vec.front() < acc) {
+    return brake_indices.front();
+  }
+
+  std::reverse(std::begin(interpolated_acc_vec), std::end(interpolated_acc_vec));
+  return interpolation::lerp(interpolated_acc_vec, brake_indices, acc);
+}
+
+// steer map sim model
 SimModelActuationCmd::SimModelActuationCmd(
   double vx_lim, double steer_lim, double vx_rate_lim, double steer_rate_lim, double wheelbase,
   double dt, double accel_delay, double accel_time_constant, double brake_delay,
@@ -75,6 +129,40 @@ SimModelActuationCmd::SimModelActuationCmd(
   convert_accel_cmd_ = convert_accel_cmd && accel_map_.readActuationMapFromCSV(accel_map_path);
   convert_brake_cmd_ = convert_brake_cmd && brake_map_.readActuationMapFromCSV(brake_map_path);
   convert_steer_cmd_ = convert_steer_cmd && steer_map_.readActuationMapFromCSV(steer_map_path);
+  actuation_sim_type_ = ActuationSimType::STEER_MAP;
+}
+
+// VGR sim model
+SimModelActuationCmd::SimModelActuationCmd(
+  double vx_lim, double steer_lim, double vx_rate_lim, double steer_rate_lim, double wheelbase,
+  double dt, double accel_delay, double accel_time_constant, double brake_delay,
+  double brake_time_constant, double steer_delay, double steer_time_constant, double steer_bias,
+  bool convert_accel_cmd, bool convert_brake_cmd, bool convert_steer_cmd,
+  std::string accel_map_path, std::string brake_map_path, double vgr_coef_a, double vgr_coef_b,
+  double vgr_coef_c)
+: SimModelInterface(6 /* dim x */, 5 /* dim u */),
+  MIN_TIME_CONSTANT(0.03),
+  vx_lim_(vx_lim),
+  vx_rate_lim_(vx_rate_lim),
+  steer_lim_(steer_lim),
+  steer_rate_lim_(steer_rate_lim),
+  wheelbase_(wheelbase),
+  accel_delay_(accel_delay),
+  accel_time_constant_(std::max(accel_time_constant, MIN_TIME_CONSTANT)),
+  brake_delay_(brake_delay),
+  brake_time_constant_(std::max(brake_time_constant, MIN_TIME_CONSTANT)),
+  steer_delay_(steer_delay),
+  steer_time_constant_(std::max(steer_time_constant, MIN_TIME_CONSTANT)),
+  steer_bias_(steer_bias),
+  convert_steer_cmd_(convert_steer_cmd),
+  vgr_coef_a_(vgr_coef_a),
+  vgr_coef_b_(vgr_coef_b),
+  vgr_coef_c_(vgr_coef_c)
+{
+  initializeInputQueue(dt);
+  convert_accel_cmd_ = convert_accel_cmd && accel_map_.readActuationMapFromCSV(accel_map_path);
+  convert_brake_cmd_ = convert_brake_cmd && brake_map_.readActuationMapFromCSV(brake_map_path);
+  actuation_sim_type_ = ActuationSimType::VGR;
 }
 
 double SimModelActuationCmd::getX()
@@ -131,8 +219,9 @@ void SimModelActuationCmd::update(const double & dt)
   const auto prev_state = state_;
   updateRungeKutta(dt, delayed_input);
 
-  // take velocity limit explicitly
-  state_(IDX::VX) = std::max(-vx_lim_, std::min(state_(IDX::VX), vx_lim_));
+  // take velocity/steer limit explicitly
+  state_(IDX::VX) = std::clamp(state_(IDX::VX), -vx_lim_, vx_lim_);
+  state_(IDX::STEER) = std::clamp(state_(IDX::STEER), -steer_lim_, steer_lim_);
 
   // consider gear
   // update position and velocity first, and then acceleration is calculated naturally
@@ -201,8 +290,15 @@ Eigen::VectorXd SimModelActuationCmd::calcModel(
     std::invoke([&]() -> double {
       // if conversion is enabled, calculate steering rate from steer command
       if (convert_steer_cmd_) {
-        // convert steer command to steer rate
-        return steer_map_.getControlCommand(input(IDX_U::STEER_DES), steer) / steer_time_constant_;
+        if (actuation_sim_type_ == ActuationSimType::VGR) {
+          // convert steer wheel command to steer rate
+          const double steer_des =
+            calculateSteeringTireCommand(vel, steer, input(IDX_U::STEER_DES));
+          return -(getSteer() - steer_des) / steer_time_constant_;
+        } else if (actuation_sim_type_ == ActuationSimType::STEER_MAP) {
+          // convert steer command to steer rate
+          return steer_map_.getControlCommand(input(IDX_U::STEER_DES), vel) / steer_time_constant_;
+        }
       }
       // otherwise, steer command is desired steering angle, so calculate steering rate from the
       // difference between the desired steering angle and the current steering angle.
@@ -258,3 +354,66 @@ void SimModelActuationCmd::updateStateWithGear(
     state(IDX::ACCX) = (state(IDX::VX) - prev_state(IDX::VX)) / std::max(dt, 1.0e-5);
   }
 }
+
+std::optional<tier4_vehicle_msgs::msg::ActuationStatusStamped>
+SimModelActuationCmd::getActuationStatus() const
+{
+  if (!convert_accel_cmd_ && !convert_brake_cmd_ && !convert_steer_cmd_) {
+    return std::nullopt;
+  }
+
+  tier4_vehicle_msgs::msg::ActuationStatusStamped actuation_status;
+
+  const double acc_state = std::clamp(state_(IDX::ACCX), -vx_rate_lim_, vx_rate_lim_);
+  const double vel_state = std::clamp(state_(IDX::VX), -vx_lim_, vx_lim_);
+
+  if (convert_accel_cmd_) {
+    const auto throttle = accel_map_.getThrottle(acc_state, vel_state);
+    if (throttle.has_value()) {
+      actuation_status.status.accel_status = throttle.value();
+    }
+  }
+
+  if (convert_brake_cmd_) {
+    actuation_status.status.brake_status = brake_map_.getBrake(acc_state, vel_state);
+  }
+
+  if (convert_steer_cmd_) {
+    if (actuation_sim_type_ == ActuationSimType::VGR) {
+      actuation_status.status.steer_status =
+        calculateSteeringWheelState(vel_state, state_(IDX::STEER));
+    }
+    // NOTE: Conversion by steer map is not supported
+    // else if (actuation_sim_type_ == ActuationSimType::STEER_MAP) {}
+  }
+
+  return actuation_status;
+}
+
+/* ------ Functions for VGR sim model ----- */
+double SimModelActuationCmd::calculateSteeringTireCommand(
+  const double vel, const double steer, const double steer_wheel_des) const
+{
+  // steer_tire_state -> steer_wheel_state
+  const double steer_wheel = calculateSteeringWheelState(vel, steer);
+
+  // steer_wheel_des -> steer_tire_des
+  const double adaptive_gear_ratio = calculateVariableGearRatio(vel, steer_wheel);
+
+  return steer_wheel_des / adaptive_gear_ratio;
+}
+
+double SimModelActuationCmd::calculateSteeringWheelState(
+  const double vel, const double steer_state) const
+{
+  return (vgr_coef_a_ + vgr_coef_b_ * vel * vel) * steer_state /
+         (1.0 + vgr_coef_c_ * std::abs(steer_state));
+}
+
+double SimModelActuationCmd::calculateVariableGearRatio(
+  const double vel, const double steer_wheel) const
+{
+  return std::max(
+    1e-5, vgr_coef_a_ + vgr_coef_b_ * vel * vel - vgr_coef_c_ * std::fabs(steer_wheel));
+}
+/* ---------------------------------------- */

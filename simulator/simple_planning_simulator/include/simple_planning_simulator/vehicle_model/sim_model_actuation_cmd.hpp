@@ -23,13 +23,22 @@
 
 #include <deque>
 #include <iostream>
+#include <optional>
 #include <queue>
 #include <string>
 #include <vector>
 
 /**
  * @class ActuationMap
- * @brief class to convert actuation command
+ * @brief class to convert from actuation command to control command
+ *
+ *      ------- state ------->
+ *     |
+ *     |
+ * actuation    control
+ *     |
+ *     |
+ *     V
  */
 class ActuationMap
 {
@@ -43,10 +52,46 @@ public:
   bool readActuationMapFromCSV(const std::string & csv_path, const bool validation = false);
   double getControlCommand(const double actuation, const double state) const;
 
-private:
+protected:
   std::vector<double> state_index_;  // e.g. velocity, steering
   std::vector<double> actuation_index_;
   std::vector<std::vector<double>> actuation_map_;
+};
+
+/**
+ * @class AccelMap
+ * @brief class to get throttle from acceleration
+ *
+ *      ------- vel ------>
+ *     |
+ *     |
+ *  throttle    acc
+ *     |
+ *     |
+ *     V
+ */
+class AccelMap : public ActuationMap
+{
+public:
+  std::optional<double> getThrottle(const double acc, const double vel) const;
+};
+
+/**
+ * @class BrakeMap
+ * @brief class to get brake from acceleration
+ *
+ *      ------- vel ------>
+ *     |
+ *     |
+ *   brake       acc
+ *     |
+ *     |
+ *     V
+ */
+class BrakeMap : public ActuationMap
+{
+public:
+  double getBrake(const double acc, const double vel) const;
 };
 
 /**
@@ -56,8 +101,42 @@ private:
 class SimModelActuationCmd : public SimModelInterface
 {
 public:
+  enum class ActuationSimType { VGR, STEER_MAP };
+
   /**
-   * @brief constructor
+   * @brief constructor (adaptive gear ratio conversion model)
+   * @param [in] vx_lim velocity limit [m/s]
+   * @param [in] steer_lim steering limit [rad]
+   * @param [in] vx_rate_lim acceleration limit [m/ss]
+   * @param [in] steer_rate_lim steering angular velocity limit [rad/ss]
+   * @param [in] wheelbase vehicle wheelbase length [m]
+   * @param [in] dt delta time information to set input buffer for delay
+   * @param [in] accel_delay time delay for accel command [s]
+   * @param [in] acc_time_constant time constant for 1D model of accel dynamics
+   * @param [in] brake_delay time delay for brake command [s]
+   * @param [in] brake_time_constant time constant for 1D model of brake dynamics
+   * @param [in] steer_delay time delay for steering command [s]
+   * @param [in] steer_time_constant time constant for 1D model of steering dynamics
+   * @param [in] steer_bias steering bias [rad]
+   * @param [in] convert_accel_cmd flag to convert accel command
+   * @param [in] convert_brake_cmd flag to convert brake command
+   * @param [in] convert_steer_cmd flag to convert steer command
+   * @param [in] accel_map_path path to csv file for accel conversion map
+   * @param [in] brake_map_path path to csv file for brake conversion map
+   * @param [in] vgr_coef_a coefficient for variable gear ratio
+   * @param [in] vgr_coef_b coefficient for variable gear ratio
+   * @param [in] vgr_coef_c coefficient for variable gear ratio
+   */
+  SimModelActuationCmd(
+    double vx_lim, double steer_lim, double vx_rate_lim, double steer_rate_lim, double wheelbase,
+    double dt, double accel_delay, double accel_time_constant, double brake_delay,
+    double brake_time_constant, double steer_delay, double steer_time_constant, double steer_bias,
+    bool convert_accel_cmd, bool convert_brake_cmd, bool convert_steer_cmd,
+    std::string accel_map_path, std::string brake_map_path, double vgr_coef_a, double vgr_coef_b,
+    double vgr_coef_c);
+
+  /**
+   * @brief constructor (steer map conversion model)
    * @param [in] vx_lim velocity limit [m/s]
    * @param [in] steer_lim steering limit [rad]
    * @param [in] vx_rate_lim acceleration limit [m/ss]
@@ -90,13 +169,15 @@ public:
    */
   ~SimModelActuationCmd() = default;
 
-  ActuationMap accel_map_;
-  ActuationMap brake_map_;
-  ActuationMap steer_map_;
+  /*
+   * @brief get actuation status
+   */
+  std::optional<ActuationStatusStamped> getActuationStatus() const override;
 
-  bool convert_accel_cmd_;
-  bool convert_brake_cmd_;
-  bool convert_steer_cmd_;
+  /**
+   * @brief is publish actuation status enabled
+   */
+  bool shouldPublishActuationStatus() const override { return true; }
 
 private:
   const double MIN_TIME_CONSTANT;  //!< @brief minimum time constant
@@ -133,7 +214,23 @@ private:
   const double steer_delay_;              //!< @brief time delay for steering command [s]
   const double steer_time_constant_;      //!< @brief time constant for steering dynamics
   const double steer_bias_;               //!< @brief steering angle bias [rad]
-  const std::string path_;                //!< @brief conversion map path
+
+  bool convert_accel_cmd_;
+  bool convert_brake_cmd_;
+  bool convert_steer_cmd_;
+
+  AccelMap accel_map_;
+  BrakeMap brake_map_;
+  ActuationMap steer_map_;
+
+  // steer map conversion model
+
+  // adaptive gear ratio conversion model
+  double vgr_coef_a_;
+  double vgr_coef_b_;
+  double vgr_coef_c_;
+
+  ActuationSimType actuation_sim_type_{ActuationSimType::VGR};
 
   /**
    * @brief set queue buffer for input command
@@ -204,6 +301,26 @@ private:
   void updateStateWithGear(
     Eigen::VectorXd & state, const Eigen::VectorXd & prev_state, const uint8_t gear,
     const double dt);
+
+  /**
+   * @brief calculate steering tire command
+   * @param [in] vel current velocity [m/s]
+   * @param [in] steer current steering angle [rad]
+   * @param [in] steer_wheel_des desired steering wheel angle [rad]
+   * @return steering tire command
+   */
+  double calculateSteeringTireCommand(
+    const double vel, const double steer, const double steer_wheel_des) const;
+
+  double calculateSteeringWheelState(const double target_tire_angle, const double vel) const;
+
+  /**
+   * @brief calculate variable gear ratio
+   * @param [in] vel current velocity [m/s]
+   * @param [in] steer_wheel current steering wheel angle [rad]
+   * @return variable gear ratio
+   */
+  double calculateVariableGearRatio(const double vel, const double steer_wheel) const;
 };
 
 #endif  // SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_ACTUATION_CMD_HPP_

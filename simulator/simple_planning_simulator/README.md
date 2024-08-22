@@ -127,17 +127,30 @@ default,  0.00,  1.39,  2.78,  4.17,  5.56,  6.94,  8.33,  9.72, 11.11, 12.50, 1
 
 The simple_planning_simulator usually operates by receiving Control commands, but when the `ACTUATION_CMD` model is selected, it receives Actuation commands instead of Control commands. This model can simulate the motion using the vehicle command that is actually sent to the real vehicle. Therefore, when this model is selected, the `raw_vehicle_cmd_converter` is also launched.
 
+`convert_steer_cmd_method` has two options: "vgr" and "steer_map". If you choose "vgr" (variable gear ratio), it is assumed that the steering wheel angle is sent as the actuation command, and the value is converted to the steering tire angle to move the model. If you choose "steer_map", it is assumed that an arbitrary value is sent as the actuation command, and the value is converted to the steering tire rate to move the model. An arbitrary value is like EPS (Electric Power Steering) Voltage . `enable_pub_steer` determines whether to publish the steering tire angle. If false, it is expected to be converted and published from actuation_status in other nodes (e.g. raw_vehicle_cmd_converter).
+
+![vgr_sim](./media/vgr_sim.drawio.svg)
+
+```yaml
+
+```
+
 The parameters used in the ACTUATION_CMD are as follows.
 
-| Name                | Type   | Description                                                                                                                                                     | unit |
-| :------------------ | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--- |
-| accel_time_delay    | double | dead time for the acceleration input                                                                                                                            | [s]  |
-| accel_time_constant | double | time constant of the 1st-order acceleration dynamics                                                                                                            | [s]  |
-| brake_time_delay    | double | dead time for the brake input                                                                                                                                   | [s]  |
-| brake_time_constant | double | time constant of the 1st-order brake dynamics                                                                                                                   | [s]  |
-| convert_accel_cmd   | bool   | If true, it is assumed that the command is received converted to an accel actuation value, and it is converted back to acceleration value inside the simulator. | [-]  |
-| convert_brake_cmd   | bool   | If true, it is assumed that the command is received converted to a brake actuation value, and it is converted back to acceleration value inside the simulator.  | [-]  |
-| convert_steer_cmd   | bool   | If true, it is assumed that the command is received converted to a steer actuation value, and it is converted back to steer rate value inside the simulator.    | [-]  |
+| Name                     | Type   | Description                                                                                                                                                              | unit |
+| :----------------------- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--- |
+| accel_time_delay         | double | dead time for the acceleration input                                                                                                                                     | [s]  |
+| accel_time_constant      | double | time constant of the 1st-order acceleration dynamics                                                                                                                     | [s]  |
+| brake_time_delay         | double | dead time for the brake input                                                                                                                                            | [s]  |
+| brake_time_constant      | double | time constant of the 1st-order brake dynamics                                                                                                                            | [s]  |
+| convert_accel_cmd        | bool   | If true, it is assumed that the command is received converted to an accel actuation value, and it is converted back to acceleration value inside the simulator.          | [-]  |
+| convert_brake_cmd        | bool   | If true, it is assumed that the command is received converted to a brake actuation value, and it is converted back to acceleration value inside the simulator.           | [-]  |
+| convert_steer_cmd        | bool   | If true, it is assumed that the command is received converted to a steer actuation value, and it is converted back to steer rate value inside the simulator.             | [-]  |
+| convert_steer_cmd_method | bool   | method to convert steer command. You can choose from "vgr" and "steer_map".                                                                                              | [-]  |
+| vgr_coef_a               | double | the value of the coefficient a of the variable gear ratio                                                                                                                | [-]  |
+| vgr_coef_b               | double | the value of the coefficient b of the variable gear ratio                                                                                                                | [-]  |
+| vgr_coef_c               | double | the value of the coefficient c of the variable gear ratio                                                                                                                | [-]  |
+| enable_pub_steer         | bool   | whether to publish the steering tire angle. if false, it is expected to be converted and published from actuation_status in other nodes (e.g. raw_vehicle_cmd_converter) | [-]  |
 
 <!-- deadzone_delta_steer | double | dead zone for the steering dynamics                  | x      | x      | x        | o      | o      | 0.0      | [rad]         |         | -->
 

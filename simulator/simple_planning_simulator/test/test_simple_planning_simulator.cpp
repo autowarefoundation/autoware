@@ -265,10 +265,31 @@ void declareVehicleInfoParams(rclcpp::NodeOptions & node_options)
   node_options.append_parameter_override("max_steer_angle", 0.7);
 }
 
+using DefaultParamType = std::tuple<CommandType, std::string>;
+using ActuationCmdParamType = std::tuple<CommandType, std::string, std::string>;
+using ParamType = std::variant<DefaultParamType, ActuationCmdParamType>;
+std::unordered_map<std::string, std::type_index> vehicle_model_type_map = {
+  {"IDEAL_STEER_VEL", typeid(DefaultParamType)},
+  {"IDEAL_STEER_ACC", typeid(DefaultParamType)},
+  {"IDEAL_STEER_ACC_GEARED", typeid(DefaultParamType)},
+  {"DELAY_STEER_VEL", typeid(DefaultParamType)},
+  {"DELAY_STEER_ACC", typeid(DefaultParamType)},
+  {"DELAY_STEER_ACC_GEARED", typeid(DefaultParamType)},
+  {"DELAY_STEER_ACC_GEARED_WO_FALL_GUARD", typeid(DefaultParamType)},
+  {"ACTUATION_CMD", typeid(ActuationCmdParamType)}};
+
+std::pair<CommandType, std::string> get_common_params(const ParamType & params)
+{
+  return std::visit(
+    [](const auto & param) -> std::pair<CommandType, std::string> {
+      return std::make_pair(std::get<0>(param), std::get<1>(param));
+    },
+    params);
+}
+
 // Send a control command and run the simulation.
 // Then check if the vehicle is moving in the desired direction.
-class TestSimplePlanningSimulator
-: public ::testing::TestWithParam<std::tuple<CommandType, std::string>>
+class TestSimplePlanningSimulator : public ::testing::TestWithParam<ParamType>
 {
 };
 
@@ -277,10 +298,23 @@ TEST_P(TestSimplePlanningSimulator, TestIdealSteerVel)
   rclcpp::init(0, nullptr);
 
   const auto params = GetParam();
-  const auto command_type = std::get<0>(params);
-  const auto vehicle_model_type = std::get<1>(params);
-
+  // common parameters
+  const auto common_params = get_common_params(params);
+  const auto command_type = common_params.first;
+  const auto vehicle_model_type = common_params.second;
   std::cout << "\n\n vehicle model = " << vehicle_model_type << std::endl << std::endl;
+  // optional parameters
+  std::optional<std::string> conversion_type{};  // for ActuationCmdParamType
+
+  // Determine the ParamType corresponding to vehicle_model_type and get the specific parameters.
+  const auto iter = vehicle_model_type_map.find(vehicle_model_type);
+  if (iter == vehicle_model_type_map.end()) {
+    throw std::invalid_argument("Unexpected vehicle_model_type.");
+  }
+  if (iter->second == typeid(ActuationCmdParamType)) {
+    conversion_type = std::get<2>(std::get<ActuationCmdParamType>(params));
+  }
+
   rclcpp::NodeOptions node_options;
   node_options.append_parameter_override("initialize_source", "INITIAL_POSE_TOPIC");
   node_options.append_parameter_override("vehicle_model_type", vehicle_model_type);
@@ -300,6 +334,12 @@ TEST_P(TestSimplePlanningSimulator, TestIdealSteerVel)
   node_options.append_parameter_override("accel_map_path", accel_map_path);
   node_options.append_parameter_override("brake_map_path", brake_map_path);
   node_options.append_parameter_override("steer_map_path", steer_map_path);
+  node_options.append_parameter_override("vgr_coef_a", 15.713);
+  node_options.append_parameter_override("vgr_coef_b", 0.053);
+  node_options.append_parameter_override("vgr_coef_c", 0.042);
+  if (conversion_type.has_value()) {
+    node_options.append_parameter_override("convert_steer_cmd_method", conversion_type.value());
+  }
 
   declareVehicleInfoParams(node_options);
   const auto sim_node = std::make_shared<SimplePlanningSimulator>(node_options);
@@ -393,4 +433,5 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_tuple(CommandType::Ackermann, "DELAY_STEER_ACC_GEARED"),
     std::make_tuple(CommandType::Ackermann, "DELAY_STEER_ACC_GEARED_WO_FALL_GUARD"),
     /* Actuation type */
-    std::make_tuple(CommandType::Actuation, "ACTUATION_CMD")));
+    std::make_tuple(CommandType::Actuation, "ACTUATION_CMD", "steer_map"),
+    std::make_tuple(CommandType::Actuation, "ACTUATION_CMD", "vgr")));
