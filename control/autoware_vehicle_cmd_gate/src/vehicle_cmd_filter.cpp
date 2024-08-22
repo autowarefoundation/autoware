@@ -40,48 +40,6 @@ bool VehicleCmdFilter::setParameterWithValidation(const VehicleCmdFilterParam & 
   param_ = p;
   return true;
 }
-void VehicleCmdFilter::setSteerLim(const LimitArray & v)
-{
-  auto tmp = param_;
-  tmp.steer_lim = v;
-  setParameterWithValidation(tmp);
-}
-void VehicleCmdFilter::setSteerRateLim(const LimitArray & v)
-{
-  auto tmp = param_;
-  tmp.steer_rate_lim = v;
-  setParameterWithValidation(tmp);
-}
-void VehicleCmdFilter::setLonAccLim(const LimitArray & v)
-{
-  auto tmp = param_;
-  tmp.lon_acc_lim = v;
-  setParameterWithValidation(tmp);
-}
-void VehicleCmdFilter::setLonJerkLim(const LimitArray & v)
-{
-  auto tmp = param_;
-  tmp.lon_jerk_lim = v;
-  setParameterWithValidation(tmp);
-}
-void VehicleCmdFilter::setLatAccLim(const LimitArray & v)
-{
-  auto tmp = param_;
-  tmp.lat_acc_lim = v;
-  setParameterWithValidation(tmp);
-}
-void VehicleCmdFilter::setLatJerkLim(const LimitArray & v)
-{
-  auto tmp = param_;
-  tmp.lat_jerk_lim = v;
-  setParameterWithValidation(tmp);
-}
-void VehicleCmdFilter::setActualSteerDiffLim(const LimitArray & v)
-{
-  auto tmp = param_;
-  tmp.actual_steer_diff_lim = v;
-  setParameterWithValidation(tmp);
-}
 
 void VehicleCmdFilter::setParam(const VehicleCmdFilterParam & p)
 {
