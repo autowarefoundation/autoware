@@ -48,6 +48,7 @@ jobs:
     steps:
       - name: Set PR fetch depth
         run: echo "PR_FETCH_DEPTH=$(( ${{ github.event.pull_request.commits }} + 1 ))" >> "${GITHUB_ENV}"
+        shell: bash
 
       - name: Checkout PR branch and all PR commits
         uses: actions/checkout@v4
@@ -55,83 +56,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: ${{ env.PR_FETCH_DEPTH }}
 
-      - name: Show disk space before the tasks
-        run: df -h
-
-      - name: Show machine specs
-        run: lscpu && free -h
-
-      - name: Remove exec_depend
-        uses: autowarefoundation/autoware-github-actions/remove-exec-depend@v1
-
-      - name: Get modified packages
-        id: get-modified-packages
-        uses: autowarefoundation/autoware-github-actions/get-modified-packages@v1
-
-      - name: Create ccache directory
-        run: |
-          mkdir -p ${CCACHE_DIR}
-          du -sh ${CCACHE_DIR} && ccache -s
-        shell: bash
-
-      - name: Attempt to restore ccache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            /root/.ccache
-          key: ccache-main-${{ runner.arch }}-${{ matrix.rosdistro }}-${{ github.event.pull_request.base.sha }}
-          restore-keys: |
-            ccache-main-${{ runner.arch }}-${{ matrix.rosdistro }}-
-
-      - name: Show ccache stats before build
-        run: du -sh ${CCACHE_DIR} && ccache -s
-        shell: bash
-
-      - name: Export CUDA state as a variable for adding to cache key
-        run: |
-          build_type_cuda_state=nocuda
-          if [[ "${{ matrix.container-suffix }}" == "-cuda" ]]; then
-            build_type_cuda_state=cuda
-          fi
-          echo "BUILD_TYPE_CUDA_STATE=$build_type_cuda_state" >> "${GITHUB_ENV}"
-          echo "::notice::BUILD_TYPE_CUDA_STATE=$build_type_cuda_state"
-        shell: bash
-
-      - name: Build
-        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
-        uses: autowarefoundation/autoware-github-actions/colcon-build@v1
+      - name: Run build-and-test-differential action
+        uses: ./.github/actions/build-and-test-differential
         with:
           rosdistro: ${{ matrix.rosdistro }}
-          target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
+          container: ${{ matrix.container }}
+          container-suffix: ${{ matrix.container-suffix }}
+          runner: ${{ matrix.runner }}
           build-depends-repos: ${{ matrix.build-depends-repos }}
-          cache-key-element: ${{ env.BUILD_TYPE_CUDA_STATE }}
           build-pre-command: ${{ matrix.build-pre-command }}
-
-      - name: Show ccache stats after build
-        run: du -sh ${CCACHE_DIR} && ccache -s
-        shell: bash
-
-      - name: Test
-        id: test
-        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
-        uses: autowarefoundation/autoware-github-actions/colcon-test@v1
-        with:
-          rosdistro: ${{ matrix.rosdistro }}
-          target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
-          build-depends-repos: ${{ matrix.build-depends-repos }}
-
-      - name: Upload coverage to CodeCov
-        if: ${{ steps.test.outputs.coverage-report-files != '' }}
-        uses: codecov/codecov-action@v4
-        with:
-          files: ${{ steps.test.outputs.coverage-report-files }}
-          fail_ci_if_error: false
-          verbose: true
-          flags: differential
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Show disk space after the tasks
-        run: df -h
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   clang-tidy-differential:
     needs: build-and-test-differential
