@@ -5,13 +5,17 @@ on:
     - cron: 0 12 * * *
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
 
   docker-build:
     needs: load-env
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
     strategy:
       fail-fast: false
       matrix:
@@ -44,8 +48,11 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
+      - name: Show disk space before the tasks
+        run: df -h
+
+      - name: Show machine specs
+        run: lscpu && free -h
 
       - name: Build 'Autoware'
         uses: ./.github/actions/docker-build
