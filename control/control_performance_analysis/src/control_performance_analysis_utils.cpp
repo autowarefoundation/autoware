@@ -25,15 +25,5 @@ double determinant(std::array<double, 2> const & a, std::array<double, 2> const 
   return a[0] * b[1] - b[0] * a[1];
 }
 
-double triangleArea(
-  std::array<double, 2> const & a, std::array<double, 2> const & b, std::array<double, 2> const & c)
-{
-  double m1 = determinant(a, b);
-  double m2 = determinant(b, c);
-  double m3 = determinant(c, a);
-
-  return 0.5 * (m1 + m2 + m3);
-}
-
 }  // namespace utils
 }  // namespace control_performance_analysis

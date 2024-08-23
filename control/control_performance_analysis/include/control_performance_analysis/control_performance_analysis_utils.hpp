@@ -79,10 +79,6 @@ inline geometry_msgs::msg::Quaternion createOrientationMsgFromYaw(double yaw_ang
 // p-points a, b contains [x, y] coordinates.
 double determinant(std::array<double, 2> const & a, std::array<double, 2> const & b);
 
-double triangleArea(
-  std::array<double, 2> const & a, std::array<double, 2> const & b,
-  std::array<double, 2> const & c);
-
 double curvatureFromThreePoints(
   std::array<double, 2> const & a, std::array<double, 2> const & b,
   std::array<double, 2> const & c);
