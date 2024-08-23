@@ -1,0 +1,42 @@
+/**:
+  ros__parameters:
+
+    # marker name
+    marker_name: "reflector"
+
+    # for marker detection algorithm
+    resolution: 0.05
+    # A sequence of high/low intensity to perform pattern matching.
+    # 1: high intensity (positive match), 0: not consider, -1: low intensity (negative match)
+    intensity_pattern: [-1, -1, 0, 1, 1, 1, 1, 1, 0, -1, -1]
+    match_intensity_difference_threshold: 20
+    positive_match_num_threshold: 3
+    negative_match_num_threshold: 3
+    vote_threshold_for_detect_marker: 20
+    marker_height_from_ground: 1.075
+
+    # for interpolate algorithm
+    self_pose_timeout_sec: 1.0
+    self_pose_distance_tolerance_m: 1.0
+
+    # for validation
+    limit_distance_from_self_pose_to_nearest_marker: 2.0
+    limit_distance_from_self_pose_to_marker: 2.0
+
+    # base_covariance
+    # [TBD] This value is dynamically scaled according to the distance at which markers are detected.
+    base_covariance: [0.04, 0.0,  0.0,  0.0,        0.0,        0.0,
+                      0.0,  0.04, 0.0,  0.0,        0.0,        0.0,
+                      0.0,  0.0,  0.01, 0.0,        0.0,        0.0,
+                      0.0,  0.0,  0.0,  0.00007569, 0.0,        0.0,
+                      0.0,  0.0,  0.0,  0.0,        0.00007569, 0.0,
+                      0.0,  0.0,  0.0,  0.0,        0.0,        0.00030625]
+
+    # for visualize the detected marker pointcloud
+    marker_width: 0.8
+
+    # for save log
+    enable_save_log: false
+    save_file_directory_path: detected_reflector_intensity
+    save_file_name: detected_reflector_intensity
+    save_frame_id: velodyne_top

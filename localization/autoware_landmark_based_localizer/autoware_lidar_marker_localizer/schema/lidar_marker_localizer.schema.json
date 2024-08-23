@@ -1,0 +1,149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Lidar Marker Localizer Node",
+  "type": "object",
+  "definitions": {
+    "lidar_marker_localizer": {
+      "type": "object",
+      "properties": {
+        "marker_name": {
+          "type": "string",
+          "description": "The name of the markers listed in the HD map.",
+          "default": "reflector"
+        },
+        "resolution": {
+          "type": "number",
+          "description": "Grid size for marker detection algorithm. [m]",
+          "default": 0.05,
+          "minimum": 0.0
+        },
+        "intensity_pattern": {
+          "type": "array",
+          "description": "A sequence of high/low intensity to perform pattern matching. 1: high intensity (positive match), 0: not consider, -1: low intensity (negative match)",
+          "default": [-1, -1, 0, 1, 1, 1, 1, 1, 0, -1, -1]
+        },
+        "match_intensity_difference_threshold": {
+          "type": "number",
+          "description": "Threshold for determining high/low.",
+          "default": 20,
+          "minimum": 0
+        },
+        "positive_match_num_threshold": {
+          "type": "number",
+          "description": "Threshold for the number of required matches with the pattern.",
+          "default": 3,
+          "minimum": 0
+        },
+        "negative_match_num_threshold": {
+          "type": "number",
+          "description": "Threshold for the number of required matches with the pattern.",
+          "default": 3,
+          "minimum": 0
+        },
+        "vote_threshold_for_detect_marker": {
+          "type": "number",
+          "description": "Threshold for the number of rings matching the pattern needed to detect it as a marker.",
+          "default": 20,
+          "minimum": 0
+        },
+        "marker_height_from_ground": {
+          "type": "number",
+          "description": "Height from the ground to the center of the marker. [m]",
+          "default": 1.075
+        },
+        "self_pose_timeout_sec": {
+          "type": "number",
+          "description": "Timeout for self pose. [sec]",
+          "default": 1.0,
+          "minimum": 0.0
+        },
+        "self_pose_distance_tolerance_m": {
+          "type": "number",
+          "description": "Tolerance for the distance between two points when performing linear interpolation. [m]",
+          "default": 1.0,
+          "minimum": 0.0
+        },
+        "limit_distance_from_self_pose_to_nearest_marker": {
+          "type": "number",
+          "description": "Distance limit for the purpose of determining whether the node should detect a marker. [m]",
+          "default": 2.0,
+          "minimum": 0.0
+        },
+        "limit_distance_from_self_pose_to_marker": {
+          "type": "number",
+          "description": "Distance limit for avoiding miss detection. [m]",
+          "default": 2.0,
+          "minimum": 0.0
+        },
+        "base_covariance": {
+          "type": "array",
+          "description": "Output covariance in the base_link coordinate.",
+          "default": [
+            0.04, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.04, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.00007569, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00007569, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.00030625
+          ]
+        },
+        "marker_width": {
+          "type": "number",
+          "description": "Width of a marker. This param is used for visualizing the detected marker pointcloud[m]",
+          "default": 0.8,
+          "minimum": 0.0
+        },
+        "enable_save_log": {
+          "type": "boolean",
+          "description": "",
+          "default": false
+        },
+        "save_file_directory_path": {
+          "type": "string",
+          "description": "",
+          "default": "$(env HOME)/detected_reflector_intensity"
+        },
+        "save_file_name": {
+          "type": "string",
+          "description": "",
+          "default": "detected_reflector_intensity"
+        },
+        "save_frame_id": {
+          "type": "string",
+          "description": "",
+          "default": "velodyne_top"
+        }
+      },
+      "required": [
+        "resolution",
+        "intensity_pattern",
+        "match_intensity_difference_threshold",
+        "positive_match_num_threshold",
+        "negative_match_num_threshold",
+        "vote_threshold_for_detect_marker",
+        "self_pose_timeout_sec",
+        "self_pose_distance_tolerance_m",
+        "limit_distance_from_self_pose_to_nearest_marker",
+        "limit_distance_from_self_pose_to_marker",
+        "base_covariance",
+        "marker_width",
+        "enable_save_log",
+        "save_file_directory_path",
+        "save_file_name",
+        "save_frame_id"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/lidar_marker_localizer"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

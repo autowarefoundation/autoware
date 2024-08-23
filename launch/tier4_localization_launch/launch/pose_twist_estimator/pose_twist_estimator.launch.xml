@@ -9,7 +9,7 @@
   <arg name="gnss_enabled" default="true" description="gnss availability for initial position estimation"/>
 
   <!-- split string with underscores -->
-  <let name="available_args" value="[\'ndt\',\'yabloc\',\'eagleye\',\'artag\']"/>
+  <let name="available_args" value="[\'ndt\',\'yabloc\',\'eagleye\',\'artag\',\'lidar-marker\']"/>
   <let name="split_function" value="list(set('$(var pose_source)'.split('_')).intersection($(var available_args)))"/>
   <let name="pose_sources" value="$(eval $(var split_function))"/>
   <let name="multi_localizer_mode" value="$(eval &quot;len($(var pose_sources))> 1&quot;)"/>
@@ -18,6 +18,7 @@
   <let name="use_ndt_pose" value="$(eval &quot;'ndt' in $(var pose_sources)&quot;)"/>
   <let name="use_yabloc_pose" value="$(eval &quot;'yabloc' in $(var pose_sources)&quot;)"/>
   <let name="use_artag_pose" value="$(eval &quot;'artag' in $(var pose_sources)&quot;)"/>
+  <let name="use_lidar_marker_pose" value="$(eval &quot;'lidar-marker' in $(var pose_sources)&quot;)"/>
   <let name="use_eagleye_pose" value="$(eval &quot;'eagleye' in $(var pose_sources)&quot;)"/>
   <let name="use_eagleye_twist" value="$(eval &quot;'eagleye' == '$(var twist_source)'&quot;)"/>
   <let name="use_gyro_odom_twist" value="$(eval &quot;'gyro_odom' == '$(var twist_source)'&quot;)"/>
@@ -88,6 +89,16 @@
 
     <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/ar_tag_based_localizer.launch.xml">
       <arg name="input_image" value="$(var artag_input_image)"/>
+    </include>
+  </group>
+
+  <!-- LiDAR Marker Localizer (as pose estimator) -->
+  <group if="$(var use_lidar_marker_pose)">
+    <push-ros-namespace namespace="pose_estimator"/>
+    <!-- TODO multi_localizer_mode -->
+    <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/lidar_marker_localizer.launch.xml">
+      <arg name="lidar_container_name" value="/sensing/lidar/top/pointcloud_preprocessor/pointcloud_container"/>
+      <arg name="input_pointcloud" value="/sensing/lidar/top/pointcloud"/>
     </include>
   </group>
 

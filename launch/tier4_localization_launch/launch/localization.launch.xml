@@ -18,6 +18,11 @@
   <arg name="eagleye_param_path"/>
   <arg name="ar_tag_based_localizer_param_path"/>
 
+  <!-- parameter paths for lidar_marker_localizer -->
+  <arg name="lidar_marker_localizer/lidar_marker_localizer_param_path"/>
+  <arg name="lidar_marker_localizer/pointcloud_preprocessor/crop_box_filter_measurement_range_param_path"/>
+  <arg name="lidar_marker_localizer/pointcloud_preprocessor/ring_filter_param_path"/>
+
   <arg name="input_pointcloud" default="/sensing/lidar/concatenated/pointcloud"/>
   <arg name="localization_pointcloud_container_name" default="/pointcloud_container"/>
 

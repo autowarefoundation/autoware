@@ -21,6 +21,7 @@
   <exec_depend>autoware_ar_tag_based_localizer</exec_depend>
   <exec_depend>autoware_geo_pose_projector</exec_depend>
   <exec_depend>autoware_gyro_odometer</exec_depend>
+  <exec_depend>autoware_lidar_marker_localizer</exec_depend>
   <exec_depend>autoware_pointcloud_preprocessor</exec_depend>
   <exec_depend>autoware_pose_estimator_arbiter</exec_depend>
   <exec_depend>autoware_pose_instability_detector</exec_depend>

@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>autoware_lidar_marker_localizer</name>
+  <version>0.0.0</version>
+  <description>The autoware_lidar_marker_localizer package</description>
+  <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
+  <maintainer email="shintaro.sakoda@tier4.jp">Shintaro Sakoda</maintainer>
+  <license>Apache License 2.0</license>
+  <author email="eijiro.takeuchi@tier4.jp">Eijiro Takeuchi</author>
+  <author email="yamato.ando@tier4.jp">Yamato Ando</author>
+  <author email="shintaro.sakoda@tier4.jp">Shintaro Sakoda</author>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+
+  <depend>autoware_landmark_manager</depend>
+  <depend>autoware_map_msgs</depend>
+  <depend>autoware_point_types</depend>
+  <depend>autoware_universe_utils</depend>
+  <depend>localization_util</depend>
+  <depend>pcl_conversions</depend>
+  <depend>pcl_ros</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_sensor_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

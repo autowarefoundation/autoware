@@ -1,0 +1,24 @@
+<launch>
+  <arg name="param_file" default="$(find-pkg-share lidar_marker_localizer)/config/lidar_marker_localizer.param.yaml"/>
+
+  <!-- Topic names -->
+  <arg name="input_lanelet2_map" default="~/input/lanelet2_map"/>
+  <arg name="input_ekf_pose" default="~/input/ekf_pose"/>
+  <arg name="input_pointcloud" default="~/input/pointcloud"/>
+
+  <arg name="output_pose_with_covariance" default="~/output/pose_with_covariance"/>
+
+  <arg name="service_trigger_node_srv" default="~/service/trigger_node_srv"/>
+
+  <node pkg="autoware_lidar_marker_localizer" exec="autoware_lidar_marker_localizer_node" output="both">
+    <remap from="~/input/pointcloud" to="$(var input_pointcloud)"/>
+    <remap from="~/input/ekf_pose" to="$(var input_ekf_pose)"/>
+    <remap from="~/input/lanelet2_map" to="$(var input_lanelet2_map)"/>
+
+    <remap from="~/output/pose_with_covariance" to="$(var output_pose_with_covariance)"/>
+
+    <remap from="~/service/trigger_node_srv" to="$(var service_trigger_node_srv)"/>
+
+    <param from="$(var param_file)"/>
+  </node>
+</launch>
