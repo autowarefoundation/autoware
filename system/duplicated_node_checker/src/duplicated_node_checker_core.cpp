@@ -42,19 +42,6 @@ DuplicatedNodeChecker::DuplicatedNodeChecker(const rclcpp::NodeOptions & node_op
     this, get_clock(), period_ns, std::bind(&DuplicatedNodeChecker::onTimer, this));
 }
 
-std::string get_fullname_from_name_ns_pair(std::pair<std::string, std::string> name_and_ns_pair)
-{
-  std::string full_name;
-  const std::string & name = name_and_ns_pair.first;
-  const std::string & ns = name_and_ns_pair.second;
-  if (ns.back() == '/') {
-    full_name = ns + name;
-  } else {
-    full_name = ns + "/" + name;
-  }
-  return full_name;
-}
-
 void DuplicatedNodeChecker::onTimer()
 {
   updater_.force_update();
