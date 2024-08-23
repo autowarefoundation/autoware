@@ -143,11 +143,6 @@ private:
 
     float getMinHeight() const { return height_min; }
 
-    uint16_t getGridId() const { return grid_id; }
-
-    pcl::PointIndices getIndices() const { return pcl_indices; }
-    std::vector<float> getHeightList() const { return height_list; }
-
     pcl::PointIndices & getIndicesRef() { return pcl_indices; }
     std::vector<float> & getHeightListRef() { return height_list; }
   };
