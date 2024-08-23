@@ -1,4 +1,4 @@
-name: health-check-self-hosted
+name: health-check-arm64
 
 on:
   schedule:

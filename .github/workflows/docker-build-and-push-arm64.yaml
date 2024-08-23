@@ -1,4 +1,4 @@
-name: docker-build-and-push-self-hosted
+name: docker-build-and-push-arm64
 
 on:
   push:
