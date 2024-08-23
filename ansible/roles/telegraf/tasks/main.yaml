@@ -30,7 +30,7 @@
   register: moved_key_stat
 
 - name: Move the gpg key to trusted.gpg.d
-  ansible.builtin.command: 
+  ansible.builtin.command:
     cmd: mv /tmp/influxdata-archive_compat.gpg /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg
   become: true
   when: not moved_key_stat.stat.exists
@@ -66,17 +66,12 @@
     name: telegraf
     state: present
 
-
 - name: Create telegraf_binary directory
   ansible.builtin.file:
     path: /opt/autoware/bin
     state: directory
     mode: 0755
   become: true
-
-- name: Debug role_path
-  debug:
-    msg: "Role path is {{ role_path }}"
 
 - name: Copy get_telegraf_proccpu_json.sh to /opt/autoware/bin
   become: true
@@ -114,7 +109,7 @@
     name: telegraf
     enabled: true
     state: started
-    
+
 - name: Ensure InfluxDB service is running
   become: true
   ansible.builtin.service:
@@ -124,13 +119,13 @@
 
 - name: Check if InfluxDB is already set up
   become: true
-  ansible.builtin.command: 
+  ansible.builtin.command:
     cmd: influx setup --bucket-status
   register: influx_setup_status
   ignore_errors: true
 
 - name: Set up influxDB v2
   become: true
-  ansible.builtin.command: 
+  ansible.builtin.command:
     cmd: influx setup -f --name default --username autoware --password autoware --token autowaretoken --org autowarefoundation --bucket autoware --retention 0
   when: influx_setup_status.rc != 0
