@@ -48,7 +48,7 @@
         <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)"/>
       </composable_node>
 
-      <composable_node pkg="map_tf_generator" plugin="VectorMapTFGeneratorNode" name="vector_map_tf_generator">
+      <composable_node pkg="autoware_map_tf_generator" plugin="autoware::map_tf_generator::VectorMapTFGeneratorNode" name="vector_map_tf_generator">
         <param from="$(var map_tf_generator_param_path)"/>
         <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)"/>
       </composable_node>
