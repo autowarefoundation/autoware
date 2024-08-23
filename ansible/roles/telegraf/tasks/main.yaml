@@ -3,6 +3,7 @@
   ansible.builtin.get_url:
     url: https://repos.influxdata.com/influxdata-archive_compat.key
     dest: /tmp/influxdata-archive_compat.key
+    mode: 0755
 
 - name: Verify the checksum of the key file
   ansible.builtin.command: sha256sum -c
@@ -23,6 +24,7 @@
     cmd: gpg --dearmor -o /tmp/influxdata-archive_compat.gpg /tmp/influxdata-archive_compat.key
   become: true
   when: not gpg_key_stat.stat.exists
+  changed_when: false
 
 - name: Check if GPG key is already moved
   ansible.builtin.stat:
@@ -34,6 +36,7 @@
     cmd: mv /tmp/influxdata-archive_compat.gpg /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg
   become: true
   when: not moved_key_stat.stat.exists
+  changed_when: false
 
 - name: Add InfluxData repository
   become: true
@@ -80,7 +83,7 @@
     dest: /opt/autoware/bin/get_telegraf_proccpu_json.sh
     owner: root
     group: root
-    mode: '0755'
+    mode: 0755
 
 - name: Copy get_telegraf_procmem_json.sh to /opt/autoware/bin
   become: true
@@ -89,7 +92,7 @@
     dest: /opt/autoware/bin/get_telegraf_procmem_json.sh
     owner: root
     group: root
-    mode: '0755'
+    mode: 0755
 
 - name: Copy telegraf.conf to /opt/autoware/bin
   become: true
@@ -123,9 +126,11 @@
     cmd: influx setup --bucket-status
   register: influx_setup_status
   ignore_errors: true
+  changed_when: false
 
 - name: Set up influxDB v2
   become: true
   ansible.builtin.command:
     cmd: influx setup -f --name default --username autoware --password autoware --token autowaretoken --org autowarefoundation --bucket autoware --retention 0
   when: influx_setup_status.rc != 0
+  changed_when: false
