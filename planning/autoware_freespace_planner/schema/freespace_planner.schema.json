@@ -146,6 +146,11 @@
               "default": 0.5,
               "description": "Distance for expanding nodes in A* search."
             },
+            "near_goal_distance": {
+              "type": "number",
+              "default": 4.0,
+              "description": "Distance threshold to consider near goal."
+            },
             "distance_heuristic_weight": {
               "type": "number",
               "default": 1.0,
@@ -160,6 +165,11 @@
               "type": "number",
               "default": 0.5,
               "description": "Weight for distance to obstacle in A* search."
+            },
+            "goal_lat_distance_weight": {
+              "type": "number",
+              "default": 0.5,
+              "description": "Weight for lateral distance from original goal."
             }
           },
           "required": [

@@ -19,12 +19,12 @@
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/math/normalization.hpp>
 
+#include <limits>
 #include <vector>
 
 namespace autoware::freespace_planning_algorithms
 {
 using autoware::universe_utils::createQuaternionFromYaw;
-using autoware::universe_utils::normalizeRadian;
 
 geometry_msgs::msg::Pose transformPose(
   const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::TransformStamped & transform)
@@ -145,19 +145,19 @@ double AbstractPlanningAlgorithm::getDistanceToObstacle(const geometry_msgs::msg
   if (indexToId(index) >= static_cast<int>(edt_map_.size())) {
     return std::numeric_limits<double>::max();
   }
-  return getObstacleEDT(index);
+  return getObstacleEDT(index).distance;
 }
 
 void AbstractPlanningAlgorithm::computeEDTMap()
 {
+  edt_map_.clear();
   const int height = costmap_.info.height;
   const int width = costmap_.info.width;
   const double resolution_m = costmap_.info.resolution;
-  const double diagonal_m = std::hypot(resolution_m * height, resolution_m * width);
-  std::vector<double> edt_map;
+  std::vector<std::pair<double, geometry_msgs::msg::Point>> edt_map;
   edt_map.reserve(costmap_.data.size());
 
-  std::vector<double> temporary_storage(width);
+  std::vector<std::pair<double, geometry_msgs::msg::Point>> temporary_storage(width);
   // scan rows
   for (int i = 0; i < height; ++i) {
     double distance = resolution_m;
@@ -165,14 +165,16 @@ void AbstractPlanningAlgorithm::computeEDTMap()
     // forward scan
     for (int j = 0; j < width; ++j) {
       if (isObs(IndexXY{j, i})) {
-        temporary_storage[j] = 0.0;
+        temporary_storage[j].first = 0.0;
+        temporary_storage[j].second.x = 0.0;
         distance = resolution_m;
         found_obstacle = true;
       } else if (found_obstacle) {
-        temporary_storage[j] = distance;
+        temporary_storage[j].first = distance;
+        temporary_storage[j].second.x = -distance;
         distance += resolution_m;
       } else {
-        temporary_storage[j] = diagonal_m;
+        temporary_storage[j].first = std::numeric_limits<double>::infinity();
       }
     }
 
@@ -183,8 +185,9 @@ void AbstractPlanningAlgorithm::computeEDTMap()
       if (isObs(IndexXY{j, i})) {
         distance = resolution_m;
         found_obstacle = true;
-      } else if (found_obstacle && temporary_storage[j] > distance) {
-        temporary_storage[j] = distance;
+      } else if (found_obstacle && temporary_storage[j].first > distance) {
+        temporary_storage[j].first = distance;
+        temporary_storage[j].second.x = distance;
         distance += resolution_m;
       }
     }
@@ -197,22 +200,29 @@ void AbstractPlanningAlgorithm::computeEDTMap()
   for (int j = 0; j < width; ++j) {
     for (int i = 0; i < height; ++i) {
       int id = indexToId(IndexXY{j, i});
-      double min_value = edt_map[id] * edt_map[id];
+      double min_value = edt_map[id].first * edt_map[id].first;
+      geometry_msgs::msg::Point rel_pos = edt_map[id].second;
       for (int k = 0; k < height; ++k) {
         id = indexToId(IndexXY{j, k});
         double dist = resolution_m * std::abs(static_cast<double>(i - k));
-        double value = edt_map[id] * edt_map[id] + dist * dist;
+        double value = edt_map[id].first * edt_map[id].first + dist * dist;
         if (value < min_value) {
           min_value = value;
+          rel_pos.x = edt_map[id].second.x;
+          rel_pos.y = dist;
         }
       }
-      temporary_storage[i] = sqrt(min_value);
+      temporary_storage[i].first = sqrt(min_value);
+      temporary_storage[i].second = rel_pos;
     }
     for (int i = 0; i < height; ++i) {
       edt_map[indexToId(IndexXY{j, i})] = temporary_storage[i];
     }
   }
-  edt_map_ = edt_map;
+  for (const auto & edt : edt_map) {
+    const double angle = std::atan2(edt.second.y, edt.second.x);
+    edt_map_.push_back({edt.first, angle});
+  }
 }
 
 void AbstractPlanningAlgorithm::computeCollisionIndexes(
@@ -312,7 +322,7 @@ bool AbstractPlanningAlgorithm::detectCollision(const IndexXYT & base_index) con
 
   if (detectBoundaryExit(base_index)) return true;
 
-  double obstacle_edt = getObstacleEDT(base_index);
+  double obstacle_edt = getObstacleEDT(base_index).distance;
 
   // if nearest obstacle is further than largest dimension, no collision is guaranteed
   // if nearest obstacle is closer than smallest dimension, collision is guaranteed

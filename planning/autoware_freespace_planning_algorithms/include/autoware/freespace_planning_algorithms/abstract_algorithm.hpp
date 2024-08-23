@@ -16,6 +16,7 @@
 #define AUTOWARE__FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
 
 #include <autoware/universe_utils/geometry/geometry.hpp>
+#include <autoware/universe_utils/math/normalization.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
 #include <geometry_msgs/msg/pose_array.hpp>
@@ -29,6 +30,10 @@
 
 namespace autoware::freespace_planning_algorithms
 {
+using autoware::universe_utils::normalizeRadian;
+
+geometry_msgs::msg::Pose transformPose(
+  const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::TransformStamped & transform);
 int discretizeAngle(const double theta, const int theta_size);
 
 struct IndexXYT
@@ -36,6 +41,11 @@ struct IndexXYT
   int x;
   int y;
   int theta;
+
+  bool operator==(const IndexXYT & index) const
+  {
+    return (x == index.x && y == index.y && theta == index.theta);
+  }
 };
 
 struct IndexXY
@@ -138,6 +148,12 @@ struct PlannerWaypoints
   double compute_length() const;
 };
 
+struct EDTData
+{
+  double distance;
+  double angle;
+};
+
 class AbstractPlanningAlgorithm
 {
 public:
@@ -162,6 +178,9 @@ public:
   virtual void setMap(const nav_msgs::msg::OccupancyGrid & costmap);
   virtual bool makePlan(
     const geometry_msgs::msg::Pose & start_pose, const geometry_msgs::msg::Pose & goal_pose) = 0;
+  virtual bool makePlan(
+    const geometry_msgs::msg::Pose & start_pose,
+    const std::vector<geometry_msgs::msg::Pose> & goal_candidates) = 0;
   virtual bool hasObstacleOnTrajectory(const geometry_msgs::msg::PoseArray & trajectory) const;
   const PlannerWaypoints & getWaypoints() const { return waypoints_; }
   double getDistanceToObstacle(const geometry_msgs::msg::Pose & pose) const;
@@ -223,7 +242,7 @@ protected:
   }
 
   template <typename IndexType>
-  inline double getObstacleEDT(const IndexType & index) const
+  inline EDTData getObstacleEDT(const IndexType & index) const
   {
     return edt_map_[indexToId(index)];
   }
@@ -233,6 +252,19 @@ protected:
   inline int indexToId(const IndexType & index) const
   {
     return index.y * costmap_.info.width + index.x;
+  }
+
+  inline double getVehicleBaseToFrameDistance(const double angle) const
+  {
+    const double normalized_angle = std::abs(normalizeRadian(angle));
+    const double w = 0.5 * collision_vehicle_shape_.width;
+    const double l_b = collision_vehicle_shape_.base2back;
+    const double l_f = collision_vehicle_shape_.length - l_b;
+
+    if (normalized_angle < atan(w / l_f)) return l_f / cos(normalized_angle);
+    if (normalized_angle < M_PI_2) return w / sin(normalized_angle);
+    if (normalized_angle < M_PI_2 + atan(l_b / w)) return w / cos(normalized_angle - M_PI_2);
+    return l_b / cos(M_PI - normalized_angle);
   }
 
   PlannerCommonParam planner_common_param_;
@@ -250,8 +282,8 @@ protected:
   // is_obstacle's table
   std::vector<bool> is_obstacle_table_;
 
-  // Euclidean distance transform map (distance to nearest obstacle cell)
-  std::vector<double> edt_map_;
+  // Euclidean distance transform map (distance & angle info to nearest obstacle cell)
+  std::vector<EDTData> edt_map_;
 
   // pose in costmap frame
   geometry_msgs::msg::Pose start_pose_;

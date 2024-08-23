@@ -58,6 +58,9 @@ public:
   bool makePlan(
     const geometry_msgs::msg::Pose & start_pose,
     const geometry_msgs::msg::Pose & goal_pose) override;
+  bool makePlan(
+    const geometry_msgs::msg::Pose & start_pose,
+    const std::vector<geometry_msgs::msg::Pose> & goal_candidates) override;
   bool hasObstacleOnTrajectory(const geometry_msgs::msg::PoseArray & trajectory) const override;
 
 private:

@@ -23,6 +23,8 @@
 #include <nav_msgs/msg/path.hpp>
 #include <std_msgs/msg/header.hpp>
 
+#include <boost/optional/optional.hpp>
+
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -46,11 +48,13 @@ struct AstarParam
   bool use_back;               // backward search
   bool adapt_expansion_distance;
   double expansion_distance;
+  double near_goal_distance;
 
   // search configs
   double distance_heuristic_weight;  // obstacle threshold on grid [0,255]
   double smoothness_weight;
   double obstacle_distance_weight;
+  double goal_lat_distance_weight;
 };
 
 struct AstarNode
@@ -105,14 +109,18 @@ public:
         node.declare_parameter<bool>("astar.use_back"),
         node.declare_parameter<bool>("astar.adapt_expansion_distance"),
         node.declare_parameter<double>("astar.expansion_distance"),
+        node.declare_parameter<double>("astar.near_goal_distance"),
         node.declare_parameter<double>("astar.distance_heuristic_weight"),
         node.declare_parameter<double>("astar.smoothness_weight"),
-        node.declare_parameter<double>("astar.obstacle_distance_weight")})
+        node.declare_parameter<double>("astar.obstacle_distance_weight"),
+        node.declare_parameter<double>("astar.goal_lat_distance_weight")})
   {
   }
 
   void setMap(const nav_msgs::msg::OccupancyGrid & costmap) override;
   bool makePlan(const Pose & start_pose, const Pose & goal_pose) override;
+
+  bool makePlan(const Pose & start_pose, const std::vector<Pose> & goal_candidates) override;
 
   const PlannerWaypoints & getWaypoints() const { return waypoints_; }
 
@@ -127,16 +135,18 @@ private:
   void expandNodes(AstarNode & current_node, const bool is_back = false);
   void resetData();
   void setPath(const AstarNode & goal);
-  void setStartNode();
+  void setStartNode(const double cost_offset = 0.0);
   double estimateCost(const Pose & pose, const IndexXYT & index) const;
   bool isGoal(const AstarNode & node) const;
+  void setShiftedGoalPose(const Pose & goal_pose, const double lat_offset) const;
   Pose node2pose(const AstarNode & node) const;
 
   double getExpansionDistance(const AstarNode & current_node) const;
   double getSteeringCost(const int steering_index) const;
   double getSteeringChangeCost(const int steering_index, const int prev_steering_index) const;
   double getDirectionChangeCost(const double dir_distance) const;
-  double getObsDistanceCost(const double obs_distance) const;
+  double getObsDistanceCost(const IndexXYT & index, const EDTData & obs_edt) const;
+  double getLatDistanceCost(const Pose & pose) const;
 
   // Algorithm specific param
   AstarParam astar_param_;
@@ -150,6 +160,11 @@ private:
   // goal node, which may helpful in testing and debugging
   AstarNode * goal_node_;
 
+  mutable boost::optional<Pose> shifted_goal_pose_;
+
+  // alternate goals for when multiple goal candidates are given
+  std::vector<Pose> alternate_goals_;
+
   // distance metric option (removed when the reeds_shepp gets stable)
   bool use_reeds_shepp_;
 
@@ -158,7 +173,9 @@ private:
   double avg_turning_radius_;
   double min_expansion_dist_;
   double max_expansion_dist_;
+  double near_goal_dist_;
   bool is_backward_search_;
+  bool is_multiple_goals_;
 
   // the following constexpr values were found to be best by trial and error, through multiple
   // tests, and are not expected to be changed regularly, therefore they were not made into ros
@@ -169,8 +186,11 @@ private:
   static constexpr double dist_to_goal_expansion_factor_ = 0.15;
   static constexpr double dist_to_obs_expansion_factor_ = 0.3;
 
+  // initial cost offset for multi goal backward search
+  static constexpr double multi_goal_backward_cost_offset = 5.0;
+
   // cost free obstacle distance
-  static constexpr double cost_free_obs_dist = 5.0;
+  static constexpr double cost_free_obs_dist = 1.0;
 };
 }  // namespace autoware::freespace_planning_algorithms
 

@@ -377,8 +377,7 @@ void FreespacePlannerNode::updateTargetIndex()
     } else {
       // Switch to next partial trajectory
       prev_target_index_ = target_index_;
-      target_index_ =
-        getNextTargetIndex(trajectory_.points.size(), reversing_indices_, target_index_);
+      target_index_ = new_target_index;
     }
   }
 }

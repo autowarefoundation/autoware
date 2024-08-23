@@ -42,6 +42,13 @@ RRTStar::RRTStar(
 }
 
 bool RRTStar::makePlan(
+  const geometry_msgs::msg::Pose & start_pose,
+  const std::vector<geometry_msgs::msg::Pose> & goal_candidates)
+{
+  return makePlan(start_pose, goal_candidates.front());
+}
+
+bool RRTStar::makePlan(
   const geometry_msgs::msg::Pose & start_pose, const geometry_msgs::msg::Pose & goal_pose)
 {
   const rclcpp::Time begin = rclcpp::Clock(RCL_ROS_TIME).now();
