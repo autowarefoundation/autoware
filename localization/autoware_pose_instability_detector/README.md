@@ -1,4 +1,4 @@
-# pose_instability_detector
+# autoware_pose_instability_detector
 
 The `pose_instability_detector` is a node designed to monitor the stability of `/localization/kinematic_state`, which is an output topic of the Extended Kalman Filter (EKF).
 
@@ -109,7 +109,7 @@ $$
 
 ## Parameters
 
-{{ json_to_markdown("localization/pose_instability_detector/schema/pose_instability_detector.schema.json") }}
+{{ json_to_markdown("localization/autoware_pose_instability_detector/schema/pose_instability_detector.schema.json") }}
 
 ## Input
 

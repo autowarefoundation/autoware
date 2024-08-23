@@ -36,7 +36,7 @@ protected:
   void SetUp() override
   {
     const std::string yaml_path =
-      ament_index_cpp::get_package_share_directory("pose_instability_detector") +
+      ament_index_cpp::get_package_share_directory("autoware_pose_instability_detector") +
       "/config/pose_instability_detector.param.yaml";
 
     rcl_params_t * params_st = rcl_yaml_node_struct_init(rcl_get_default_allocator());
@@ -53,7 +53,8 @@ protected:
       }
     }
 
-    subject_ = std::make_shared<PoseInstabilityDetector>(node_options);
+    subject_ =
+      std::make_shared<autoware::pose_instability_detector::PoseInstabilityDetector>(node_options);
     executor_.add_node(subject_);
 
     helper_ = std::make_shared<TestMessageHelperNode>();
@@ -69,7 +70,7 @@ protected:
   }
 
   rclcpp::executors::SingleThreadedExecutor executor_;
-  std::shared_ptr<PoseInstabilityDetector> subject_;
+  std::shared_ptr<autoware::pose_instability_detector::PoseInstabilityDetector> subject_;
   std::shared_ptr<TestMessageHelperNode> helper_;
 };
 

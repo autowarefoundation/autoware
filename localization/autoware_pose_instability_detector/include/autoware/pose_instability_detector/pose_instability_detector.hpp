@@ -26,6 +26,8 @@
 #include <tuple>
 #include <vector>
 
+namespace autoware::pose_instability_detector
+{
 class PoseInstabilityDetector : public rclcpp::Node
 {
   using Quaternion = geometry_msgs::msg::Quaternion;
@@ -93,5 +95,6 @@ private:
   std::optional<Odometry> prev_odometry_ = std::nullopt;
   std::deque<TwistWithCovarianceStamped> twist_buffer_;
 };
+}  // namespace autoware::pose_instability_detector
 
 #endif  // AUTOWARE__POSE_INSTABILITY_DETECTOR__POSE_INSTABILITY_DETECTOR_HPP_

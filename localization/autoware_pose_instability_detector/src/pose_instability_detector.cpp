@@ -25,6 +25,8 @@
 #include <memory>
 #include <string>
 
+namespace autoware::pose_instability_detector
+{
 PoseInstabilityDetector::PoseInstabilityDetector(const rclcpp::NodeOptions & options)
 : rclcpp::Node("pose_instability_detector", options),
   timer_period_(this->declare_parameter<double>("timer_period")),
@@ -409,6 +411,7 @@ PoseInstabilityDetector::clip_out_necessary_twist(
   }
   return result_deque;
 }
+}  // namespace autoware::pose_instability_detector
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(PoseInstabilityDetector)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::pose_instability_detector::PoseInstabilityDetector)
