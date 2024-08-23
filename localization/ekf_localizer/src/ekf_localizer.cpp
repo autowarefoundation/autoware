@@ -100,9 +100,9 @@ EKFLocalizer::EKFLocalizer(const rclcpp::NodeOptions & node_options)
   ekf_module_ = std::make_unique<EKFModule>(warning_, params_);
   logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
 
-  z_filter_.set_proc_dev(params_.z_filter_proc_dev);
-  roll_filter_.set_proc_dev(params_.roll_filter_proc_dev);
-  pitch_filter_.set_proc_dev(params_.pitch_filter_proc_dev);
+  z_filter_.set_proc_var(params_.z_filter_proc_dev * params_.z_filter_proc_dev);
+  roll_filter_.set_proc_var(params_.roll_filter_proc_dev * params_.roll_filter_proc_dev);
+  pitch_filter_.set_proc_var(params_.pitch_filter_proc_dev * params_.pitch_filter_proc_dev);
 }
 
 /*
@@ -367,9 +367,9 @@ void EKFLocalizer::publish_estimate_result(
   pose_cov.pose.covariance = ekf_module_->get_current_pose_covariance();
 
   using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
-  pose_cov.pose.covariance[COV_IDX::Z_Z] = z_filter_.get_dev();
-  pose_cov.pose.covariance[COV_IDX::ROLL_ROLL] = roll_filter_.get_dev();
-  pose_cov.pose.covariance[COV_IDX::PITCH_PITCH] = pitch_filter_.get_dev();
+  pose_cov.pose.covariance[COV_IDX::Z_Z] = z_filter_.get_var();
+  pose_cov.pose.covariance[COV_IDX::ROLL_ROLL] = roll_filter_.get_var();
+  pose_cov.pose.covariance[COV_IDX::PITCH_PITCH] = pitch_filter_.get_var();
 
   pub_pose_cov_->publish(pose_cov);
 
@@ -466,14 +466,14 @@ void EKFLocalizer::update_simple_1d_filters(
   const auto rpy = autoware::universe_utils::getRPY(pose.pose.pose.orientation);
 
   using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
-  double z_dev = pose.pose.covariance[COV_IDX::Z_Z] * static_cast<double>(smoothing_step);
-  double roll_dev = pose.pose.covariance[COV_IDX::ROLL_ROLL] * static_cast<double>(smoothing_step);
-  double pitch_dev =
+  double z_var = pose.pose.covariance[COV_IDX::Z_Z] * static_cast<double>(smoothing_step);
+  double roll_var = pose.pose.covariance[COV_IDX::ROLL_ROLL] * static_cast<double>(smoothing_step);
+  double pitch_var =
     pose.pose.covariance[COV_IDX::PITCH_PITCH] * static_cast<double>(smoothing_step);
 
-  z_filter_.update(z, z_dev, pose.header.stamp);
-  roll_filter_.update(rpy.x, roll_dev, pose.header.stamp);
-  pitch_filter_.update(rpy.y, pitch_dev, pose.header.stamp);
+  z_filter_.update(z, z_var, pose.header.stamp);
+  roll_filter_.update(rpy.x, roll_var, pose.header.stamp);
+  pitch_filter_.update(rpy.y, pitch_var, pose.header.stamp);
 }
 
 void EKFLocalizer::init_simple_1d_filters(
@@ -484,13 +484,13 @@ void EKFLocalizer::init_simple_1d_filters(
   const auto rpy = autoware::universe_utils::getRPY(pose.pose.pose.orientation);
 
   using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
-  double z_dev = pose.pose.covariance[COV_IDX::Z_Z];
-  double roll_dev = pose.pose.covariance[COV_IDX::ROLL_ROLL];
-  double pitch_dev = pose.pose.covariance[COV_IDX::PITCH_PITCH];
+  double z_var = pose.pose.covariance[COV_IDX::Z_Z];
+  double roll_var = pose.pose.covariance[COV_IDX::ROLL_ROLL];
+  double pitch_var = pose.pose.covariance[COV_IDX::PITCH_PITCH];
 
-  z_filter_.init(z, z_dev, pose.header.stamp);
-  roll_filter_.init(rpy.x, roll_dev, pose.header.stamp);
-  pitch_filter_.init(rpy.y, pitch_dev, pose.header.stamp);
+  z_filter_.init(z, z_var, pose.header.stamp);
+  roll_filter_.init(rpy.x, roll_var, pose.header.stamp);
+  pitch_filter_.init(rpy.y, pitch_var, pose.header.stamp);
 }
 
 /**

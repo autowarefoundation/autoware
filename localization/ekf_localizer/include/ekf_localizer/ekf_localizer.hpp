@@ -56,44 +56,44 @@ public:
   {
     initialized_ = false;
     x_ = 0;
-    dev_ = 1e9;
-    proc_dev_x_c_ = 0.0;
+    var_ = 1e9;
+    proc_var_x_c_ = 0.0;
   };
-  void init(const double init_obs, const double obs_dev, const rclcpp::Time & time)
+  void init(const double init_obs, const double obs_var, const rclcpp::Time & time)
   {
     x_ = init_obs;
-    dev_ = obs_dev;
+    var_ = obs_var;
     latest_time_ = time;
     initialized_ = true;
   };
-  void update(const double obs, const double obs_dev, const rclcpp::Time & time)
+  void update(const double obs, const double obs_var, const rclcpp::Time & time)
   {
     if (!initialized_) {
-      init(obs, obs_dev, time);
+      init(obs, obs_var, time);
       return;
     }
 
-    // Prediction step (current stddev_)
+    // Prediction step (current variance)
     double dt = (time - latest_time_).seconds();
-    double proc_dev_x_d = proc_dev_x_c_ * dt * dt;
-    dev_ = dev_ + proc_dev_x_d;
+    double proc_var_x_d = proc_var_x_c_ * dt * dt;
+    var_ = var_ + proc_var_x_d;
 
     // Update step
-    double kalman_gain = dev_ / (dev_ + obs_dev);
+    double kalman_gain = var_ / (var_ + obs_var);
     x_ = x_ + kalman_gain * (obs - x_);
-    dev_ = (1 - kalman_gain) * dev_;
+    var_ = (1 - kalman_gain) * var_;
 
     latest_time_ = time;
   };
-  void set_proc_dev(const double proc_dev) { proc_dev_x_c_ = proc_dev; }
+  void set_proc_var(const double proc_var) { proc_var_x_c_ = proc_var; }
   [[nodiscard]] double get_x() const { return x_; }
-  [[nodiscard]] double get_dev() const { return dev_; }
+  [[nodiscard]] double get_var() const { return var_; }
 
 private:
   bool initialized_;
   double x_;
-  double dev_;
-  double proc_dev_x_c_;
+  double var_;
+  double proc_var_x_c_;
   rclcpp::Time latest_time_;
 };
 
