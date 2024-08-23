@@ -15,7 +15,7 @@ jobs:
 
   docker-build:
     needs: load-env
-    runs-on: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-arm-3.0-large
+    runs-on: codebuild-autoware-arm-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}
     strategy:
       fail-fast: false
       matrix:
