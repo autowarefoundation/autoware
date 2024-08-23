@@ -46,17 +46,6 @@ void InputStream::init(const InputChannel & input_channel)
   latest_message_time_ = node_.now();
 }
 
-bool InputStream::getTimestamps(
-  rclcpp::Time & latest_measurement_time, rclcpp::Time & latest_message_time) const
-{
-  if (!isTimeInitialized()) {
-    return false;
-  }
-  latest_measurement_time = latest_measurement_time_;
-  latest_message_time = latest_message_time_;
-  return true;
-}
-
 void InputStream::onMessage(
   const autoware_perception_msgs::msg::DetectedObjects::ConstSharedPtr msg)
 {
