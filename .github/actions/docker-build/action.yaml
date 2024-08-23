@@ -18,6 +18,11 @@ inputs:
 runs:
   using: composite
   steps:
+    # Add support for more platforms with QEMU (optional)
+    # https://github.com/docker/setup-qemu-action
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
