@@ -88,7 +88,6 @@ public:
   inline Eigen::Vector4i get_max_b() const { return max_b_; }
   inline Eigen::Vector4i get_div_b() const { return div_b_; }
   inline Eigen::Array4f get_inverse_leaf_size() const { return inverse_leaf_size_; }
-  inline std::vector<int> getLeafLayout() { return (leaf_layout_); }
 };
 
 class VoxelGridMapLoader
@@ -122,8 +121,6 @@ public:
     const double distance_threshold, const PointCloudPtr & map, VoxelGridPointXYZ & voxel) const;
 
   void publish_downsampled_map(const pcl::PointCloud<pcl::PointXYZ> & downsampled_pc);
-  static bool is_close_points(
-    const pcl::PointXYZ point, const pcl::PointXYZ target_point, const double distance_threshold);
   std::string * tf_map_input_frame_;
 };
 

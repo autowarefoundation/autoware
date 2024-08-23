@@ -31,15 +31,6 @@ VoxelGridMapLoader::VoxelGridMapLoader(
   debug_ = node->declare_parameter<bool>("publish_debug_pcd");
 }
 
-bool VoxelGridMapLoader::is_close_points(
-  const pcl::PointXYZ point, const pcl::PointXYZ target_point, const double distance_threshold)
-{
-  if (distance3D(point, target_point) < distance_threshold * distance_threshold) {
-    return true;
-  }
-  return false;
-}
-
 void VoxelGridMapLoader::publish_downsampled_map(
   const pcl::PointCloud<pcl::PointXYZ> & downsampled_pc)
 {
