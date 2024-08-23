@@ -17,7 +17,7 @@ jobs:
 
   docker-build-and-push:
     needs: load-env
-    runs-on: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
+    runs-on: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-arm-3.0-large
     strategy:
       fail-fast: false
       matrix:
