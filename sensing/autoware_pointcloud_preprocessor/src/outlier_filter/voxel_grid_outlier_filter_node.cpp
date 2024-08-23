@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/pointcloud_preprocessor/outlier_filter/voxel_grid_outlier_filter_nodelet.hpp"
+#include "autoware/pointcloud_preprocessor/outlier_filter/voxel_grid_outlier_filter_node.hpp"
 
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/search/kdtree.h>
@@ -28,10 +28,10 @@ VoxelGridOutlierFilterComponent::VoxelGridOutlierFilterComponent(
 {
   // set initial parameters
   {
-    voxel_size_x_ = static_cast<double>(declare_parameter("voxel_size_x", 0.3));
-    voxel_size_y_ = static_cast<double>(declare_parameter("voxel_size_y", 0.3));
-    voxel_size_z_ = static_cast<double>(declare_parameter("voxel_size_z", 0.1));
-    voxel_points_threshold_ = static_cast<int>(declare_parameter("voxel_points_threshold", 2));
+    voxel_size_x_ = declare_parameter<double>("voxel_size_x");
+    voxel_size_y_ = declare_parameter<double>("voxel_size_y");
+    voxel_size_z_ = declare_parameter<double>("voxel_size_z");
+    voxel_points_threshold_ = declare_parameter<int>("voxel_points_threshold");
   }
 
   using std::placeholders::_1;

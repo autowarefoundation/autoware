@@ -1,0 +1,6 @@
+/**:
+  ros__parameters:
+    voxel_size_x: 0.3
+    voxel_size_y: 0.3
+    voxel_size_z: 0.1
+    voxel_points_threshold: 2

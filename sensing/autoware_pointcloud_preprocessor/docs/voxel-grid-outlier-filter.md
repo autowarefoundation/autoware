@@ -23,12 +23,7 @@ This implementation inherits `autoware::pointcloud_preprocessor::Filter` class, 
 
 ### Core Parameters
 
-| Name                     | Type   | Default Value | Description                                |
-| ------------------------ | ------ | ------------- | ------------------------------------------ |
-| `voxel_size_x`           | double | 0.3           | the voxel size along x-axis [m]            |
-| `voxel_size_y`           | double | 0.3           | the voxel size along y-axis [m]            |
-| `voxel_size_z`           | double | 0.1           | the voxel size along z-axis [m]            |
-| `voxel_points_threshold` | int    | 2             | the minimum number of points in each voxel |
+{{ json_to_markdown("sensing/autoware_pointcloud_preprocessor/schema/voxel_grid_outlier_filter_node.schema.json") }}
 
 ## Assumptions / Known limits
 
