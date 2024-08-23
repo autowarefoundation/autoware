@@ -34,7 +34,6 @@ public:
   void update(const rclcpp::Time & stamp);  // cppcheck-suppress functionConst
   bool update(const rclcpp::Time & stamp, const DiagnosticStatus & status);
   const auto & nodes() const { return nodes_; }
-  const auto & diags() const { return diags_; }
   const auto & units() const { return units_; }
   DiagGraphStruct create_struct(const rclcpp::Time & stamp) const;
   DiagGraphStatus create_status(const rclcpp::Time & stamp) const;
