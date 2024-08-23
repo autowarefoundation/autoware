@@ -15,9 +15,9 @@
 #ifndef INITIAL_POSE_ADAPTOR_HPP_
 #define INITIAL_POSE_ADAPTOR_HPP_
 
+#include <autoware/map_height_fitter/map_height_fitter.hpp>
 #include <autoware_ad_api_specs/localization.hpp>
 #include <component_interface_utils/rclcpp.hpp>
-#include <map_height_fitter/map_height_fitter.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -36,7 +36,7 @@ private:
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_initial_pose_;
   component_interface_utils::Client<Initialize>::SharedPtr cli_initialize_;
   std::array<double, 36> rviz_particle_covariance_;
-  map_height_fitter::MapHeightFitter fitter_;
+  autoware::map_height_fitter::MapHeightFitter fitter_;
 
   void on_initial_pose(const PoseWithCovarianceStamped::ConstSharedPtr msg);
 };

@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "map_height_fitter/map_height_fitter.hpp"
+#include "autoware/map_height_fitter/map_height_fitter.hpp"
 
 #include <tier4_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 
 #include <memory>
 
+namespace autoware::map_height_fitter
+{
 using tier4_localization_msgs::srv::PoseWithCovarianceStamped;
 
 class MapHeightFitterNode : public rclcpp::Node
@@ -46,6 +48,7 @@ private:
   map_height_fitter::MapHeightFitter fitter_;
   rclcpp::Service<PoseWithCovarianceStamped>::SharedPtr srv_;
 };
+}  // namespace autoware::map_height_fitter
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(MapHeightFitterNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::map_height_fitter::MapHeightFitterNode)

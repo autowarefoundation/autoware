@@ -15,7 +15,7 @@
 #ifndef POSE_INITIALIZER__GNSS_MODULE_HPP_
 #define POSE_INITIALIZER__GNSS_MODULE_HPP_
 
-#include <map_height_fitter/map_height_fitter.hpp>
+#include <autoware/map_height_fitter/map_height_fitter.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -32,7 +32,7 @@ public:
 private:
   void on_pose(PoseWithCovarianceStamped::ConstSharedPtr msg);
 
-  map_height_fitter::MapHeightFitter fitter_;
+  autoware::map_height_fitter::MapHeightFitter fitter_;
   rclcpp::Clock::SharedPtr clock_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_gnss_pose_;
   PoseWithCovarianceStamped::ConstSharedPtr pose_;

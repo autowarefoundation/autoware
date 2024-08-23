@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(map_height_fitter)
+project(autoware_map_height_fitter)
 
 find_package(autoware_cmake REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common)
@@ -9,14 +9,14 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/map_height_fitter.cpp
   src/map_height_fitter_node.cpp
 )
-target_link_libraries(map_height_fitter ${PCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 # When adding `<depend>autoware_lanelet2_extension</depend>` to package.xml, many warnings are generated.
 # These are treated as errors in compile, so pedantic warnings are disabled for this package.
-target_compile_options(map_height_fitter PRIVATE -Wno-pedantic)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-pedantic)
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "MapHeightFitterNode"
+  PLUGIN "autoware::map_height_fitter::MapHeightFitterNode"
   EXECUTABLE ${PROJECT_NAME}_node
   EXECUTOR MultiThreadedExecutor
 )

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MAP_HEIGHT_FITTER__MAP_HEIGHT_FITTER_HPP_
-#define MAP_HEIGHT_FITTER__MAP_HEIGHT_FITTER_HPP_
+#ifndef AUTOWARE__MAP_HEIGHT_FITTER__MAP_HEIGHT_FITTER_HPP_
+#define AUTOWARE__MAP_HEIGHT_FITTER__MAP_HEIGHT_FITTER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -23,7 +23,7 @@
 #include <optional>
 #include <string>
 
-namespace map_height_fitter
+namespace autoware::map_height_fitter
 {
 
 using geometry_msgs::msg::Point;
@@ -44,6 +44,6 @@ private:
   std::unique_ptr<Impl> impl_;
 };
 
-}  // namespace map_height_fitter
+}  // namespace autoware::map_height_fitter
 
-#endif  // MAP_HEIGHT_FITTER__MAP_HEIGHT_FITTER_HPP_
+#endif  // AUTOWARE__MAP_HEIGHT_FITTER__MAP_HEIGHT_FITTER_HPP_

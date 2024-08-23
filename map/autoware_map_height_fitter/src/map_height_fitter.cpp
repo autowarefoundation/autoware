@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "map_height_fitter/map_height_fitter.hpp"
+#include "autoware/map_height_fitter/map_height_fitter.hpp"
 
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <autoware_lanelet2_extension/utility/query.hpp>
@@ -31,7 +31,7 @@
 
 #include <memory>
 
-namespace map_height_fitter
+namespace autoware::map_height_fitter
 {
 
 struct MapHeightFitter::Impl
@@ -285,4 +285,4 @@ std::optional<Point> MapHeightFitter::fit(const Point & position, const std::str
   return impl_->fit(position, frame);
 }
 
-}  // namespace map_height_fitter
+}  // namespace autoware::map_height_fitter

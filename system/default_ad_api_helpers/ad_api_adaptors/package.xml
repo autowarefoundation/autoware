@@ -14,8 +14,8 @@
 
   <depend>autoware_ad_api_specs</depend>
   <depend>autoware_adapi_v1_msgs</depend>
+  <depend>autoware_map_height_fitter</depend>
   <depend>component_interface_utils</depend>
-  <depend>map_height_fitter</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
 

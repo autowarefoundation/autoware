@@ -7,7 +7,7 @@ It receives roughly estimated initial pose from GNSS/user.
 Passing the pose to `ndt_scan_matcher`, and it gets a calculated ego pose from `ndt_scan_matcher` via service.
 Finally, it publishes the initial pose to `ekf_localizer`.
 This node depends on the map height fitter library.
-[See here for more details.](../../map/map_height_fitter/README.md)
+[See here for more details.](../../map/autoware_map_height_fitter/README.md)
 
 ## Interfaces
 
