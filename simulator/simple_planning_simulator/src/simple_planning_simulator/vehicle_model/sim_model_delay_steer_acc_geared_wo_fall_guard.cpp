@@ -64,7 +64,7 @@ double SimModelDelaySteerAccGearedWoFallGuard::getVy()
 }
 double SimModelDelaySteerAccGearedWoFallGuard::getAx()
 {
-  return state_(IDX::PEDAL_ACCX);
+  return state_(IDX::ACCX);
 }
 double SimModelDelaySteerAccGearedWoFallGuard::getWz()
 {
@@ -103,6 +103,8 @@ void SimModelDelaySteerAccGearedWoFallGuard::update(const double & dt)
     // stop condition is satisfied
     state_(IDX::VX) = 0.0;
   }
+
+  state_(IDX::ACCX) = (state_(IDX::VX) - prev_state(IDX::VX)) / dt;
 }
 
 void SimModelDelaySteerAccGearedWoFallGuard::initializeInputQueue(const double & dt)
