@@ -258,11 +258,17 @@ bool LaneChangeInterface::canTransitFailureState()
 
   if (!module_type_->isValidPath()) {
     log_debug_throttled("Transit to failure state due not to find valid path");
+    updateRTCStatus(
+      std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest(), true,
+      State::FAILED);
     return true;
   }
 
   if (module_type_->isAbortState() && module_type_->hasFinishedAbort()) {
     log_debug_throttled("Abort process has completed.");
+    updateRTCStatus(
+      std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest(), true,
+      State::FAILED);
     return true;
   }
 
