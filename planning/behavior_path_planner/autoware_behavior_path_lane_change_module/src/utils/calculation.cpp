@@ -58,7 +58,7 @@ double calc_stopping_distance(const LCParamPtr & lc_param_ptr)
 }
 
 double calc_dist_to_last_fit_width(
-  const lanelet::ConstLanelets lanelets, const Pose & src_pose,
+  const lanelet::ConstLanelets & lanelets, const Pose & src_pose,
   const BehaviorPathPlannerParameters & bpp_param, const double margin)
 {
   if (lanelets.empty()) return 0.0;

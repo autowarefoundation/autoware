@@ -73,7 +73,7 @@ double calc_stopping_distance(const LCParamPtr & lc_param_ptr);
  * @return distance to last fit width position along the lane
  */
 double calc_dist_to_last_fit_width(
-  const lanelet::ConstLanelets lanelets, const Pose & src_pose,
+  const lanelet::ConstLanelets & lanelets, const Pose & src_pose,
   const BehaviorPathPlannerParameters & bpp_param, const double margin = 0.1);
 
 /**

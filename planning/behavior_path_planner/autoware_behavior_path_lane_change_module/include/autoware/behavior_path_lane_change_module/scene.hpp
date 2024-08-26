@@ -109,13 +109,15 @@ public:
 
   bool isStoppedAtRedTrafficLight() const override;
 
-  TurnSignalInfo get_current_turn_signal_info() override;
+  TurnSignalInfo get_current_turn_signal_info() const final;
 
 protected:
   lanelet::ConstLanelets getLaneChangeLanes(
     const lanelet::ConstLanelets & current_lanes, Direction direction) const override;
 
   int getNumToPreferredLane(const lanelet::ConstLanelet & lane) const override;
+
+  TurnSignalInfo get_terminal_turn_signal_info() const final;
 
   std::vector<double> sampleLongitudinalAccValues(
     const lanelet::ConstLanelets & current_lanes,

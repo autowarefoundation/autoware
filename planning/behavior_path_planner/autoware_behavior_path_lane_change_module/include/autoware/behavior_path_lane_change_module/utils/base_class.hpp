@@ -213,7 +213,7 @@ public:
 
   LaneChangeModuleType getModuleType() const { return type_; }
 
-  TurnSignalDecider getTurnSignalDecider() { return planner_data_->turn_signal_decider; }
+  TurnSignalDecider getTurnSignalDecider() const { return planner_data_->turn_signal_decider; }
 
   Direction getDirection() const
   {
@@ -229,7 +229,7 @@ public:
 
   void resetStopPose() { lane_change_stop_pose_ = std::nullopt; }
 
-  virtual TurnSignalInfo get_current_turn_signal_info() = 0;
+  virtual TurnSignalInfo get_current_turn_signal_info() const = 0;
 
 protected:
   virtual int getNumToPreferredLane(const lanelet::ConstLanelet & lane) const = 0;
@@ -244,6 +244,31 @@ protected:
 
   virtual lanelet::ConstLanelets getLaneChangeLanes(
     const lanelet::ConstLanelets & current_lanes, Direction direction) const = 0;
+
+  virtual TurnSignalInfo get_terminal_turn_signal_info() const = 0;
+
+  TurnSignalInfo get_turn_signal(const Pose & start, const Pose & end) const
+  {
+    TurnSignalInfo turn_signal;
+    switch (direction_) {
+      case Direction::LEFT:
+        turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+        break;
+      case Direction::RIGHT:
+        turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+        break;
+      default:
+        turn_signal.turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
+        break;
+    }
+
+    turn_signal.desired_start_point = start;
+    turn_signal.desired_end_point = end;
+    turn_signal.required_start_point = turn_signal.desired_start_point;
+    turn_signal.required_end_point = turn_signal.desired_end_point;
+
+    return turn_signal;
+  }
 
   LaneChangeStatus status_{};
   PathShifter path_shifter_{};
