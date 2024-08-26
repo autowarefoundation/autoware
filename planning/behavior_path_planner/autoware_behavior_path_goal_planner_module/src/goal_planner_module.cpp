@@ -1206,8 +1206,6 @@ bool GoalPlannerModule::hasDecidedPath(
   const std::shared_ptr<SafetyCheckParams> & safety_check_params,
   const std::shared_ptr<GoalSearcherBase> goal_searcher) const
 {
-  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
-
   return checkDecidingPathStatus(
            planner_data, occupancy_grid_map, parameters, ego_predicted_path_params,
            objects_filtering_params, safety_check_params, goal_searcher)
@@ -1240,8 +1238,6 @@ DecidingPathStatusWithStamp GoalPlannerModule::checkDecidingPathStatus(
   const std::shared_ptr<SafetyCheckParams> & safety_check_params,
   const std::shared_ptr<GoalSearcherBase> goal_searcher) const
 {
-  universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
-
   const auto & prev_status = thread_safe_data_.get_prev_data().deciding_path_status;
   const bool enable_safety_check = parameters.safety_check_params.enable_safety_check;
 
