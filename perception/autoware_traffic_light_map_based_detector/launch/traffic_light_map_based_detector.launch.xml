@@ -12,7 +12,7 @@
 
   <arg name="param_path" default="$(find-pkg-share autoware_traffic_light_map_based_detector)/config/traffic_light_map_based_detector.param.yaml"/>
 
-  <node pkg="autoware_traffic_light_map_based_detector" exec="traffic_light_map_based_detector_node" name="traffic_light_map_based_detector" output="screen">
+  <node pkg="autoware_traffic_light_map_based_detector" exec="traffic_light_map_based_detector_node" name="traffic_light_map_based_detector" output="both">
     <remap from="~/input/vector_map" to="$(var input/vector_map)"/>
     <remap from="~/input/camera_info" to="$(var input/camera_info)"/>
     <remap from="~/expect/rois" to="$(var expect/rois)"/>
