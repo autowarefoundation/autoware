@@ -28,52 +28,46 @@
 
 #include <lanelet2_core/Forward.h>
 #include <lanelet2_core/LaneletMap.h>
+#include <lanelet2_core/geometry/Polygon.h>
 
-#include <algorithm>
-#include <limits>
-#include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace autoware::motion_velocity_planner::out_of_lane
 {
-using autoware_planning_msgs::msg::TrajectoryPoint;
+using Polygons = boost::geometry::model::multi_polygon<lanelet::BasicPolygonWithHoles2d>;
 
-/// @brief parameters for the "out of lane" module
+/// @brief parameters for the out_of_lane module
 struct PlannerParam
 {
   std::string mode;                  // mode used to consider a conflict with an object
   bool skip_if_already_overlapping;  // if true, do not run the module when ego already overlaps
                                      // another lane
+  double max_arc_length;  // [m] maximum arc length along the trajectory to check for collision
+  bool ignore_lane_changeable_lanelets;  // if true, ignore overlaps on lane changeable lanelets
 
-  double time_threshold;        // [s](mode="threshold") objects time threshold
-  double intervals_ego_buffer;  // [s](mode="intervals") buffer to extend the ego time range
-  double intervals_obj_buffer;  // [s](mode="intervals") buffer to extend the objects time range
+  double time_threshold;  // [s](mode="threshold") objects time threshold
   double ttc_threshold;  // [s](mode="ttc") threshold on time to collision between ego and an object
-  double ego_min_velocity;  // [m/s] minimum velocity of ego used to calculate its ttc or time range
 
-  bool objects_use_predicted_paths;  // whether to use the objects' predicted paths
   bool objects_cut_predicted_paths_beyond_red_lights;  // whether to cut predicted paths beyond red
                                                        // lights' stop lines
-  double objects_min_vel;         // [m/s] objects lower than this velocity will be ignored
-  double objects_min_confidence;  // minimum confidence to consider a predicted path
-  double objects_dist_buffer;  // [m] distance buffer used to determine if a collision will occur in
-                               // the other lane
+  double objects_min_vel;          // [m/s] objects lower than this velocity will be ignored
+  double objects_min_confidence;   // minimum confidence to consider a predicted path
   bool objects_ignore_behind_ego;  // if true, objects behind the ego vehicle are ignored
 
-  double overlap_extra_length;  // [m] extra length to add around an overlap range
-  double overlap_min_dist;      // [m] min distance inside another lane to consider an overlap
-  // action to insert in the trajectory if an object causes a conflict at an overlap
-  bool skip_if_over_max_decel;  // if true, skip the action if it causes more than the max decel
-  double lon_dist_buffer;       // [m] safety distance buffer to keep in front of the ego vehicle
-  double lat_dist_buffer;       // [m] safety distance buffer to keep on the side of the ego vehicle
-  double slow_velocity;
-  double slow_dist_threshold;
-  double stop_dist_threshold;
-  double precision;              // [m] precision when inserting a stop pose in the trajectory
-  double min_decision_duration;  // [s] minimum duration needed a decision can be canceled
+  // action to insert in the trajectory if an object causes a collision at an overlap
+  double lon_dist_buffer;      // [m] safety distance buffer to keep in front of the ego vehicle
+  double lat_dist_buffer;      // [m] safety distance buffer to keep on the side of the ego vehicle
+  double slow_velocity;        // [m/s] slowdown velocity
+  double stop_dist_threshold;  // [m] if a collision is detected bellow this distance ahead of ego,
+                               // try to insert a stop point
+  double precision;            // [m] precision when inserting a stop pose in the trajectory
+  double
+    min_decision_duration;  // [s] duration needed before a stop or slowdown point can be removed
+
   // ego dimensions used to create its polygon footprint
   double front_offset;        // [m]  front offset (from vehicle info)
   double rear_offset;         // [m]  rear offset (from vehicle info)
@@ -85,98 +79,6 @@ struct PlannerParam
   double extra_left_offset;   // [m] extra left distance
 };
 
-struct EnterExitTimes
-{
-  double enter_time{};
-  double exit_time{};
-};
-struct RangeTimes
-{
-  EnterExitTimes ego{};
-  EnterExitTimes object{};
-};
-
-/// @brief action taken by the "out of lane" module
-struct Slowdown
-{
-  size_t target_trajectory_idx{};         // we want to slowdown before this trajectory index
-  double velocity{};                      // desired slow down velocity
-  lanelet::ConstLanelet lane_to_avoid{};  // we want to slowdown before entering this lane
-};
-/// @brief slowdown to insert in a trajectory
-struct SlowdownToInsert
-{
-  Slowdown slowdown{};
-  autoware_planning_msgs::msg::TrajectoryPoint point{};
-};
-
-/// @brief bound of an overlap range (either the first, or last bound)
-struct RangeBound
-{
-  size_t index{};
-  lanelet::BasicPoint2d point{};
-  double arc_length{};
-  double inside_distance{};
-};
-
-/// @brief representation of an overlap between the ego footprint and some other lane
-struct Overlap
-{
-  double inside_distance = 0.0;  ///!< distance inside the overlap
-  double min_arc_length = std::numeric_limits<double>::infinity();
-  double max_arc_length = 0.0;
-  lanelet::BasicPoint2d min_overlap_point{};  ///!< point with min arc length
-  lanelet::BasicPoint2d max_overlap_point{};  ///!< point with max arc length
-};
-
-/// @brief range along the trajectory where ego overlaps another lane
-struct OverlapRange
-{
-  lanelet::ConstLanelet lane{};
-  size_t entering_trajectory_idx{};
-  size_t exiting_trajectory_idx{};
-  lanelet::BasicPoint2d entering_point{};  // pose of the overlapping point closest along the lane
-  lanelet::BasicPoint2d exiting_point{};   // pose of the overlapping point furthest along the lane
-  double inside_distance{};                // [m] how much ego footprint enters the lane
-  mutable struct
-  {
-    std::vector<Overlap> overlaps{};
-    std::optional<Slowdown> decision{};
-    RangeTimes times{};
-    std::optional<autoware_perception_msgs::msg::PredictedObject> object{};
-  } debug;
-};
-using OverlapRanges = std::vector<OverlapRange>;
-/// @brief representation of a lane and its current overlap range
-struct OtherLane
-{
-  bool range_is_open = false;
-  RangeBound first_range_bound{};
-  RangeBound last_range_bound{};
-  lanelet::ConstLanelet lanelet{};
-  lanelet::BasicPolygon2d polygon{};
-
-  explicit OtherLane(lanelet::ConstLanelet ll) : lanelet(std::move(ll))
-  {
-    polygon = lanelet.polygon2d().basicPolygon();
-  }
-
-  [[nodiscard]] OverlapRange close_range()
-  {
-    OverlapRange range;
-    range.lane = lanelet;
-    range.entering_trajectory_idx = first_range_bound.index;
-    range.entering_point = first_range_bound.point;
-    range.exiting_trajectory_idx = last_range_bound.index;
-    range.exiting_point = last_range_bound.point;
-    range.inside_distance =
-      std::max(first_range_bound.inside_distance, last_range_bound.inside_distance);
-    range_is_open = false;
-    last_range_bound = {};
-    return range;
-  }
-};
-
 namespace bgi = boost::geometry::index;
 struct StopLine
 {
@@ -185,68 +87,52 @@ struct StopLine
 };
 using StopLineNode = std::pair<universe_utils::Box2d, StopLine>;
 using StopLinesRtree = bgi::rtree<StopLineNode, bgi::rstar<16>>;
-using OutAreaRtree = bgi::rtree<std::pair<universe_utils::Box2d, size_t>, bgi::rstar<16>>;
+using OutAreaNode = std::pair<universe_utils::Box2d, size_t>;
+using OutAreaRtree = bgi::rtree<OutAreaNode, bgi::rstar<16>>;
 
 /// @brief data related to the ego vehicle
 struct EgoData
 {
-  std::vector<autoware_planning_msgs::msg::TrajectoryPoint> trajectory_points{};
+  std::vector<autoware_planning_msgs::msg::TrajectoryPoint> trajectory_points;
+  geometry_msgs::msg::Pose pose;
   size_t first_trajectory_idx{};
-  double velocity{};   // [m/s]
-  double max_decel{};  // [m/s²]
-  geometry_msgs::msg::Pose pose{};
+  double longitudinal_offset_to_first_trajectory_index{};
+  double min_stop_distance{};
+  double min_slowdown_distance{};
+  double min_stop_arc_length{};
+
+  Polygons drivable_lane_polygons;
+
+  lanelet::BasicPolygon2d current_footprint;
+  std::vector<lanelet::BasicPolygon2d> trajectory_footprints;
+
   StopLinesRtree stop_lines_rtree;
 };
 
-/// @brief data needed to make decisions
-struct DecisionInputs
+struct OutOfLanePoint
 {
-  OverlapRanges ranges;
-  EgoData ego_data;
-  autoware_perception_msgs::msg::PredictedObjects objects;
-  std::shared_ptr<const route_handler::RouteHandler> route_handler;
-  lanelet::ConstLanelets lanelets;
+  size_t trajectory_index;
+  lanelet::BasicPolygon2d outside_ring;
+  std::set<double> collision_times;
+  std::optional<double> min_object_arrival_time;
+  std::optional<double> max_object_arrival_time;
+  std::optional<double> ttc;
+  lanelet::ConstLanelets overlapped_lanelets;
+  bool to_avoid = false;
+};
+struct OutOfLaneData
+{
+  std::vector<OutOfLanePoint> outside_points;
+  OutAreaRtree outside_areas_rtree;
 };
 
 /// @brief debug data
 struct DebugData
 {
-  std::vector<lanelet::BasicPolygon2d> footprints;
-  std::vector<SlowdownToInsert> slowdowns;
-  geometry_msgs::msg::Pose ego_pose;
-  OverlapRanges ranges;
-  lanelet::BasicPolygon2d current_footprint;
-  lanelet::ConstLanelets current_overlapped_lanelets;
-  lanelet::ConstLanelets trajectory_lanelets;
-  lanelet::ConstLanelets ignored_lanelets;
-  lanelet::ConstLanelets other_lanelets;
-  std::vector<autoware_planning_msgs::msg::TrajectoryPoint> trajectory_points;
-  size_t first_trajectory_idx;
-
-  size_t prev_footprints = 0;
-  size_t prev_slowdowns = 0;
-  size_t prev_ranges = 0;
-  size_t prev_current_overlapped_lanelets = 0;
-  size_t prev_ignored_lanelets = 0;
-  size_t prev_trajectory_lanelets = 0;
-  size_t prev_other_lanelets = 0;
-  void reset_data()
-  {
-    prev_footprints = footprints.size();
-    footprints.clear();
-    prev_slowdowns = slowdowns.size();
-    slowdowns.clear();
-    prev_ranges = ranges.size();
-    ranges.clear();
-    prev_current_overlapped_lanelets = current_overlapped_lanelets.size();
-    current_overlapped_lanelets.clear();
-    prev_ignored_lanelets = ignored_lanelets.size();
-    ignored_lanelets.clear();
-    prev_trajectory_lanelets = trajectory_lanelets.size();
-    trajectory_lanelets.clear();
-    prev_other_lanelets = other_lanelets.size();
-    other_lanelets.clear();
-  }
+  size_t prev_out_of_lane_areas = 0;
+  size_t prev_ttcs = 0;
+  size_t prev_objects = 0;
+  size_t prev_stop_line = 0;
 };
 
 }  // namespace autoware::motion_velocity_planner::out_of_lane

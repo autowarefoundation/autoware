@@ -21,15 +21,13 @@
 #include <lanelet2_core/geometry/Polygon.h>
 #include <tf2/utils.h>
 
-#include <algorithm>
 #include <vector>
 
 namespace autoware::motion_velocity_planner::out_of_lane
 {
-autoware::universe_utils::Polygon2d make_base_footprint(
-  const PlannerParam & p, const bool ignore_offset)
+universe_utils::Polygon2d make_base_footprint(const PlannerParam & p, const bool ignore_offset)
 {
-  autoware::universe_utils::Polygon2d base_footprint;
+  universe_utils::Polygon2d base_footprint;
   const auto front_offset = ignore_offset ? 0.0 : p.extra_front_offset;
   const auto rear_offset = ignore_offset ? 0.0 : p.extra_rear_offset;
   const auto right_offset = ignore_offset ? 0.0 : p.extra_right_offset;
@@ -43,10 +41,10 @@ autoware::universe_utils::Polygon2d make_base_footprint(
 }
 
 lanelet::BasicPolygon2d project_to_pose(
-  const autoware::universe_utils::Polygon2d & base_footprint, const geometry_msgs::msg::Pose & pose)
+  const universe_utils::Polygon2d & base_footprint, const geometry_msgs::msg::Pose & pose)
 {
   const auto angle = tf2::getYaw(pose.orientation);
-  const auto rotated_footprint = autoware::universe_utils::rotatePolygon(base_footprint, angle);
+  const auto rotated_footprint = universe_utils::rotatePolygon(base_footprint, angle);
   lanelet::BasicPolygon2d footprint;
   for (const auto & p : rotated_footprint.outer())
     footprint.emplace_back(p.x() + pose.position.x, p.y() + pose.position.y);
@@ -59,22 +57,15 @@ std::vector<lanelet::BasicPolygon2d> calculate_trajectory_footprints(
   const auto base_footprint = make_base_footprint(params);
   std::vector<lanelet::BasicPolygon2d> trajectory_footprints;
   trajectory_footprints.reserve(ego_data.trajectory_points.size());
-  double length = 0.0;
-  const auto range = std::max(params.slow_dist_threshold, params.stop_dist_threshold) +
-                     params.front_offset + params.extra_front_offset;
-  for (auto i = ego_data.first_trajectory_idx;
-       i < ego_data.trajectory_points.size() && length < range; ++i) {
+  for (auto i = ego_data.first_trajectory_idx; i < ego_data.trajectory_points.size(); ++i) {
     const auto & trajectory_pose = ego_data.trajectory_points[i].pose;
     const auto angle = tf2::getYaw(trajectory_pose.orientation);
-    const auto rotated_footprint = autoware::universe_utils::rotatePolygon(base_footprint, angle);
+    const auto rotated_footprint = universe_utils::rotatePolygon(base_footprint, angle);
     lanelet::BasicPolygon2d footprint;
     for (const auto & p : rotated_footprint.outer())
       footprint.emplace_back(
         p.x() + trajectory_pose.position.x, p.y() + trajectory_pose.position.y);
     trajectory_footprints.push_back(footprint);
-    if (i + 1 < ego_data.trajectory_points.size())
-      length += autoware::universe_utils::calcDistance2d(
-        trajectory_pose, ego_data.trajectory_points[i + 1].pose);
   }
   return trajectory_footprints;
 }
@@ -84,7 +75,7 @@ lanelet::BasicPolygon2d calculate_current_ego_footprint(
 {
   const auto base_footprint = make_base_footprint(params, ignore_offset);
   const auto angle = tf2::getYaw(ego_data.pose.orientation);
-  const auto rotated_footprint = autoware::universe_utils::rotatePolygon(base_footprint, angle);
+  const auto rotated_footprint = universe_utils::rotatePolygon(base_footprint, angle);
   lanelet::BasicPolygon2d footprint;
   for (const auto & p : rotated_footprint.outer())
     footprint.emplace_back(p.x() + ego_data.pose.position.x, p.y() + ego_data.pose.position.y);

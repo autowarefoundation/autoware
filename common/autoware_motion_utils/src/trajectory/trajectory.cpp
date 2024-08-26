@@ -599,4 +599,27 @@ template bool isTargetPointFront<std::vector<autoware_planning_msgs::msg::Trajec
   const geometry_msgs::msg::Point & base_point, const geometry_msgs::msg::Point & target_point,
   const double threshold);
 
+void calculate_time_from_start(
+  std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & trajectory,
+  const geometry_msgs::msg::Point & current_ego_point, const float min_velocity)
+{
+  const auto nearest_segment_idx = findNearestSegmentIndex(trajectory, current_ego_point);
+  if (nearest_segment_idx + 1 == trajectory.size()) {
+    return;
+  }
+  for (auto & p : trajectory) {
+    p.time_from_start = rclcpp::Duration::from_seconds(0);
+  }
+  // TODO(Maxime): some points can have very low velocities which introduce huge time errors
+  // Temporary solution: use a minimum velocity
+  for (auto idx = nearest_segment_idx + 1; idx < trajectory.size(); ++idx) {
+    const auto & from = trajectory[idx - 1];
+    const auto velocity = std::max(min_velocity, from.longitudinal_velocity_mps);
+    if (velocity != 0.0) {
+      auto & to = trajectory[idx];
+      const auto t = universe_utils::calcDistance2d(from, to) / velocity;
+      to.time_from_start = rclcpp::Duration::from_seconds(t) + from.time_from_start;
+    }
+  }
+}
 }  // namespace autoware::motion_utils

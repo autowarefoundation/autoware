@@ -14,36 +14,46 @@
 
 #include "lanelets_selection.hpp"
 
+#include "types.hpp"
+
 #include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include <boost/geometry/algorithms/disjoint.hpp>
+#include <boost/geometry/algorithms/union.hpp>
 
+#include <lanelet2_core/Forward.h>
 #include <lanelet2_core/geometry/BoundingBox.h>
-#include <lanelet2_core/geometry/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
 
 #include <algorithm>
-#include <string>
 
 namespace autoware::motion_velocity_planner::out_of_lane
 {
 
-lanelet::ConstLanelets consecutive_lanelets(
-  const std::shared_ptr<const route_handler::RouteHandler> route_handler,
-  const lanelet::ConstLanelet & lanelet)
+namespace
 {
-  lanelet::ConstLanelets consecutives = route_handler->getRoutingGraphPtr()->following(lanelet);
-  const auto previous = route_handler->getRoutingGraphPtr()->previous(lanelet);
+bool is_road_lanelet(const lanelet::ConstLanelet & lanelet)
+{
+  return lanelet.hasAttribute(lanelet::AttributeName::Subtype) &&
+         lanelet.attribute(lanelet::AttributeName::Subtype) == lanelet::AttributeValueString::Road;
+}
+}  // namespace
+
+lanelet::ConstLanelets consecutive_lanelets(
+  const route_handler::RouteHandler & route_handler, const lanelet::ConstLanelet & lanelet)
+{
+  lanelet::ConstLanelets consecutives = route_handler.getRoutingGraphPtr()->following(lanelet);
+  const auto previous = route_handler.getRoutingGraphPtr()->previous(lanelet);
   consecutives.insert(consecutives.end(), previous.begin(), previous.end());
   return consecutives;
 }
 
 lanelet::ConstLanelets get_missing_lane_change_lanelets(
   const lanelet::ConstLanelets & trajectory_lanelets,
-  const std::shared_ptr<const route_handler::RouteHandler> route_handler)
+  const route_handler::RouteHandler & route_handler)
 {
   lanelet::ConstLanelets missing_lane_change_lanelets;
-  const auto & routing_graph = *route_handler->getRoutingGraphPtr();
+  const auto & routing_graph = *route_handler.getRoutingGraphPtr();
   lanelet::ConstLanelets adjacents;
   lanelet::ConstLanelets consecutives;
   for (const auto & ll : trajectory_lanelets) {
@@ -67,9 +77,9 @@ lanelet::ConstLanelets get_missing_lane_change_lanelets(
 }
 
 lanelet::ConstLanelets calculate_trajectory_lanelets(
-  const EgoData & ego_data, const std::shared_ptr<const route_handler::RouteHandler> route_handler)
+  const EgoData & ego_data, const route_handler::RouteHandler & route_handler)
 {
-  const auto lanelet_map_ptr = route_handler->getLaneletMapPtr();
+  const auto lanelet_map_ptr = route_handler.getLaneletMapPtr();
   lanelet::ConstLanelets trajectory_lanelets;
   lanelet::BasicLineString2d trajectory_ls;
   for (const auto & p : ego_data.trajectory_points)
@@ -77,7 +87,9 @@ lanelet::ConstLanelets calculate_trajectory_lanelets(
   const auto candidates =
     lanelet_map_ptr->laneletLayer.search(lanelet::geometry::boundingBox2d(trajectory_ls));
   for (const auto & ll : candidates) {
-    if (!boost::geometry::disjoint(trajectory_ls, ll.polygon2d().basicPolygon())) {
+    if (
+      is_road_lanelet(ll) &&
+      !boost::geometry::disjoint(trajectory_ls, ll.polygon2d().basicPolygon())) {
       trajectory_lanelets.push_back(ll);
     }
   }
@@ -89,43 +101,65 @@ lanelet::ConstLanelets calculate_trajectory_lanelets(
 }
 
 lanelet::ConstLanelets calculate_ignored_lanelets(
-  const EgoData & ego_data, const lanelet::ConstLanelets & trajectory_lanelets,
-  const std::shared_ptr<const route_handler::RouteHandler> route_handler,
-  const PlannerParam & params)
+  const lanelet::ConstLanelets & trajectory_lanelets,
+  const route_handler::RouteHandler & route_handler)
 {
   lanelet::ConstLanelets ignored_lanelets;
-  // ignore lanelets directly behind ego
-  const auto behind =
-    autoware::universe_utils::calcOffsetPose(ego_data.pose, params.rear_offset, 0.0, 0.0);
-  const lanelet::BasicPoint2d behind_point(behind.position.x, behind.position.y);
-  const auto behind_lanelets = lanelet::geometry::findWithin2d(
-    route_handler->getLaneletMapPtr()->laneletLayer, behind_point, 0.0);
-  for (const auto & l : behind_lanelets) {
-    const auto is_trajectory_lanelet = contains_lanelet(trajectory_lanelets, l.second.id());
-    if (!is_trajectory_lanelet) ignored_lanelets.push_back(l.second);
+  // ignore lanelets directly preceding a trajectory lanelet
+  for (const auto & trajectory_lanelet : trajectory_lanelets) {
+    for (const auto & ll : route_handler.getPreviousLanelets(trajectory_lanelet)) {
+      const auto is_trajectory_lanelet = contains_lanelet(trajectory_lanelets, ll.id());
+      if (!is_trajectory_lanelet) ignored_lanelets.push_back(ll);
+    }
   }
   return ignored_lanelets;
 }
 
-lanelet::ConstLanelets calculate_other_lanelets(
-  const EgoData & ego_data, const lanelet::ConstLanelets & trajectory_lanelets,
-  const lanelet::ConstLanelets & ignored_lanelets,
-  const std::shared_ptr<const route_handler::RouteHandler> route_handler,
-  const PlannerParam & params)
+void calculate_drivable_lane_polygons(
+  EgoData & ego_data, const route_handler::RouteHandler & route_handler)
 {
-  lanelet::ConstLanelets other_lanelets;
-  const lanelet::BasicPoint2d ego_point(ego_data.pose.position.x, ego_data.pose.position.y);
-  const auto lanelets_within_range = lanelet::geometry::findWithin2d(
-    route_handler->getLaneletMapPtr()->laneletLayer, ego_point,
-    std::max(params.slow_dist_threshold, params.stop_dist_threshold) + params.front_offset +
-      params.extra_front_offset);
-  for (const auto & ll : lanelets_within_range) {
-    if (std::string(ll.second.attributeOr(lanelet::AttributeName::Subtype, "none")) != "road")
-      continue;
-    const auto is_trajectory_lanelet = contains_lanelet(trajectory_lanelets, ll.second.id());
-    const auto is_ignored_lanelet = contains_lanelet(ignored_lanelets, ll.second.id());
-    if (!is_trajectory_lanelet && !is_ignored_lanelet) other_lanelets.push_back(ll.second);
+  const auto route_lanelets = calculate_trajectory_lanelets(ego_data, route_handler);
+  const auto ignored_lanelets =
+    out_of_lane::calculate_ignored_lanelets(route_lanelets, route_handler);
+  for (const auto & ll : route_lanelets) {
+    out_of_lane::Polygons tmp;
+    boost::geometry::union_(ego_data.drivable_lane_polygons, ll.polygon2d().basicPolygon(), tmp);
+    ego_data.drivable_lane_polygons = tmp;
   }
-  return other_lanelets;
+  for (const auto & ll : ignored_lanelets) {
+    out_of_lane::Polygons tmp;
+    boost::geometry::union_(ego_data.drivable_lane_polygons, ll.polygon2d().basicPolygon(), tmp);
+    ego_data.drivable_lane_polygons = tmp;
+  }
+}
+
+void calculate_overlapped_lanelets(
+  OutOfLanePoint & out_of_lane_point, const route_handler::RouteHandler & route_handler)
+{
+  out_of_lane_point.overlapped_lanelets = lanelet::ConstLanelets();
+  const auto candidates = route_handler.getLaneletMapPtr()->laneletLayer.search(
+    lanelet::geometry::boundingBox2d(out_of_lane_point.outside_ring));
+  for (const auto & ll : candidates) {
+    if (
+      is_road_lanelet(ll) && !contains_lanelet(out_of_lane_point.overlapped_lanelets, ll.id()) &&
+      boost::geometry::within(out_of_lane_point.outside_ring, ll.polygon2d().basicPolygon())) {
+      out_of_lane_point.overlapped_lanelets.push_back(ll);
+    }
+  }
+}
+
+void calculate_overlapped_lanelets(
+  OutOfLaneData & out_of_lane_data, const route_handler::RouteHandler & route_handler)
+{
+  for (auto it = out_of_lane_data.outside_points.begin();
+       it != out_of_lane_data.outside_points.end();) {
+    calculate_overlapped_lanelets(*it, route_handler);
+    if (it->overlapped_lanelets.empty()) {
+      // do not keep out of lane points that do not overlap any lanelet
+      out_of_lane_data.outside_points.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 }  // namespace autoware::motion_velocity_planner::out_of_lane

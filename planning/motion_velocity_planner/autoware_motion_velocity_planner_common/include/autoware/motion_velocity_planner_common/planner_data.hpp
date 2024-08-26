@@ -15,7 +15,10 @@
 #ifndef AUTOWARE__MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 #define AUTOWARE__MOTION_VELOCITY_PLANNER_COMMON__PLANNER_DATA_HPP_
 
+#include <autoware/motion_utils/distance/distance.hpp>
+#include <autoware/motion_velocity_planner_common/collision_checker.hpp>
 #include <autoware/route_handler/route_handler.hpp>
+#include <autoware/universe_utils/geometry/boost_polygon_utils.hpp>
 #include <autoware/velocity_smoother/smoother/smoother_base.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
@@ -37,12 +40,9 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#include <algorithm>
-#include <deque>
 #include <map>
 #include <memory>
 #include <optional>
-#include <vector>
 
 namespace autoware::motion_velocity_planner
 {
@@ -59,11 +59,11 @@ struct PlannerData
   }
 
   // msgs from callbacks that are used for data-ready
-  nav_msgs::msg::Odometry current_odometry{};
-  geometry_msgs::msg::AccelWithCovarianceStamped current_acceleration{};
-  autoware_perception_msgs::msg::PredictedObjects predicted_objects{};
-  pcl::PointCloud<pcl::PointXYZ> no_ground_pointcloud{};
-  nav_msgs::msg::OccupancyGrid occupancy_grid{};
+  nav_msgs::msg::Odometry current_odometry;
+  geometry_msgs::msg::AccelWithCovarianceStamped current_acceleration;
+  autoware_perception_msgs::msg::PredictedObjects predicted_objects;
+  pcl::PointCloud<pcl::PointXYZ> no_ground_pointcloud;
+  nav_msgs::msg::OccupancyGrid occupancy_grid;
   std::shared_ptr<route_handler::RouteHandler> route_handler;
 
   // nearest search
@@ -79,7 +79,7 @@ struct PlannerData
   tier4_v2x_msgs::msg::VirtualTrafficLightStateArray virtual_traffic_light_states;
 
   // velocity smoother
-  std::shared_ptr<autoware::velocity_smoother::SmootherBase> velocity_smoother_{};
+  std::shared_ptr<autoware::velocity_smoother::SmootherBase> velocity_smoother_;
   // parameters
   autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
@@ -88,7 +88,7 @@ struct PlannerData
    *@brief queries the traffic signal information of given Id. if keep_last_observation = true,
    *recent UNKNOWN observation is overwritten as the last non-UNKNOWN observation
    */
-  std::optional<TrafficSignalStamped> get_traffic_signal(
+  [[nodiscard]] std::optional<TrafficSignalStamped> get_traffic_signal(
     const lanelet::Id id, const bool keep_last_observation = false) const
   {
     const auto & traffic_light_id_map =
@@ -97,6 +97,15 @@ struct PlannerData
       return std::nullopt;
     }
     return std::make_optional<TrafficSignalStamped>(traffic_light_id_map.at(id));
+  }
+
+  [[nodiscard]] std::optional<double> calculate_min_deceleration_distance(
+    const double target_velocity) const
+  {
+    return motion_utils::calcDecelDistWithJerkAndAccConstraints(
+      current_odometry.twist.twist.linear.x, target_velocity,
+      current_acceleration.accel.accel.linear.x, velocity_smoother_->getMinDecel(),
+      std::abs(velocity_smoother_->getMinJerk()), velocity_smoother_->getMinJerk());
   }
 };
 }  // namespace autoware::motion_velocity_planner

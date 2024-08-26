@@ -21,24 +21,21 @@
 
 #include <vector>
 
-namespace autoware::motion_velocity_planner
-{
-namespace out_of_lane
+namespace autoware::motion_velocity_planner::out_of_lane
 {
 /// @brief create the base footprint of ego
 /// @param [in] p parameters used to create the footprint
 /// @param [in] ignore_offset optional parameter, if true, ignore the "extra offsets" to build the
 /// footprint
 /// @return base ego footprint
-autoware::universe_utils::Polygon2d make_base_footprint(
+universe_utils::Polygon2d make_base_footprint(
   const PlannerParam & p, const bool ignore_offset = false);
 /// @brief project a footprint to the given pose
 /// @param [in] base_footprint footprint to project
 /// @param [in] pose projection pose
 /// @return footprint projected to the given pose
 lanelet::BasicPolygon2d project_to_pose(
-  const autoware::universe_utils::Polygon2d & base_footprint,
-  const geometry_msgs::msg::Pose & pose);
+  const universe_utils::Polygon2d & base_footprint, const geometry_msgs::msg::Pose & pose);
 /// @brief calculate the trajectory footprints
 /// @details the resulting polygon follows the format used by the lanelet library: clockwise order
 /// and implicit closing edge
@@ -54,7 +51,6 @@ std::vector<lanelet::BasicPolygon2d> calculate_trajectory_footprints(
 /// footprint
 lanelet::BasicPolygon2d calculate_current_ego_footprint(
   const EgoData & ego_data, const PlannerParam & params, const bool ignore_offset = false);
-}  // namespace out_of_lane
-}  // namespace autoware::motion_velocity_planner
+}  // namespace autoware::motion_velocity_planner::out_of_lane
 
 #endif  // FOOTPRINT_HPP_

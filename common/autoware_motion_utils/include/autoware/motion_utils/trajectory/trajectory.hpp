@@ -2504,6 +2504,15 @@ extern template bool isTargetPointFront<std::vector<autoware_planning_msgs::msg:
   const geometry_msgs::msg::Point & base_point, const geometry_msgs::msg::Point & target_point,
   const double threshold = 0.0);
 
+/// @brief calculate the time_from_start fields of the given trajectory points
+/// @details this function assumes constant longitudinal velocity between points
+/// @param trajectory trajectory for which to calculate the time_from_start
+/// @param current_ego_point current ego position
+/// @param min_velocity minimum velocity used for a trajectory point
+void calculate_time_from_start(
+  std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & trajectory,
+  const geometry_msgs::msg::Point & current_ego_point, const float min_velocity = 1.0f);
+
 }  // namespace autoware::motion_utils
 
 #endif  // AUTOWARE__MOTION_UTILS__TRAJECTORY__TRAJECTORY_HPP_

@@ -19,7 +19,6 @@
 
 #include <autoware/motion_velocity_planner_common/planner_data.hpp>
 
-#include <memory>
 #include <optional>
 
 namespace autoware::motion_velocity_planner::out_of_lane
@@ -52,8 +51,7 @@ void cut_predicted_path_beyond_red_lights(
 /// @param [in] params parameters
 /// @return filtered predicted objects
 autoware_perception_msgs::msg::PredictedObjects filter_predicted_objects(
-  const std::shared_ptr<const PlannerData> planner_data, const EgoData & ego_data,
-  const PlannerParam & params);
+  const PlannerData & planner_data, const EgoData & ego_data, const PlannerParam & params);
 }  // namespace autoware::motion_velocity_planner::out_of_lane
 
 #endif  // FILTER_PREDICTED_OBJECTS_HPP_
