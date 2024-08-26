@@ -13,12 +13,12 @@
         "roll_filter_proc_dev": {
           "type": "number",
           "description": "Simple1DFilter - Roll filter process deviation",
-          "default": 0.01
+          "default": 0.1
         },
         "pitch_filter_proc_dev": {
           "type": "number",
           "description": "Simple1DFilter - Pitch filter process deviation",
-          "default": 0.01
+          "default": 0.1
         }
       },
       "required": ["z_filter_proc_dev", "roll_filter_proc_dev", "pitch_filter_proc_dev"],
