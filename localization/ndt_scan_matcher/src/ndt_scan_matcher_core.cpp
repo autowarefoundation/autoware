@@ -961,7 +961,8 @@ void NDTScanMatcher::service_ndt_align_main(
   diagnostics_ndt_align_->add_key_value("is_succeed_transform_initial_pose", true);
 
   // transform pose_frame to map_frame
-  const auto initial_pose_msg_in_map_frame = transform(req->pose_with_covariance, transform_s2t);
+  auto initial_pose_msg_in_map_frame = transform(req->pose_with_covariance, transform_s2t);
+  initial_pose_msg_in_map_frame.header.stamp = req->pose_with_covariance.header.stamp;
   map_update_module_->update_map(
     initial_pose_msg_in_map_frame.pose.pose.position, diagnostics_ndt_align_);
 
