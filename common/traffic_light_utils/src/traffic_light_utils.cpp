@@ -17,29 +17,6 @@
 namespace traffic_light_utils
 {
 
-bool isRoiValid(
-  const tier4_perception_msgs::msg::TrafficLightRoi & roi, uint32_t width, uint32_t height)
-{
-  uint32_t x1 = roi.roi.x_offset;
-  uint32_t x2 = roi.roi.x_offset + roi.roi.width;
-  uint32_t y1 = roi.roi.y_offset;
-  uint32_t y2 = roi.roi.y_offset + roi.roi.height;
-  return roi.roi.width > 0 && roi.roi.height > 0 && x1 < width && y1 < height && x2 < width &&
-         y2 < height;
-}
-
-void setRoiInvalid(tier4_perception_msgs::msg::TrafficLightRoi & roi)
-{
-  roi.roi.height = roi.roi.width = 0;
-}
-
-bool isSignalUnknown(const tier4_perception_msgs::msg::TrafficLight & signal)
-{
-  return signal.elements.size() == 1 &&
-         signal.elements[0].shape == tier4_perception_msgs::msg::TrafficLightElement::UNKNOWN &&
-         signal.elements[0].color == tier4_perception_msgs::msg::TrafficLightElement::UNKNOWN;
-}
-
 void setSignalUnknown(tier4_perception_msgs::msg::TrafficLight & signal, float confidence)
 {
   signal.elements.resize(1);

@@ -18,46 +18,6 @@
 namespace traffic_light_utils
 {
 
-TEST(isRoiValid, roi_validity)
-{
-  tier4_perception_msgs::msg::TrafficLightRoi test_roi;
-  test_roi.roi.x_offset = 300;
-  test_roi.roi.y_offset = 200;
-  test_roi.roi.width = 340;
-  test_roi.roi.height = 200;
-  uint32_t img_width = 640;
-  uint32_t img_heigh = 480;
-  EXPECT_FALSE(isRoiValid(test_roi, img_width, img_heigh));
-  test_roi.roi.width = 339;
-  EXPECT_TRUE(isRoiValid(test_roi, img_width, img_heigh));
-}
-
-TEST(setRoiInvalid, set_roi_size)
-{
-  tier4_perception_msgs::msg::TrafficLightRoi test_roi;
-  test_roi.roi.x_offset = 300;
-  test_roi.roi.y_offset = 200;
-  test_roi.roi.width = 300;
-  test_roi.roi.height = 200;
-  EXPECT_EQ(test_roi.roi.width, (uint32_t)300);
-  EXPECT_EQ(test_roi.roi.height, (uint32_t)200);
-  setRoiInvalid(test_roi);
-  EXPECT_EQ(test_roi.roi.width, (uint32_t)0);
-  EXPECT_EQ(test_roi.roi.height, (uint32_t)0);
-}
-
-TEST(isSignalUnknown, signal_element)
-{
-  tier4_perception_msgs::msg::TrafficLight test_signal;
-  tier4_perception_msgs::msg::TrafficLightElement element;
-  element.color = tier4_perception_msgs::msg::TrafficLightElement::UNKNOWN;
-  element.shape = tier4_perception_msgs::msg::TrafficLightElement::UNKNOWN;
-  test_signal.elements.push_back(element);
-  EXPECT_TRUE(isSignalUnknown(test_signal));
-  test_signal.elements[0].color = tier4_perception_msgs::msg::TrafficLightElement::RED;
-  EXPECT_FALSE(isSignalUnknown(test_signal));
-}
-
 TEST(setSignalUnknown, set_signal_element)
 {
   tier4_perception_msgs::msg::TrafficLight test_signal;

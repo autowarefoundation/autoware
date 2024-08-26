@@ -30,13 +30,6 @@
 namespace traffic_light_utils
 {
 
-bool isRoiValid(
-  const tier4_perception_msgs::msg::TrafficLightRoi & roi, uint32_t width, uint32_t height);
-
-void setRoiInvalid(tier4_perception_msgs::msg::TrafficLightRoi & roi);
-
-bool isSignalUnknown(const tier4_perception_msgs::msg::TrafficLight & signal);
-
 void setSignalUnknown(tier4_perception_msgs::msg::TrafficLight & signal, float confidence = -1);
 
 /**
