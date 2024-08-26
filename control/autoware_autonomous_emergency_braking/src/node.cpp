@@ -393,12 +393,15 @@ void AEB::onCheckCollision(DiagnosticStatusWrapper & stat)
     const auto diag_level = DiagnosticStatus::ERROR;
     stat.summary(diag_level, error_msg);
     const auto & data = collision_data_keeper_.get();
-    stat.addf("RSS", "%.2f", data.rss);
-    stat.addf("Distance", "%.2f", data.distance_to_object);
-    stat.addf("Object Speed", "%.2f", data.velocity);
-    if (publish_debug_markers_) {
-      addCollisionMarker(data, debug_markers);
+    if (data.has_value()) {
+      stat.addf("RSS", "%.2f", data.value().rss);
+      stat.addf("Distance", "%.2f", data.value().distance_to_object);
+      stat.addf("Object Speed", "%.2f", data.value().velocity);
+      if (publish_debug_markers_) {
+        addCollisionMarker(data.value(), debug_markers);
+      }
     }
+
     addVirtualStopWallMarker(info_markers);
   } else {
     const std::string error_msg = "[AEB]: No Collision";
@@ -476,17 +479,19 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
       return std::make_optional<ObjectData>(*closest_object_point_itr);
     });
 
+    const bool has_collision = (closest_object_point.has_value())
+                                 ? hasCollision(current_v, closest_object_point.value())
+                                 : false;
+
     // Add debug markers
     if (publish_debug_markers_) {
       const auto [color_r, color_g, color_b, color_a] = debug_colors;
       addMarker(
-        this->get_clock()->now(), path, ego_polys, objects, closest_object_point, color_r, color_g,
-        color_b, color_a, debug_ns, debug_markers);
+        this->get_clock()->now(), path, ego_polys, objects, collision_data_keeper_.get(), color_r,
+        color_g, color_b, color_a, debug_ns, debug_markers);
     }
     // check collision using rss distance
-    return (closest_object_point.has_value())
-             ? hasCollision(current_v, closest_object_point.value())
-             : false;
+    return has_collision;
   };
 
   // step3. make function to check collision with ego path created with sensor data

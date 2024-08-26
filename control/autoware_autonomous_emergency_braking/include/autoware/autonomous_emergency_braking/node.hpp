@@ -156,10 +156,7 @@ public:
    * @brief Get the closest object data
    * @return Object data of the closest object
    */
-  [[nodiscard]] ObjectData get() const
-  {
-    return (closest_object_.has_value()) ? closest_object_.value() : ObjectData();
-  }
+  [[nodiscard]] std::optional<ObjectData> get() const { return closest_object_; }
 
   /**
    * @brief Get the previous closest object data
