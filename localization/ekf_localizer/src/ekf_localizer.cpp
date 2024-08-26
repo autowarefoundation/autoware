@@ -44,6 +44,8 @@ using std::placeholders::_1;
 EKFLocalizer::EKFLocalizer(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("ekf_localizer", node_options),
   warning_(std::make_shared<Warning>(this)),
+  tf2_buffer_(this->get_clock()),
+  tf2_listener_(tf2_buffer_),
   params_(this),
   ekf_dt_(params_.ekf_dt),
   pose_queue_(params_.pose_smoothing_steps),
@@ -285,21 +287,14 @@ bool EKFLocalizer::get_transform_from_tf(
   std::string parent_frame, std::string child_frame,
   geometry_msgs::msg::TransformStamped & transform)
 {
-  tf2::BufferCore tf_buffer;
-  tf2_ros::TransformListener tf_listener(tf_buffer);
-  rclcpp::sleep_for(std::chrono::milliseconds(100));
-
   parent_frame = erase_leading_slash(parent_frame);
   child_frame = erase_leading_slash(child_frame);
 
-  for (int i = 0; i < 50; ++i) {
-    try {
-      transform = tf_buffer.lookupTransform(parent_frame, child_frame, tf2::TimePointZero);
-      return true;
-    } catch (tf2::TransformException & ex) {
-      warning_->warn(ex.what());
-      rclcpp::sleep_for(std::chrono::milliseconds(100));
-    }
+  try {
+    transform = tf2_buffer_.lookupTransform(parent_frame, child_frame, tf2::TimePointZero);
+    return true;
+  } catch (tf2::TransformException & ex) {
+    warning_->warn(ex.what());
   }
   return false;
 }

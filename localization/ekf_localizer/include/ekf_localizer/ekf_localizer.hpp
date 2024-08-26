@@ -39,6 +39,7 @@
 
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/utils.h>
+#include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
@@ -141,6 +142,10 @@ private:
   rclcpp::TimerBase::SharedPtr timer_tf_;
   //!< @brief tf broadcaster
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_br_;
+  //!< @brief tf buffer
+  tf2_ros::Buffer tf2_buffer_;
+  //!< @brief tf listener
+  tf2_ros::TransformListener tf2_listener_;
 
   //!< @brief logger configure module
   std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
