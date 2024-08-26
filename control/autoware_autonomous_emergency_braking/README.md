@@ -8,8 +8,6 @@
 
 This module has following assumptions.
 
-- It is used when driving at low speeds (about 15 km/h).
-
 - The predicted path of the ego vehicle can be made from either the path created from sensors or the path created from a control module, or both.
 
 - The current speed and angular velocity can be obtained from the sensors of the ego vehicle, and it uses points as obstacles.
@@ -25,7 +23,7 @@ The pros and cons of both approaches are:
 IMU angular velocity:
 
 - (+) Usually, it has high accuracy
-- (-)Vehicle vibration might introduce noise.
+- (-) Vehicle vibration might introduce noise.
 
 Steering angle:
 
@@ -186,7 +184,7 @@ The AEB module can also prevent collisions when the ego vehicle is moving backwa
 
 When vehicle odometry information is faulty, it is possible that the MPC fails to predict a correct path for the ego vehicle. If the MPC predicted path is wrong, collision avoidance will not work as intended on the planning modules. However, the AEB’s IMU path does not depend on the MPC and could be able to predict a collision when the other modules cannot. As an example you can see a figure of a hypothetical case in which the MPC path is wrong and only the AEB’s IMU path detects a collision.
 
-![backward driving](./image/wrong-mpc.drawio.svg)
+![wrong mpc](./image/wrong-mpc.drawio.svg)
 
 ## Parameters
 
@@ -216,6 +214,8 @@ When vehicle odometry information is faulty, it is possible that the MPC fails t
 | aeb_hz                            | [-]    | double | frequency at which AEB operates per second                                                                                                                                                      | 10            |
 
 ## Limitations
+
+- The distance required to stop after collision detection depends on the ego vehicle's speed and deceleration performance. To avoid collisions, it's necessary to increase the detection distance and set a higher deceleration rate. However, this creates a trade-off as it may also increase the number of unnecessary activations. Therefore, it's essential to consider what role this module should play and adjust the parameters accordingly.
 
 - AEB might not be able to react with obstacles that are close to the ground. It depends on the performance of the pre-processing methods applied to the point cloud.
 
