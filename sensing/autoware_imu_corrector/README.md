@@ -1,4 +1,4 @@
-# imu_corrector
+# autoware_imu_corrector
 
 ## imu_corrector
 

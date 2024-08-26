@@ -14,14 +14,14 @@
 
 #include "gyro_bias_estimator.hpp"
 
-#include "autoware/universe_utils/geometry/geometry.hpp"
+#include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <utility>
 
-namespace imu_corrector
+namespace autoware::imu_corrector
 {
 GyroBiasEstimator::GyroBiasEstimator(const rclcpp::NodeOptions & options)
 : rclcpp::Node("gyro_bias_validator", options),
@@ -243,7 +243,7 @@ void GyroBiasEstimator::update_diagnostics(diagnostic_updater::DiagnosticStatusW
   stat.add("gyro_bias_threshold", f(gyro_bias_threshold_));
 }
 
-}  // namespace imu_corrector
+}  // namespace autoware::imu_corrector
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(imu_corrector::GyroBiasEstimator)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::imu_corrector::GyroBiasEstimator)

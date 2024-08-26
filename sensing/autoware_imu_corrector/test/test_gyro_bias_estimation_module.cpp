@@ -18,7 +18,7 @@
 
 #include <gtest/gtest.h>
 
-namespace imu_corrector
+namespace autoware::imu_corrector
 {
 class GyroBiasEstimationModuleTest : public ::testing::Test
 {
@@ -88,4 +88,4 @@ TEST_F(GyroBiasEstimationModuleTest, GetInsufficientDataExceptionWhenVehicleMovi
     ASSERT_THROW(module.update_bias(pose_list, gyro_list), std::runtime_error);
   }
 }
-}  // namespace imu_corrector
+}  // namespace autoware::imu_corrector

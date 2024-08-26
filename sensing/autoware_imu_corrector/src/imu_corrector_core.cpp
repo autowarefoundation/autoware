@@ -51,7 +51,7 @@ geometry_msgs::msg::Vector3 transform_vector3(
   return vec_stamped_transformed.vector;
 }
 
-namespace imu_corrector
+namespace autoware::imu_corrector
 {
 ImuCorrector::ImuCorrector(const rclcpp::NodeOptions & options)
 : rclcpp::Node("imu_corrector", options),
@@ -124,7 +124,7 @@ void ImuCorrector::callback_imu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_
   imu_pub_->publish(imu_msg_base_link);
 }
 
-}  // namespace imu_corrector
+}  // namespace autoware::imu_corrector
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(imu_corrector::ImuCorrector)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::imu_corrector::ImuCorrector)

@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
-project(imu_corrector)
+project(autoware_imu_corrector)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-ament_auto_add_library(${PROJECT_NAME} SHARED
+ament_auto_add_library(imu_corrector SHARED
   src/imu_corrector_core.cpp
 )
 
@@ -13,14 +13,14 @@ ament_auto_add_library(gyro_bias_estimator SHARED
   src/gyro_bias_estimation_module.cpp
 )
 
-rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "imu_corrector::ImuCorrector"
-  EXECUTABLE ${PROJECT_NAME}_node
+rclcpp_components_register_node(imu_corrector
+  PLUGIN "autoware::imu_corrector::ImuCorrector"
+  EXECUTABLE imu_corrector_node
   EXECUTOR SingleThreadedExecutor
 )
 
 rclcpp_components_register_node(gyro_bias_estimator
-  PLUGIN "imu_corrector::GyroBiasEstimator"
+  PLUGIN "autoware::imu_corrector::GyroBiasEstimator"
   EXECUTABLE gyro_bias_estimator_node
   EXECUTOR SingleThreadedExecutor
 )

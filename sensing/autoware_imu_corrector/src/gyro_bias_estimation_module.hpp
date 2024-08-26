@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-namespace imu_corrector
+namespace autoware::imu_corrector
 {
 class GyroBiasEstimationModule
 {
@@ -36,6 +36,6 @@ public:
 private:
   std::pair<geometry_msgs::msg::Vector3, geometry_msgs::msg::Vector3> gyro_bias_pair_;
 };
-}  // namespace imu_corrector
+}  // namespace autoware::imu_corrector
 
 #endif  // GYRO_BIAS_ESTIMATION_MODULE_HPP_

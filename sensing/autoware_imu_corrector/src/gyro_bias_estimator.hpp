@@ -14,9 +14,9 @@
 #ifndef GYRO_BIAS_ESTIMATOR_HPP_
 #define GYRO_BIAS_ESTIMATOR_HPP_
 
-#include "autoware/universe_utils/ros/transform_listener.hpp"
 #include "gyro_bias_estimation_module.hpp"
 
+#include <autoware/universe_utils/ros/transform_listener.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -30,7 +30,7 @@
 #include <string>
 #include <vector>
 
-namespace imu_corrector
+namespace autoware::imu_corrector
 {
 class GyroBiasEstimator : public rclcpp::Node
 {
@@ -97,6 +97,6 @@ private:
 
   DiagnosticsInfo diagnostics_info_;
 };
-}  // namespace imu_corrector
+}  // namespace autoware::imu_corrector
 
 #endif  // GYRO_BIAS_ESTIMATOR_HPP_

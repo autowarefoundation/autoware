@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>imu_corrector</name>
+  <name>autoware_imu_corrector</name>
   <version>1.0.0</version>
-  <description>The ROS 2 imu_corrector package</description>
+  <description>The ROS 2 autoware_imu_corrector package</description>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
   <maintainer email="taiki.yamada@tier4.jp">Taiki Yamada</maintainer>
   <license>Apache License 2.0</license>
