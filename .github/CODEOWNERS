@@ -134,7 +134,7 @@ perception/autoware_raindrop_cluster_filter/** dai.nguyen@tier4.jp yoshi.ri@tier
 perception/autoware_shape_estimation/** kcolak@leodrive.ai yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_simple_object_merger/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp
 perception/autoware_tensorrt_classifier/** kotaro.uetake@tier4.jp shunsuke.miura@tier4.jp
-perception/autoware_tensorrt_yolox/** dan.umeda@tier4.jp manato.hirabayashi@tier4.jp
+perception/autoware_tensorrt_yolox/** dan.umeda@tier4.jp manato.hirabayashi@tier4.jp kotaro.uetake@tier4.jp
 perception/autoware_tracking_object_merger/** taekjin.lee@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/autoware_traffic_light_arbiter/** kenzo.lobos@tier4.jp shunsuke.miura@tier4.jp
 perception/autoware_traffic_light_classifier/** shunsuke.miura@tier4.jp tao.zhong@tier4.jp yukihiro.saito@tier4.jp
