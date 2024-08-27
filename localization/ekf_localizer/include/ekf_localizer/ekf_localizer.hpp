@@ -160,11 +160,6 @@ private:
 
   double ekf_dt_;
 
-  /* process noise variance for discrete model */
-  double proc_cov_yaw_d_;  //!< @brief  discrete yaw process noise
-  double proc_cov_vx_d_;   //!< @brief  discrete process noise in d_vx=0
-  double proc_cov_wz_d_;   //!< @brief  discrete process noise in d_wz=0
-
   bool is_activated_;
 
   EKFDiagnosticInfo pose_diag_info_;
