@@ -156,16 +156,25 @@ namespace autoware::tensorrt_yolox
 TrtYoloX::TrtYoloX(
   const std::string & model_path, const std::string & precision, const int num_class,
   const float score_threshold, const float nms_threshold, tensorrt_common::BuildConfig build_config,
-  const bool use_gpu_preprocess, std::string calibration_image_list_path, const double norm_factor,
-  [[maybe_unused]] const std::string & cache_dir, const tensorrt_common::BatchConfig & batch_config,
-  const size_t max_workspace_size, const std::string & color_map_path)
+  const bool use_gpu_preprocess, const uint8_t gpu_id, std::string calibration_image_list_path,
+  const double norm_factor, [[maybe_unused]] const std::string & cache_dir,
+  const tensorrt_common::BatchConfig & batch_config, const size_t max_workspace_size,
+  const std::string & color_map_path)
+: gpu_id_(gpu_id), is_gpu_initialized_(false)
 {
+  if (!setCudaDeviceId(gpu_id_)) {
+    return;
+  }
+  is_gpu_initialized_ = true;
+
   src_width_ = -1;
   src_height_ = -1;
   norm_factor_ = norm_factor;
   batch_size_ = batch_config[2];
   multitask_ = 0;
   sematic_color_map_ = get_seg_colormap(color_map_path);
+  stream_ = makeCudaStream();
+
   if (precision == "int8") {
     if (build_config.clip_value <= 0.0) {
       if (calibration_image_list_path.empty()) {
@@ -217,7 +226,6 @@ TrtYoloX::TrtYoloX(
       calibrator.reset(
         new tensorrt_yolox::Int8MinMaxCalibrator(stream, calibration_table, norm_factor_));
     }
-
     trt_common_ = std::make_unique<tensorrt_common::TrtCommon>(
       model_path, precision, std::move(calibrator), batch_config, max_workspace_size, build_config);
   } else {
@@ -262,7 +270,6 @@ TrtYoloX::TrtYoloX(
       throw std::runtime_error{s.str()};
       */
   }
-
   // GPU memory allocation
   const auto input_dims = trt_common_->getBindingDimensions(0);
   const auto input_size =
@@ -338,6 +345,16 @@ TrtYoloX::~TrtYoloX()
     if (argmax_buf_d_) {
       argmax_buf_d_.reset();
     }
+  }
+}
+
+bool TrtYoloX::setCudaDeviceId(const uint8_t gpu_id)
+{
+  cudaError_t cuda_err = cudaSetDevice(gpu_id);
+  if (cuda_err != cudaSuccess) {
+    return false;
+  } else {
+    return true;
   }
 }
 
@@ -534,6 +551,9 @@ bool TrtYoloX::doInference(
   const std::vector<cv::Mat> & images, ObjectArrays & objects, std::vector<cv::Mat> & masks,
   [[maybe_unused]] std::vector<cv::Mat> & color_masks)
 {
+  if (!setCudaDeviceId(gpu_id_)) {
+    return false;
+  }
   if (!trt_common_->isInitialized()) {
     return false;
   }

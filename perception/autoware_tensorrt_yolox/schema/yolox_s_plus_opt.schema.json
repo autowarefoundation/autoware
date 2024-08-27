@@ -70,6 +70,11 @@
           "default": true,
           "description": "If true, pre-processing is performed on GPU."
         },
+        "gpu_id": {
+          "type": "integer",
+          "default": 0,
+          "description": "GPU ID for selecting CUDA device"
+        },
         "calibration_image_list_path": {
           "type": "string",
           "default": "",
@@ -88,7 +93,8 @@
         "quantize_last_layer",
         "profile_per_layer",
         "clip_value",
-        "preprocess_on_gpu"
+        "preprocess_on_gpu",
+        "gpu_id"
       ]
     }
   },

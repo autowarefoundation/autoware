@@ -5,3 +5,4 @@
     fine_detector_precision: fp16
     fine_detector_score_thresh: 0.3
     fine_detector_nms_thresh: 0.65
+    gpu_id: 0

@@ -57,6 +57,7 @@ TrtYoloXNode::TrtYoloXNode(const rclcpp::NodeOptions & node_options)
   const bool preprocess_on_gpu = this->declare_parameter<bool>("preprocess_on_gpu");
   const std::string calibration_image_list_path =
     this->declare_parameter<std::string>("calibration_image_list_path");
+  const uint8_t gpu_id = this->declare_parameter<uint8_t>("gpu_id");
 
   std::string color_map_path = this->declare_parameter<std::string>("color_map_path");
 
@@ -93,8 +94,15 @@ TrtYoloXNode::TrtYoloXNode(const rclcpp::NodeOptions & node_options)
 
   trt_yolox_ = std::make_unique<tensorrt_yolox::TrtYoloX>(
     model_path, precision, label_map_.size(), score_threshold, nms_threshold, build_config,
-    preprocess_on_gpu, calibration_image_list_path, norm_factor, cache_dir, batch_config,
+    preprocess_on_gpu, gpu_id, calibration_image_list_path, norm_factor, cache_dir, batch_config,
     max_workspace_size, color_map_path);
+
+  if (!trt_yolox_->isGPUInitialized()) {
+    RCLCPP_ERROR(this->get_logger(), "GPU %d does not exist or is not suitable.", gpu_id);
+    rclcpp::shutdown();
+    return;
+  }
+  RCLCPP_INFO(this->get_logger(), "GPU %d is selected for the inference!", gpu_id);
 
   timer_ =
     rclcpp::create_timer(this, get_clock(), 100ms, std::bind(&TrtYoloXNode::onConnect, this));

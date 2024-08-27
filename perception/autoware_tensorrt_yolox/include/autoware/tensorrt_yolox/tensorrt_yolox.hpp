@@ -89,14 +89,26 @@ public:
     const std::string & model_path, const std::string & precision, const int num_class = 8,
     const float score_threshold = 0.3, const float nms_threshold = 0.7,
     const tensorrt_common::BuildConfig build_config = tensorrt_common::BuildConfig(),
-    const bool use_gpu_preprocess = false, std::string calibration_image_list_file = std::string(),
-    const double norm_factor = 1.0, [[maybe_unused]] const std::string & cache_dir = "",
+    const bool use_gpu_preprocess = false, const uint8_t gpu_id = 0,
+    std::string calibration_image_list_file = std::string(), const double norm_factor = 1.0,
+    [[maybe_unused]] const std::string & cache_dir = "",
     const tensorrt_common::BatchConfig & batch_config = {1, 1, 1},
     const size_t max_workspace_size = (1 << 30), const std::string & color_map_path = "");
   /**
    * @brief Deconstruct TrtYoloX
    */
   ~TrtYoloX();
+
+  /**
+   * @brief select cuda device for a inference
+   * @param[in] GPU id
+   */
+  bool setCudaDeviceId(const uint8_t gpu_id);
+
+  /**
+   * @brief return a flag for gpu initialization
+   */
+  bool isGPUInitialized() const { return is_gpu_initialized_; }
 
   /**
    * @brief run inference including pre-process and post-process
@@ -267,7 +279,7 @@ private:
   size_t out_elem_num_per_batch_;
   CudaUniquePtr<float[]> out_prob_d_;
 
-  StreamUniquePtr stream_{makeCudaStream()};
+  StreamUniquePtr stream_;
 
   int32_t max_detections_;
   std::vector<float> scales_;
@@ -280,6 +292,10 @@ private:
 
   // flag whether preprocess are performed on GPU
   bool use_gpu_preprocess_;
+  // GPU id for inference
+  const uint8_t gpu_id_;
+  // flag for gpu initialization
+  bool is_gpu_initialized_;
   // host buffer for preprocessing on GPU
   CudaUniquePtrHost<unsigned char[]> image_buf_h_;
   // device buffer for preprocessing on GPU

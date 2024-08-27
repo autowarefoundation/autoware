@@ -36,4 +36,5 @@
     profile_per_layer: false # If true, profiler function will be enabled. Since the profile function may affect execution speed, it is recommended to set this flag true only for development purpose.
     clip_value: 0.0 # If positive value is specified, the value of each layer output will be clipped between [0.0, clip_value]. This option is valid only when precision==int8 and used to manually specify the dynamic range instead of using any calibration.
     preprocess_on_gpu: true # If true, pre-processing is performed on GPU.
+    gpu_id: 0 # GPU ID to select CUDA Device
     calibration_image_list_path: "" # Path to a file which contains path to images. Those images will be used for int8 quantization.
