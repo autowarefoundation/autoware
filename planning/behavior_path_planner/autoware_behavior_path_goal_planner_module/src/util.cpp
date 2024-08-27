@@ -389,7 +389,7 @@ PathWithLaneId cropForwardPoints(
 
 PathWithLaneId extendPath(
   const PathWithLaneId & target_path, const PathWithLaneId & reference_path,
-  const double extend_length)
+  const double extend_length, const bool remove_connected_zero_velocity)
 {
   const auto & target_terminal_pose = target_path.points.back().point.pose;
 
@@ -409,6 +409,11 @@ PathWithLaneId extendPath(
   }
 
   auto extended_path = target_path;
+  auto & target_terminal_vel = extended_path.points.back().point.longitudinal_velocity_mps;
+  if (remove_connected_zero_velocity && target_terminal_vel < 0.01) {
+    target_terminal_vel = clipped_path.points.front().point.longitudinal_velocity_mps;
+  }
+
   const auto start_point =
     std::find_if(clipped_path.points.begin(), clipped_path.points.end(), [&](const auto & p) {
       const bool is_forward =
@@ -427,7 +432,7 @@ PathWithLaneId extendPath(
 
 PathWithLaneId extendPath(
   const PathWithLaneId & target_path, const PathWithLaneId & reference_path,
-  const Pose & extend_pose)
+  const Pose & extend_pose, const bool remove_connected_zero_velocity)
 {
   const auto & target_terminal_pose = target_path.points.back().point.pose;
   const size_t target_path_terminal_idx = autoware::motion_utils::findNearestSegmentIndex(
@@ -435,7 +440,7 @@ PathWithLaneId extendPath(
   const double extend_distance = autoware::motion_utils::calcSignedArcLength(
     reference_path.points, target_path_terminal_idx, extend_pose.position);
 
-  return extendPath(target_path, reference_path, extend_distance);
+  return extendPath(target_path, reference_path, extend_distance, remove_connected_zero_velocity);
 }
 
 std::vector<Polygon2d> createPathFootPrints(

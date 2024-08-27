@@ -84,12 +84,31 @@ bool isReferencePath(
 std::optional<PathWithLaneId> cropPath(const PathWithLaneId & path, const Pose & end_pose);
 PathWithLaneId cropForwardPoints(
   const PathWithLaneId & path, const size_t target_seg_idx, const double forward_length);
+
+/**
+ * @brief extend target_path by extend_length
+ * @param target_path original target path to extend
+ * @param reference_path reference path to extend
+ * @param extend_length length to extend
+ * @param remove_connected_zero_velocity flag to remove zero velocity if the last point of
+ *                                       target_path has zero velocity
+ * @return extended path
+ */
 PathWithLaneId extendPath(
-  const PathWithLaneId & prev_module_path, const PathWithLaneId & reference_path,
-  const double extend_length);
+  const PathWithLaneId & target_path, const PathWithLaneId & reference_path,
+  const double extend_length, const bool remove_connected_zero_velocity);
+/**
+ * @brief extend target_path to extend_pose
+ * @param target_path original target path to extend
+ * @param reference_path reference path to extend
+ * @param extend_pose pose to extend
+ * @param remove_connected_zero_velocity flag to remove zero velocity if the last point of
+ *                                       target_path has zero velocity
+ * @return extended path
+ */
 PathWithLaneId extendPath(
-  const PathWithLaneId & prev_module_path, const PathWithLaneId & reference_path,
-  const Pose & extend_pose);
+  const PathWithLaneId & target_path, const PathWithLaneId & reference_path,
+  const Pose & extend_pose, const bool remove_connected_zero_velocity);
 
 std::vector<Polygon2d> createPathFootPrints(
   const PathWithLaneId & path, const double base_to_front, const double base_to_rear,

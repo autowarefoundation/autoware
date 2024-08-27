@@ -148,8 +148,12 @@ std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
       lanelet::utils::getArcCoordinates(road_lanes, shift_end_pose).length >
       lanelet::utils::getArcCoordinates(road_lanes, prev_module_path_terminal_pose).length;
     if (extend_previous_module_path) {  // case1
+      // NOTE: The previous module may insert a zero velocity at the end of the path, so remove it
+      // by setting remove_connected_zero_velocity=true. Inserting a velocity of 0 into the goal is
+      // the role of the goal planner, and the intermediate zero velocity after extension is
+      // unnecessary.
       return goal_planner_utils::extendPath(
-        prev_module_path, road_lane_reference_path_to_shift_end, shift_end_pose);
+        prev_module_path, road_lane_reference_path_to_shift_end, shift_end_pose, true);
     } else {  // case2
       return goal_planner_utils::cropPath(prev_module_path, shift_end_pose);
     }
