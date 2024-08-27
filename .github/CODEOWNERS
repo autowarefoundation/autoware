@@ -222,7 +222,7 @@ system/autoware_component_monitor/** memin@leodrive.ai
 system/autoware_processing_time_checker/** kosuke.takeuchi@tier4.jp takayuki.murooka@tier4.jp
 system/bluetooth_monitor/** fumihito.ito@tier4.jp
 system/component_state_monitor/** isamu.takagi@tier4.jp
-system/default_ad_api/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp yukihiro.saito@tier4.jp
+system/autoware_default_adapi/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp yukihiro.saito@tier4.jp
 system/default_ad_api_helpers/ad_api_adaptors/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp yukihiro.saito@tier4.jp
 system/default_ad_api_helpers/ad_api_visualizers/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp yukihiro.saito@tier4.jp
 system/default_ad_api_helpers/automatic_pose_initializer/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp yukihiro.saito@tier4.jp

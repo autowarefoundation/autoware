@@ -1,7 +1,7 @@
 <launch>
   <!-- AD API options -->
   <arg name="launch_deprecated_api" default="false"/>
-  <arg name="launch_default_ad_api" default="true"/>
+  <arg name="launch_default_adapi" default="true"/>
   <arg name="launch_rviz_adaptors" default="true"/>
 
   <!-- rosbridge options -->
@@ -16,7 +16,7 @@
 
   <!-- AD API -->
   <group>
-    <include file="$(find-pkg-share default_ad_api)/launch/default_ad_api.launch.py" if="$(var launch_default_ad_api)"/>
+    <include file="$(find-pkg-share autoware_default_adapi)/launch/default_adapi.launch.py" if="$(var launch_default_adapi)"/>
     <include file="$(find-pkg-share ad_api_adaptors)/launch/rviz_adaptors.launch.xml" if="$(var launch_rviz_adaptors)"/>
   </group>
 

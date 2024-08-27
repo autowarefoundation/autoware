@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>autoware_default_adapi</name>
+  <version>0.1.0</version>
+  <description>The autoware_default_adapi package</description>
+  <maintainer email="isamu.takagi@tier4.jp">Takagi, Isamu</maintainer>
+  <maintainer email="ryohsuke.mitsudome@tier4.jp">Ryohsuke Mitsudome</maintainer>
+  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+
+  <depend>autoware_ad_api_specs</depend>
+  <depend>autoware_adapi_v1_msgs</depend>
+  <depend>autoware_adapi_version_msgs</depend>
+  <depend>autoware_geography_utils</depend>
+  <depend>autoware_motion_utils</depend>
+  <depend>autoware_planning_msgs</depend>
+  <depend>autoware_system_msgs</depend>
+  <depend>autoware_vehicle_info_utils</depend>
+  <depend>autoware_vehicle_msgs</depend>
+  <depend>component_interface_specs</depend>
+  <depend>component_interface_utils</depend>
+  <depend>diagnostic_graph_utils</depend>
+  <depend>geographic_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>shape_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>tier4_api_msgs</depend>
+  <depend>tier4_control_msgs</depend>
+  <depend>tier4_system_msgs</depend>
+
+  <exec_depend>python3-flask</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+  <test_depend>launch_testing</test_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
