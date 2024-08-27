@@ -25,6 +25,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace autoware::universe_utils
@@ -169,6 +170,7 @@ private:
   std::shared_ptr<ProcessingTimeNode>
     current_time_node_;                            //!< Shared pointer to the current time node
   std::shared_ptr<ProcessingTimeNode> root_node_;  //!< Shared pointer to the root time node
+  std::thread::id root_node_thread_id_;            //!< ID of the thread that started the tracking
   autoware::universe_utils::StopWatch<
     std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
     stop_watch_;  //!< StopWatch object for tracking the processing time
