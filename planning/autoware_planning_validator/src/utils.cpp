@@ -46,20 +46,6 @@ void takeSmaller(double & v_min, size_t & i_min, double v, size_t i)
 }
 }  // namespace
 
-std::pair<double, size_t> getMaxValAndIdx(const std::vector<double> & v)
-{
-  const auto iter = std::max_element(v.begin(), v.end());
-  const auto idx = std::distance(v.begin(), iter);
-  return {*iter, idx};
-}
-
-std::pair<double, size_t> getMinValAndIdx(const std::vector<double> & v)
-{
-  const auto iter = std::min_element(v.begin(), v.end());
-  const auto idx = std::distance(v.begin(), iter);
-  return {*iter, idx};
-}
-
 std::pair<double, size_t> getAbsMaxValAndIdx(const std::vector<double> & v)
 {
   const auto iter = std::max_element(

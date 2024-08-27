@@ -28,10 +28,6 @@ namespace autoware::planning_validator
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
 
-std::pair<double, size_t> getMaxValAndIdx(const std::vector<double> & v);
-
-std::pair<double, size_t> getMinValAndIdx(const std::vector<double> & v);
-
 std::pair<double, size_t> getAbsMaxValAndIdx(const std::vector<double> & v);
 
 Trajectory resampleTrajectory(const Trajectory & trajectory, const double min_interval);
