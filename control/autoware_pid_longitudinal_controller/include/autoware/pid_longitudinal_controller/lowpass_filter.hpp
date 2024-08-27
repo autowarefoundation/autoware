@@ -61,6 +61,8 @@ public:
     m_x = ret;
     return ret;
   }
+
+  void setGain(const double g) { m_gain = g; }
 };
 }  // namespace autoware::motion::control::pid_longitudinal_controller
 #endif  // AUTOWARE__PID_LONGITUDINAL_CONTROLLER__LOWPASS_FILTER_HPP_

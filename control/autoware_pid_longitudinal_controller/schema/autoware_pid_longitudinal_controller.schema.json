@@ -251,6 +251,16 @@
           "description": "target jerk in an EMERGENCY state [m/s^3]",
           "default": "-3.0"
         },
+        "lpf_acc_error_gain": {
+          "type": "number",
+          "description": "gain of low-pass filter for acceleration",
+          "default": "0.98"
+        },
+        "acc_feedback_gain": {
+          "type": "number",
+          "description": "acceleration feedback gain",
+          "default": "0.0"
+        },
         "max_acc": {
           "type": "number",
           "description": "max value of output acceleration [m/s^2]",

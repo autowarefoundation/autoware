@@ -58,6 +58,10 @@ public:
     STOP_DIST = 28,
     FF_SCALE = 29,
     ACC_CMD_FF = 30,
+    ERROR_ACC = 31,
+    ERROR_ACC_FILTERED = 32,
+    ACC_CMD_ACC_FB_APPLIED = 33,
+
     SIZE  // this is the number of enum elements
   };
 

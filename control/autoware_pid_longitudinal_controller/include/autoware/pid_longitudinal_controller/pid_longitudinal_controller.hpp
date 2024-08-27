@@ -196,6 +196,10 @@ private:
   };
   EmergencyStateParams m_emergency_state_params;
 
+  // acc feedback
+  double m_acc_feedback_gain;
+  std::shared_ptr<LowpassFilter1d> m_lpf_acc_error{nullptr};
+
   // acceleration limit
   double m_max_acc;
   double m_min_acc;
