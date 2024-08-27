@@ -221,6 +221,7 @@ void isOnForward(const Odometry & state, const Odometry & init)
 {
   double forward_thr = 1.0;
   double dx = state.pose.pose.position.x - init.pose.pose.position.x;
+  std::cout << "isOnForward: dx: " << dx << ", forward_thr: " << forward_thr << std::endl;
   EXPECT_GT(dx, forward_thr) << "[curr] " << toStrInfo(state) << ", [init] " << toStrInfo(init);
 }
 
@@ -228,6 +229,7 @@ void isOnBackward(const Odometry & state, const Odometry & init)
 {
   double backward_thr = -1.0;
   double dx = state.pose.pose.position.x - init.pose.pose.position.x;
+  std::cout << "isOnBackward: dx: " << dx << ", backward_thr: " << backward_thr << std::endl;
   EXPECT_LT(dx, backward_thr) << "[curr] " << toStrInfo(state) << ", [init] " << toStrInfo(init);
 }
 
@@ -237,6 +239,8 @@ void isOnForwardLeft(const Odometry & state, const Odometry & init)
   double left_thr = 0.1f;
   double dx = state.pose.pose.position.x - init.pose.pose.position.x;
   double dy = state.pose.pose.position.y - init.pose.pose.position.y;
+  std::cout << "isOnForwardLeft: dx: " << dx << ", forward_thr: " << forward_thr << ", dy: " << dy
+            << ", left_thr: " << left_thr << std::endl;
   EXPECT_GT(dx, forward_thr) << "[curr] " << toStrInfo(state) << ", [init] " << toStrInfo(init);
   EXPECT_GT(dy, left_thr) << "[curr] " << toStrInfo(state) << ", [init] " << toStrInfo(init);
 }
@@ -247,6 +251,8 @@ void isOnBackwardRight(const Odometry & state, const Odometry & init)
   double right_thr = -0.1;
   double dx = state.pose.pose.position.x - init.pose.pose.position.x;
   double dy = state.pose.pose.position.y - init.pose.pose.position.y;
+  std::cout << "isOnBackwardRight: dx: " << dx << ", backward_thr: " << backward_thr
+            << ", dy: " << dy << ", right_thr: " << right_thr << std::endl;
   EXPECT_LT(dx, backward_thr) << "[curr] " << toStrInfo(state) << ", [init] " << toStrInfo(init);
   EXPECT_LT(dy, right_thr) << "[curr] " << toStrInfo(state) << ", [init] " << toStrInfo(init);
 }
@@ -302,7 +308,6 @@ TEST_P(TestSimplePlanningSimulator, TestIdealSteerVel)
   const auto common_params = get_common_params(params);
   const auto command_type = common_params.first;
   const auto vehicle_model_type = common_params.second;
-  std::cout << "\n\n vehicle model = " << vehicle_model_type << std::endl << std::endl;
   // optional parameters
   std::optional<std::string> conversion_type{};  // for ActuationCmdParamType
 
@@ -338,7 +343,12 @@ TEST_P(TestSimplePlanningSimulator, TestIdealSteerVel)
   node_options.append_parameter_override("vgr_coef_b", 0.053);
   node_options.append_parameter_override("vgr_coef_c", 0.042);
   if (conversion_type.has_value()) {
+    std::cout << "\n\n vehicle model = " << vehicle_model_type
+              << ", conversion_type = " << conversion_type.value() << std::endl
+              << std::endl;
     node_options.append_parameter_override("convert_steer_cmd_method", conversion_type.value());
+  } else {
+    std::cout << "\n\n vehicle model = " << vehicle_model_type << std::endl << std::endl;
   }
 
   declareVehicleInfoParams(node_options);
