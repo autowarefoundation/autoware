@@ -21,7 +21,9 @@
 #include <cuda_runtime_api.h>
 #include <curand.h>
 
-namespace autoware::tensorrt_yolox
+namespace autoware
+{
+namespace tensorrt_yolox
 {
 struct Roi
 {
@@ -195,5 +197,6 @@ extern void multi_scale_resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
 extern void argmax_gpu(
   unsigned char * dst, float * src, int d_w, int d_h, int s_w, int s_h, int s_c, int batch,
   cudaStream_t stream);
-}  // namespace autoware::tensorrt_yolox
+}  // namespace tensorrt_yolox
+}  // namespace autoware
 #endif  // AUTOWARE__TENSORRT_YOLOX__PREPROCESS_HPP_
