@@ -43,17 +43,6 @@ void ArrivalChecker::set_goal(const PoseWithUuidStamped & goal)
   goal_with_uuid_ = goal;
 }
 
-void ArrivalChecker::modify_goal(const PoseWithUuidStamped & modified_goal)
-{
-  if (!goal_with_uuid_) {
-    return;
-  }
-  if (goal_with_uuid_.value().uuid.uuid != modified_goal.uuid.uuid) {
-    return;
-  }
-  set_goal(modified_goal);
-}
-
 bool ArrivalChecker::is_arrived(const PoseStamped & pose) const
 {
   if (!goal_with_uuid_) {

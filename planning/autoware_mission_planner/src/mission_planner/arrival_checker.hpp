@@ -33,7 +33,6 @@ public:
   explicit ArrivalChecker(rclcpp::Node * node);
   void set_goal();
   void set_goal(const PoseWithUuidStamped & goal);
-  void modify_goal(const PoseWithUuidStamped & modified_goal);
   bool is_arrived(const PoseStamped & pose) const;
 
 private:
