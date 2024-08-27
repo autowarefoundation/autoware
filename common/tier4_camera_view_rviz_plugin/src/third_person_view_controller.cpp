@@ -226,6 +226,7 @@ void ThirdPersonViewController::updateCamera()
       distance_property_->getFloat() * CAMERA_OFFSET);
 }
 
+// cppcheck-suppress unusedFunction
 void ThirdPersonViewController::updateTargetSceneNode()
 {
   if (FramePositionTrackingViewController::getNewTransform()) {
