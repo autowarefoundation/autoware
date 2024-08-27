@@ -23,7 +23,7 @@ SimModelDelaySteerAccGearedWoFallGuard::SimModelDelaySteerAccGearedWoFallGuard(
   double dt, double acc_delay, double acc_time_constant, double steer_delay,
   double steer_time_constant, double steer_dead_band, double steer_bias,
   double debug_acc_scaling_factor, double debug_steer_scaling_factor)
-: SimModelInterface(6 /* dim x */, 4 /* dim u */),
+: SimModelInterface(7 /* dim x */, 4 /* dim u */),
   MIN_TIME_CONSTANT(0.03),
   vx_lim_(vx_lim),
   vx_rate_lim_(vx_rate_lim),
