@@ -191,21 +191,5 @@ bool extractCommonPointCloud(
   return true;
 }
 
-/**
- * @brief Convert unsigned char value to closest cost value
- * @param cost Cost value
- * @return Probability
- */
-unsigned char getApproximateOccupancyState(const unsigned char & value)
-{
-  if (value >= cost_value::OCCUPIED_THRESHOLD) {
-    return cost_value::LETHAL_OBSTACLE;
-  } else if (value <= cost_value::FREE_THRESHOLD) {
-    return cost_value::FREE_SPACE;
-  } else {
-    return cost_value::NO_INFORMATION;
-  }
-}
-
 }  // namespace utils
 }  // namespace autoware::occupancy_grid_map

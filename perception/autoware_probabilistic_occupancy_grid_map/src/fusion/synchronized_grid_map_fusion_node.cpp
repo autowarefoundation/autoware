@@ -369,42 +369,6 @@ OccupancyGridMapFixedBlindSpot GridMapFusionNode::SingleFrameOccupancyFusion(
   return fused_map;
 }
 
-/**
- * @brief Update occupancy grid map with asynchronous input (currently unused)
- *
- * @param occupancy_grid_msg
- */
-void GridMapFusionNode::updateGridMap(
-  const nav_msgs::msg::OccupancyGrid::ConstSharedPtr & occupancy_grid_msg)
-{
-  // get updater map origin
-
-  // origin is set to current updater map
-  auto map_for_update = OccupancyGridMsgToCostmap2D(*occupancy_grid_msg);
-
-  // update
-  occupancy_grid_map_updater_ptr_->update(map_for_update);
-}
-
-nav2_costmap_2d::Costmap2D GridMapFusionNode::OccupancyGridMsgToCostmap2D(
-  const nav_msgs::msg::OccupancyGrid & occupancy_grid_map)
-{
-  nav2_costmap_2d::Costmap2D costmap2d(
-    occupancy_grid_map.info.width, occupancy_grid_map.info.height,
-    occupancy_grid_map.info.resolution, occupancy_grid_map.info.origin.position.x,
-    occupancy_grid_map.info.origin.position.y, 0);
-
-  for (unsigned int i = 0; i < occupancy_grid_map.info.width; i++) {
-    for (unsigned int j = 0; j < occupancy_grid_map.info.height; j++) {
-      const unsigned int index = i + j * occupancy_grid_map.info.width;
-      costmap2d.setCost(
-        i, j, cost_value::inverse_cost_translation_table[occupancy_grid_map.data[index]]);
-    }
-  }
-
-  return costmap2d;
-}
-
 OccupancyGridMapFixedBlindSpot GridMapFusionNode::OccupancyGridMsgToGridMap(
   const nav_msgs::msg::OccupancyGrid & occupancy_grid_map)
 {

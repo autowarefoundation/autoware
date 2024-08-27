@@ -120,8 +120,6 @@ bool extractCommonPointCloud(
   const sensor_msgs::msg::PointCloud2 & obstacle_pc, const sensor_msgs::msg::PointCloud2 & raw_pc,
   sensor_msgs::msg::PointCloud2 & output_obstacle_pc);
 
-unsigned char getApproximateOccupancyState(const unsigned char & value);
-
 }  // namespace utils
 }  // namespace autoware::occupancy_grid_map
 

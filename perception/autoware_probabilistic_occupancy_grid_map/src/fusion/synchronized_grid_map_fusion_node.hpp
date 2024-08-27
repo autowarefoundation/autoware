@@ -66,15 +66,11 @@ private:
     const std::string & frame_id, const builtin_interfaces::msg::Time & stamp,
     const float & robot_pose_z, const nav2_costmap_2d::Costmap2D & occupancy_grid_map);
 
-  nav2_costmap_2d::Costmap2D OccupancyGridMsgToCostmap2D(
-    const nav_msgs::msg::OccupancyGrid & occupancy_grid_map);
   OccupancyGridMapFixedBlindSpot OccupancyGridMsgToGridMap(
     const nav_msgs::msg::OccupancyGrid & occupancy_grid_map);
   OccupancyGridMapFixedBlindSpot SingleFrameOccupancyFusion(
     std::vector<OccupancyGridMapFixedBlindSpot> & occupancy_grid_maps,
     const builtin_interfaces::msg::Time latest_stamp, const std::vector<double> & weights);
-
-  void updateGridMap(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr & occupancy_grid_msg);
 
   void setPeriod(const int64_t new_period);
   void timer_callback();
