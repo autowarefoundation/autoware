@@ -53,29 +53,6 @@
 namespace object_map
 {
 /*!
- * Publishes in_gridmap using the specified in_publisher
- * @param[in] in_gridmap GridMap object to publish
- * @param[in] in_publisher Valid Publisher object to use
- */
-void PublishGridMap(
-  const grid_map::GridMap & in_gridmap,
-  const rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr in_publisher);
-
-/*!
- * Convert and publishes a GridMap layer to a standard Ros OccupancyGrid
- * @param[in] in_gridmap GridMap object to extract the layer
- * @param[in] in_publisher ROS Publisher to use to publish the occupancy grid
- * @param[in] in_layer Name of the layer to convert
- * @param[in] in_min_value Minimum value in the layer
- * @param[in] in_max_value Maximum value in the layer
- */
-
-void PublishOccupancyGrid(
-  const grid_map::GridMap & in_gridmap,
-  const rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr in_publisher,
-  const std::string & in_layer, double in_min_value, double in_max_value, double in_height);
-
-/*!
  * Projects the in_area_points forming the road, stores the result in out_grid_map.
  * @param[out] out_grid_map GridMap object to add the road grid
  * @param[in] in_points Array of points containing the selected primitives
