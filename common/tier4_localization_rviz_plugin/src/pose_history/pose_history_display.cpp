@@ -50,11 +50,13 @@ void PoseHistory::onInitialize()
   lines_ = std::make_unique<rviz_rendering::BillboardLine>(scene_manager_, scene_node_);
 }
 
+// cppcheck-suppress unusedFunction
 void PoseHistory::onEnable()
 {
   subscribe();
 }
 
+// cppcheck-suppress unusedFunction
 void PoseHistory::onDisable()
 {
   unsubscribe();
