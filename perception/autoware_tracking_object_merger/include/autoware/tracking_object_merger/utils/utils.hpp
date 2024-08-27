@@ -80,13 +80,6 @@ autoware_perception_msgs::msg::TrackedObjectKinematics objectKinematicsVXMerger(
 TrackedObject objectClassificationMerger(
   const TrackedObject & main_obj, const TrackedObject & sub_obj, const MergePolicy policy);
 
-// probability merger
-float probabilityMerger(const float main_prob, const float sub_prob, const MergePolicy policy);
-
-// shape merger
-autoware_perception_msgs::msg::Shape shapeMerger(
-  const TrackedObject & main_obj, const TrackedObject & sub_obj, const MergePolicy policy);
-
 // update tracked object
 void updateExceptVelocity(TrackedObject & main_obj, const TrackedObject & sub_obj);
 

@@ -290,31 +290,6 @@ bool objectsHaveSameMotionDirections(const TrackedObject & main_obj, const Track
   }
 }
 
-/**
- * @brief compare two tracked objects yaw is reverted or not
- *
- * @param main_obj
- * @param sub_obj
- * @return true
- * @return false
- */
-bool objectsYawIsReverted(const TrackedObject & main_obj, const TrackedObject & sub_obj)
-{
-  // get yaw
-  const auto main_yaw = tf2::getYaw(main_obj.kinematics.pose_with_covariance.pose.orientation);
-  const auto sub_yaw = tf2::getYaw(sub_obj.kinematics.pose_with_covariance.pose.orientation);
-  // calc yaw diff
-  const auto yaw_diff = std::fabs(main_yaw - sub_yaw);
-  const auto normalized_yaw_diff = autoware::universe_utils::normalizeRadian(yaw_diff);  // -pi ~ pi
-  // evaluate if yaw is reverted
-  constexpr double yaw_threshold = M_PI / 2.0;  // 90 deg
-  if (std::abs(normalized_yaw_diff) >= yaw_threshold) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 // object kinematics merger
 // currently only support velocity fusion
 autoware_perception_msgs::msg::TrackedObjectKinematics objectKinematicsVXMerger(
@@ -406,66 +381,6 @@ TrackedObject objectClassificationMerger(
   } else {
     std::cerr << "unknown merge policy in objectClassificationMerger function." << std::endl;
     return main_obj;
-  }
-}
-
-// probability merger
-float probabilityMerger(const float main_prob, const float sub_prob, const MergePolicy policy)
-{
-  if (policy == MergePolicy::SKIP) {
-    return main_prob;
-  } else if (policy == MergePolicy::OVERWRITE) {
-    return sub_prob;
-  } else if (policy == MergePolicy::FUSION) {
-    return static_cast<float>(mean(main_prob, sub_prob));
-  } else {
-    std::cerr << "unknown merge policy in probabilityMerger function." << std::endl;
-    return main_prob;
-  }
-}
-
-// shape merger
-autoware_perception_msgs::msg::Shape shapeMerger(
-  const autoware_perception_msgs::msg::Shape & main_obj_shape,
-  const autoware_perception_msgs::msg::Shape & sub_obj_shape, const MergePolicy policy)
-{
-  autoware_perception_msgs::msg::Shape output_shape;
-  // copy main object at first
-  output_shape = main_obj_shape;
-
-  if (main_obj_shape.type != sub_obj_shape.type) {
-    // if shape type is different, return main object
-    return output_shape;
-  }
-
-  if (policy == MergePolicy::SKIP) {
-    return output_shape;
-  } else if (policy == MergePolicy::OVERWRITE) {
-    return sub_obj_shape;
-  } else if (policy == MergePolicy::FUSION) {
-    // write down fusion method for each shape type
-    if (main_obj_shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
-      // if shape type is bounding box, merge bounding box
-      output_shape.dimensions.x = mean(main_obj_shape.dimensions.x, sub_obj_shape.dimensions.x);
-      output_shape.dimensions.y = mean(main_obj_shape.dimensions.y, sub_obj_shape.dimensions.y);
-      output_shape.dimensions.z = mean(main_obj_shape.dimensions.z, sub_obj_shape.dimensions.z);
-      return output_shape;
-    } else if (main_obj_shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
-      // if shape type is cylinder, merge cylinder
-      // (TODO) implement
-      return output_shape;
-    } else if (main_obj_shape.type == autoware_perception_msgs::msg::Shape::POLYGON) {
-      // if shape type is polygon, merge polygon
-      // (TODO)
-      return output_shape;
-    } else {
-      // when type is unknown, print warning and do nothing
-      std::cerr << "unknown shape type in shapeMerger function." << std::endl;
-      return output_shape;
-    }
-  } else {
-    std::cerr << "unknown merge policy in shapeMerger function." << std::endl;
-    return output_shape;
   }
 }
 
