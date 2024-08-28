@@ -68,15 +68,4 @@ TrackedObject toTrackedObject(const DetectedObject & detected_object)
   tracked_object.shape = detected_object.shape;
   return tracked_object;
 }
-
-TrackedObjects toTrackedObjects(const DetectedObjects & detected_objects)
-{
-  TrackedObjects tracked_objects;
-  tracked_objects.header = detected_objects.header;
-
-  for (const auto & detected_object : detected_objects.objects) {
-    tracked_objects.objects.push_back(toTrackedObject(detected_object));
-  }
-  return tracked_objects;
-}
 }  // namespace object_recognition_utils

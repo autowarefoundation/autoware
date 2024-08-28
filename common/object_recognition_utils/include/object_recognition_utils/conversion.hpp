@@ -28,7 +28,6 @@ using autoware_perception_msgs::msg::TrackedObjects;
 DetectedObject toDetectedObject(const TrackedObject & tracked_object);
 DetectedObjects toDetectedObjects(const TrackedObjects & tracked_objects);
 TrackedObject toTrackedObject(const DetectedObject & detected_object);
-TrackedObjects toTrackedObjects(const DetectedObjects & detected_objects);
 }  // namespace object_recognition_utils
 
 #endif  // OBJECT_RECOGNITION_UTILS__CONVERSION_HPP_
