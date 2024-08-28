@@ -104,8 +104,6 @@ FrenetPoint convertToFrenetPoint(
   return frenet_point;
 }
 
-std::vector<lanelet::Id> getIds(const lanelet::ConstLanelets & lanelets);
-
 // distance (arclength) calculation
 
 double l2Norm(const Vector3 vector);
@@ -125,14 +123,6 @@ double getSignedDistance(
 double getArcLengthToTargetLanelet(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelet & target_lane,
   const Pose & pose);
-
-double getDistanceBetweenPredictedPaths(
-  const PredictedPath & path1, const PredictedPath & path2, const double start_time,
-  const double end_time, const double resolution);
-
-double getDistanceBetweenPredictedPathAndObject(
-  const PredictedObject & object, const PredictedPath & path, const double start_time,
-  const double end_time, const double resolution);
 
 /**
  * @brief Check collision between ego path footprints with extra longitudinal stopping margin and
@@ -223,8 +213,6 @@ PathWithLaneId refinePathForGoal(
   const double search_radius_range, const double search_rad_range, const PathWithLaneId & input,
   const Pose & goal, const int64_t goal_lane_id);
 
-bool containsGoal(const lanelet::ConstLanelets & lanes, const lanelet::Id & goal_id);
-
 bool isAllowedGoalModification(const std::shared_ptr<RouteHandler> & route_handler);
 bool checkOriginalGoalIsInShoulder(const std::shared_ptr<RouteHandler> & route_handler);
 
@@ -269,10 +257,6 @@ Polygon2d toPolygon2d(const lanelet::ConstLanelet & lanelet);
 
 Polygon2d toPolygon2d(const lanelet::BasicPolygon2d & polygon);
 
-std::vector<Polygon2d> getTargetLaneletPolygons(
-  const lanelet::ConstLanelets & lanelets, const Pose & pose, const double check_length,
-  const std::string & target_type);
-
 PathWithLaneId getCenterLinePathFromLanelet(
   const lanelet::ConstLanelet & current_route_lanelet,
   const std::shared_ptr<const PlannerData> & planner_data);
@@ -282,11 +266,6 @@ PathWithLaneId getCenterLinePath(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & lanelet_sequence,
   const Pose & pose, const double backward_path_length, const double forward_path_length,
   const BehaviorPathPlannerParameters & parameter);
-
-PathWithLaneId setDecelerationVelocity(
-  const RouteHandler & route_handler, const PathWithLaneId & input,
-  const lanelet::ConstLanelets & lanelet_sequence, const double lane_change_prepare_duration,
-  const double lane_change_buffer);
 
 // object label
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification);

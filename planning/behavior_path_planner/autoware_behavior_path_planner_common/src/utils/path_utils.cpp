@@ -209,127 +209,6 @@ void clipPathLength(
   clipPathLength(path, target_idx, params.forward_path_length, params.backward_path_length);
 }
 
-std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
-  const lanelet::ConstLanelets & current_lanes, const ShiftedPath & path,
-  const ShiftLine & shift_line, const Pose & pose, const double & velocity,
-  const BehaviorPathPlannerParameters & common_parameter)
-{
-  TurnIndicatorsCommand turn_signal;
-  turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
-  const double max_time = std::numeric_limits<double>::max();
-  const double max_distance = std::numeric_limits<double>::max();
-  if (path.shift_length.size() < shift_line.end_idx + 1) {
-    return std::make_pair(turn_signal, max_distance);
-  }
-  const auto base_link2front = common_parameter.base_link2front;
-  const auto vehicle_width = common_parameter.vehicle_width;
-  const auto shift_to_outside = vehicle_width / 2;
-  const auto turn_signal_shift_length_threshold =
-    common_parameter.turn_signal_shift_length_threshold;
-  const auto turn_signal_minimum_search_distance =
-    common_parameter.turn_signal_minimum_search_distance;
-  const auto turn_signal_search_time = common_parameter.turn_signal_search_time;
-  constexpr double epsilon = 1e-6;
-  const auto arc_position_current_pose = lanelet::utils::getArcCoordinates(current_lanes, pose);
-
-  // Start turn signal when 1 or 2 is satisfied
-  //  1. time to shift start point is less than prev_sec
-  //  2. distance to shift point is shorter than tl_on_threshold_long
-
-  // Turn signal on when conditions below are satisfied
-  //  1. lateral offset is larger than tl_on_threshold_lat for left signal
-  //                      smaller than tl_on_threshold_lat for right signal
-  //  2. side point at shift start/end point cross the line
-  const double distance_to_shift_start =
-    std::invoke([&current_lanes, &shift_line, &arc_position_current_pose]() {
-      const auto arc_position_shift_start =
-        lanelet::utils::getArcCoordinates(current_lanes, shift_line.start);
-      return arc_position_shift_start.length - arc_position_current_pose.length;
-    });
-
-  const auto time_to_shift_start =
-    (std::abs(velocity) < epsilon) ? max_time : distance_to_shift_start / velocity;
-
-  const double diff =
-    path.shift_length.at(shift_line.end_idx) - path.shift_length.at(shift_line.start_idx);
-
-  Pose shift_start_point = path.path.points.at(shift_line.start_idx).point.pose;
-  Pose shift_end_point = path.path.points.at(shift_line.end_idx).point.pose;
-  Pose left_start_point = shift_start_point;
-  Pose right_start_point = shift_start_point;
-  Pose left_end_point = shift_end_point;
-  Pose right_end_point = shift_end_point;
-  {
-    const double start_yaw = tf2::getYaw(shift_line.start.orientation);
-    const double end_yaw = tf2::getYaw(shift_line.end.orientation);
-    left_start_point.position.x -= std::sin(start_yaw) * (shift_to_outside);
-    left_start_point.position.y += std::cos(start_yaw) * (shift_to_outside);
-    right_start_point.position.x -= std::sin(start_yaw) * (-shift_to_outside);
-    right_start_point.position.y += std::cos(start_yaw) * (-shift_to_outside);
-    left_end_point.position.x -= std::sin(end_yaw) * (shift_to_outside);
-    left_end_point.position.y += std::cos(end_yaw) * (shift_to_outside);
-    right_end_point.position.x -= std::sin(end_yaw) * (-shift_to_outside);
-    right_end_point.position.y += std::cos(end_yaw) * (-shift_to_outside);
-  }
-
-  bool left_start_point_is_in_lane = false;
-  bool right_start_point_is_in_lane = false;
-  bool left_end_point_is_in_lane = false;
-  bool right_end_point_is_in_lane = false;
-  {
-    for (const auto & llt : current_lanes) {
-      if (lanelet::utils::isInLanelet(left_start_point, llt, 0.1)) {
-        left_start_point_is_in_lane = true;
-      }
-      if (lanelet::utils::isInLanelet(right_start_point, llt, 0.1)) {
-        right_start_point_is_in_lane = true;
-      }
-      if (lanelet::utils::isInLanelet(left_end_point, llt, 0.1)) {
-        left_end_point_is_in_lane = true;
-      }
-      if (lanelet::utils::isInLanelet(right_end_point, llt, 0.1)) {
-        right_end_point_is_in_lane = true;
-      }
-    }
-  }
-
-  const bool cross_line = std::invoke([&]() {
-    constexpr bool temporary_set_cross_line_true =
-      true;  // due to a bug. See link:
-             // https://github.com/autowarefoundation/autoware.universe/pull/748
-    if (temporary_set_cross_line_true) {
-      return true;
-    }
-    return (
-      left_start_point_is_in_lane != left_end_point_is_in_lane ||
-      right_start_point_is_in_lane != right_end_point_is_in_lane);
-  });
-
-  if (
-    time_to_shift_start < turn_signal_search_time ||
-    distance_to_shift_start < turn_signal_minimum_search_distance) {
-    if (diff > turn_signal_shift_length_threshold && cross_line) {
-      turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
-    } else if (diff < -turn_signal_shift_length_threshold && cross_line) {
-      turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-    }
-  }
-
-  // calc distance from ego vehicle front to shift end point.
-  const double distance_from_vehicle_front =
-    std::invoke([&current_lanes, &shift_line, &arc_position_current_pose, &base_link2front]() {
-      const auto arc_position_shift_end =
-        lanelet::utils::getArcCoordinates(current_lanes, shift_line.end);
-      return arc_position_shift_end.length - arc_position_current_pose.length - base_link2front;
-    });
-
-  if (distance_from_vehicle_front >= 0.0) {
-    return std::make_pair(turn_signal, distance_from_vehicle_front);
-  }
-
-  return std::make_pair(turn_signal, max_distance);
-}
-
 PathWithLaneId convertWayPointsToPathWithLaneId(
   const autoware::freespace_planning_algorithms::PlannerWaypoints & waypoints,
   const double velocity, const lanelet::ConstLanelets & lanelets)
@@ -429,18 +308,6 @@ void correctDividedPathVelocity(std::vector<PathWithLaneId> & divided_paths)
     }
     path.points.back().point.longitudinal_velocity_mps = 0.0;
   }
-}
-
-bool isCloseToPath(const PathWithLaneId & path, const Pose & pose, const double distance_threshold)
-{
-  for (const auto & point : path.points) {
-    const auto & p = point.point.pose.position;
-    const double dist = std::hypot(pose.position.x - p.x, pose.position.y - p.y);
-    if (dist < distance_threshold) {
-      return true;
-    }
-  }
-  return false;
 }
 
 // only two points is supported
@@ -577,16 +444,6 @@ PathWithLaneId combinePath(const PathWithLaneId & path1, const PathWithLaneId & 
   PathWithLaneId filtered_path = path;
   filtered_path.points = autoware::motion_utils::removeOverlapPoints(filtered_path.points);
   return filtered_path;
-}
-
-std::optional<Pose> getFirstStopPoseFromPath(const PathWithLaneId & path)
-{
-  for (const auto & p : path.points) {
-    if (std::abs(p.point.longitudinal_velocity_mps) < 0.01) {
-      return p.point.pose;
-    }
-  }
-  return std::nullopt;
 }
 
 BehaviorModuleOutput getReferencePath(

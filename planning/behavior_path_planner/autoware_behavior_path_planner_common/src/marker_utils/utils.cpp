@@ -341,6 +341,7 @@ MarkerArray createObjectsMarkerArray(
   return msg;
 }
 
+// cppcheck-suppress unusedFunction
 MarkerArray createDrivableLanesMarkerArray(
   const std::vector<DrivableLanes> & drivable_lanes, std::string && ns)
 {

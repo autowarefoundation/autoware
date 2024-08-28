@@ -622,20 +622,6 @@ std::vector<Point> updateBoundary(
   return updated_bound;
 }
 
-[[maybe_unused]] geometry_msgs::msg::Point calcCenterOfGeometry(const Polygon2d & obj_poly)
-{
-  geometry_msgs::msg::Point center_pos;
-  for (const auto & point : obj_poly.outer()) {
-    center_pos.x += point.x();
-    center_pos.y += point.y();
-  }
-
-  center_pos.x = center_pos.x / obj_poly.outer().size();
-  center_pos.y = center_pos.y / obj_poly.outer().size();
-  center_pos.z = center_pos.z / obj_poly.outer().size();
-
-  return center_pos;
-}
 }  // namespace autoware::behavior_path_planner::utils::drivable_area_processing
 
 namespace autoware::behavior_path_planner::utils

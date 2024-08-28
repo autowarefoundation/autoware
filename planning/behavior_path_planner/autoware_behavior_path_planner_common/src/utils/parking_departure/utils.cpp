@@ -104,16 +104,6 @@ void initializeCollisionCheckDebugMap(CollisionCheckDebugMap & collision_check_d
   collision_check_debug_map.clear();
 }
 
-void updateSafetyCheckTargetObjectsData(
-  StartGoalPlannerData & data, const PredictedObjects & filtered_objects,
-  const TargetObjectsOnLane & target_objects_on_lane,
-  const std::vector<PoseWithVelocityStamped> & ego_predicted_path)
-{
-  data.filtered_objects = filtered_objects;
-  data.target_objects_on_lane = target_objects_on_lane;
-  data.ego_predicted_path = ego_predicted_path;
-}
-
 std::pair<double, double> getPairsTerminalVelocityAndAccel(
   const std::vector<std::pair<double, double>> & pairs_terminal_velocity_and_accel,
   const size_t current_path_idx)
