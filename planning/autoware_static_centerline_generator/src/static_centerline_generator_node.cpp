@@ -177,20 +177,6 @@ std::vector<TrajectoryPoint> resample_trajectory_points(
   return autoware::motion_utils::convertToTrajectoryPointArray(resampled_input_traj);
 }
 
-bool arePointsClose(
-  const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2, const double epsilon)
-{
-  return std::abs(p1.x - p2.x) < epsilon && std::abs(p1.y - p2.y) < epsilon;
-}
-
-bool areSameDirection(
-  const double yaw, const geometry_msgs::msg::Point & start_point,
-  const geometry_msgs::msg::Point & end_point)
-{
-  return autoware::universe_utils::normalizeRadian(
-           yaw - std::atan2(end_point.y - start_point.y, end_point.x - start_point.x)) < M_PI_2;
-}
-
 std::vector<geometry_msgs::msg::Point> convertToGeometryPoints(const LineString2d & lanelet_points)
 {
   std::vector<geometry_msgs::msg::Point> points;
@@ -597,115 +583,8 @@ void StaticCenterlineGeneratorNode::on_plan_path(
   response->message = "";
 }
 
-RoadBounds StaticCenterlineGeneratorNode::update_road_boundary(
-  const std::vector<TrajectoryPoint> & centerline)
-{
-  const double max_ego_lon_offset = vehicle_info_.front_overhang_m + vehicle_info_.wheel_base_m;
-  const double min_ego_lon_offset = -vehicle_info_.rear_overhang_m;
-  const double max_ego_lat_offset =
-    vehicle_info_.wheel_tread_m / 2.0 + vehicle_info_.left_overhang_m;
-  const double ego_lat_offset = max_ego_lat_offset + footprint_margin_for_road_bound_;
-
-  std::vector<geometry_msgs::msg::Point> ego_left_bound;
-  std::vector<geometry_msgs::msg::Point> ego_right_bound;
-  for (size_t i = 0; i < centerline.size(); ++i) {
-    const auto & centerline_point = centerline.at(i).pose;
-    if (i == 0) {
-      // Add the first bound point
-      ego_left_bound.push_back(autoware::universe_utils::calcOffsetPose(
-                                 centerline_point, min_ego_lon_offset, ego_lat_offset, 0.0)
-                                 .position);
-      ego_right_bound.push_back(autoware::universe_utils::calcOffsetPose(
-                                  centerline_point, min_ego_lon_offset, -ego_lat_offset, 0.0)
-                                  .position);
-    }
-
-    if (i == centerline.size() - 1) {
-      // Add the last bound point
-      const auto ego_left_bound_last_point =
-        autoware::universe_utils::calcOffsetPose(
-          centerline_point, max_ego_lon_offset, ego_lat_offset, 0.0)
-          .position;
-      if (!arePointsClose(ego_left_bound.back(), ego_left_bound_last_point, 1e-6)) {
-        ego_left_bound.push_back(ego_left_bound_last_point);
-      }
-      const auto ego_right_bound_last_point =
-        autoware::universe_utils::calcOffsetPose(
-          centerline_point, max_ego_lon_offset, -ego_lat_offset, 0.0)
-          .position;
-      if (!arePointsClose(ego_right_bound.back(), ego_right_bound_last_point, 1e-6)) {
-        ego_right_bound.push_back(ego_right_bound_last_point);
-      }
-    } else {
-      // Calculate new bound point depending on the orientation
-      const auto & next_centerline_point = centerline.at(i + 1).pose;
-      const double diff_yaw = autoware::universe_utils::normalizeRadian(
-        tf2::getYaw(next_centerline_point.orientation) - tf2::getYaw(centerline_point.orientation));
-      const auto [ego_left_bound_new_point, ego_right_bound_new_point] = [&]() {
-        if (0 < diff_yaw) {
-          return std::make_pair(
-            autoware::universe_utils::calcOffsetPose(centerline_point, 0.0, ego_lat_offset, 0.0)
-              .position,
-            autoware::universe_utils::calcOffsetPose(
-              centerline_point, max_ego_lon_offset, -ego_lat_offset, 0.0)
-              .position);
-        }
-        return std::make_pair(
-          autoware::universe_utils::calcOffsetPose(
-            centerline_point, max_ego_lon_offset, ego_lat_offset, 0.0)
-            .position,
-          autoware::universe_utils::calcOffsetPose(centerline_point, 0.0, -ego_lat_offset, 0.0)
-            .position);
-      }();
-
-      // Check if the bound will be longitudinally monotonic.
-      if (areSameDirection(
-            tf2::getYaw(centerline_point.orientation), ego_left_bound.back(),
-            ego_left_bound_new_point)) {
-        ego_left_bound.push_back(ego_left_bound_new_point);
-      }
-      if (areSameDirection(
-            tf2::getYaw(centerline_point.orientation), ego_right_bound.back(),
-            ego_right_bound_new_point)) {
-        ego_right_bound.push_back(ego_right_bound_new_point);
-      }
-    }
-  }
-
-  // Publish marker
-  MarkerArray ego_footprint_bounds_marker_array;
-  {
-    auto left_bound_marker = autoware::universe_utils::createDefaultMarker(
-      "map", now(), "road_bounds", 0, Marker::LINE_STRIP,
-      autoware::universe_utils::createMarkerScale(0.05, 0.0, 0.0),
-      autoware::universe_utils::createMarkerColor(1.0, 0.5, 0.7, 0.8));
-    left_bound_marker.lifetime = rclcpp::Duration(0, 0);
-    for (const auto & ego_left_bound_point : ego_left_bound) {
-      left_bound_marker.points.push_back(ego_left_bound_point);
-    }
-    ego_footprint_bounds_marker_array.markers.push_back(left_bound_marker);
-  }
-  {
-    auto right_bound_marker = autoware::universe_utils::createDefaultMarker(
-      "map", now(), "road_bounds", 1, Marker::LINE_STRIP,
-      autoware::universe_utils::createMarkerScale(0.05, 0.0, 0.0),
-      autoware::universe_utils::createMarkerColor(1.0, 0.5, 0.7, 0.8));
-    right_bound_marker.lifetime = rclcpp::Duration(0, 0);
-    for (const auto & ego_right_bound_point : ego_right_bound) {
-      right_bound_marker.points.push_back(ego_right_bound_point);
-    }
-    ego_footprint_bounds_marker_array.markers.push_back(right_bound_marker);
-  }
-  pub_debug_ego_footprint_bounds_->publish(ego_footprint_bounds_marker_array);
-
-  return RoadBounds{ego_left_bound, ego_right_bound};
-}
-
 void StaticCenterlineGeneratorNode::validate()
 {
-  // const auto selected_centerline = centerline_handler_.get_selected_centerline();
-  // const auto road_bounds = update_road_boundary(selected_centerline);
-
   std::cerr << std::endl
             << "############################################## Validation Results "
                "##############################################"

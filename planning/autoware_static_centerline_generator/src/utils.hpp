@@ -61,8 +61,6 @@ Marker create_points_marker(
 MarkerArray create_delete_all_marker_array(
   const std::vector<std::string> & ns_vec, const rclcpp::Time & now);
 
-std::pair<std::vector<geometry_msgs::msg::Point>, std::vector<geometry_msgs::msg::Point>>
-calcBoundsFromLanelets(const lanelet::ConstLanelets lanelets);
 }  // namespace utils
 }  // namespace autoware::static_centerline_generator
 

@@ -256,28 +256,5 @@ MarkerArray create_delete_all_marker_array(
   return marker_array;
 }
 
-std::pair<std::vector<geometry_msgs::msg::Point>, std::vector<geometry_msgs::msg::Point>>
-calcBoundsFromLanelets(const lanelet::ConstLanelets lanelets)
-{
-  std::vector<geometry_msgs::msg::Point> left_bound;
-  std::vector<geometry_msgs::msg::Point> right_bound;
-  for (const auto & lanelet : lanelets) {
-    for (const auto & lanelet_left_bound_point : lanelet.leftBound()) {
-      geometry_msgs::msg::Point left_bound_point;
-      left_bound_point.x = lanelet_left_bound_point.x();
-      left_bound_point.y = lanelet_left_bound_point.y();
-      left_bound_point.z = lanelet_left_bound_point.z();
-      left_bound.push_back(left_bound_point);
-    }
-    for (const auto & lanelet_right_bound_point : lanelet.rightBound()) {
-      geometry_msgs::msg::Point right_bound_point;
-      right_bound_point.x = lanelet_right_bound_point.x();
-      right_bound_point.y = lanelet_right_bound_point.y();
-      right_bound_point.z = lanelet_right_bound_point.z();
-      right_bound.push_back(right_bound_point);
-    }
-  }
-  return std::make_pair(left_bound, right_bound);
-}
 }  // namespace utils
 }  // namespace autoware::static_centerline_generator

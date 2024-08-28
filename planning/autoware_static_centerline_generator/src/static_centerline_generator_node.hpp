@@ -132,7 +132,6 @@ private:
     const PlanPath::Request::SharedPtr request, const PlanPath::Response::SharedPtr response);
 
   void visualize_selected_centerline();
-  RoadBounds update_road_boundary(const std::vector<TrajectoryPoint> & centerline);
 
   // parameter
   template <typename T>
