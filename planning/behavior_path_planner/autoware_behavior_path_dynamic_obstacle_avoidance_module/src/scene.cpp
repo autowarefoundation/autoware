@@ -179,25 +179,6 @@ double calcDiffAngleAgainstPath(
   return diff_yaw;
 }
 
-[[maybe_unused]] double calcDiffAngleBetweenPaths(
-  const std::vector<PathPointWithLaneId> & path_points, const PredictedPath & predicted_path)
-{
-  const size_t nearest_idx = autoware::motion_utils::findNearestSegmentIndex(
-    path_points, predicted_path.path.front().position);
-  const double ego_yaw = tf2::getYaw(path_points.at(nearest_idx).point.pose.orientation);
-
-  constexpr size_t max_predicted_path_size = 5;
-  double signed_max_angle{0.0};
-  for (size_t i = 0; i < std::min(max_predicted_path_size, predicted_path.path.size()); ++i) {
-    const double obj_yaw = tf2::getYaw(predicted_path.path.at(i).orientation);
-    const double diff_yaw = autoware::universe_utils::normalizeRadian(obj_yaw - ego_yaw);
-    if (std::abs(signed_max_angle) < std::abs(diff_yaw)) {
-      signed_max_angle = diff_yaw;
-    }
-  }
-  return signed_max_angle;
-}
-
 double calcDistanceToPath(
   const std::vector<geometry_msgs::msg::Pose> & points,
   const geometry_msgs::msg::Point & target_pos, const size_t target_idx)
