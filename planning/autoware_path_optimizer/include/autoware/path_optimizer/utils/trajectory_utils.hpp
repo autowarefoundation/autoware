@@ -132,10 +132,6 @@ std::vector<ReferencePoint> convertToReferencePoints(
 
 std::vector<ReferencePoint> sanitizePoints(const std::vector<ReferencePoint> & points);
 
-void compensateLastPose(
-  const PathPoint & last_path_point, std::vector<TrajectoryPoint> & traj_points,
-  const double delta_dist_threshold, const double delta_yaw_threshold);
-
 geometry_msgs::msg::Point getNearestPosition(
   const std::vector<ReferencePoint> & points, const int target_idx, const double offset);
 
