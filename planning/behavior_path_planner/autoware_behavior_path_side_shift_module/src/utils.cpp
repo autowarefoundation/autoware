@@ -53,49 +53,9 @@ void setOrientation(PathWithLaneId * path)
   }
 }
 
-bool getStartAvoidPose(
-  const PathWithLaneId & path, const double start_distance, const size_t nearest_idx,
-  Pose * start_avoid_pose)
-{
-  if (!start_avoid_pose) {
-    return false;
-  }
-  if (nearest_idx >= path.points.size()) {
-    return false;
-  }
-
-  double arclength = 0.0;
-  for (size_t idx = nearest_idx + 1; idx < path.points.size(); ++idx) {
-    const auto pt = path.points.at(idx).point;
-    const auto pt_prev = path.points.at(idx - 1).point;
-    const double dx = pt.pose.position.x - pt_prev.pose.position.x;
-    const double dy = pt.pose.position.y - pt_prev.pose.position.y;
-    arclength += std::hypot(dx, dy);
-
-    if (arclength > start_distance) {
-      *start_avoid_pose = pt.pose;
-      return true;
-    }
-  }
-
-  return false;
-}
-
 bool isAlmostZero(double v)
 {
   return std::fabs(v) < 1.0e-4;
-}
-
-Point transformToGrid(
-  const Point & pt, const double longitudinal_offset, const double lateral_offset, const double yaw,
-  const TransformStamped & geom_tf)
-{
-  Point offset_pt, grid_pt;
-  offset_pt = pt;
-  offset_pt.x += longitudinal_offset * cos(yaw) - lateral_offset * sin(yaw);
-  offset_pt.y += longitudinal_offset * sin(yaw) + lateral_offset * cos(yaw);
-  tf2::doTransform(offset_pt, grid_pt, geom_tf);
-  return grid_pt;
 }
 
 }  // namespace autoware::behavior_path_planner
