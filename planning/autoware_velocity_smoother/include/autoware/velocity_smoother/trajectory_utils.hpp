@@ -43,12 +43,6 @@ std::vector<double> calcTrajectoryIntervalDistance(const TrajectoryPoints & traj
 std::vector<double> calcTrajectoryCurvatureFrom3Points(
   const TrajectoryPoints & trajectory, size_t idx_dist);
 
-void setZeroVelocity(TrajectoryPoints & trajectory);
-
-double getMaxVelocity(const TrajectoryPoints & trajectory);
-
-double getMaxAbsVelocity(const TrajectoryPoints & trajectory);
-
 void applyMaximumVelocityLimit(
   const size_t from, const size_t to, const double max_vel, TrajectoryPoints & trajectory);
 
@@ -62,11 +56,6 @@ bool calcStopDistWithJerkConstraints(
 bool isValidStopDist(
   const double v_end, const double a_end, const double v_target, const double a_target,
   const double v_margin, const double a_margin);
-
-std::optional<TrajectoryPoints> applyDecelFilterWithJerkConstraint(
-  const TrajectoryPoints & input, const size_t start_index, const double v0, const double a0,
-  const double min_acc, const double decel_target_vel,
-  const std::map<double, double> & jerk_profile);
 
 std::optional<std::tuple<double, double, double, double>> updateStateWithJerkConstraint(
   const double v0, const double a0, const std::map<double, double> & jerk_profile, const double t);
