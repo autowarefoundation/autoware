@@ -1,4 +1,4 @@
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2022-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,15 +26,6 @@
 
 namespace autoware::motion_velocity_planner::obstacle_velocity_limiter
 {
-
-double calculateSafeVelocity(
-  const TrajectoryPoint & trajectory_point, const double dist_to_collision,
-  const double time_buffer, const double min_adjusted_velocity)
-{
-  return std::min(
-    static_cast<double>(trajectory_point.longitudinal_velocity_mps),
-    std::max(min_adjusted_velocity, dist_to_collision / time_buffer));
-}
 
 multi_polygon_t createPolygonMasks(
   const autoware_perception_msgs::msg::PredictedObjects & dynamic_obstacles, const double buffer,
@@ -123,15 +114,9 @@ std::vector<autoware::motion_velocity_planner::SlowdownInterval> calculate_slowd
   autoware::motion_utils::VirtualWalls & virtual_walls)
 {
   std::vector<autoware::motion_velocity_planner::SlowdownInterval> slowdown_intervals;
-  double time = 0.0;
+  size_t previous_slowdown_index = trajectory.size();
   for (size_t i = 0; i < trajectory.size(); ++i) {
     auto & trajectory_point = trajectory[i];
-    if (i > 0) {
-      const auto & prev_point = trajectory[i - 1];
-      time += static_cast<double>(
-        autoware::universe_utils::calcDistance2d(prev_point, trajectory_point) /
-        prev_point.longitudinal_velocity_mps);
-    }
     // First linestring is used to calculate distance
     if (projections[i].empty()) continue;
     projection_params.update(trajectory_point);
@@ -139,20 +124,25 @@ std::vector<autoware::motion_velocity_planner::SlowdownInterval> calculate_slowd
       projections[i][0], footprints[i], collision_checker, projection_params);
     if (dist_to_collision) {
       const auto min_feasible_velocity =
-        velocity_params.current_ego_velocity - velocity_params.max_deceleration * time;
+        velocity_params.current_ego_velocity -
+        velocity_params.max_deceleration *
+          rclcpp::Duration(trajectory_point.time_from_start).seconds();
 
+      const auto safe_velocity = std::max(
+        static_cast<double>(*dist_to_collision - projection_params.extra_length) /
+          static_cast<double>(projection_params.duration),
+        velocity_params.min_velocity);
       slowdown_intervals.emplace_back(
         trajectory_point.pose.position, trajectory_point.pose.position,
-        std::max(
-          min_feasible_velocity,
-          calculateSafeVelocity(
-            trajectory_point,
-            static_cast<double>(*dist_to_collision - projection_params.extra_length),
-            static_cast<double>(projection_params.duration), velocity_params.min_velocity)));
+        std::max(min_feasible_velocity, safe_velocity));
 
-      autoware::motion_utils::VirtualWall wall;
-      wall.pose = trajectory_point.pose;
-      virtual_walls.push_back(wall);
+      // with consecutive slowdowns only add a virtual wall for the first one
+      if (previous_slowdown_index + 1 != i) {
+        autoware::motion_utils::VirtualWall wall;
+        wall.pose = trajectory_point.pose;
+        virtual_walls.push_back(wall);
+      }
+      previous_slowdown_index = i;
     }
   }
   return slowdown_intervals;

@@ -1,4 +1,4 @@
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2022-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
 #ifndef OBSTACLE_VELOCITY_LIMITER_MODULE_HPP_
 #define OBSTACLE_VELOCITY_LIMITER_MODULE_HPP_
 
-#include "obstacles.hpp"
 #include "parameters.hpp"
-#include "types.hpp"
 
 #include <autoware/motion_velocity_planner_common/plugin_module_interface.hpp>
 #include <autoware/motion_velocity_planner_common/velocity_planning_result.hpp>
@@ -29,6 +27,7 @@
 #include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_planning_msgs/msg/trajectory.hpp>
+#include <geometry_msgs/msg/detail/pose__struct.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -38,8 +37,6 @@
 #include <lanelet2_core/LaneletMap.h>
 
 #include <memory>
-#include <optional>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -59,8 +56,8 @@ public:
 private:
   inline static const std::string ns_ = "obstacle_velocity_limiter";
   std::string module_name_;
-  rclcpp::Clock::SharedPtr clock_{};
-  rclcpp::Time prev_inserted_point_time_{};
+  rclcpp::Clock::SharedPtr clock_;
+  std::optional<geometry_msgs::msg::Point> prev_inserted_point_;
 
   // parameters
   obstacle_velocity_limiter::PreprocessingParameters preprocessing_params_;

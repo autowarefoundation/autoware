@@ -1,4 +1,4 @@
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2022-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 #include "obstacle_velocity_limiter_module.hpp"
 
 #include "debug.hpp"
-#include "forward_projection.hpp"
 #include "map_utils.hpp"
 #include "obstacle_velocity_limiter.hpp"
 #include "parameters.hpp"
@@ -23,6 +22,7 @@
 
 #include <autoware/motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/update_param.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
@@ -31,7 +31,6 @@
 
 #include <boost/geometry.hpp>
 
-#include <algorithm>
 #include <chrono>
 #include <map>
 
@@ -160,6 +159,9 @@ VelocityPlanningResult ObstacleVelocityLimiterModule::plan(
     preprocessing_params_.max_duration);
   auto downsampled_traj_points = obstacle_velocity_limiter::downsampleTrajectory(
     original_traj_points, start_idx, end_idx, preprocessing_params_.downsample_factor);
+  if (prev_inserted_point_) {
+    obstacle_velocity_limiter::add_trajectory_point(downsampled_traj_points, *prev_inserted_point_);
+  }
   obstacle_velocity_limiter::ObstacleMasks obstacle_masks;
   const auto preprocessing_us = stopwatch.toc("preprocessing");
   stopwatch.tic("obstacles");
@@ -203,6 +205,9 @@ VelocityPlanningResult ObstacleVelocityLimiterModule::plan(
   }
   virtual_wall_marker_creator.add_virtual_walls(virtual_walls);
   virtual_wall_publisher_->publish(virtual_wall_marker_creator.create_markers(clock_->now()));
+  if (!result.slowdown_intervals.empty()) {
+    prev_inserted_point_ = result.slowdown_intervals.front().from;
+  }
 
   const auto total_us = stopwatch.toc();
   RCLCPP_DEBUG(

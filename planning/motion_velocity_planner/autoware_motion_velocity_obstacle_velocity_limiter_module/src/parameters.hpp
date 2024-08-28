@@ -1,4 +1,4 @@
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2022-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 
 #include <tf2/utils.h>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -45,7 +46,7 @@ struct ObstacleParameters
   int8_t occupancy_grid_threshold{};
   double dynamic_obstacles_buffer{};
   double dynamic_obstacles_min_vel{};
-  std::vector<std::string> static_map_tags{};
+  std::vector<std::string> static_map_tags;
   bool filter_envelope{};
   bool ignore_on_path{};
   double ignore_extra_distance{};
@@ -125,7 +126,7 @@ struct ProjectionParameters
   double velocity{};
   double heading{};
   // parameters specific to the bicycle model
-  int points_per_projection = 5;
+  int64_t points_per_projection = 5;
   double wheel_base{};
   double steering_angle{};
   double steering_angle_offset{};
@@ -172,11 +173,11 @@ struct ProjectionParameters
     return true;
   }
 
-  bool updateNbPoints(const rclcpp::Logger & logger, const int nb_points)
+  bool updateNbPoints(const rclcpp::Logger & logger, const int64_t nb_points)
   {
     if (nb_points < 2) {
       RCLCPP_WARN(
-        logger, "Cannot use less than 2 points per projection. Using value %d instead.",
+        logger, "Cannot use less than 2 points per projection. Using value %ld instead.",
         points_per_projection);
       return false;
     }
@@ -217,7 +218,7 @@ struct PreprocessingParameters
   static constexpr auto MAX_LENGTH_PARAM = "trajectory_preprocessing.max_length";
   static constexpr auto MAX_DURATION_PARAM = "trajectory_preprocessing.max_duration";
 
-  int downsample_factor{};
+  int64_t downsample_factor{};
   double start_distance{};
   bool calculate_steering_angles{};
   double max_length{};
@@ -232,7 +233,7 @@ struct PreprocessingParameters
     max_length = node.declare_parameter<double>(MAX_LENGTH_PARAM);
     max_duration = node.declare_parameter<double>(MAX_DURATION_PARAM);
   }
-  bool updateDownsampleFactor(const int new_downsample_factor)
+  bool updateDownsampleFactor(const int64_t new_downsample_factor)
   {
     if (new_downsample_factor > 0) {
       downsample_factor = new_downsample_factor;

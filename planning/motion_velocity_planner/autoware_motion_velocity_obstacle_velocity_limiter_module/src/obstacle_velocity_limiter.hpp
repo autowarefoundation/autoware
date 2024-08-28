@@ -1,4 +1,4 @@
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2022-2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,19 +24,10 @@
 #include <autoware_perception_msgs/msg/predicted_objects.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 
-#include <string>
 #include <vector>
 
 namespace autoware::motion_velocity_planner::obstacle_velocity_limiter
 {
-
-/// @brief calculate the apparent safe velocity
-/// @param[in] trajectory_point trajectory point for which to calculate the apparent safe velocity
-/// @param[in] dist_to_collision distance from the trajectory point to the apparent collision
-/// @return apparent safe velocity
-double calculateSafeVelocity(
-  const TrajectoryPoint & trajectory_point, const double dist_to_collision);
-
 /// @brief calculate trajectory index that is ahead of the given index by the given distance
 /// @param[in] trajectory trajectory
 /// @param[in] ego_idx index closest to the current ego position in the trajectory
@@ -124,15 +115,6 @@ std::vector<autoware::motion_velocity_planner::SlowdownInterval> calculate_slowd
   ProjectionParameters & projection_params, const VelocityParameters & velocity_params,
   autoware::motion_utils::VirtualWalls & virtual_walls);
 
-/// @brief copy the velocity profile of a downsampled trajectory to the original trajectory
-/// @param[in] downsampled_trajectory downsampled trajectory
-/// @param[in] trajectory input trajectory
-/// @param[in] start_idx starting index of the downsampled trajectory relative to the input
-/// @param[in] factor downsampling factor
-/// @return input trajectory with the velocity profile of the downsampled trajectory
-TrajectoryPoints copyDownsampledVelocity(
-  const TrajectoryPoints & downsampled_traj, TrajectoryPoints trajectory, const size_t start_idx,
-  const int factor);
 }  // namespace autoware::motion_velocity_planner::obstacle_velocity_limiter
 
 #endif  // OBSTACLE_VELOCITY_LIMITER_HPP_
