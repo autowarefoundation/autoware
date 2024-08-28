@@ -26,17 +26,7 @@ CustomContainer::CustomContainer(QWidget * parent) : QFrame(parent), cornerRadiu
   setLayout(layout);
 }
 
-void CustomContainer::setCornerRadius(int radius)
-{
-  cornerRadius = radius;
-  update();
-}
-
-int CustomContainer::getCornerRadius() const
-{
-  return cornerRadius;
-}
-
+// cppcheck-suppress unusedFunction
 QGridLayout * CustomContainer::getLayout() const
 {
   return layout;  // Provide access to the layout
@@ -50,6 +40,7 @@ QSize CustomContainer::sizeHint() const
   return QSize(width, height);
 }
 
+// cppcheck-suppress unusedFunction
 QSize CustomContainer::minimumSizeHint() const
 {
   return sizeHint();

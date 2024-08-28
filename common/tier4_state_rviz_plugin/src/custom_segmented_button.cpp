@@ -40,6 +40,7 @@ CustomSegmentedButtonItem * CustomSegmentedButton::addButton(const QString & tex
   return button;
 }
 
+// cppcheck-suppress unusedFunction
 QButtonGroup * CustomSegmentedButton::getButtonGroup() const
 {
   return buttonGroup;
@@ -54,11 +55,13 @@ QSize CustomSegmentedButton::sizeHint() const
   //   layout->itemAt(0)->widget()->height() + 10);
 }
 
+// cppcheck-suppress unusedFunction
 QSize CustomSegmentedButton::minimumSizeHint() const
 {
   return sizeHint();
 }
 
+// cppcheck-suppress unusedFunction
 void CustomSegmentedButton::paintEvent(QPaintEvent *)
 {
   QPainter painter(this);

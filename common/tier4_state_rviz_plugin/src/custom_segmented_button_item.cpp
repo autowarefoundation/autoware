@@ -32,17 +32,6 @@ CustomSegmentedButtonItem::CustomSegmentedButtonItem(const QString & text, QWidg
   setCursor(Qt::PointingHandCursor);
 }
 
-void CustomSegmentedButtonItem::setColors(
-  const QColor & bg, const QColor & checkedBg, const QColor & activeText,
-  const QColor & inactiveText)
-{
-  bgColor = bg;
-  checkedBgColor = checkedBg;
-  activeTextColor = activeText;
-  inactiveTextColor = inactiveText;
-  update();
-}
-
 // void CustomSegmentedButtonItem::updateSize()
 // {
 //   QFontMetrics fm(font());
@@ -51,12 +40,14 @@ void CustomSegmentedButtonItem::setColors(
 //   setFixedSize(width, height);
 // }
 
+// cppcheck-suppress unusedFunction
 void CustomSegmentedButtonItem::setHovered(bool hovered)
 {
   isHovered = hovered;
   updateCheckableState();
 }
 
+// cppcheck-suppress unusedFunction
 void CustomSegmentedButtonItem::setCheckableButton(bool checkable)
 {
   setCheckable(checkable);
@@ -71,18 +62,21 @@ void CustomSegmentedButtonItem::updateCheckableState()
   update();
 }
 
+// cppcheck-suppress unusedFunction
 void CustomSegmentedButtonItem::setDisabledButton(bool disabled)
 {
   isDisabled = disabled;
   updateCheckableState();
 }
 
+// cppcheck-suppress unusedFunction
 void CustomSegmentedButtonItem::setActivated(bool activated)
 {
   isActivated = activated;
   update();
 }
 
+// cppcheck-suppress unusedFunction
 void CustomSegmentedButtonItem::paintEvent(QPaintEvent *)
 {
   QPainter painter(this);

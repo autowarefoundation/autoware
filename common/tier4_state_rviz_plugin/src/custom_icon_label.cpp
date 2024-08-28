@@ -50,11 +50,13 @@ QSize CustomIconLabel::sizeHint() const
   return QSize(size, size);
 }
 
+// cppcheck-suppress unusedFunction
 QSize CustomIconLabel::minimumSizeHint() const
 {
   return sizeHint();
 }
 
+// cppcheck-suppress unusedFunction
 void CustomIconLabel::paintEvent(QPaintEvent *)
 {
   QPainter painter(this);

@@ -53,11 +53,13 @@ QSize CustomElevatedButton::sizeHint() const
   return QSize(width, height);
 }
 
+// cppcheck-suppress unusedFunction
 QSize CustomElevatedButton::minimumSizeHint() const
 {
   return sizeHint();
 }
 
+// cppcheck-suppress unusedFunction
 void CustomElevatedButton::updateStyle(
   const QString & text, const QColor & bgColor, const QColor & textColor, const QColor & hoverColor,
   const QColor & disabledBgColor, const QColor & disabledTextColor)
@@ -71,6 +73,7 @@ void CustomElevatedButton::updateStyle(
   update();  // Force repaint
 }
 
+// cppcheck-suppress unusedFunction
 void CustomElevatedButton::paintEvent(QPaintEvent *)
 {
   QPainter painter(this);
