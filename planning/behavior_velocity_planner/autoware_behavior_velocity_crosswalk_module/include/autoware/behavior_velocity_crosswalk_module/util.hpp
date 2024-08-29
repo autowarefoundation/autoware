@@ -95,8 +95,6 @@ std::set<int64_t> getCrosswalkIdSetOnPath(
   const tier4_planning_msgs::msg::PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map,
   const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs);
 
-bool checkRegulatoryElementExistence(const lanelet::LaneletMapPtr & lanelet_map_ptr);
-
 std::optional<std::pair<geometry_msgs::msg::Point, geometry_msgs::msg::Point>>
 getPathEndPointsOnCrosswalk(
   const PathWithLaneId & ego_path, const lanelet::BasicPolygon2d & polygon,

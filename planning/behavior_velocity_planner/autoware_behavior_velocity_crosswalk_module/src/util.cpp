@@ -105,12 +105,6 @@ std::set<lanelet::Id> getCrosswalkIdSetOnPath(
   return crosswalk_id_set;
 }
 
-bool checkRegulatoryElementExistence(const lanelet::LaneletMapPtr & lanelet_map_ptr)
-{
-  const auto all_lanelets = lanelet::utils::query::laneletLayer(lanelet_map_ptr);
-  return !lanelet::utils::query::crosswalks(all_lanelets).empty();
-}
-
 /**
  * @brief Calculate path end (= first and last) points on the crosswalk
  *
