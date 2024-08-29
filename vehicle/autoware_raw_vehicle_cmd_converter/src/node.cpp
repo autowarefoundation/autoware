@@ -99,8 +99,9 @@ RawVehicleCommandConverterNode::RawVehicleCommandConverterNode(
 
   // NOTE: some vehicles do not publish actuation status. To handle this, subscribe only when the
   // option is specified.
-  need_to_subscribe_actuation_status_ =
-    convert_actuation_to_steering_status_ || convert_steer_cmd_method_.value() == "vgr";
+  const bool use_vgr =
+    convert_steer_cmd_method_.has_value() && convert_steer_cmd_method_.value() == "vgr";
+  need_to_subscribe_actuation_status_ = convert_actuation_to_steering_status_ || use_vgr;
   if (need_to_subscribe_actuation_status_) {
     sub_actuation_status_ = create_subscription<ActuationStatusStamped>(
       "~/input/actuation_status", 1,
@@ -119,7 +120,7 @@ RawVehicleCommandConverterNode::RawVehicleCommandConverterNode(
 
 void RawVehicleCommandConverterNode::publishActuationCmd()
 {
-  if (!current_twist_ptr_ || !control_cmd_ptr_ || !current_steer_ptr_ || !actuation_status_ptr_) {
+  if (!current_twist_ptr_ || !control_cmd_ptr_ || !current_steer_ptr_) {
     RCLCPP_WARN_EXPRESSION(
       get_logger(), is_debugging_, "some pointers are null: %s, %s, %s",
       !current_twist_ptr_ ? "twist" : "", !control_cmd_ptr_ ? "cmd" : "",
@@ -270,7 +271,7 @@ void RawVehicleCommandConverterNode::onActuationStatus(
 {
   actuation_status_ptr_ = msg;
 
-  if (!convert_actuation_to_steering_status_) {
+  if (!convert_actuation_to_steering_status_ || convert_steer_cmd_method_.has_value()) {
     return;
   }
 
