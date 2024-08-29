@@ -14,6 +14,8 @@
 
 #include "autoware/pointcloud_preprocessor/downsample_filter/faster_voxel_grid_downsample_filter.hpp"
 
+#include <cfloat>
+
 namespace autoware::pointcloud_preprocessor
 {
 
