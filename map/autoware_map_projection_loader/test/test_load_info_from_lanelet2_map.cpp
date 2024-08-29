@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "map_projection_loader/load_info_from_lanelet2_map.hpp"
+#include "autoware/map_projection_loader/load_info_from_lanelet2_map.hpp"
 
 #include <GeographicLib/MGRS.hpp>
 #include <GeographicLib/UTMUPS.hpp>
@@ -92,7 +92,8 @@ TEST(TestLoadFromLanelet2Map, LoadMGRSGrid)
   save_dummy_mgrs_lanelet2_map(mgrs_coord, output_path);
 
   // Test the function
-  const auto projector_info = load_info_from_lanelet2_map(output_path);
+  const auto projector_info =
+    autoware::map_projection_loader::load_info_from_lanelet2_map(output_path);
 
   // Check the result
   EXPECT_EQ(projector_info.projector_type, "MGRS");
@@ -106,7 +107,8 @@ TEST(TestLoadFromLanelet2Map, LoadLocalGrid)
   save_dummy_local_lanelet2_map(output_path);
 
   // Test the function
-  const auto projector_info = load_info_from_lanelet2_map(output_path);
+  const auto projector_info =
+    autoware::map_projection_loader::load_info_from_lanelet2_map(output_path);
 
   // Check the result
   EXPECT_EQ(projector_info.projector_type, "local");
@@ -119,7 +121,8 @@ TEST(TestLoadFromLanelet2Map, LoadNoLocalGrid)
   save_dummy_mgrs_lanelet2_map_with_one_zero_point(output_path);
 
   // Test the function
-  const auto projector_info = load_info_from_lanelet2_map(output_path);
+  const auto projector_info =
+    autoware::map_projection_loader::load_info_from_lanelet2_map(output_path);
 
   // Check the result
   EXPECT_EQ(projector_info.projector_type, "MGRS");

@@ -1,8 +1,8 @@
-# map_projection_loader
+# autoware_map_projection_loader
 
 ## Feature
 
-`map_projection_loader` is responsible for publishing `map_projector_info` that defines in which kind of coordinate Autoware is operating.
+`autoware_map_projection_loader` is responsible for publishing `map_projector_info` that defines in which kind of coordinate Autoware is operating.
 This is necessary information especially when you want to convert from global (geoid) to local coordinate or the other way around.
 
 - If `map_projector_info_path` DOES exist, this node loads it and publishes the map projection information accordingly.
@@ -92,4 +92,4 @@ map_origin:
 
 Note that these parameters are assumed to be passed from launch arguments, and it is not recommended to directly write them in `map_projection_loader.param.yaml`.
 
-{{ json_to_markdown("map/map_projection_loader/schema/map_projection_loader.schema.json") }}
+{{ json_to_markdown("map/autoware_map_projection_loader/schema/map_projection_loader.schema.json") }}

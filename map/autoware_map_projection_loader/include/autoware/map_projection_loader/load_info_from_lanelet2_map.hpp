@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MAP_PROJECTION_LOADER__LOAD_INFO_FROM_LANELET2_MAP_HPP_
-#define MAP_PROJECTION_LOADER__LOAD_INFO_FROM_LANELET2_MAP_HPP_
+#ifndef AUTOWARE__MAP_PROJECTION_LOADER__LOAD_INFO_FROM_LANELET2_MAP_HPP_
+#define AUTOWARE__MAP_PROJECTION_LOADER__LOAD_INFO_FROM_LANELET2_MAP_HPP_
 
 #include <autoware_lanelet2_extension/io/autoware_osm_parser.hpp>
 #include <autoware_lanelet2_extension/projection/mgrs_projector.hpp>
@@ -24,6 +24,9 @@
 
 #include <string>
 
+namespace autoware::map_projection_loader
+{
 tier4_map_msgs::msg::MapProjectorInfo load_info_from_lanelet2_map(const std::string & filename);
+}  // namespace autoware::map_projection_loader
 
-#endif  // MAP_PROJECTION_LOADER__LOAD_INFO_FROM_LANELET2_MAP_HPP_
+#endif  // AUTOWARE__MAP_PROJECTION_LOADER__LOAD_INFO_FROM_LANELET2_MAP_HPP_

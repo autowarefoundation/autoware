@@ -39,12 +39,12 @@ YAML_FILE_PATH = "test/data/map_projector_info_local_cartesian_utm.yaml"
 @pytest.mark.launch_test
 def generate_test_description():
     map_projector_info_path = os.path.join(
-        get_package_share_directory("map_projection_loader"), YAML_FILE_PATH
+        get_package_share_directory("autoware_map_projection_loader"), YAML_FILE_PATH
     )
 
     map_projection_loader_node = Node(
-        package="map_projection_loader",
-        executable="map_projection_loader_node",
+        package="autoware_map_projection_loader",
+        executable="autoware_map_projection_loader_node",
         output="screen",
         parameters=[
             {
@@ -122,7 +122,7 @@ class TestLoadUTMFromYaml(unittest.TestCase):
 
         # Load the yaml file directly
         map_projector_info_path = os.path.join(
-            get_package_share_directory("map_projection_loader"), YAML_FILE_PATH
+            get_package_share_directory("autoware_map_projection_loader"), YAML_FILE_PATH
         )
         with open(map_projector_info_path) as f:
             yaml_data = yaml.load(f, Loader=yaml.FullLoader)

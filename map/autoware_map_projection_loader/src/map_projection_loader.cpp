@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "map_projection_loader/map_projection_loader.hpp"
+#include "autoware/map_projection_loader/map_projection_loader.hpp"
 
-#include "map_projection_loader/load_info_from_lanelet2_map.hpp"
+#include "autoware/map_projection_loader/load_info_from_lanelet2_map.hpp"
 
 #include <tier4_map_msgs/msg/map_projector_info.hpp>
 
@@ -23,6 +23,8 @@
 #include <filesystem>
 #include <fstream>
 
+namespace autoware::map_projection_loader
+{
 tier4_map_msgs::msg::MapProjectorInfo load_info_from_yaml(const std::string & filename)
 {
   YAML::Node data = YAML::LoadFile(filename);
@@ -93,6 +95,7 @@ MapProjectionLoader::MapProjectionLoader(const rclcpp::NodeOptions & options)
   adaptor.init_pub(publisher_);
   publisher_->publish(msg);
 }
+}  // namespace autoware::map_projection_loader
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(MapProjectionLoader)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::map_projection_loader::MapProjectionLoader)

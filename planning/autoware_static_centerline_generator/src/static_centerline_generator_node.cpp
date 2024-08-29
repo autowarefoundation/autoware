@@ -14,6 +14,8 @@
 
 #include "static_centerline_generator_node.hpp"
 
+#include "autoware/map_projection_loader/load_info_from_lanelet2_map.hpp"
+#include "autoware/map_projection_loader/map_projection_loader.hpp"
 #include "autoware/motion_utils/resample/resample.hpp"
 #include "autoware/motion_utils/trajectory/conversion.hpp"
 #include "autoware/universe_utils/geometry/geometry.hpp"
@@ -25,8 +27,6 @@
 #include "centerline_source/bag_ego_trajectory_based_centerline.hpp"
 #include "interpolation/spline_interpolation_points_2d.hpp"
 #include "map_loader/lanelet2_map_loader_node.hpp"
-#include "map_projection_loader/load_info_from_lanelet2_map.hpp"
-#include "map_projection_loader/map_projection_loader.hpp"
 #include "type_alias.hpp"
 #include "utils.hpp"
 
@@ -356,8 +356,8 @@ void StaticCenterlineGeneratorNode::load_map(const std::string & lanelet2_input_
   // load map by the map_loader package
   map_bin_ptr_ = [&]() -> LaneletMapBin::ConstSharedPtr {
     // load map
-    map_projector_info_ =
-      std::make_unique<MapProjectorInfo>(load_info_from_lanelet2_map(lanelet2_input_file_path));
+    map_projector_info_ = std::make_unique<MapProjectorInfo>(
+      autoware::map_projection_loader::load_info_from_lanelet2_map(lanelet2_input_file_path));
     const auto map_ptr =
       Lanelet2MapLoaderNode::load_map(lanelet2_input_file_path, *map_projector_info_);
     if (!map_ptr) {

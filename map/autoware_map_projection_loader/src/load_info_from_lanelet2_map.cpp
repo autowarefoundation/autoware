@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "map_projection_loader/load_info_from_lanelet2_map.hpp"
+#include "autoware/map_projection_loader/load_info_from_lanelet2_map.hpp"
 
 #include "tier4_map_msgs/msg/map_projector_info.hpp"
 
@@ -23,6 +23,8 @@
 
 #include <string>
 
+namespace autoware::map_projection_loader
+{
 tier4_map_msgs::msg::MapProjectorInfo load_info_from_lanelet2_map(const std::string & filename)
 {
   lanelet::ErrorMessages errors{};
@@ -58,3 +60,4 @@ tier4_map_msgs::msg::MapProjectorInfo load_info_from_lanelet2_map(const std::str
   msg.vertical_datum = tier4_map_msgs::msg::MapProjectorInfo::WGS84;
   return msg;
 }
+}  // namespace autoware::map_projection_loader

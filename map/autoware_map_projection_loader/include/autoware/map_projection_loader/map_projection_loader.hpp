@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MAP_PROJECTION_LOADER__MAP_PROJECTION_LOADER_HPP_
-#define MAP_PROJECTION_LOADER__MAP_PROJECTION_LOADER_HPP_
+#ifndef AUTOWARE__MAP_PROJECTION_LOADER__MAP_PROJECTION_LOADER_HPP_
+#define AUTOWARE__MAP_PROJECTION_LOADER__MAP_PROJECTION_LOADER_HPP_
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -22,6 +22,8 @@
 
 #include <string>
 
+namespace autoware::map_projection_loader
+{
 tier4_map_msgs::msg::MapProjectorInfo load_info_from_yaml(const std::string & filename);
 tier4_map_msgs::msg::MapProjectorInfo load_map_projector_info(
   const std::string & yaml_filename, const std::string & lanelet2_map_filename);
@@ -35,5 +37,6 @@ private:
   using MapProjectorInfo = map_interface::MapProjectorInfo;
   component_interface_utils::Publisher<MapProjectorInfo>::SharedPtr publisher_;
 };
+}  // namespace autoware::map_projection_loader
 
-#endif  // MAP_PROJECTION_LOADER__MAP_PROJECTION_LOADER_HPP_
+#endif  // AUTOWARE__MAP_PROJECTION_LOADER__MAP_PROJECTION_LOADER_HPP_

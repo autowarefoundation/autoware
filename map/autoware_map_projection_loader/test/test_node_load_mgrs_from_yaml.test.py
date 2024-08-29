@@ -33,18 +33,18 @@ import yaml
 
 logger = get_logger(__name__)
 
-YAML_FILE_PATH = "test/data/map_projector_info_local.yaml"
+YAML_FILE_PATH = "test/data/map_projector_info_mgrs.yaml"
 
 
 @pytest.mark.launch_test
 def generate_test_description():
     map_projector_info_path = os.path.join(
-        get_package_share_directory("map_projection_loader"), YAML_FILE_PATH
+        get_package_share_directory("autoware_map_projection_loader"), YAML_FILE_PATH
     )
 
     map_projection_loader_node = Node(
-        package="map_projection_loader",
-        executable="map_projection_loader_node",
+        package="autoware_map_projection_loader",
+        executable="autoware_map_projection_loader_node",
         output="screen",
         parameters=[
             {
@@ -71,7 +71,7 @@ def generate_test_description():
     )
 
 
-class TestLoadLocalFromYaml(unittest.TestCase):
+class TestLoadMGRSFromYaml(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Initialize the ROS context for the test node
@@ -122,7 +122,7 @@ class TestLoadLocalFromYaml(unittest.TestCase):
 
         # Load the yaml file directly
         map_projector_info_path = os.path.join(
-            get_package_share_directory("map_projection_loader"), YAML_FILE_PATH
+            get_package_share_directory("autoware_map_projection_loader"), YAML_FILE_PATH
         )
         with open(map_projector_info_path) as f:
             yaml_data = yaml.load(f, Loader=yaml.FullLoader)
@@ -132,6 +132,8 @@ class TestLoadLocalFromYaml(unittest.TestCase):
             self.received_message, "No message received on map_projector_info topic"
         )
         self.assertEqual(self.received_message.projector_type, yaml_data["projector_type"])
+        self.assertEqual(self.received_message.vertical_datum, yaml_data["vertical_datum"])
+        self.assertEqual(self.received_message.mgrs_grid, yaml_data["mgrs_grid"])
 
         self.test_node.destroy_subscription(subscription)
 
