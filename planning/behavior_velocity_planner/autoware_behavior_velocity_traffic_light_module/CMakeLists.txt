@@ -12,3 +12,8 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 )
 
 ament_auto_package(INSTALL_TO_SHARE config)
+
+install(PROGRAMS
+  scripts/dilemma_zone_plotter.py
+  DESTINATION lib/${PROJECT_NAME}
+)
