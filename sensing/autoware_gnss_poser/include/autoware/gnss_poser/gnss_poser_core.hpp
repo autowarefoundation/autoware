@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef GNSS_POSER__GNSS_POSER_CORE_HPP_
-#define GNSS_POSER__GNSS_POSER_CORE_HPP_
+#ifndef AUTOWARE__GNSS_POSER__GNSS_POSER_CORE_HPP_
+#define AUTOWARE__GNSS_POSER__GNSS_POSER_CORE_HPP_
 
 #include <component_interface_specs/map.hpp>
 #include <component_interface_utils/rclcpp.hpp>
@@ -39,7 +39,7 @@
 
 #include <string>
 
-namespace gnss_poser
+namespace autoware::gnss_poser
 {
 class GNSSPoser : public rclcpp::Node
 {
@@ -101,6 +101,6 @@ private:
     msg_gnss_ins_orientation_stamped_;
   int gnss_pose_pub_method_;
 };
-}  // namespace gnss_poser
+}  // namespace autoware::gnss_poser
 
-#endif  // GNSS_POSER__GNSS_POSER_CORE_HPP_
+#endif  // AUTOWARE__GNSS_POSER__GNSS_POSER_CORE_HPP_

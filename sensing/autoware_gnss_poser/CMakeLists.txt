@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(gnss_poser)
+project(autoware_gnss_poser)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -16,7 +16,7 @@ find_library(GeographicLib_LIBRARIES
 )
 
 set(GNSS_POSER_HEADERS
-  include/gnss_poser/gnss_poser_core.hpp
+  include/autoware/gnss_poser/gnss_poser_core.hpp
 )
 
 ament_auto_add_library(gnss_poser_node SHARED
@@ -29,7 +29,7 @@ target_link_libraries(gnss_poser_node
 )
 
 rclcpp_components_register_node(gnss_poser_node
-  PLUGIN "gnss_poser::GNSSPoser"
+  PLUGIN "autoware::gnss_poser::GNSSPoser"
   EXECUTABLE gnss_poser
 )
 

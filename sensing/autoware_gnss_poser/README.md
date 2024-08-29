@@ -33,7 +33,7 @@ If the transformation from `base_link` to the antenna cannot be obtained, it out
 
 ### Core Parameters
 
-{{ json_to_markdown("sensing/gnss_poser/schema/gnss_poser.schema.json") }}
+{{ json_to_markdown("sensing/autoware_gnss_poser/schema/gnss_poser.schema.json") }}
 
 ## Assumptions / Known limits
 

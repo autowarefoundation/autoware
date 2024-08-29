@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <arg name="param_file" default="$(find-pkg-share gnss_poser)/config/gnss_poser.param.yaml"/>
+  <arg name="param_file" default="$(find-pkg-share autoware_gnss_poser)/config/gnss_poser.param.yaml"/>
   <arg name="input_topic_fix" default="/fix"/>
   <arg name="input_topic_orientation" default="/autoware_orientation"/>
   <arg name="output_topic_gnss_pose" default="gnss_pose"/>
   <arg name="output_topic_gnss_pose_cov" default="gnss_pose_cov"/>
   <arg name="output_topic_gnss_fixed" default="gnss_fixed"/>
 
-  <node pkg="gnss_poser" exec="gnss_poser" name="gnss_poser" output="both">
+  <node pkg="autoware_gnss_poser" exec="gnss_poser" name="gnss_poser" output="both">
     <remap from="fix" to="$(var input_topic_fix)"/>
     <remap from="autoware_orientation" to="$(var input_topic_orientation)"/>
     <remap from="gnss_pose" to="$(var output_topic_gnss_pose)"/>
