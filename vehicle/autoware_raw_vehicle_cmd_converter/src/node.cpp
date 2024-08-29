@@ -87,7 +87,7 @@ RawVehicleCommandConverterNode::RawVehicleCommandConverterNode(
 
   // NOTE: The steering status can be published from the vehicle side or converted in this node.
   convert_actuation_to_steering_status_ =
-    declare_parameter<bool>("convert_actuation_to_steering_status");
+    declare_parameter<bool>("convert_actuation_to_steering_status", false);
   if (convert_actuation_to_steering_status_) {
     pub_steering_status_ = create_publisher<Steering>("~/output/steering_status", 1);
   } else {
