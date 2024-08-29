@@ -23,12 +23,14 @@
 namespace autoware::default_adapi::utils
 {
 
+// cppcheck-suppress-begin unusedFunction
 template <class MsgT>
 MsgT ignore_stamp(MsgT msg)
 {
   msg.stamp = rclcpp::Time(0, 0);
   return msg;
 };
+// cppcheck-suppress-end unusedFunction
 
 template <class PubT, class MsgT, class FuncT>
 void notify(PubT & pub, std::optional<MsgT> & prev, const MsgT & curr, FuncT && ignore)
