@@ -701,7 +701,7 @@ void calc_2d_bounding_box_bottom_direction_line_list(
   geometry_msgs::msg::Point point;
 
   // triangle-shaped direction indicator
-  const double point_list[6][3] = {
+  const double point_list[3][3] = {
     {length_half, 0, -height_half},
     {length_half - triangle_size_half, width_half, -height_half},
     {length_half - triangle_size_half, -width_half, -height_half},
@@ -914,9 +914,8 @@ void calc_path_line_list(
   const autoware_perception_msgs::msg::PredictedPath & paths,
   std::vector<geometry_msgs::msg::Point> & points, const bool is_simple)
 {
-  const int circle_line_num = is_simple ? 5 : 10;
-
   for (int i = 0; i < static_cast<int>(paths.path.size()) - 1; ++i) {
+    // draw line
     geometry_msgs::msg::Point point;
     point.x = paths.path.at(i).position.x;
     point.y = paths.path.at(i).position.y;
@@ -926,8 +925,27 @@ void calc_path_line_list(
     point.y = paths.path.at(i + 1).position.y;
     point.z = paths.path.at(i + 1).position.z;
     points.push_back(point);
+
     if (!is_simple || i % 2 == 0) {
-      calc_circle_line_list(point, 0.25, points, circle_line_num);
+      // get yaw from the line
+      const double yaw =
+        std::atan2(point.y - paths.path.at(i).position.y, point.x - paths.path.at(i).position.x);
+      // draw triangle
+      constexpr double length = 0.5;
+      const double arrow_angle = M_PI * 5.0 / 6.0;
+      const double point_list[3][3] = {
+        {point.x, point.y, point.z},
+        {point.x + length * std::cos(yaw + arrow_angle),
+         point.y + length * std::sin(yaw + arrow_angle), point.z},
+        {point.x + length * std::cos(yaw - arrow_angle),
+         point.y + length * std::sin(yaw - arrow_angle), point.z},
+      };
+      const int point_pairs[3][2] = {
+        {0, 1},
+        {1, 2},
+        {2, 0},
+      };
+      calc_line_list_from_points(point_list, point_pairs, 3, points);
     }
   }
 }
