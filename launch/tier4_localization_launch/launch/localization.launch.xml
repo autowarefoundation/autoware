@@ -14,6 +14,7 @@
   <!-- Parameter files -->
   <arg name="localization_error_monitor_param_path"/>
   <arg name="ekf_localizer_param_path"/>
+  <arg name="stop_filter_param_path"/>
   <arg name="pose_initializer_param_path"/>
   <arg name="eagleye_param_path"/>
   <arg name="ar_tag_based_localizer_param_path"/>

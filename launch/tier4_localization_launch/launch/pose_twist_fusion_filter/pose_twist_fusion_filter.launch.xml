@@ -22,6 +22,7 @@
       <arg name="input_odom_name" value="/localization/pose_twist_fusion_filter/kinematic_state"/>
       <arg name="input_twist_with_covariance_name" value="/localization/pose_twist_fusion_filter/twist_with_covariance"/>
       <arg name="output_odom_name" value="/localization/kinematic_state"/>
+      <arg name="param_path" value="$(var stop_filter_param_path)"/>
     </include>
   </group>
 
