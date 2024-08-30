@@ -340,12 +340,6 @@ using SizeT = uint64_t;
 using SizeT = uint32_t;
 #endif
 
-template <typename T>
-T rotr(T x, unsigned k)
-{
-  return (x >> k) | (x << (8U * sizeof(T) - k));
-}
-
 // This cast gets rid of warnings like "cast from 'uint8_t*' {aka 'unsigned char*'} to
 // 'uint64_t*' {aka 'long unsigned int*'} increases required alignment of target type". Use with
 // care!
@@ -1932,13 +1926,6 @@ public:
   }
 
   template <typename... Args>
-  iterator emplace_hint(const const_iterator & position, Args &&... args)
-  {
-    (void)position;
-    return emplace(std::forward<Args>(args)...).first;
-  }
-
-  template <typename... Args>
   std::pair<iterator, bool> try_emplace(const key_type & key, Args &&... args)
   {
     return try_emplace_impl(key, std::forward<Args>(args)...);
@@ -2176,41 +2163,11 @@ public:
   }
 
   // reserves space for the specified number of elements. Makes sure the old data fits.
-  // exactly the same as reserve(c).
-  void rehash(size_t c)
-  {
-    // forces a reserve
-    reserve(c, true);
-  }
-
-  // reserves space for the specified number of elements. Makes sure the old data fits.
   // Exactly the same as rehash(c). Use rehash(0) to shrink to fit.
   void reserve(size_t c)
   {
     // reserve, but don't force rehash
     reserve(c, false);
-  }
-
-  // If possible reallocates the map to a smaller one. This frees the underlying table.
-  // Does not do anything if load_factor is too large for decreasing the table's size.
-  void compact()
-  {
-    ROBIN_HOOD_TRACE(this)
-    auto newSize = InitialNumElements;
-    while (calcMaxNumElementsAllowed(newSize) < mNumElements && newSize != 0) {
-      newSize *= 2;
-    }
-    if (ROBIN_HOOD_UNLIKELY(newSize == 0)) {
-      throwOverflowError();
-    }
-
-    ROBIN_HOOD_LOG("newSize > mMask + 1: " << newSize << " > " << mMask << " + 1")
-
-    // only actually do anything when the new size is bigger than the old one. This prevents to
-    // continuously allocate for each reserve() call.
-    if (newSize < mMask + 1) {
-      rehashPowerOfTwo(newSize, true);
-    }
   }
 
   size_type size() const noexcept
@@ -2229,19 +2186,6 @@ public:
   {
     ROBIN_HOOD_TRACE(this)
     return 0 == mNumElements;
-  }
-
-  float max_load_factor() const noexcept
-  {  // NOLINT (modernize-use-nodiscard)
-    ROBIN_HOOD_TRACE(this)
-    return MaxLoadFactor100 / 100.0F;
-  }
-
-  // Average number of elements per bucket. Since we allow only 1 per bucket
-  float load_factor() const noexcept
-  {  // NOLINT (modernize-use-nodiscard)
-    ROBIN_HOOD_TRACE(this)
-    return static_cast<float>(size()) / static_cast<float>(mMask + 1);
   }
 
   ROBIN_HOOD(NODISCARD) size_t mask() const noexcept
