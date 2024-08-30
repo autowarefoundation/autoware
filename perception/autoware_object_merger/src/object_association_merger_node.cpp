@@ -152,6 +152,7 @@ void ObjectAssociationMergerNode::objectsCallback(
   // build output msg
   autoware_perception_msgs::msg::DetectedObjects output_msg;
   output_msg.header = input_objects0_msg->header;
+  output_msg.header.frame_id = base_link_frame_id_;
 
   /* global nearest neighbor */
   std::unordered_map<int, int> direct_assignment, reverse_assignment;
