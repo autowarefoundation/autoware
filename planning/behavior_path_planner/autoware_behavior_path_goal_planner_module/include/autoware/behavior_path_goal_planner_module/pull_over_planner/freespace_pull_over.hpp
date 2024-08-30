@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__FREESPACE_PULL_OVER_HPP_
-#define AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__FREESPACE_PULL_OVER_HPP_
+#ifndef AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER__FREESPACE_PULL_OVER_HPP_
+#define AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER__FREESPACE_PULL_OVER_HPP_
 
-#include "autoware/behavior_path_goal_planner_module/pull_over_planner_base.hpp"
+#include "autoware/behavior_path_goal_planner_module/pull_over_planner/pull_over_planner_base.hpp"
 
 #include <autoware/freespace_planning_algorithms/abstract_algorithm.hpp>
 #include <autoware/freespace_planning_algorithms/astar_search.hpp>
@@ -51,4 +51,4 @@ protected:
 };
 }  // namespace autoware::behavior_path_planner
 
-#endif  // AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__FREESPACE_PULL_OVER_HPP_
+#endif  // AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER__FREESPACE_PULL_OVER_HPP_

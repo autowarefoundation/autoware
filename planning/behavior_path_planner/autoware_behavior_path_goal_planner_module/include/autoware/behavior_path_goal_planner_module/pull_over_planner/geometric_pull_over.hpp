@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GEOMETRIC_PULL_OVER_HPP_
-#define AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GEOMETRIC_PULL_OVER_HPP_
+#ifndef AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER__GEOMETRIC_PULL_OVER_HPP_
+#define AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER__GEOMETRIC_PULL_OVER_HPP_
 
-#include "autoware/behavior_path_goal_planner_module/pull_over_planner_base.hpp"
+#include "autoware/behavior_path_goal_planner_module/pull_over_planner/pull_over_planner_base.hpp"
 #include "autoware/behavior_path_planner_common/utils/parking_departure/geometric_parallel_parking.hpp"
 
 #include <autoware/lane_departure_checker/lane_departure_checker.hpp>
@@ -65,4 +65,4 @@ protected:
 };
 }  // namespace autoware::behavior_path_planner
 
-#endif  // AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GEOMETRIC_PULL_OVER_HPP_
+#endif  // AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__PULL_OVER_PLANNER__GEOMETRIC_PULL_OVER_HPP_

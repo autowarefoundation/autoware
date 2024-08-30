@@ -16,11 +16,11 @@
 #define AUTOWARE__BEHAVIOR_PATH_GOAL_PLANNER_MODULE__GOAL_PLANNER_MODULE_HPP_
 
 #include "autoware/behavior_path_goal_planner_module/default_fixed_goal_planner.hpp"
-#include "autoware/behavior_path_goal_planner_module/freespace_pull_over.hpp"
-#include "autoware/behavior_path_goal_planner_module/geometric_pull_over.hpp"
 #include "autoware/behavior_path_goal_planner_module/goal_planner_parameters.hpp"
 #include "autoware/behavior_path_goal_planner_module/goal_searcher.hpp"
-#include "autoware/behavior_path_goal_planner_module/shift_pull_over.hpp"
+#include "autoware/behavior_path_goal_planner_module/pull_over_planner/freespace_pull_over.hpp"
+#include "autoware/behavior_path_goal_planner_module/pull_over_planner/geometric_pull_over.hpp"
+#include "autoware/behavior_path_goal_planner_module/pull_over_planner/shift_pull_over.hpp"
 #include "autoware/behavior_path_planner_common/interface/scene_module_interface.hpp"
 #include "autoware/behavior_path_planner_common/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
 #include "autoware/behavior_path_planner_common/utils/parking_departure/common_module_data.hpp"
