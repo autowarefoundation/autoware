@@ -46,13 +46,11 @@ QSize CustomLabel::sizeHint() const
   return QSize(width, height);
 }
 
-// cppcheck-suppress unusedFunction
 QSize CustomLabel::minimumSizeHint() const
 {
   return sizeHint();
 }
 
-// cppcheck-suppress unusedFunction
 void CustomLabel::paintEvent(QPaintEvent *)
 {
   QPainter painter(this);

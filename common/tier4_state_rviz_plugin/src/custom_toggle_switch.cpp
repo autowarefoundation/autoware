@@ -30,7 +30,6 @@ QSize CustomToggleSwitch::sizeHint() const
   return QSize(50, 30);  // Preferred size of the toggle switch
 }
 
-// cppcheck-suppress unusedFunction
 void CustomToggleSwitch::paintEvent(QPaintEvent *)
 {
   QPainter p(this);

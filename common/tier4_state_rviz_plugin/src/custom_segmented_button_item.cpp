@@ -76,7 +76,6 @@ void CustomSegmentedButtonItem::setActivated(bool activated)
   update();
 }
 
-// cppcheck-suppress unusedFunction
 void CustomSegmentedButtonItem::paintEvent(QPaintEvent *)
 {
   QPainter painter(this);

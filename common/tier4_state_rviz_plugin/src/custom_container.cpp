@@ -40,7 +40,6 @@ QSize CustomContainer::sizeHint() const
   return QSize(width, height);
 }
 
-// cppcheck-suppress unusedFunction
 QSize CustomContainer::minimumSizeHint() const
 {
   return sizeHint();

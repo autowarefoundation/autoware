@@ -19,7 +19,6 @@ CustomSlider::CustomSlider(Qt::Orientation orientation, QWidget * parent)
   setMinimumHeight(40);  // Ensure there's enough space for the custom track
 }
 
-// cppcheck-suppress unusedFunction
 void CustomSlider::paintEvent(QPaintEvent *)
 {
   QPainter painter(this);
