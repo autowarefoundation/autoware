@@ -62,8 +62,17 @@ COPY src/launcher /autoware/src/launcher
 COPY src/param /autoware/src/param
 COPY src/sensor_component /autoware/src/sensor_component
 COPY src/sensor_kit /autoware/src/sensor_kit
-COPY src/universe /autoware/src/universe
+COPY src/universe/external /autoware/src/universe/external
+COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
 COPY src/vehicle /autoware/src/vehicle
+RUN rosdep keys --ignore-src --from-paths src \
+    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
+    | grep -v '^#' \
+    | sed 's/ \+/\n/g'\
+    | sort \
+    > /rosdep-universe-common-depend-packages.txt \
+    && cat /rosdep-universe-common-depend-packages.txt
+COPY src/universe /autoware/src/universe
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -119,14 +128,13 @@ ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
-COPY --from=rosdep-depend /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
+COPY --from=rosdep-depend /rosdep-universe-common-depend-packages.txt /tmp/rosdep-universe-common-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   apt-get update \
-  && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && cat /tmp/rosdep-universe-common-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-# Build Autoware
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
@@ -153,7 +161,14 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
 
-# Build Autoware
+# Install rosdep dependencies
+COPY --from=rosdep-depend /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  apt-get update \
+  && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
