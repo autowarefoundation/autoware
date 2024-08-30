@@ -114,31 +114,6 @@ size_t findFirstNearestSegmentIndex(const T & points, const geometry_msgs::msg::
   return nearest_idx;
 }
 
-template <class T>
-double calcSignedArcLengthToFirstNearestPoint(
-  const T & points, const geometry_msgs::msg::Point & src_point,
-  const geometry_msgs::msg::Point & dst_point)
-{
-  try {
-    autoware::motion_utils::validateNonEmpty(points);
-  } catch (const std::exception & e) {
-    std::cerr << e.what() << std::endl;
-    return 0.0;
-  }
-
-  const size_t src_seg_idx = findFirstNearestSegmentIndex(points, src_point);
-  const size_t dst_seg_idx = findFirstNearestSegmentIndex(points, dst_point);
-
-  const double signed_length_on_traj =
-    autoware::motion_utils::calcSignedArcLength(points, src_seg_idx, dst_seg_idx);
-  const double signed_length_src_offset =
-    autoware::motion_utils::calcLongitudinalOffsetToSegment(points, src_seg_idx, src_point);
-  const double signed_length_dst_offset =
-    autoware::motion_utils::calcLongitudinalOffsetToSegment(points, dst_seg_idx, dst_point);
-
-  return signed_length_on_traj - signed_length_src_offset + signed_length_dst_offset;
-}
-
 geometry_msgs::msg::Polygon createVehiclePolygon(
   const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double offset)
 {

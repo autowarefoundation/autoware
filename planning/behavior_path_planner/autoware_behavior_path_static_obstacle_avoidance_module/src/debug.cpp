@@ -231,41 +231,6 @@ MarkerArray unAvoidableObjectsMarkerArray(const ObjectDataArray & objects, std::
 
 }  // namespace
 
-MarkerArray createEgoStatusMarkerArray(
-  const AvoidancePlanningData & data, const Pose & p_ego, std::string && ns)
-{
-  MarkerArray msg;
-
-  auto marker = createDefaultMarker(
-    "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, 0L, Marker::TEXT_VIEW_FACING,
-    createMarkerScale(0.5, 0.5, 0.5), createMarkerColor(1.0, 1.0, 1.0, 0.999));
-  marker.pose = p_ego;
-
-  {
-    std::ostringstream string_stream;
-    string_stream << std::fixed << std::setprecision(2) << std::boolalpha;
-    string_stream << "avoid_req:" << data.avoid_required << ","
-                  << "yield_req:" << data.yield_required << ","
-                  << "safe:" << data.safe;
-    marker.text = string_stream.str();
-
-    msg.markers.push_back(marker);
-  }
-
-  {
-    std::ostringstream string_stream;
-    string_stream << "ego_state:";
-    string_stream << magic_enum::enum_name(data.state);
-    marker.text = string_stream.str();
-    marker.pose.position.z += 2.0;
-    marker.id++;
-
-    msg.markers.push_back(marker);
-  }
-
-  return msg;
-}
-
 MarkerArray createAvoidLineMarkerArray(
   const AvoidLineArray & shift_lines, std::string && ns, const float & r, const float & g,
   const float & b, const double & w)
@@ -342,68 +307,6 @@ MarkerArray createAvoidLineMarkerArray(
 
     shift_line_id++;
   }
-
-  return msg;
-}
-
-MarkerArray createPredictedVehiclePositions(const PathWithLaneId & path, std::string && ns)
-{
-  const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
-  MarkerArray msg;
-
-  auto p_marker = createDefaultMarker(
-    "map", current_time, ns, 0L, Marker::POINTS, createMarkerScale(0.4, 0.4, 0.0),
-    createMarkerColor(1.0, 0.0, 0.0, 0.999));
-
-  const auto pushPointMarker = [&](const Pose & p, const double t) {
-    const auto r = t > 10.0 ? 1.0 : t / 10.0;
-    p_marker.points.push_back(p.position);
-    p_marker.colors.push_back(createMarkerColor(r, 1.0 - r, 0.0, 0.999));
-  };
-
-  auto t_marker = createDefaultMarker(
-    "map", current_time, ns + "_text", 0L, Marker::TEXT_VIEW_FACING,
-    createMarkerScale(0.3, 0.3, 0.3), createMarkerColor(1.0, 1.0, 0.0, 1.0));
-
-  const auto pushTextMarker = [&](const Pose & p, const double t, const double d, const double v) {
-    t_marker.id++;
-    t_marker.pose = p;
-    std::ostringstream string_stream;
-    string_stream << std::fixed << std::setprecision(2);
-    string_stream << "t[s]: " << t << "\n"
-                  << "d[m]: " << d << "\n"
-                  << "v[m/s]: " << v;
-    t_marker.text = string_stream.str();
-    msg.markers.push_back(t_marker);
-  };
-
-  constexpr double dt_save = 1.0;
-  double t_save = 0.0;
-  double t_sum = 0.0;
-  double d_sum = 0.0;
-
-  if (path.points.empty()) {
-    return msg;
-  }
-
-  for (size_t i = 1; i < path.points.size(); ++i) {
-    const auto & p1 = path.points.at(i - 1);
-    const auto & p2 = path.points.at(i);
-    const auto ds = calcDistance2d(p1, p2);
-
-    if (t_save < t_sum + 1e-3) {
-      pushPointMarker(getPose(p1), t_sum);
-      pushTextMarker(getPose(p1), t_sum, d_sum, p1.point.longitudinal_velocity_mps);
-      t_save += dt_save;
-    }
-
-    const auto v = std::max(p1.point.longitudinal_velocity_mps, float{1.0});
-
-    t_sum += ds / v;
-    d_sum += ds;
-  }
-
-  msg.markers.push_back(p_marker);
 
   return msg;
 }

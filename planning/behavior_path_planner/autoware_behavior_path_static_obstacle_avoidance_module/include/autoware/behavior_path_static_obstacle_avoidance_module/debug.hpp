@@ -33,14 +33,9 @@ using autoware::behavior_path_planner::ObjectInfo;
 using autoware::behavior_path_planner::PathShifter;
 using autoware::behavior_path_planner::ShiftLineArray;
 
-MarkerArray createEgoStatusMarkerArray(
-  const AvoidancePlanningData & data, const Pose & p_ego, std::string && ns);
-
 MarkerArray createAvoidLineMarkerArray(
   const AvoidLineArray & shift_lines, std::string && ns, const float & r, const float & g,
   const float & b, const double & w);
-
-MarkerArray createPredictedVehiclePositions(const PathWithLaneId & path, std::string && ns);
 
 MarkerArray createTargetObjectsMarkerArray(const ObjectDataArray & objects, const std::string & ns);
 
