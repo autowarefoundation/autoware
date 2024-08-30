@@ -1,0 +1,12 @@
+/**:
+  ros__parameters:
+    radius_search_2d_filter.search_radius:  1.0
+    radius_search_2d_filter.min_points_and_distance_ratio: 400.0
+    radius_search_2d_filter.min_points: 4
+    radius_search_2d_filter.max_points: 70
+    radius_search_2d_filter.max_filter_points_nb: 15000
+    map_frame: "map"
+    base_link_frame: "base_link"
+    cost_threshold: 45
+    use_radius_search_2d_filter: true
+    enable_debugger: false

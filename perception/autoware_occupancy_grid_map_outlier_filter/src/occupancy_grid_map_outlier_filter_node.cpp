@@ -106,13 +106,13 @@ namespace autoware::occupancy_grid_map_outlier_filter
 {
 RadiusSearch2dFilter::RadiusSearch2dFilter(rclcpp::Node & node)
 {
-  search_radius_ = node.declare_parameter("radius_search_2d_filter.search_radius", 1.0f);
+  search_radius_ = node.declare_parameter<float>("radius_search_2d_filter.search_radius");
   min_points_and_distance_ratio_ =
-    node.declare_parameter("radius_search_2d_filter.min_points_and_distance_ratio", 400.0f);
-  min_points_ = node.declare_parameter("radius_search_2d_filter.min_points", 4);
-  max_points_ = node.declare_parameter("radius_search_2d_filter.max_points", 70);
+    node.declare_parameter<float>("radius_search_2d_filter.min_points_and_distance_ratio");
+  min_points_ = node.declare_parameter<int>("radius_search_2d_filter.min_points");
+  max_points_ = node.declare_parameter<int>("radius_search_2d_filter.max_points");
   max_filter_points_nb_ =
-    node.declare_parameter("radius_search_2d_filter.max_filter_points_nb", 15000);
+    node.declare_parameter<int>("radius_search_2d_filter.max_filter_points_nb");
   kd_tree_ = pcl::make_shared<pcl::search::KdTree<pcl::PointXY>>(false);
 }
 
@@ -235,11 +235,11 @@ OccupancyGridMapOutlierFilterComponent::OccupancyGridMapOutlierFilterComponent(
   }
 
   /* params */
-  map_frame_ = declare_parameter("map_frame", "map");
-  base_link_frame_ = declare_parameter("base_link_frame", "base_link");
-  cost_threshold_ = declare_parameter("cost_threshold", 45);
-  auto use_radius_search_2d_filter = declare_parameter("use_radius_search_2d_filter", true);
-  auto enable_debugger = declare_parameter("enable_debugger", false);
+  map_frame_ = declare_parameter<std::string>("map_frame");
+  base_link_frame_ = declare_parameter<std::string>("base_link_frame");
+  cost_threshold_ = declare_parameter<int>("cost_threshold");
+  auto use_radius_search_2d_filter = declare_parameter<bool>("use_radius_search_2d_filter");
+  auto enable_debugger = declare_parameter<bool>("enable_debugger");
 
   /* tf */
   tf2_ = std::make_shared<tf2_ros::Buffer>(get_clock());

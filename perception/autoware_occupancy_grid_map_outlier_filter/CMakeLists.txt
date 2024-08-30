@@ -43,4 +43,7 @@ rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "autoware::occupancy_grid_map_outlier_filter::OccupancyGridMapOutlierFilterComponent"
   EXECUTABLE ${PROJECT_NAME}_node)
 
-ament_auto_package(INSTALL_TO_SHARE)
+ament_auto_package(
+  INSTALL_TO_SHARE
+  config
+)

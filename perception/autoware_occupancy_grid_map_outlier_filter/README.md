@@ -40,17 +40,7 @@ The following video is a sample. Yellow points are high occupancy probability, g
 
 ## Parameters
 
-| Name                                                    | Type   | Description                                                                                                                                                                                                                    |
-| ------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `map_frame`                                             | string | map frame id                                                                                                                                                                                                                   |
-| `base_link_frame`                                       | string | base link frame id                                                                                                                                                                                                             |
-| `cost_threshold`                                        | int    | Cost threshold of occupancy grid map (0~100). 100 means 100% probability that there is an obstacle, close to 50 means that it is indistinguishable whether it is an obstacle or free space, 0 means that there is no obstacle. |
-| `enable_debugger`                                       | bool   | Whether to output the point cloud for debugging.                                                                                                                                                                               |
-| `use_radius_search_2d_filter`                           | bool   | Whether or not to apply density-based outlier filters to objects that are judged to have low probability of occupancy on the occupancy grid map.                                                                               |
-| `radius_search_2d_filter/search_radius`                 | float  | Radius when calculating the density                                                                                                                                                                                            |
-| `radius_search_2d_filter/min_points_and_distance_ratio` | float  | Threshold value of the number of point clouds per radius when the distance from baselink is 1m, because the number of point clouds varies with the distance from baselink.                                                     |
-| `radius_search_2d_filter/min_points`                    | int    | Minimum number of point clouds per radius                                                                                                                                                                                      |
-| `radius_search_2d_filter/max_points`                    | int    | Maximum number of point clouds per radius                                                                                                                                                                                      |
+{{ json_to_markdown("perception/occupancy_grid_map_outlier_filter/schema/occupancy_grid_map_outlier_filter.schema.json") }}
 
 ## Assumptions / Known limits
 

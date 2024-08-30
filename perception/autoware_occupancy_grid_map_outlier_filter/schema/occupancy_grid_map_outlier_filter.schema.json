@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for occupancy_grid_map_outlier",
+  "type": "object",
+  "definitions": {
+    "occupancy_grid_map_outlier": {
+      "type": "object",
+      "properties": {
+        "radius_search_2d_filter.search_radius": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Radius when calculating the density"
+        },
+        "radius_search_2d_filter.min_points_and_distance_ratio": {
+          "type": "number",
+          "default": 400.0,
+          "description": "Threshold value of the number of point clouds per radius when the distance from baselink is 1m, because the number of point clouds varies with the distance from baselink"
+        },
+        "radius_search_2d_filter.min_points": {
+          "type": "number",
+          "default": 4,
+          "description": "Minimum number of point clouds per radius"
+        },
+        "radius_search_2d_filter.max_points": {
+          "type": "number",
+          "default": 70,
+          "description": "Maximum number of point clouds per radius"
+        },
+        "radius_search_2d_filter.max_filter_points_nb": {
+          "type": "number",
+          "default": 15000,
+          "description": "Maximum number of point clouds to be filtered"
+        },
+        "map_frame": {
+          "type": "string",
+          "default": "map",
+          "description": "map frame id"
+        },
+        "base_link_frame": {
+          "type": "string",
+          "default": "base_link",
+          "description": "base link frame id"
+        },
+        "cost_threshold": {
+          "type": "number",
+          "default": 45,
+          "description": "Cost threshold of occupancy grid map (0~100). 100 means 100% probability that there is an obstacle, close to 50 means that it is indistinguishable whether it is an obstacle or free space, 0 means that there is no obstacle"
+        },
+        "use_radius_search_2d_filter": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether or not to apply density-based outlier filters to objects that are judged to have low probability of occupancy on the occupancy grid map"
+        },
+        "enable_debugger": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to output the point cloud for debugging"
+        }
+      },
+      "required": [
+        "radius_search_2d_filter.search_radius",
+        "radius_search_2d_filter.min_points_and_distance_ratio",
+        "radius_search_2d_filter.min_points",
+        "radius_search_2d_filter.max_points",
+        "radius_search_2d_filter.max_filter_points_nb",
+        "map_frame",
+        "base_link_frame",
+        "cost_threshold",
+        "use_radius_search_2d_filter",
+        "enable_debugger"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/occupancy_grid_map_outlier"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
