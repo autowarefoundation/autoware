@@ -19,6 +19,7 @@
 
 #include <Eigen/Dense>
 
+#include <memory>
 #include <vector>
 
 namespace autoware::motion_utils::trajectory_container::interpolator
@@ -31,16 +32,8 @@ namespace autoware::motion_utils::trajectory_container::interpolator
  */
 class Linear : public Interpolator<double>
 {
-  template <typename InterpolatorType>
-  friend class InterpolatorCreator;
-
 private:
   Eigen::VectorXd values_;  ///< Interpolation values.
-
-  /**
-   * @brief Default constructor.
-   */
-  Linear() = default;
 
   /**
    * @brief Build the interpolator with the given values.
@@ -78,11 +71,23 @@ private:
 
 public:
   /**
+   * @brief Default constructor.
+   */
+  Linear() = default;
+
+  /**
    * @brief Get the minimum number of required points for the interpolator.
    *
    * @return The minimum number of required points.
    */
   [[nodiscard]] size_t minimum_required_points() const override;
+
+  /**
+   * @brief Clone the interpolator.
+   *
+   * @return A shared pointer to the cloned interpolator.
+   */
+  [[nodiscard]] std::shared_ptr<Interpolator<double>> clone() const override;
 };
 
 }  // namespace autoware::motion_utils::trajectory_container::interpolator

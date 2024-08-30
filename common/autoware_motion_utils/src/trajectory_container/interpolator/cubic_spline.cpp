@@ -91,4 +91,9 @@ double CubicSpline::compute_second_derivative_impl(const double & s) const
   return 2 * c_(i) + 6 * d_(i) * dx;
 }
 
+std::shared_ptr<Interpolator<double>> CubicSpline::clone() const
+{
+  return std::make_shared<CubicSpline>(*this);
+}
+
 }  // namespace autoware::motion_utils::trajectory_container::interpolator

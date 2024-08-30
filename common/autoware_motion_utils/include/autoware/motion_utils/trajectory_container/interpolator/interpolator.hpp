@@ -17,6 +17,8 @@
 
 #include "autoware/motion_utils/trajectory_container/interpolator/detail/interpolator_common_impl.hpp"
 
+#include <memory>
+
 namespace autoware::motion_utils::trajectory_container::interpolator
 {
 /**
@@ -29,6 +31,8 @@ namespace autoware::motion_utils::trajectory_container::interpolator
 template <typename T>
 class Interpolator : public detail::InterpolatorCommonImpl<T>
 {
+public:
+  [[nodiscard]] virtual std::shared_ptr<Interpolator<T>> clone() const = 0;
 };
 
 /**
@@ -84,6 +88,8 @@ public:
     this->validate_compute_input(s);
     return compute_second_derivative_impl(s);
   }
+
+  [[nodiscard]] virtual std::shared_ptr<Interpolator<double>> clone() const = 0;
 };
 
 }  // namespace autoware::motion_utils::trajectory_container::interpolator
