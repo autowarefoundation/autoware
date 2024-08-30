@@ -113,10 +113,9 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && rm -rf /autoware/build
 
-FROM autoware-core AS autoware-universe
+FROM autoware-core AS autoware-universe-common
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
-ARG SETUP_ARGS
 ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
@@ -134,8 +133,41 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/param,target=/autoware/src/param \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/sensor_component,target=/autoware/src/sensor_component \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/sensor_kit,target=/autoware/src/sensor_kit \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe,target=/autoware/src/universe \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/external,target=/autoware/src/universe/external \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/common,target=/autoware/src/universe/autoware.universe/common \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/vehicle,target=/autoware/src/vehicle \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && colcon build --cmake-args \
+    " -Wno-dev" \
+    " --no-warn-unused-cli" \
+    --merge-install \
+    --install-base /opt/autoware \
+    --mixin release compile-commands ccache \
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && rm -rf /autoware/build
+
+FROM autoware-universe-common AS autoware-universe
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+# Build Autoware
+# hadolint ignore=SC1091
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/evaluator,target=/autoware/src/universe/autoware.universe/evaluator \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/launch,target=/autoware/src/universe/autoware.universe/launch \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/localization,target=/autoware/src/universe/autoware.universe/localization \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/map,target=/autoware/src/universe/autoware.universe/map \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/perception,target=/autoware/src/universe/autoware.universe/perception \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/planning,target=/autoware/src/universe/autoware.universe/planning \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/sensing,target=/autoware/src/universe/autoware.universe/sensing \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/simulator,target=/autoware/src/universe/autoware.universe/simulator \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/system,target=/autoware/src/universe/autoware.universe/system \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/tools,target=/autoware/src/universe/autoware.universe/tools \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/vehicle,target=/autoware/src/universe/autoware.universe/vehicle \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
