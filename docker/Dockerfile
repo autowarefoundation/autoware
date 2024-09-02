@@ -137,12 +137,8 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/param,target=/autoware/src/param \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/sensor_component,target=/autoware/src/sensor_component \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/sensor_kit,target=/autoware/src/sensor_kit \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/external,target=/autoware/src/universe/external \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/common,target=/autoware/src/universe/autoware.universe/common \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/vehicle,target=/autoware/src/vehicle \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/external,target=/autoware/src/universe/external \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
@@ -171,6 +167,9 @@ RUN --mount=type=ssh \
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/param,target=/autoware/src/param \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/sensor_component,target=/autoware/src/sensor_component \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/sensor_kit,target=/autoware/src/sensor_kit \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/evaluator,target=/autoware/src/universe/autoware.universe/evaluator \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/launch,target=/autoware/src/universe/autoware.universe/launch \
@@ -183,6 +182,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/system,target=/autoware/src/universe/autoware.universe/system \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/tools,target=/autoware/src/universe/autoware.universe/tools \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/vehicle,target=/autoware/src/universe/autoware.universe/vehicle \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/vehicle,target=/autoware/src/vehicle \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
