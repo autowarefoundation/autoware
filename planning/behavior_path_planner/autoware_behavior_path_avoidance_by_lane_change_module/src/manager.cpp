@@ -192,7 +192,7 @@ AvoidanceByLaneChangeModuleManager::createNewSceneModuleInstance()
 {
   return std::make_unique<AvoidanceByLaneChangeInterface>(
     name_, *node_, parameters_, avoidance_parameters_, rtc_interface_ptr_map_,
-    objects_of_interest_marker_interface_ptr_map_);
+    objects_of_interest_marker_interface_ptr_map_, steering_factor_interface_ptr_);
 }
 
 }  // namespace autoware::behavior_path_planner
