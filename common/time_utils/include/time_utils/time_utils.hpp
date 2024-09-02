@@ -24,25 +24,9 @@
 
 namespace time_utils
 {
-/// Convert from std::chrono::time_point to time message
-TIME_UTILS_PUBLIC builtin_interfaces::msg::Time to_message(std::chrono::system_clock::time_point t);
-/// Convert from std::chrono::duration to duration message
-TIME_UTILS_PUBLIC builtin_interfaces::msg::Duration to_message(std::chrono::nanoseconds dt);
-/// Convert from std::chrono::time_point from time message
-TIME_UTILS_PUBLIC
-std::chrono::system_clock::time_point from_message(builtin_interfaces::msg::Time t) noexcept;
-/// Convert from std::chrono::duration from duration message
-TIME_UTILS_PUBLIC
-std::chrono::nanoseconds from_message(builtin_interfaces::msg::Duration dt) noexcept;
 /// Standard interpolation
 TIME_UTILS_PUBLIC std::chrono::nanoseconds interpolate(
   std::chrono::nanoseconds a, std::chrono::nanoseconds b, float t) noexcept;
-
-namespace details
-{
-template <typename TimeT>
-TimeT duration_to_msg(std::chrono::nanoseconds dt);
-}  // namespace details
 }  // namespace time_utils
 
 #endif  // TIME_UTILS__TIME_UTILS_HPP_
