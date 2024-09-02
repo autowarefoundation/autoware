@@ -108,12 +108,10 @@ struct PreviousPullOverData
 
   void reset()
   {
-    found_path = false;
     safety_status = SafetyStatus{};
     deciding_path_status = DecidingPathStatusWithStamp{};
   }
 
-  bool found_path{false};
   SafetyStatus safety_status{};
   DecidingPathStatusWithStamp deciding_path_status{};
 };

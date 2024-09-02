@@ -1529,7 +1529,6 @@ void GoalPlannerModule::updatePreviousData()
   // this is used to determine whether to generate a new stop path or keep the current stop path.
   // TODO(Mamoru Sobue): put prev_data_ out of  ThreadSafeData
   auto prev_data = thread_safe_data_.get_prev_data();
-  prev_data.found_path = thread_safe_data_.foundPullOverPath();
 
   prev_data.deciding_path_status = checkDecidingPathStatus(
     planner_data_, occupancy_grid_map_, *parameters_, ego_predicted_path_params_,
