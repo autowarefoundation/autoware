@@ -21,14 +21,18 @@
 #include <autoware/universe_utils/geometry/geometry.hpp>
 #include <autoware/universe_utils/ros/marker_helper.hpp>
 
+#include <geometry_msgs/msg/detail/point__struct.hpp>
 #include <geometry_msgs/msg/detail/pose__struct.hpp>
+#include <std_msgs/msg/detail/color_rgba__struct.hpp>
 #include <visualization_msgs/msg/detail/marker__struct.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
+#include <boost/geometry/algorithms/centroid.hpp>
 #include <boost/geometry/algorithms/for_each.hpp>
 
 #include <lanelet2_core/Forward.h>
 #include <lanelet2_core/primitives/LineString.h>
+#include <lanelet2_core/primitives/Point.h>
 #include <lanelet2_core/primitives/Polygon.h>
 
 #include <string>
@@ -54,16 +58,15 @@ visualization_msgs::msg::Marker get_base_marker()
 }
 void add_polygons_markers(
   visualization_msgs::msg::MarkerArray & debug_marker_array,
-  const lanelet::BasicPolygons2d & polygons, const double z, const std::string & ns)
+  const visualization_msgs::msg::Marker & base_marker, const lanelet::BasicPolygons2d & polygons)
 {
-  auto debug_marker = get_base_marker();
-  debug_marker.ns = ns;
+  auto debug_marker = base_marker;
   debug_marker.type = visualization_msgs::msg::Marker::LINE_LIST;
   for (const auto & f : polygons) {
     boost::geometry::for_each_segment(f, [&](const auto & s) {
       const auto & [p1, p2] = s;
-      debug_marker.points.push_back(universe_utils::createMarkerPosition(p1.x(), p1.y(), z + 0.5));
-      debug_marker.points.push_back(universe_utils::createMarkerPosition(p2.x(), p2.y(), z + 0.5));
+      debug_marker.points.push_back(universe_utils::createMarkerPosition(p1.x(), p1.y(), 0.0));
+      debug_marker.points.push_back(universe_utils::createMarkerPosition(p2.x(), p2.y(), 0.0));
     });
   }
   debug_marker_array.markers.push_back(debug_marker);
@@ -157,19 +160,37 @@ visualization_msgs::msg::MarkerArray create_debug_marker_array(
   const auto z = ego_data.pose.position.z;
   visualization_msgs::msg::MarkerArray debug_marker_array;
 
-  // add_polygons_markers(debug_marker_array, ego_data.trajectory_footprints, z, "footprints");
+  auto base_marker = get_base_marker();
+  base_marker.pose.position.z = z + 0.5;
+  base_marker.ns = "footprints";
+  base_marker.color = universe_utils::createMarkerColor(1.0, 1.0, 1.0, 1.0);
+  // TODO(Maxime): move the debug marker publishing AFTER the trajectory generation
+  // disabled to prevent performance issues when publishing the debug markers
+  // add_polygons_markers(debug_marker_array, base_marker, ego_data.trajectory_footprints);
 
   lanelet::BasicPolygons2d drivable_lane_polygons;
   for (const auto & poly : ego_data.drivable_lane_polygons) {
     drivable_lane_polygons.push_back(poly.outer);
   }
-  add_polygons_markers(debug_marker_array, drivable_lane_polygons, z, "ego_lane");
+  base_marker.ns = "ego_lane";
+  base_marker.color = universe_utils::createMarkerColor(0.0, 0.0, 1.0, 1.0);
+  add_polygons_markers(debug_marker_array, base_marker, drivable_lane_polygons);
 
   lanelet::BasicPolygons2d out_of_lane_areas;
   for (const auto & p : out_of_lane_data.outside_points) {
     out_of_lane_areas.push_back(p.outside_ring);
   }
-  add_polygons_markers(debug_marker_array, out_of_lane_areas, z, "out_of_lane_areas");
+  base_marker.ns = "out_of_lane_areas";
+  base_marker.color = universe_utils::createMarkerColor(1.0, 0.0, 0.0, 1.0);
+  add_polygons_markers(debug_marker_array, base_marker, out_of_lane_areas);
+  for (const auto & [bbox, i] : out_of_lane_data.outside_areas_rtree) {
+    const auto & a = out_of_lane_data.outside_points[i];
+    debug_marker_array.markers.back().points.push_back(
+      ego_data.trajectory_points[a.trajectory_index].pose.position);
+    const auto centroid = boost::geometry::return_centroid<lanelet::BasicPoint2d>(a.outside_ring);
+    debug_marker_array.markers.back().points.push_back(
+      geometry_msgs::msg::Point().set__x(centroid.x()).set__y(centroid.y()));
+  }
 
   lanelet::BasicPolygons2d object_polygons;
   for (const auto & o : objects.objects) {
@@ -184,7 +205,9 @@ visualization_msgs::msg::MarkerArray create_debug_marker_array(
       }
     }
   }
-  add_polygons_markers(debug_marker_array, object_polygons, z, "objects");
+  base_marker.ns = "objects";
+  base_marker.color = universe_utils::createMarkerColor(0.0, 1.0, 0.0, 1.0);
+  add_polygons_markers(debug_marker_array, base_marker, object_polygons);
 
   add_current_overlap_marker(debug_marker_array, ego_data.current_footprint, z);
 

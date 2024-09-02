@@ -47,7 +47,6 @@ struct PlannerParam
   bool skip_if_already_overlapping;  // if true, do not run the module when ego already overlaps
                                      // another lane
   double max_arc_length;  // [m] maximum arc length along the trajectory to check for collision
-  bool ignore_lane_changeable_lanelets;  // if true, ignore overlaps on lane changeable lanelets
 
   double time_threshold;  // [s](mode="threshold") objects time threshold
   double ttc_threshold;  // [s](mode="ttc") threshold on time to collision between ego and an object

@@ -77,8 +77,6 @@ void OutOfLaneModule::init_parameters(rclcpp::Node & node)
   pp.mode = getOrDeclareParameter<std::string>(node, ns_ + ".mode");
   pp.skip_if_already_overlapping =
     getOrDeclareParameter<bool>(node, ns_ + ".skip_if_already_overlapping");
-  pp.ignore_lane_changeable_lanelets =
-    getOrDeclareParameter<bool>(node, ns_ + ".ignore_overlaps_over_lane_changeable_lanelets");
   pp.max_arc_length = getOrDeclareParameter<double>(node, ns_ + ".max_arc_length");
 
   pp.time_threshold = getOrDeclareParameter<double>(node, ns_ + ".threshold.time_threshold");
@@ -119,9 +117,6 @@ void OutOfLaneModule::update_parameters(const std::vector<rclcpp::Parameter> & p
   updateParam(parameters, ns_ + ".mode", pp.mode);
   updateParam(parameters, ns_ + ".skip_if_already_overlapping", pp.skip_if_already_overlapping);
   updateParam(parameters, ns_ + ".max_arc_length", pp.max_arc_length);
-  updateParam(
-    parameters, ns_ + ".ignore_overlaps_over_lane_changeable_lanelets",
-    pp.ignore_lane_changeable_lanelets);
 
   updateParam(parameters, ns_ + ".threshold.time_threshold", pp.time_threshold);
   updateParam(parameters, ns_ + ".ttc.threshold", pp.ttc_threshold);
@@ -318,7 +313,7 @@ VelocityPlanningResult OutOfLaneModule::plan(
   if (should_use_previous_pose) {
     // if the trajectory changed the prev point is no longer on the trajectory so we project it
     const auto new_arc_length = motion_utils::calcSignedArcLength(
-      ego_trajectory_points, ego_data.first_trajectory_idx, previous_slowdown_pose_->position);
+      ego_trajectory_points, 0LU, previous_slowdown_pose_->position);
     slowdown_pose = motion_utils::calcInterpolatedPose(ego_trajectory_points, new_arc_length);
   }
   if (slowdown_pose) {
