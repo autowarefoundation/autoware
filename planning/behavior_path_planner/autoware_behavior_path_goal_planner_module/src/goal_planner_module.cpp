@@ -306,9 +306,8 @@ void GoalPlannerModule::onTimer()
   const auto planCandidatePaths = [&](
                                     const std::shared_ptr<PullOverPlannerBase> & planner,
                                     const GoalCandidate & goal_candidate) {
-    planner->setPlannerData(local_planner_data);
-    planner->setPreviousModuleOutput(previous_module_output);
-    auto pull_over_path = planner->plan(goal_candidate.goal_pose);
+    auto pull_over_path =
+      planner->plan(local_planner_data, previous_module_output, goal_candidate.goal_pose);
     if (pull_over_path && pull_over_path->getParkingPath().points.size() >= 3) {
       pull_over_path->goal_id = goal_candidate.id;
       pull_over_path->id = path_candidates.size();
@@ -754,8 +753,9 @@ bool GoalPlannerModule::planFreespacePath(
     if (!goal_candidate.is_safe) {
       continue;
     }
-    freespace_planner_->setPlannerData(planner_data);
-    auto freespace_path = freespace_planner_->plan(goal_candidate.goal_pose);
+    auto freespace_path = freespace_planner_->plan(
+      planner_data, BehaviorModuleOutput{},  // NOTE: not used so passing {} is OK
+      goal_candidate.goal_pose);
     freespace_path->goal_id = goal_candidate.id;
     if (!freespace_path) {
       continue;

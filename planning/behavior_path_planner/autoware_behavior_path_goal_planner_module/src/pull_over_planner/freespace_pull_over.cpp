@@ -30,27 +30,32 @@ FreespacePullOver::FreespacePullOver(
   const autoware::vehicle_info_utils::VehicleInfo & vehicle_info)
 : PullOverPlannerBase{node, parameters},
   velocity_{parameters.freespace_parking_velocity},
-  left_side_parking_{parameters.parking_policy == ParkingPolicy::LEFT_SIDE}
+  left_side_parking_{parameters.parking_policy == ParkingPolicy::LEFT_SIDE},
+  use_back_{
+    parameters.freespace_parking_algorithm == "astar"
+      ? parameters.astar_parameters.use_back
+      : true  // no option for disabling back in rrtstar
+  }
 {
   autoware::freespace_planning_algorithms::VehicleShape vehicle_shape(
     vehicle_info, parameters.vehicle_shape_margin);
   if (parameters.freespace_parking_algorithm == "astar") {
-    use_back_ = parameters.astar_parameters.use_back;
     planner_ = std::make_unique<AstarSearch>(
       parameters.freespace_parking_common_parameters, vehicle_shape, parameters.astar_parameters);
   } else if (parameters.freespace_parking_algorithm == "rrtstar") {
-    use_back_ = true;  // no option for disabling back in rrtstar
     planner_ = std::make_unique<RRTStar>(
       parameters.freespace_parking_common_parameters, vehicle_shape,
       parameters.rrt_star_parameters);
   }
 }
 
-std::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
+std::optional<PullOverPath> FreespacePullOver::plan(
+  const std::shared_ptr<const PlannerData> planner_data,
+  [[maybe_unused]] const BehaviorModuleOutput & previous_module_output, const Pose & goal_pose)
 {
-  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
+  const Pose & current_pose = planner_data->self_odometry->pose.pose;
 
-  planner_->setMap(*planner_data_->costmap);
+  planner_->setMap(*planner_data->costmap);
 
   // offset goal pose to make straight path near goal for improving parking precision
   // todo: support straight path when using back
@@ -68,10 +73,10 @@ std::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
   }
 
   const auto road_lanes = utils::getExtendedCurrentLanes(
-    planner_data_, parameters_.backward_goal_search_length, parameters_.forward_goal_search_length,
+    planner_data, parameters_.backward_goal_search_length, parameters_.forward_goal_search_length,
     /*forward_only_in_route*/ false);
   const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
-    *(planner_data_->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
+    *(planner_data->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
     parameters_.forward_goal_search_length);
   if (road_lanes.empty() || pull_over_lanes.empty()) {
     return {};

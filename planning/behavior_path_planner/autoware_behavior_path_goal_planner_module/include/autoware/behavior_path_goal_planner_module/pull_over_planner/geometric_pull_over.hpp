@@ -42,7 +42,9 @@ public:
   Pose getCr() const { return planner_.getCr(); }
   Pose getCl() const { return planner_.getCl(); }
 
-  std::optional<PullOverPath> plan(const Pose & goal_pose) override;
+  std::optional<PullOverPath> plan(
+    const std::shared_ptr<const PlannerData> planner_data,
+    const BehaviorModuleOutput & previous_module_output, const Pose & goal_pose) override;
 
   std::vector<PullOverPath> generatePullOverPaths(
     const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
@@ -56,10 +58,10 @@ public:
     const bool is_in_goal_route_section, const Pose & goal_pose) const;
 
 protected:
-  ParallelParkingParameters parallel_parking_parameters_;
-  LaneDepartureChecker lane_departure_checker_{};
-  bool is_forward_{true};
-  bool left_side_parking_{true};
+  const ParallelParkingParameters parallel_parking_parameters_;
+  const LaneDepartureChecker lane_departure_checker_;
+  const bool is_forward_;
+  const bool left_side_parking_;
 
   GeometricParallelParking planner_;
 };

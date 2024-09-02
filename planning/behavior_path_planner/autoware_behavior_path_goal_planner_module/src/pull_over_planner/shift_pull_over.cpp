@@ -34,9 +34,11 @@ ShiftPullOver::ShiftPullOver(
   left_side_parking_{parameters.parking_policy == ParkingPolicy::LEFT_SIDE}
 {
 }
-std::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
+std::optional<PullOverPath> ShiftPullOver::plan(
+  const std::shared_ptr<const PlannerData> planner_data,
+  const BehaviorModuleOutput & previous_module_output, const Pose & goal_pose)
 {
-  const auto & route_handler = planner_data_->route_handler;
+  const auto & route_handler = planner_data->route_handler;
   const double min_jerk = parameters_.minimum_lateral_jerk;
   const double max_jerk = parameters_.maximum_lateral_jerk;
   const double backward_search_length = parameters_.backward_goal_search_length;
@@ -45,7 +47,7 @@ std::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
   const double jerk_resolution = std::abs(max_jerk - min_jerk) / shift_sampling_num;
 
   const auto road_lanes = utils::getExtendedCurrentLanesFromPath(
-    previous_module_output_.path, planner_data_, backward_search_length, forward_search_length,
+    previous_module_output.path, planner_data, backward_search_length, forward_search_length,
     /*forward_only_in_route*/ false);
 
   const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
@@ -56,8 +58,8 @@ std::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
 
   // find safe one from paths with different jerk
   for (double lateral_jerk = min_jerk; lateral_jerk <= max_jerk; lateral_jerk += jerk_resolution) {
-    const auto pull_over_path =
-      generatePullOverPath(road_lanes, pull_over_lanes, goal_pose, lateral_jerk);
+    const auto pull_over_path = generatePullOverPath(
+      planner_data, previous_module_output, road_lanes, pull_over_lanes, goal_pose, lateral_jerk);
     if (!pull_over_path) continue;
     return *pull_over_path;
   }
@@ -66,11 +68,12 @@ std::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
 }
 
 PathWithLaneId ShiftPullOver::generateReferencePath(
-  const lanelet::ConstLanelets & road_lanes, const Pose & end_pose) const
+  const std::shared_ptr<const PlannerData> planner_data, const lanelet::ConstLanelets & road_lanes,
+  const Pose & end_pose) const
 {
-  const auto & route_handler = planner_data_->route_handler;
-  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
-  const double backward_path_length = planner_data_->parameters.backward_path_length;
+  const auto & route_handler = planner_data->route_handler;
+  const Pose & current_pose = planner_data->self_odometry->pose.pose;
+  const double backward_path_length = planner_data->parameters.backward_path_length;
   const double pull_over_velocity = parameters_.pull_over_velocity;
   const double deceleration_interval = parameters_.deceleration_interval;
 
@@ -123,8 +126,10 @@ std::optional<PathWithLaneId> ShiftPullOver::cropPrevModulePath(
 }
 
 std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
-  const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
-  const Pose & goal_pose, const double lateral_jerk) const
+  const std::shared_ptr<const PlannerData> planner_data,
+  const BehaviorModuleOutput & previous_module_output, const lanelet::ConstLanelets & road_lanes,
+  const lanelet::ConstLanelets & shoulder_lanes, const Pose & goal_pose,
+  const double lateral_jerk) const
 {
   const double pull_over_velocity = parameters_.pull_over_velocity;
   const double after_shift_straight_distance = parameters_.after_shift_straight_distance;
@@ -135,9 +140,10 @@ std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
 
   // calculate lateral shift of previous module path terminal pose from road lane reference path
   const auto road_lane_reference_path_to_shift_end = utils::resamplePathWithSpline(
-    generateReferencePath(road_lanes, shift_end_pose), parameters_.center_line_path_interval);
+    generateReferencePath(planner_data, road_lanes, shift_end_pose),
+    parameters_.center_line_path_interval);
   const auto prev_module_path = utils::resamplePathWithSpline(
-    previous_module_output_.path, parameters_.center_line_path_interval);
+    previous_module_output.path, parameters_.center_line_path_interval);
   const auto prev_module_path_terminal_pose = prev_module_path.points.back().point.pose;
 
   // process previous module path for path shifter input path
@@ -265,9 +271,9 @@ std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
 
   // check if the parking path will leave drivable area and lanes
   const bool is_in_parking_lots = std::invoke([&]() -> bool {
-    const auto & p = planner_data_->parameters;
+    const auto & p = planner_data->parameters;
     const auto parking_lot_polygons =
-      lanelet::utils::query::getAllParkingLots(planner_data_->route_handler->getLaneletMapPtr());
+      lanelet::utils::query::getAllParkingLots(planner_data->route_handler->getLaneletMapPtr());
     const auto path_footprints = goal_planner_utils::createPathFootPrints(
       pull_over_path.getParkingPath(), p.base_link2front, p.base_link2rear, p.vehicle_width);
     const auto is_footprint_in_any_polygon = [&parking_lot_polygons](const auto & footprint) {
@@ -286,12 +292,12 @@ std::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
   const bool is_in_lanes = std::invoke([&]() -> bool {
     const auto drivable_lanes =
       utils::generateDrivableLanesWithShoulderLanes(road_lanes, shoulder_lanes);
-    const auto & dp = planner_data_->drivable_area_expansion_parameters;
+    const auto & dp = planner_data->drivable_area_expansion_parameters;
     const auto expanded_lanes = utils::expandLanelets(
       drivable_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
       dp.drivable_area_types_to_skip);
     const auto combined_drivable = utils::combineDrivableLanes(
-      expanded_lanes, previous_module_output_.drivable_area_info.drivable_lanes);
+      expanded_lanes, previous_module_output.drivable_area_info.drivable_lanes);
     return !lane_departure_checker_.checkPathWillLeaveLane(
       utils::transformToLanelets(combined_drivable), pull_over_path.getParkingPath());
   });

@@ -35,16 +35,21 @@ public:
     rclcpp::Node & node, const GoalPlannerParameters & parameters,
     const LaneDepartureChecker & lane_departure_checker);
   PullOverPlannerType getPlannerType() const override { return PullOverPlannerType::SHIFT; };
-  std::optional<PullOverPath> plan(const Pose & goal_pose) override;
+  std::optional<PullOverPath> plan(
+    const std::shared_ptr<const PlannerData> planner_data,
+    const BehaviorModuleOutput & previous_module_output, const Pose & goal_pose) override;
 
 protected:
   PathWithLaneId generateReferencePath(
+    const std::shared_ptr<const PlannerData> planner_data,
     const lanelet::ConstLanelets & road_lanes, const Pose & end_pose) const;
   std::optional<PathWithLaneId> cropPrevModulePath(
     const PathWithLaneId & prev_module_path, const Pose & shift_end_pose) const;
   std::optional<PullOverPath> generatePullOverPath(
-    const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
-    const Pose & goal_pose, const double lateral_jerk) const;
+    const std::shared_ptr<const PlannerData> planner_data,
+    const BehaviorModuleOutput & previous_module_output, const lanelet::ConstLanelets & road_lanes,
+    const lanelet::ConstLanelets & shoulder_lanes, const Pose & goal_pose,
+    const double lateral_jerk) const;
   static double calcBeforeShiftedArcLength(
     const PathWithLaneId & path, const double after_shifted_arc_length, const double dr);
   static std::vector<double> splineTwoPoints(
@@ -53,9 +58,9 @@ protected:
   static std::vector<Pose> interpolatePose(
     const Pose & start_pose, const Pose & end_pose, const double resample_interval);
 
-  LaneDepartureChecker lane_departure_checker_{};
+  const LaneDepartureChecker lane_departure_checker_;
 
-  bool left_side_parking_{true};
+  const bool left_side_parking_;
 };
 }  // namespace autoware::behavior_path_planner
 

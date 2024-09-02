@@ -41,13 +41,15 @@ public:
 
   PullOverPlannerType getPlannerType() const override { return PullOverPlannerType::FREESPACE; }
 
-  std::optional<PullOverPath> plan(const Pose & goal_pose) override;
+  std::optional<PullOverPath> plan(
+    const std::shared_ptr<const PlannerData> planner_data,
+    const BehaviorModuleOutput & previous_module_output, const Pose & goal_pose) override;
 
 protected:
+  const double velocity_;
+  const bool left_side_parking_;
+  const bool use_back_;
   std::unique_ptr<AbstractPlanningAlgorithm> planner_;
-  double velocity_;
-  bool use_back_;
-  bool left_side_parking_;
 };
 }  // namespace autoware::behavior_path_planner
 

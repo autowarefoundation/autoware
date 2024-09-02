@@ -37,13 +37,15 @@ GeometricPullOver::GeometricPullOver(
   planner_.setParameters(parallel_parking_parameters_);
 }
 
-std::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
+std::optional<PullOverPath> GeometricPullOver::plan(
+  const std::shared_ptr<const PlannerData> planner_data,
+  [[maybe_unused]] const BehaviorModuleOutput & previous_module_output, const Pose & goal_pose)
 {
-  const auto & route_handler = planner_data_->route_handler;
+  const auto & route_handler = planner_data->route_handler;
 
   // prepare road nad shoulder lanes
   const auto road_lanes = utils::getExtendedCurrentLanes(
-    planner_data_, parameters_.backward_goal_search_length, parameters_.forward_goal_search_length,
+    planner_data, parameters_.backward_goal_search_length, parameters_.forward_goal_search_length,
     /*forward_only_in_route*/ false);
   const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
     *route_handler, left_side_parking_, parameters_.backward_goal_search_length,
@@ -56,8 +58,8 @@ std::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
   const auto & p = parallel_parking_parameters_;
   const double max_steer_angle =
     is_forward_ ? p.forward_parking_max_steer_angle : p.backward_parking_max_steer_angle;
-  planner_.setTurningRadius(planner_data_->parameters, max_steer_angle);
-  planner_.setPlannerData(planner_data_);
+  planner_.setTurningRadius(planner_data->parameters, max_steer_angle);
+  planner_.setPlannerData(planner_data);
 
   const bool found_valid_path =
     planner_.planPullOver(goal_pose, road_lanes, pull_over_lanes, is_forward_, left_side_parking_);
