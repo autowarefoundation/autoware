@@ -19,6 +19,9 @@
 
 #include <string>
 
+namespace autoware::ekf_localizer
+{
+
 class Warning
 {
 public:
@@ -39,5 +42,7 @@ public:
 private:
   rclcpp::Node * node_;
 };
+
+}  // namespace autoware::ekf_localizer
 
 #endif  // EKF_LOCALIZER__WARNING_HPP_

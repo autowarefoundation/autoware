@@ -18,6 +18,9 @@
 
 #include <string>
 
+namespace autoware::ekf_localizer
+{
+
 std::string pose_delay_step_warning_message(
   const double delay_time, const double delay_time_threshold)
 {
@@ -53,3 +56,5 @@ std::string mahalanobis_warning_message(const double distance, const double max_
   const std::string s = "The Mahalanobis distance {:.4f} is over the limit {:.4f}.";
   return fmt::format(s, distance, max_distance);
 }
+
+}  // namespace autoware::ekf_localizer

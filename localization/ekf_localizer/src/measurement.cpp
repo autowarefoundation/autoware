@@ -17,6 +17,9 @@
 #include "autoware/universe_utils/ros/msg_covariance.hpp"
 #include "ekf_localizer/state_index.hpp"
 
+namespace autoware::ekf_localizer
+{
+
 Eigen::Matrix<double, 3, 6> pose_measurement_matrix()
 {
   Eigen::Matrix<double, 3, 6> c = Eigen::Matrix<double, 3, 6>::Zero();
@@ -54,3 +57,5 @@ Eigen::Matrix2d twist_measurement_covariance(
     covariance.at(COV_IDX::YAW_YAW);
   return r * static_cast<double>(smoothing_step);
 }
+
+}  // namespace autoware::ekf_localizer

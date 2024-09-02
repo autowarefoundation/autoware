@@ -20,6 +20,9 @@
 
 #include <cmath>
 
+namespace autoware::ekf_localizer
+{
+
 TEST(StateTransition, normalize_yaw)
 {
   const double tolerance = 1e-6;
@@ -94,3 +97,5 @@ TEST(process_noise_covariance, process_noise_covariance)
   // Make sure other elements are zero
   EXPECT_EQ(process_noise_covariance(0, 0, 0).norm(), 0.);
 }
+
+}  // namespace autoware::ekf_localizer

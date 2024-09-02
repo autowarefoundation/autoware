@@ -19,6 +19,9 @@
 
 #include <cmath>
 
+namespace autoware::ekf_localizer
+{
+
 inline bool has_inf(const Eigen::MatrixXd & v)
 {
   return v.array().isInf().any();
@@ -28,5 +31,7 @@ inline bool has_nan(const Eigen::MatrixXd & v)
 {
   return v.array().isNaN().any();
 }
+
+}  // namespace autoware::ekf_localizer
 
 #endif  // EKF_LOCALIZER__NUMERIC_HPP_

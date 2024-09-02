@@ -29,6 +29,9 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/utils.h>
 
+namespace autoware::ekf_localizer
+{
+
 // clang-format off
 #define DEBUG_PRINT_MAT(X) {if (params_.show_debug_info) {std::cout << #X << ": " << X << std::endl;}} // NOLINT
 // clang-format on
@@ -392,3 +395,5 @@ bool EKFModule::measurement_update_twist(
 
   return true;
 }
+
+}  // namespace autoware::ekf_localizer

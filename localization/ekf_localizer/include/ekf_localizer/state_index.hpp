@@ -15,6 +15,9 @@
 #ifndef EKF_LOCALIZER__STATE_INDEX_HPP_
 #define EKF_LOCALIZER__STATE_INDEX_HPP_
 
+namespace autoware::ekf_localizer
+{
+
 enum IDX {
   X = 0,
   Y = 1,
@@ -23,5 +26,7 @@ enum IDX {
   VX = 4,
   WZ = 5,
 };
+
+}  // namespace autoware::ekf_localizer
 
 #endif  // EKF_LOCALIZER__STATE_INDEX_HPP_

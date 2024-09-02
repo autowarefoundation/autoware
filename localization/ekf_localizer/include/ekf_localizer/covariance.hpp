@@ -17,7 +17,12 @@
 
 #include "ekf_localizer/matrix_types.hpp"
 
+namespace autoware::ekf_localizer
+{
+
 std::array<double, 36> ekf_covariance_to_pose_message_covariance(const Matrix6d & P);
 std::array<double, 36> ekf_covariance_to_twist_message_covariance(const Matrix6d & P);
+
+}  // namespace autoware::ekf_localizer
 
 #endif  // EKF_LOCALIZER__COVARIANCE_HPP_

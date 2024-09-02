@@ -19,6 +19,9 @@
 #include <string>
 #include <vector>
 
+namespace autoware::ekf_localizer
+{
+
 diagnostic_msgs::msg::DiagnosticStatus check_process_activated(const bool is_activated)
 {
   diagnostic_msgs::msg::DiagnosticStatus stat;
@@ -200,3 +203,5 @@ diagnostic_msgs::msg::DiagnosticStatus merge_diagnostic_status(
 
   return merged_stat;
 }
+
+}  // namespace autoware::ekf_localizer

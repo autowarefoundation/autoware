@@ -16,6 +16,9 @@
 
 #include <gtest/gtest.h>
 
+namespace autoware::ekf_localizer
+{
+
 TEST(AgedObjectQueue, DiscardsObjectWhenAgeReachesMaximum)
 {
   AgedObjectQueue<std::string> queue(3);
@@ -99,3 +102,5 @@ TEST(AgedObjectQueue, Back)
 
   EXPECT_EQ(queue.back(), std::string{"b"});
 }
+
+}  // namespace autoware::ekf_localizer

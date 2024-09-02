@@ -20,6 +20,9 @@
 #include <string>
 #include <vector>
 
+namespace autoware::ekf_localizer
+{
+
 diagnostic_msgs::msg::DiagnosticStatus check_process_activated(const bool is_activated);
 
 diagnostic_msgs::msg::DiagnosticStatus check_measurement_updated(
@@ -39,5 +42,7 @@ diagnostic_msgs::msg::DiagnosticStatus check_covariance_ellipse(
 
 diagnostic_msgs::msg::DiagnosticStatus merge_diagnostic_status(
   const std::vector<diagnostic_msgs::msg::DiagnosticStatus> & stat_array);
+
+}  // namespace autoware::ekf_localizer
 
 #endif  // EKF_LOCALIZER__DIAGNOSTICS_HPP_

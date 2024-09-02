@@ -18,6 +18,9 @@
 
 #include <gtest/gtest.h>
 
+namespace autoware::ekf_localizer
+{
+
 TEST(pose_delay_step_warning_message, SmokeTest)
 {
   EXPECT_STREQ(
@@ -60,3 +63,5 @@ TEST(mahalanobis_warning_message, SmokeTest)
     mahalanobis_warning_message(1.0, 0.5).c_str(),
     "The Mahalanobis distance 1.0000 is over the limit 0.5000.");
 }
+
+}  // namespace autoware::ekf_localizer

@@ -18,6 +18,9 @@
 #include <cstddef>
 #include <queue>
 
+namespace autoware::ekf_localizer
+{
+
 template <typename Object>
 class AgedObjectQueue
 {
@@ -62,5 +65,7 @@ private:
   std::queue<Object> objects_;
   std::queue<size_t> ages_;
 };
+
+}  // namespace autoware::ekf_localizer
 
 #endif  // EKF_LOCALIZER__AGED_OBJECT_QUEUE_HPP_

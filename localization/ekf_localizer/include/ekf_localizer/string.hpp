@@ -17,6 +17,9 @@
 
 #include <string>
 
+namespace autoware::ekf_localizer
+{
+
 inline std::string erase_leading_slash(const std::string & s)
 {
   std::string a = s;
@@ -25,5 +28,7 @@ inline std::string erase_leading_slash(const std::string & s)
   }
   return a;
 }
+
+}  // namespace autoware::ekf_localizer
 
 #endif  // EKF_LOCALIZER__STRING_HPP_

@@ -16,6 +16,9 @@
 
 #include <gtest/gtest.h>
 
+namespace autoware::ekf_localizer
+{
+
 TEST(EKFCovarianceToPoseMessageCovariance, SmokeTest)
 {
   {
@@ -77,3 +80,5 @@ TEST(EKFCovarianceToTwistMessageCovariance, SmokeTest)
     }
   }
 }
+
+}  // namespace autoware::ekf_localizer

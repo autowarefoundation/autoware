@@ -17,6 +17,9 @@
 
 #include <cmath>
 
+namespace autoware::ekf_localizer
+{
+
 double normalize_yaw(const double & yaw)
 {
   // FIXME(IshitaTakeshi) I think the computation here can be simplified
@@ -93,3 +96,5 @@ Matrix6d process_noise_covariance(
   q(IDX::WZ, IDX::WZ) = proc_cov_wz_d;  // for wz
   return q;
 }
+
+}  // namespace autoware::ekf_localizer

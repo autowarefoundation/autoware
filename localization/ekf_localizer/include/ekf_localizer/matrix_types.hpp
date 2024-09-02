@@ -17,7 +17,12 @@
 
 #include <Eigen/Core>
 
+namespace autoware::ekf_localizer
+{
+
 using Vector6d = Eigen::Matrix<double, 6, 1>;
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
+
+}  // namespace autoware::ekf_localizer
 
 #endif  // EKF_LOCALIZER__MATRIX_TYPES_HPP_

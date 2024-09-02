@@ -16,6 +16,9 @@
 
 #include <gtest/gtest.h>
 
+namespace autoware::ekf_localizer
+{
+
 TEST(Measurement, pose_measurement_matrix)
 {
   const Eigen::Matrix<double, 3, 6> m = pose_measurement_matrix();
@@ -79,3 +82,5 @@ TEST(Measurement, twist_measurement_covariance)
     EXPECT_EQ(m.norm(), 0);
   }
 }
+
+}  // namespace autoware::ekf_localizer

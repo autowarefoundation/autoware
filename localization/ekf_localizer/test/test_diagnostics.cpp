@@ -16,6 +16,9 @@
 
 #include <gtest/gtest.h>
 
+namespace autoware::ekf_localizer
+{
+
 TEST(TestEkfDiagnostics, check_process_activated)
 {
   diagnostic_msgs::msg::DiagnosticStatus stat;
@@ -190,3 +193,5 @@ TEST(TestLocalizationErrorMonitorDiagnostics, merge_diagnostic_status)
   EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
   EXPECT_EQ(merged_stat.message, "ERROR0; ERROR1");
 }
+
+}  // namespace autoware::ekf_localizer

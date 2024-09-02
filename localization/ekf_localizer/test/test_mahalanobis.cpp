@@ -16,6 +16,9 @@
 
 #include <gtest/gtest.h>
 
+namespace autoware::ekf_localizer
+{
+
 constexpr double tolerance = 1e-8;
 
 TEST(squared_mahalanobis, SmokeTest)
@@ -59,3 +62,5 @@ TEST(mahalanobis, SmokeTest)
     EXPECT_NEAR(mahalanobis(x, y, c), std::sqrt(5.0), tolerance);
   }
 }
+
+}  // namespace autoware::ekf_localizer

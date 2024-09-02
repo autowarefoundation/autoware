@@ -34,6 +34,9 @@
 #include <string>
 #include <utility>
 
+namespace autoware::ekf_localizer
+{
+
 // clang-format off
 #define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl // NOLINT
 #define DEBUG_INFO(...) {if (params_.show_debug_info) {RCLCPP_INFO(__VA_ARGS__);}} // NOLINT
@@ -495,5 +498,7 @@ void EKFLocalizer::service_trigger_node(
   res->success = true;
 }
 
+}  // namespace autoware::ekf_localizer
+
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(EKFLocalizer)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::ekf_localizer::EKFLocalizer)

@@ -18,9 +18,14 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+namespace autoware::ekf_localizer
+{
+
 double squared_mahalanobis(
   const Eigen::VectorXd & x, const Eigen::VectorXd & y, const Eigen::MatrixXd & C);
 
 double mahalanobis(const Eigen::VectorXd & x, const Eigen::VectorXd & y, const Eigen::MatrixXd & C);
+
+}  // namespace autoware::ekf_localizer
 
 #endif  // EKF_LOCALIZER__MAHALANOBIS_HPP_

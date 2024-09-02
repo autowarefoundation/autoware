@@ -18,6 +18,9 @@
 
 #include <gtest/gtest.h>
 
+namespace autoware::ekf_localizer
+{
+
 TEST(Numeric, has_nan)
 {
   const Eigen::VectorXd empty(0);
@@ -45,3 +48,5 @@ TEST(Numeric, has_inf)
 
   EXPECT_TRUE(has_inf(Eigen::Vector3d(0., 1., inf)));
 }
+
+}  // namespace autoware::ekf_localizer

@@ -17,6 +17,9 @@
 #include "autoware/universe_utils/ros/msg_covariance.hpp"
 #include "ekf_localizer/state_index.hpp"
 
+namespace autoware::ekf_localizer
+{
+
 using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
 
 std::array<double, 36> ekf_covariance_to_pose_message_covariance(const Matrix6d & P)
@@ -49,3 +52,5 @@ std::array<double, 36> ekf_covariance_to_twist_message_covariance(const Matrix6d
 
   return covariance;
 }
+
+}  // namespace autoware::ekf_localizer

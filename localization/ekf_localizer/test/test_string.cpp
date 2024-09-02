@@ -16,6 +16,9 @@
 
 #include <gtest/gtest.h>
 
+namespace autoware::ekf_localizer
+{
+
 TEST(erase_leading_slash, SmokeTest)
 {
   EXPECT_EQ(erase_leading_slash("/topic"), "topic");
@@ -24,3 +27,5 @@ TEST(erase_leading_slash, SmokeTest)
   EXPECT_EQ(erase_leading_slash(""), "");
   EXPECT_EQ(erase_leading_slash("/"), "");
 }
+
+}  // namespace autoware::ekf_localizer

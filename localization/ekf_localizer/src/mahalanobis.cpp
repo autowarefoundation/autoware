@@ -14,6 +14,9 @@
 
 #include "ekf_localizer/mahalanobis.hpp"
 
+namespace autoware::ekf_localizer
+{
+
 double squared_mahalanobis(
   const Eigen::VectorXd & x, const Eigen::VectorXd & y, const Eigen::MatrixXd & C)
 {
@@ -25,3 +28,5 @@ double mahalanobis(const Eigen::VectorXd & x, const Eigen::VectorXd & y, const E
 {
   return std::sqrt(squared_mahalanobis(x, y, C));
 }
+
+}  // namespace autoware::ekf_localizer

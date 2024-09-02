@@ -20,6 +20,9 @@
 #include <algorithm>
 #include <string>
 
+namespace autoware::ekf_localizer
+{
+
 class HyperParameters
 {
 public:
@@ -101,5 +104,7 @@ public:
 
   const double threshold_observable_velocity_mps;
 };
+
+}  // namespace autoware::ekf_localizer
 
 #endif  // EKF_LOCALIZER__HYPER_PARAMETERS_HPP_
