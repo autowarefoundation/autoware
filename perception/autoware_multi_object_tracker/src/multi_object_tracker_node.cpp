@@ -73,7 +73,8 @@ MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("multi_object_tracker", node_options),
   tf_buffer_(this->get_clock()),
   tf_listener_(tf_buffer_),
-  last_published_time_(this->now())
+  last_published_time_(this->now()),
+  last_updated_time_(this->now())
 {
   // glog for debug
   if (!google::IsGoogleLoggingInitialized()) {
@@ -153,7 +154,9 @@ MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
   // If the delay compensation is enabled, the timer is used to publish the output at the correct
   // time.
   if (enable_delay_compensation) {
-    const auto timer_period = rclcpp::Rate(publish_rate).period();
+    publisher_period_ = 1.0 / publish_rate;    // [s]
+    constexpr double timer_multiplier = 10.0;  // 10 times frequent for publish timing check
+    const auto timer_period = rclcpp::Rate(publish_rate * timer_multiplier).period();
     publish_timer_ = rclcpp::create_timer(
       this, get_clock(), timer_period, std::bind(&MultiObjectTracker::onTimer, this));
   }
@@ -221,21 +224,30 @@ void MultiObjectTracker::onTimer()
 {
   const rclcpp::Time current_time = this->now();
 
-  // get objects from the input manager and run process
-  ObjectsList objects_list;
-  const bool is_objects_ready = input_manager_->getObjects(current_time, objects_list);
-  if (is_objects_ready) {
-    onMessage(objects_list);
+  // ensure minimum interval: room for the next process(prediction)
+  const double minimum_publish_interval = publisher_period_ * minimum_publish_interval_ratio;
+  const auto elapsed_time = (current_time - last_published_time_).seconds();
+  if (elapsed_time < minimum_publish_interval) {
+    return;
   }
 
-  // Publish with delay compensation
-  checkAndPublish(current_time);
+  // if there was update after publishing, publish new messages
+  bool should_publish = last_published_time_ < last_updated_time_;
+
+  // if there was no update, publish if the elapsed time is longer than the maximum publish latency
+  // in this case, it will perform extrapolate/remove old objects
+  const double maximum_publish_interval = publisher_period_ * maximum_publish_interval_ratio;
+  should_publish = should_publish || elapsed_time > maximum_publish_interval;
+
+  // Publish with delay compensation to the current time
+  if (should_publish) checkAndPublish(current_time);
 }
 
 void MultiObjectTracker::onMessage(const ObjectsList & objects_list)
 {
   const rclcpp::Time current_time = this->now();
   const rclcpp::Time oldest_time(objects_list.front().second.header.stamp);
+  last_updated_time_ = current_time;
 
   // process start
   debugger_->startMeasurementTime(this->now(), oldest_time);
