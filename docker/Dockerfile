@@ -60,6 +60,10 @@ RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     && cat /rosdep-core-depend-packages.txt
 COPY src/universe/external /autoware/src/universe/external
 COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
+# TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/8695 is resolved
+COPY src/universe/autoware.universe/simulator/dummy_perception_publisher /autoware/src/universe/autoware.universe/simulator/dummy_perception_publisher
+COPY src/universe/autoware.universe/vehicle/autoware_vehicle_info_utils /autoware/src/universe/autoware.universe/vehicle/autoware_vehicle_info_utils
+
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
