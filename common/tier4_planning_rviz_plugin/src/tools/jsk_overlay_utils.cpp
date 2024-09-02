@@ -62,11 +62,6 @@ ScopedPixelBuffer::~ScopedPixelBuffer()
   pixel_buffer_->unlock();
 }
 
-Ogre::HardwarePixelBufferSharedPtr ScopedPixelBuffer::getPixelBuffer()
-{
-  return pixel_buffer_;
-}
-
 QImage ScopedPixelBuffer::getQImage(unsigned int width, unsigned int height)
 {
   const Ogre::PixelBox & pixelBox = pixel_buffer_->getCurrentLock();

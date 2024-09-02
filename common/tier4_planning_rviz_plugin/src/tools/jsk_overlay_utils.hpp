@@ -89,7 +89,6 @@ class ScopedPixelBuffer
 public:
   explicit ScopedPixelBuffer(Ogre::HardwarePixelBufferSharedPtr pixel_buffer);
   virtual ~ScopedPixelBuffer();
-  virtual Ogre::HardwarePixelBufferSharedPtr getPixelBuffer();
   virtual QImage getQImage(unsigned int width, unsigned int height);
   virtual QImage getQImage(OverlayObject & overlay);
   virtual QImage getQImage(unsigned int width, unsigned int height, QColor & bg_color);
