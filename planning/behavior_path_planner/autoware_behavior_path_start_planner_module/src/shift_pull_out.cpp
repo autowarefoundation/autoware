@@ -63,6 +63,9 @@ std::optional<PullOutPath> ShiftPullOut::plan(
 
   const auto lanelet_map_ptr = planner_data_->route_handler->getLaneletMapPtr();
 
+  std::vector<lanelet::Id> fused_id_start_to_end{};
+  std::optional<autoware::universe_utils::Polygon2d> fused_polygon_start_to_end = std::nullopt;
+
   // get safe path
   for (auto & pull_out_path : pull_out_paths) {
     universe_utils::ScopedTimeTrack st("get safe path", *time_keeper_);
@@ -99,8 +102,9 @@ std::optional<PullOutPath> ShiftPullOut::plan(
     // computational cost.
 
     if (
-      is_lane_departure_check_required &&
-      lane_departure_checker_->checkPathWillLeaveLane(lanelet_map_ptr, path_shift_start_to_end)) {
+      is_lane_departure_check_required && lane_departure_checker_->checkPathWillLeaveLane(
+                                            lanelet_map_ptr, path_shift_start_to_end,
+                                            fused_id_start_to_end, fused_polygon_start_to_end)) {
       planner_debug_data.conditions_evaluation.emplace_back("lane departure");
       continue;
     }

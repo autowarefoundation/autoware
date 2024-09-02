@@ -132,8 +132,18 @@ public:
   std::optional<autoware::universe_utils::Polygon2d> getFusedLaneletPolygonForPath(
     const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const;
 
+  bool updateFusedLaneletPolygonForPath(
+    const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path,
+    std::vector<lanelet::Id> & fused_lanelets_id,
+    std::optional<autoware::universe_utils::Polygon2d> & fused_lanelets_polygon) const;
+
   bool checkPathWillLeaveLane(
     const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path) const;
+
+  bool checkPathWillLeaveLane(
+    const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path,
+    std::vector<lanelet::Id> & fused_lanelets_id,
+    std::optional<autoware::universe_utils::Polygon2d> & fused_lanelets_polygon) const;
 
   PathWithLaneId cropPointsOutsideOfLanes(
     const lanelet::LaneletMapPtr lanelet_map_ptr, const PathWithLaneId & path,
@@ -176,6 +186,9 @@ private:
   bool willCrossBoundary(
     const std::vector<LinearRing2d> & vehicle_footprints,
     const SegmentRtree & uncrossable_segments) const;
+
+  lanelet::BasicPolygon2d toBasicPolygon2D(const LinearRing2d & footprint_hull) const;
+  autoware::universe_utils::Polygon2d toPolygon2D(const lanelet::BasicPolygon2d & poly) const;
 
   mutable std::shared_ptr<universe_utils::TimeKeeper> time_keeper_;
 };
