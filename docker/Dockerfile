@@ -58,13 +58,8 @@ RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     | sort \
     > /rosdep-core-depend-packages.txt \
     && cat /rosdep-core-depend-packages.txt
-COPY src/launcher /autoware/src/launcher
-COPY src/param /autoware/src/param
-COPY src/sensor_component /autoware/src/sensor_component
-COPY src/sensor_kit /autoware/src/sensor_kit
 COPY src/universe/external /autoware/src/universe/external
 COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
-COPY src/vehicle /autoware/src/vehicle
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -72,7 +67,12 @@ RUN rosdep keys --ignore-src --from-paths src \
     | sort \
     > /rosdep-universe-common-depend-packages.txt \
     && cat /rosdep-universe-common-depend-packages.txt
+COPY src/launcher /autoware/src/launcher
+COPY src/param /autoware/src/param
+COPY src/sensor_component /autoware/src/sensor_component
+COPY src/sensor_kit /autoware/src/sensor_kit
 COPY src/universe /autoware/src/universe
+COPY src/vehicle /autoware/src/vehicle
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
