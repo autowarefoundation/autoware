@@ -129,28 +129,27 @@ void calculate_collisions_to_avoid(
   }
 }
 
-OutOfLaneData calculate_outside_points(const EgoData & ego_data)
+std::vector<OutOfLanePoint> calculate_out_of_lane_points(const EgoData & ego_data)
 {
-  OutOfLaneData out_of_lane_data;
-  out_of_lane::OutOfLanePoint p;
+  std::vector<OutOfLanePoint> out_of_lane_points;
+  OutOfLanePoint p;
   for (auto i = 0UL; i < ego_data.trajectory_footprints.size(); ++i) {
     p.trajectory_index = i + ego_data.first_trajectory_idx;
     const auto & footprint = ego_data.trajectory_footprints[i];
-    out_of_lane::Polygons out_of_lane_polygons;
+    Polygons out_of_lane_polygons;
     boost::geometry::difference(footprint, ego_data.drivable_lane_polygons, out_of_lane_polygons);
     for (const auto & area : out_of_lane_polygons) {
       if (!area.outer.empty()) {
         p.outside_ring = area.outer;
-        out_of_lane_data.outside_points.push_back(p);
+        out_of_lane_points.push_back(p);
       }
     }
   }
-  return out_of_lane_data;
+  return out_of_lane_points;
 }
 
-OutOfLaneData calculate_out_of_lane_areas(const EgoData & ego_data)
+void prepare_out_of_lane_areas_rtree(OutOfLaneData & out_of_lane_data)
 {
-  auto out_of_lane_data = calculate_outside_points(ego_data);
   std::vector<OutAreaNode> rtree_nodes;
   for (auto i = 0UL; i < out_of_lane_data.outside_points.size(); ++i) {
     OutAreaNode n;
@@ -160,7 +159,6 @@ OutOfLaneData calculate_out_of_lane_areas(const EgoData & ego_data)
     rtree_nodes.push_back(n);
   }
   out_of_lane_data.outside_areas_rtree = {rtree_nodes.begin(), rtree_nodes.end()};
-  return out_of_lane_data;
 }
 
 }  // namespace autoware::motion_velocity_planner::out_of_lane

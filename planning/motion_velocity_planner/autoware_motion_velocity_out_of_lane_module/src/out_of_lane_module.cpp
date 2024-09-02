@@ -25,6 +25,7 @@
 #include <autoware/motion_utils/trajectory/interpolation.hpp>
 #include <autoware/motion_utils/trajectory/trajectory.hpp>
 #include <autoware/motion_velocity_planner_common/planner_data.hpp>
+#include <autoware/route_handler/route_handler.hpp>
 #include <autoware/universe_utils/geometry/boost_geometry.hpp>
 #include <autoware/universe_utils/ros/parameter.hpp>
 #include <autoware/universe_utils/ros/update_param.hpp>
@@ -225,6 +226,16 @@ void prepare_stop_lines_rtree(
   ego_data.stop_lines_rtree = {rtree_nodes.begin(), rtree_nodes.end()};
 }
 
+out_of_lane::OutOfLaneData prepare_out_of_lane_data(
+  const out_of_lane::EgoData & ego_data, const route_handler::RouteHandler & route_handler)
+{
+  out_of_lane::OutOfLaneData out_of_lane_data;
+  out_of_lane_data.outside_points = out_of_lane::calculate_out_of_lane_points(ego_data);
+  out_of_lane::calculate_overlapped_lanelets(out_of_lane_data, route_handler);
+  out_of_lane::prepare_out_of_lane_areas_rtree(out_of_lane_data);
+  return out_of_lane_data;
+}
+
 VelocityPlanningResult OutOfLaneModule::plan(
   const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & ego_trajectory_points,
   const std::shared_ptr<const PlannerData> planner_data)
@@ -253,8 +264,7 @@ VelocityPlanningResult OutOfLaneModule::plan(
   const auto calculate_lanelets_us = stopwatch.toc("calculate_lanelets");
 
   stopwatch.tic("calculate_out_of_lane_areas");
-  auto out_of_lane_data = calculate_out_of_lane_areas(ego_data);
-  out_of_lane::calculate_overlapped_lanelets(out_of_lane_data, *planner_data->route_handler);
+  auto out_of_lane_data = prepare_out_of_lane_data(ego_data, *planner_data->route_handler);
   const auto calculate_out_of_lane_areas_us = stopwatch.toc("calculate_out_of_lane_areas");
 
   stopwatch.tic("filter_predicted_objects");

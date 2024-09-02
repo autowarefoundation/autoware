@@ -47,9 +47,11 @@ void calculate_collisions_to_avoid(
   const std::vector<autoware_planning_msgs::msg::TrajectoryPoint> & trajectory,
   const PlannerParam & params);
 
-/// @brief calculate the areas where ego will drive outside of its lane
-/// @details the OutOfLaneData points and rtree are filled
-OutOfLaneData calculate_out_of_lane_areas(const EgoData & ego_data);
+/// @brief calculate the out of lane points
+std::vector<OutOfLanePoint> calculate_out_of_lane_points(const EgoData & ego_data);
+
+/// @brief prepare the rtree of out of lane points for the given data
+void prepare_out_of_lane_areas_rtree(OutOfLaneData & out_of_lane_data);
 }  // namespace autoware::motion_velocity_planner::out_of_lane
 
 #endif  // OUT_OF_LANE_COLLISIONS_HPP_
