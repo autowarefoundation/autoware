@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef AUTOWARE__GNSS_POSER__GNSS_POSER_CORE_HPP_
-#define AUTOWARE__GNSS_POSER__GNSS_POSER_CORE_HPP_
+#ifndef AUTOWARE__GNSS_POSER__GNSS_POSER_NODE_HPP_
+#define AUTOWARE__GNSS_POSER__GNSS_POSER_NODE_HPP_
 
 #include <component_interface_specs/map.hpp>
 #include <component_interface_utils/rclcpp.hpp>
@@ -103,4 +103,4 @@ private:
 };
 }  // namespace autoware::gnss_poser
 
-#endif  // AUTOWARE__GNSS_POSER__GNSS_POSER_CORE_HPP_
+#endif  // AUTOWARE__GNSS_POSER__GNSS_POSER_NODE_HPP_

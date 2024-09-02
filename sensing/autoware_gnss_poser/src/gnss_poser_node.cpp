@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/gnss_poser/gnss_poser_core.hpp"
+#include "autoware/gnss_poser/gnss_poser_node.hpp"
 
 #include <autoware/geography_utils/height.hpp>
 #include <autoware/geography_utils/projection.hpp>
