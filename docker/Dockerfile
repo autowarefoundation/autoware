@@ -137,14 +137,11 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/param,target=/autoware/src/param \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/sensor_component,target=/autoware/src/sensor_component \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/sensor_kit,target=/autoware/src/sensor_kit \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/external,target=/autoware/src/universe/external \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/common,target=/autoware/src/universe/autoware.universe/common \
-  # TODO(youtalk): Remove dummy_perception_publisher from autoware-universe-common
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/simulator/dummy_perception_publisher,target=/autoware/src/universe/autoware.universe/autoware.universe/simulator/dummy_perception_publisher \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/vehicle,target=/autoware/src/vehicle \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
@@ -173,6 +170,7 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/evaluator,target=/autoware/src/universe/autoware.universe/evaluator \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/launch,target=/autoware/src/universe/autoware.universe/launch \
