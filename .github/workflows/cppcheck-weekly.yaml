@@ -1,4 +1,4 @@
-name: cppcheck-daily
+name: cppcheck-weekly
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  cppcheck-daily:
+  cppcheck-weekly:
     runs-on: ubuntu-latest
 
     steps:
