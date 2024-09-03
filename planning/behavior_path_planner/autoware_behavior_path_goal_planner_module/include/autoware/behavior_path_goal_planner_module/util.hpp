@@ -64,6 +64,19 @@ lanelet::ConstLanelets generateBetweenEgoAndExpandedPullOverLanes(
   const geometry_msgs::msg::Pose ego_pose,
   const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double outer_road_offset,
   const double inner_road_offset);
+
+/*
+ * @brief generate polygon to extract objects
+ * @param pull_over_lanes pull over lanes
+ * @param left_side left side or right side
+ * @param outer_offset outer offset from pull over lane boundary
+ * @param inner_offset inner offset from pull over lane boundary
+ * @return polygon to extract objects
+ */
+std::optional<Polygon2d> generateObjectExtractionPolygon(
+  const lanelet::ConstLanelets & pull_over_lanes, const bool left_side, const double outer_offset,
+  const double inner_offset);
+
 PredictedObjects extractObjectsInExpandedPullOverLanes(
   const RouteHandler & route_handler, const bool left_side, const double backward_distance,
   const double forward_distance, double bound_offset, const PredictedObjects & objects);

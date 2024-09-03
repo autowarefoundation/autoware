@@ -275,6 +275,7 @@ struct GoalPlannerDebugData
   FreespacePlannerDebugData freespace_planner{};
   std::vector<Polygon2d> ego_polygons_expanded{};
   lanelet::ConstLanelet expanded_pull_over_lane_between_ego{};
+  Polygon2d objects_extraction_polygon{};
 };
 
 struct LastApprovalData

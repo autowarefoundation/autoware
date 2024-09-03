@@ -97,9 +97,7 @@ GoalSearcher::GoalSearcher(
 {
 }
 
-GoalCandidates GoalSearcher::search(
-  const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
-  const std::shared_ptr<const PlannerData> & planner_data)
+GoalCandidates GoalSearcher::search(const std::shared_ptr<const PlannerData> & planner_data)
 {
   GoalCandidates goal_candidates{};
 
@@ -193,8 +191,6 @@ GoalCandidates GoalSearcher::search(
   }
   createAreaPolygons(original_search_poses, planner_data);
 
-  update(goal_candidates, occupancy_grid_map, planner_data);
-
   return goal_candidates;
 }
 
@@ -268,16 +264,10 @@ void GoalSearcher::countObjectsToAvoid(
 void GoalSearcher::update(
   GoalCandidates & goal_candidates,
   const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
-  const std::shared_ptr<const PlannerData> & planner_data) const
+  const std::shared_ptr<const PlannerData> & planner_data, const PredictedObjects & objects) const
 {
-  const auto pull_over_lane_stop_objects =
-    goal_planner_utils::extractStaticObjectsInExpandedPullOverLanes(
-      *(planner_data->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
-      parameters_.forward_goal_search_length, parameters_.detection_bound_offset,
-      *(planner_data->dynamic_object), parameters_.th_moving_object_velocity);
-
   if (parameters_.prioritize_goals_before_objects) {
-    countObjectsToAvoid(goal_candidates, pull_over_lane_stop_objects, planner_data);
+    countObjectsToAvoid(goal_candidates, objects, planner_data);
   }
 
   if (parameters_.goal_priority == "minimum_weighted_distance") {
@@ -297,7 +287,7 @@ void GoalSearcher::update(
     const Pose goal_pose = goal_candidate.goal_pose;
 
     // check collision with footprint
-    if (checkCollision(goal_pose, pull_over_lane_stop_objects, occupancy_grid_map)) {
+    if (checkCollision(goal_pose, objects, occupancy_grid_map)) {
       goal_candidate.is_safe = false;
       continue;
     }
@@ -305,7 +295,7 @@ void GoalSearcher::update(
     // check longitudinal margin with pull over lane objects
     constexpr bool filter_inside = true;
     const auto target_objects = goal_planner_utils::filterObjectsByLateralDistance(
-      goal_pose, planner_data->parameters.vehicle_width, pull_over_lane_stop_objects,
+      goal_pose, planner_data->parameters.vehicle_width, objects,
       parameters_.object_recognition_collision_check_hard_margins.back(), filter_inside);
     if (checkCollisionWithLongitudinalDistance(
           goal_pose, target_objects, occupancy_grid_map, planner_data)) {
@@ -323,33 +313,25 @@ void GoalSearcher::update(
 bool GoalSearcher::isSafeGoalWithMarginScaleFactor(
   const GoalCandidate & goal_candidate, const double margin_scale_factor,
   const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
-  const std::shared_ptr<const PlannerData> & planner_data) const
+  const std::shared_ptr<const PlannerData> & planner_data, const PredictedObjects & objects) const
 {
   if (!parameters_.use_object_recognition) {
     return true;
   }
 
   const Pose goal_pose = goal_candidate.goal_pose;
-
-  const auto pull_over_lane_stop_objects =
-    goal_planner_utils::extractStaticObjectsInExpandedPullOverLanes(
-      *(planner_data->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
-      parameters_.forward_goal_search_length, parameters_.detection_bound_offset,
-      *(planner_data->dynamic_object), parameters_.th_moving_object_velocity);
-
   const double margin =
     parameters_.object_recognition_collision_check_hard_margins.back() * margin_scale_factor;
 
   if (utils::checkCollisionBetweenFootprintAndObjects(
-        vehicle_footprint_, goal_pose, pull_over_lane_stop_objects, margin)) {
+        vehicle_footprint_, goal_pose, objects, margin)) {
     return false;
   }
 
   // check longitudinal margin with pull over lane objects
   constexpr bool filter_inside = true;
   const auto target_objects = goal_planner_utils::filterObjectsByLateralDistance(
-    goal_pose, planner_data->parameters.vehicle_width, pull_over_lane_stop_objects, margin,
-    filter_inside);
+    goal_pose, planner_data->parameters.vehicle_width, objects, margin, filter_inside);
   if (checkCollisionWithLongitudinalDistance(
         goal_pose, target_objects, occupancy_grid_map, planner_data)) {
     return false;
