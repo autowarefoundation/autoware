@@ -53,7 +53,7 @@ public:
     const tensorrt_common::BuildConfig build_config =
       tensorrt_common::BuildConfig("MinMax", -1, false, false, false, 0.0));
 
-  ~TrtShapeEstimator();
+  ~TrtShapeEstimator() = default;
 
   bool inference(const DetectedObjectsWithFeature & input, DetectedObjectsWithFeature & output);
 
