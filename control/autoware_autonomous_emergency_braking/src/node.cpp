@@ -250,7 +250,7 @@ void AEB::onImu(const Imu::ConstSharedPtr input_msg)
   geometry_msgs::msg::TransformStamped transform_stamped{};
   try {
     transform_stamped = tf_buffer_.lookupTransform(
-      "base_link", input_msg->header.frame_id, input_msg->header.stamp,
+      "base_link", input_msg->header.frame_id, rclcpp::Time(0),
       rclcpp::Duration::from_seconds(0.5));
   } catch (tf2::TransformException & ex) {
     RCLCPP_ERROR_STREAM(
@@ -631,7 +631,7 @@ std::optional<Path> AEB::generateEgoPath(const Trajectory & predicted_traj)
   geometry_msgs::msg::TransformStamped transform_stamped{};
   try {
     transform_stamped = tf_buffer_.lookupTransform(
-      "base_link", predicted_traj.header.frame_id, predicted_traj.header.stamp,
+      "base_link", predicted_traj.header.frame_id, rclcpp::Time(0),
       rclcpp::Duration::from_seconds(0.5));
   } catch (tf2::TransformException & ex) {
     RCLCPP_ERROR_STREAM(
@@ -705,7 +705,7 @@ void AEB::createObjectDataUsingPredictedObjects(
   geometry_msgs::msg::TransformStamped transform_stamped{};
   try {
     transform_stamped = tf_buffer_.lookupTransform(
-      "base_link", predicted_objects_ptr_->header.frame_id, stamp,
+      "base_link", predicted_objects_ptr_->header.frame_id, rclcpp::Time(0),
       rclcpp::Duration::from_seconds(0.5));
   } catch (tf2::TransformException & ex) {
     RCLCPP_ERROR_STREAM(get_logger(), "[AEB] Failed to look up transform from base_link to map");
