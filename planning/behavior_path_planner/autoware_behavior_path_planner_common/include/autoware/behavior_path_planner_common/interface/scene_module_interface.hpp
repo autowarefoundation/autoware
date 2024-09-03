@@ -583,11 +583,7 @@ protected:
     stop_reason_.stop_factors.push_back(stop_factor);
   }
 
-  void setDrivableLanes(const std::vector<DrivableLanes> & drivable_lanes)
-  {
-    drivable_lanes_marker_ =
-      marker_utils::createDrivableLanesMarkerArray(drivable_lanes, "drivable_lanes");
-  }
+  void setDrivableLanes(const std::vector<DrivableLanes> & drivable_lanes);
 
   BehaviorModuleOutput getPreviousModuleOutput() const { return previous_module_output_; }
 

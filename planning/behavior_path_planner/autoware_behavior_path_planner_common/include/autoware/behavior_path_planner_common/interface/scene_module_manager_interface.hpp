@@ -256,59 +256,7 @@ public:
   virtual void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) = 0;
 
 protected:
-  void initInterface(rclcpp::Node * node, const std::vector<std::string> & rtc_types)
-  {
-    using autoware::universe_utils::getOrDeclareParameter;
-
-    // init manager configuration
-    {
-      std::string ns = name_ + ".";
-      try {
-        config_.enable_rtc = getOrDeclareParameter<bool>(*node, "enable_all_modules_auto_mode")
-                               ? false
-                               : getOrDeclareParameter<bool>(*node, ns + "enable_rtc");
-      } catch (const std::exception & e) {
-        config_.enable_rtc = getOrDeclareParameter<bool>(*node, ns + "enable_rtc");
-      }
-
-      config_.enable_simultaneous_execution_as_approved_module =
-        getOrDeclareParameter<bool>(*node, ns + "enable_simultaneous_execution_as_approved_module");
-      config_.enable_simultaneous_execution_as_candidate_module = getOrDeclareParameter<bool>(
-        *node, ns + "enable_simultaneous_execution_as_candidate_module");
-    }
-
-    // init rtc configuration
-    for (const auto & rtc_type : rtc_types) {
-      const auto snake_case_name = utils::convertToSnakeCase(name_);
-      const auto rtc_interface_name =
-        rtc_type.empty() ? snake_case_name : snake_case_name + "_" + rtc_type;
-      rtc_interface_ptr_map_.emplace(
-        rtc_type, std::make_shared<RTCInterface>(node, rtc_interface_name, config_.enable_rtc));
-      objects_of_interest_marker_interface_ptr_map_.emplace(
-        rtc_type, std::make_shared<ObjectsOfInterestMarkerInterface>(node, rtc_interface_name));
-    }
-
-    // init publisher
-    {
-      pub_info_marker_ = node->create_publisher<MarkerArray>("~/info/" + name_, 20);
-      pub_debug_marker_ = node->create_publisher<MarkerArray>("~/debug/" + name_, 20);
-      pub_virtual_wall_ = node->create_publisher<MarkerArray>("~/virtual_wall/" + name_, 20);
-      pub_drivable_lanes_ = node->create_publisher<MarkerArray>("~/drivable_lanes/" + name_, 20);
-      pub_processing_time_ = node->create_publisher<universe_utils::ProcessingTimeDetail>(
-        "~/processing_time/" + name_, 20);
-    }
-
-    // init steering factor
-    {
-      steering_factor_interface_ptr_ =
-        std::make_shared<SteeringFactorInterface>(node, utils::convertToSnakeCase(name_));
-    }
-
-    // misc
-    {
-      node_ = node;
-    }
-  }
+  void initInterface(rclcpp::Node * node, const std::vector<std::string> & rtc_types);
 
   virtual std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() = 0;
 

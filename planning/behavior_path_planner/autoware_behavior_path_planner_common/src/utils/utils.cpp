@@ -99,7 +99,6 @@ double l2Norm(const Vector3 vector)
   return std::sqrt(std::pow(vector.x, 2) + std::pow(vector.y, 2) + std::pow(vector.z, 2));
 }
 
-// cppcheck-suppress unusedFunction
 bool checkCollisionBetweenPathFootprintsAndObjects(
   const autoware::universe_utils::LinearRing2d & local_vehicle_footprint,
   const PathWithLaneId & ego_path, const PredictedObjects & dynamic_objects, const double margin)
@@ -1044,39 +1043,6 @@ PathWithLaneId getCenterLinePath(
   return resampled_path_with_lane_id;
 }
 
-// TODO(murooka) remove calcSignedArcLength using findNearestSegmentIndex inside the
-// function
-// cppcheck-suppress unusedFunction
-PathWithLaneId setDecelerationVelocity(
-  const PathWithLaneId & input, const double target_velocity, const Pose target_pose,
-  const double buffer, const double deceleration_interval)
-{
-  auto reference_path = input;
-
-  for (auto & point : reference_path.points) {
-    const auto arclength_to_target = std::max(
-      0.0, autoware::motion_utils::calcSignedArcLength(
-             reference_path.points, point.point.pose.position, target_pose.position) +
-             buffer);
-    if (arclength_to_target > deceleration_interval) continue;
-    point.point.longitudinal_velocity_mps = std::min(
-      point.point.longitudinal_velocity_mps,
-      static_cast<float>(
-        (arclength_to_target / deceleration_interval) *
-          (point.point.longitudinal_velocity_mps - target_velocity) +
-        target_velocity));
-  }
-
-  const auto stop_point_length =
-    autoware::motion_utils::calcSignedArcLength(reference_path.points, 0, target_pose.position) +
-    buffer;
-  if (std::abs(target_velocity) < eps && stop_point_length > 0.0) {
-    const auto stop_point = utils::insertStopPoint(stop_point_length, reference_path);
-  }
-
-  return reference_path;
-}
-
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification)
 {
   std::uint8_t label = ObjectClassification::UNKNOWN;
@@ -1493,7 +1459,6 @@ lanelet::ConstLanelets getLaneletsFromPath(
   return lanelets;
 }
 
-// cppcheck-suppress unusedFunction
 std::string convertToSnakeCase(const std::string & input_str)
 {
   std::string output_str = std::string{static_cast<char>(std::tolower(input_str.at(0)))};
