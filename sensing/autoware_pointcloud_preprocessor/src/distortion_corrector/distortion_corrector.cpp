@@ -422,4 +422,7 @@ inline void DistortionCorrector3D::undistortPointImplementation(
   prev_transformation_matrix_ = transformation_matrix_;
 }
 
+template class DistortionCorrector<DistortionCorrector2D>;
+template class DistortionCorrector<DistortionCorrector3D>;
+
 }  // namespace autoware::pointcloud_preprocessor
