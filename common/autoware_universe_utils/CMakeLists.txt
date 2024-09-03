@@ -11,6 +11,7 @@ find_package(Boost REQUIRED)
 find_package(fmt REQUIRED)
 
 ament_auto_add_library(autoware_universe_utils SHARED
+  src/geometry/alt_geometry.cpp
   src/geometry/geometry.cpp
   src/geometry/pose_deviation.cpp
   src/geometry/boost_polygon_utils.cpp
