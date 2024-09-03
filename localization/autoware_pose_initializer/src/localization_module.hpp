@@ -1,4 +1,4 @@
-// Copyright 2022 The Autoware Contributors
+// Copyright 2024 The Autoware Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,31 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POSE_INITIALIZER__GNSS_MODULE_HPP_
-#define POSE_INITIALIZER__GNSS_MODULE_HPP_
+#ifndef LOCALIZATION_MODULE_HPP_
+#define LOCALIZATION_MODULE_HPP_
 
-#include <autoware/map_height_fitter/map_height_fitter.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <tier4_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 
-class GnssModule
+#include <string>
+#include <tuple>
+
+namespace autoware::pose_initializer
+{
+class LocalizationModule
 {
 private:
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
+  using RequestPoseAlignment = tier4_localization_msgs::srv::PoseWithCovarianceStamped;
 
 public:
-  explicit GnssModule(rclcpp::Node * node);
-  PoseWithCovarianceStamped get_pose();
+  LocalizationModule(rclcpp::Node * node, const std::string & service_name);
+  std::tuple<PoseWithCovarianceStamped, bool> align_pose(const PoseWithCovarianceStamped & pose);
 
 private:
-  void on_pose(PoseWithCovarianceStamped::ConstSharedPtr msg);
-
-  autoware::map_height_fitter::MapHeightFitter fitter_;
-  rclcpp::Clock::SharedPtr clock_;
-  rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_gnss_pose_;
-  PoseWithCovarianceStamped::ConstSharedPtr pose_;
-  double timeout_;
+  rclcpp::Logger logger_;
+  rclcpp::Client<RequestPoseAlignment>::SharedPtr cli_align_;
 };
+}  // namespace autoware::pose_initializer
 
-#endif  // POSE_INITIALIZER__GNSS_MODULE_HPP_
+#endif  // LOCALIZATION_MODULE_HPP_

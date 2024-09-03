@@ -19,6 +19,8 @@
 
 #include <memory>
 
+namespace autoware::pose_initializer
+{
 GnssModule::GnssModule(rclcpp::Node * node)
 : fitter_(node),
   clock_(node->get_clock()),
@@ -55,3 +57,4 @@ geometry_msgs::msg::PoseWithCovarianceStamped GnssModule::get_pose()
   }
   return pose;
 }
+}  // namespace autoware::pose_initializer

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POSE_INITIALIZER__POSE_INITIALIZER_CORE_HPP_
-#define POSE_INITIALIZER__POSE_INITIALIZER_CORE_HPP_
+#ifndef POSE_INITIALIZER_CORE_HPP_
+#define POSE_INITIALIZER_CORE_HPP_
 
 #include "localization_util/diagnostics_module.hpp"
 
@@ -26,6 +26,8 @@
 
 #include <memory>
 
+namespace autoware::pose_initializer
+{
 class StopCheckModule;
 class LocalizationModule;
 class GnssModule;
@@ -69,5 +71,6 @@ private:
     const Initialize::Service::Response::SharedPtr res);
   PoseWithCovarianceStamped get_gnss_pose();
 };
+}  // namespace autoware::pose_initializer
 
-#endif  // POSE_INITIALIZER__POSE_INITIALIZER_CORE_HPP_
+#endif  // POSE_INITIALIZER_CORE_HPP_

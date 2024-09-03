@@ -1,20 +1,20 @@
 cmake_minimum_required(VERSION 3.14)
-project(pose_initializer)
+project(autoware_pose_initializer)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
-  src/pose_initializer/pose_initializer_core.cpp
-  src/pose_initializer/gnss_module.cpp
-  src/pose_initializer/localization_module.cpp
-  src/pose_initializer/stop_check_module.cpp
-  src/pose_initializer/ekf_localization_trigger_module.cpp
-  src/pose_initializer/ndt_localization_trigger_module.cpp
+  src/pose_initializer_core.cpp
+  src/gnss_module.cpp
+  src/localization_module.cpp
+  src/stop_check_module.cpp
+  src/ekf_localization_trigger_module.cpp
+  src/ndt_localization_trigger_module.cpp
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "PoseInitializer"
+  PLUGIN "autoware::pose_initializer::PoseInitializer"
   EXECUTABLE ${PROJECT_NAME}_node
   EXECUTOR MultiThreadedExecutor
 )

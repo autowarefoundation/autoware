@@ -20,6 +20,8 @@
 #include <memory>
 #include <string>
 
+namespace autoware::pose_initializer
+{
 using ServiceException = component_interface_utils::ServiceException;
 using Initialize = localization_interface::Initialize;
 using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
@@ -50,3 +52,4 @@ std::tuple<PoseWithCovarianceStamped, bool> LocalizationModule::align_pose(
   // Overwrite the covariance.
   return std::make_tuple(res->pose_with_covariance, res->reliable);
 }
+}  // namespace autoware::pose_initializer

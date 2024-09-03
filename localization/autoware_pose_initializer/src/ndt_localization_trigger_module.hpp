@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POSE_INITIALIZER__NDT_LOCALIZATION_TRIGGER_MODULE_HPP_
-#define POSE_INITIALIZER__NDT_LOCALIZATION_TRIGGER_MODULE_HPP_
+#ifndef NDT_LOCALIZATION_TRIGGER_MODULE_HPP_
+#define NDT_LOCALIZATION_TRIGGER_MODULE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <std_srvs/srv/set_bool.hpp>
 
+namespace autoware::pose_initializer
+{
 class NdtLocalizationTriggerModule
 {
 private:
@@ -33,5 +35,6 @@ private:
   rclcpp::Node * node_;
   rclcpp::Client<SetBool>::SharedPtr client_ndt_trigger_;
 };
+}  // namespace autoware::pose_initializer
 
-#endif  // POSE_INITIALIZER__NDT_LOCALIZATION_TRIGGER_MODULE_HPP_
+#endif  // NDT_LOCALIZATION_TRIGGER_MODULE_HPP_

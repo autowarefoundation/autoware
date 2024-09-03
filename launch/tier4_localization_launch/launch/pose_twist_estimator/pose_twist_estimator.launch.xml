@@ -120,7 +120,7 @@
       <let name="sub_gnss_pose_cov" value="/localization/pose_estimator/pose_with_covariance" unless="$(var multi_localizer_mode)"/>
     </group>
 
-    <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
+    <include file="$(find-pkg-share autoware_pose_initializer)/launch/pose_initializer.launch.xml">
       <arg name="user_defined_initial_pose/enable" value="$(var user_defined_initial_pose/enable)"/>
       <arg name="user_defined_initial_pose/pose" value="$(var user_defined_initial_pose/pose)"/>
       <arg name="ndt_enabled" value="$(var use_ndt_pose)"/>

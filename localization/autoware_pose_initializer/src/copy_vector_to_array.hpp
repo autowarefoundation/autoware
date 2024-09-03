@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POSE_INITIALIZER__COPY_VECTOR_TO_ARRAY_HPP_
-#define POSE_INITIALIZER__COPY_VECTOR_TO_ARRAY_HPP_
+#ifndef COPY_VECTOR_TO_ARRAY_HPP_
+#define COPY_VECTOR_TO_ARRAY_HPP_
 
 #include <fmt/core.h>
 
@@ -22,6 +22,8 @@
 #include <string>
 #include <vector>
 
+namespace autoware::pose_initializer
+{
 template <typename T, size_t N>
 void copy_vector_to_array(const std::vector<T> & vector, std::array<T, N> & array)
 {
@@ -44,5 +46,6 @@ std::array<double, 36> get_covariance_parameter(NodeT * node, const std::string 
   copy_vector_to_array(parameter, covariance);
   return covariance;
 }
+}  // namespace autoware::pose_initializer
 
-#endif  // POSE_INITIALIZER__COPY_VECTOR_TO_ARRAY_HPP_
+#endif  // COPY_VECTOR_TO_ARRAY_HPP_

@@ -14,6 +14,8 @@
 
 #include "stop_check_module.hpp"
 
+namespace autoware::pose_initializer
+{
 StopCheckModule::StopCheckModule(rclcpp::Node * node, double buffer_duration)
 : VehicleStopCheckerBase(node, buffer_duration)
 {
@@ -28,3 +30,4 @@ void StopCheckModule::on_twist(TwistWithCovarianceStamped::ConstSharedPtr msg)
   twist.twist = msg->twist.twist;
   addTwist(twist);
 }
+}  // namespace autoware::pose_initializer

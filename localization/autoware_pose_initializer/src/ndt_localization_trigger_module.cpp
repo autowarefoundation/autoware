@@ -20,6 +20,8 @@
 #include <memory>
 #include <string>
 
+namespace autoware::pose_initializer
+{
 using ServiceException = component_interface_utils::ServiceException;
 using Initialize = localization_interface::Initialize;
 
@@ -65,3 +67,4 @@ void NdtLocalizationTriggerModule::send_request(bool flag, bool need_spin) const
       Initialize::Service::Response::ERROR_ESTIMATION, "NDT " + command_name + " failed");
   }
 }
+}  // namespace autoware::pose_initializer

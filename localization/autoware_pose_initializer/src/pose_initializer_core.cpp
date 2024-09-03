@@ -25,6 +25,8 @@
 #include <sstream>
 #include <vector>
 
+namespace autoware::pose_initializer
+{
 PoseInitializer::PoseInitializer(const rclcpp::NodeOptions & options)
 : rclcpp::Node("pose_initializer", options)
 {
@@ -221,6 +223,7 @@ geometry_msgs::msg::PoseWithCovarianceStamped PoseInitializer::get_gnss_pose()
   throw ServiceException(
     Initialize::Service::Response::ERROR_GNSS_SUPPORT, "GNSS is not supported.");
 }
+}  // namespace autoware::pose_initializer
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(PoseInitializer)
+RCLCPP_COMPONENTS_REGISTER_NODE(autoware::pose_initializer::PoseInitializer)

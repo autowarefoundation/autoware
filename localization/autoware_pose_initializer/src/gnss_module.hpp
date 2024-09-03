@@ -12,25 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POSE_INITIALIZER__STOP_CHECK_MODULE_HPP_
-#define POSE_INITIALIZER__STOP_CHECK_MODULE_HPP_
+#ifndef GNSS_MODULE_HPP_
+#define GNSS_MODULE_HPP_
 
-#include <autoware/motion_utils/vehicle/vehicle_state_checker.hpp>
+#include <autoware/map_height_fitter/map_height_fitter.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 
-class StopCheckModule : public autoware::motion_utils::VehicleStopCheckerBase
+namespace autoware::pose_initializer
 {
+class GnssModule
+{
+private:
+  using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
+
 public:
-  StopCheckModule(rclcpp::Node * node, double buffer_duration);
+  explicit GnssModule(rclcpp::Node * node);
+  PoseWithCovarianceStamped get_pose();
 
 private:
-  using TwistWithCovarianceStamped = geometry_msgs::msg::TwistWithCovarianceStamped;
-  using TwistStamped = geometry_msgs::msg::TwistStamped;
-  rclcpp::Subscription<TwistWithCovarianceStamped>::SharedPtr sub_twist_;
-  void on_twist(TwistWithCovarianceStamped::ConstSharedPtr msg);
-};
+  void on_pose(PoseWithCovarianceStamped::ConstSharedPtr msg);
 
-#endif  // POSE_INITIALIZER__STOP_CHECK_MODULE_HPP_
+  autoware::map_height_fitter::MapHeightFitter fitter_;
+  rclcpp::Clock::SharedPtr clock_;
+  rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_gnss_pose_;
+  PoseWithCovarianceStamped::ConstSharedPtr pose_;
+  double timeout_;
+};
+}  // namespace autoware::pose_initializer
+
+#endif  // GNSS_MODULE_HPP_

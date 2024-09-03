@@ -1,5 +1,5 @@
 <launch>
-  <arg name="config_file" default="$(find-pkg-share pose_initializer)/config/pose_initializer.param.yaml"/>
+  <arg name="config_file" default="$(find-pkg-share autoware_pose_initializer)/config/pose_initializer.param.yaml"/>
   <arg name="ndt_enabled"/>
   <arg name="gnss_enabled"/>
   <arg name="ekf_enabled"/>
@@ -9,7 +9,7 @@
   <arg name="sub_gnss_pose_cov" default="sub_gnss_pose_cov"/>
   <arg name="gnss_initial_pose_auto_fix_target" default="pointcloud_map"/>
 
-  <node pkg="pose_initializer" exec="pose_initializer_node" output="both">
+  <node pkg="autoware_pose_initializer" exec="autoware_pose_initializer_node" output="both">
     <param from="$(var config_file)" allow_substs="true"/>
     <remap from="yabloc_align" to="/localization/pose_estimator/yabloc/initializer/yabloc_align_srv"/>
     <remap from="ndt_align" to="/localization/pose_estimator/ndt_align_srv"/>
