@@ -812,7 +812,7 @@ AvoidLineArray ShiftLineGenerator::applyFillGapProcess(
 
   // fill gap among shift lines.
   for (size_t i = 0; i < sorted.size() - 1; ++i) {
-    if (sorted.at(i + 1).start_longitudinal < sorted.at(i).end_longitudinal) {
+    if (sorted.at(i + 1).start_longitudinal < sorted.at(i).end_longitudinal + 1e-3) {
       continue;
     }
 
@@ -826,8 +826,6 @@ AvoidLineArray ShiftLineGenerator::applyFillGapProcess(
   utils::static_obstacle_avoidance::fillAdditionalInfoFromLongitudinal(data, ret);
   utils::static_obstacle_avoidance::fillAdditionalInfoFromLongitudinal(
     data, debug.step1_front_shift_line);
-
-  applySmallShiftFilter(ret, 1e-3);
 
   return ret;
 }
