@@ -428,29 +428,3 @@
   ansible.builtin.unarchive:
     src: "{{ data_dir }}/tvm_utility/yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz"
     dest: "{{ data_dir }}/tvm_utility/models/yolo_v2_tiny"
-
-# lidar_apollo_segmentation_tvm
-- name: Create lidar_apollo_segmentation_tvm/models directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/lidar_apollo_segmentation_tvm/models"
-    mode: "755"
-    state: directory
-
-- name: Download baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz
-  become: true
-  ansible.builtin.get_url:
-    url: https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz
-    dest: "{{ data_dir }}/lidar_apollo_segmentation_tvm/baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz"
-    mode: "644"
-    checksum: sha256:4293e6196ec937d2cd5ec658e5ce70933647d2d38633a1805febb36cafd684e3
-
-- name: Create baidu_cnn folder in lidar_apollo_segmentation_tvm/models of {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/lidar_apollo_segmentation_tvm/models/baidu_cnn"
-    mode: "755"
-    state: directory
-
-- name: Extract baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz
-  ansible.builtin.unarchive:
-    src: "{{ data_dir }}/lidar_apollo_segmentation_tvm/baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz"
-    dest: "{{ data_dir }}/lidar_apollo_segmentation_tvm/models/baidu_cnn"

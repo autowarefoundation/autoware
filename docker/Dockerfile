@@ -1,7 +1,7 @@
-# hadolint global ignore=DL3006,DL3008,DL3013
 ARG BASE_IMAGE
 
-FROM $BASE_IMAGE as base
+# hadolint ignore=DL3006
+FROM $BASE_IMAGE AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
@@ -32,7 +32,8 @@ RUN --mount=type=ssh \
 # Create entrypoint
 CMD ["/bin/bash"]
 
-FROM $BASE_IMAGE as rosdep-depend
+# hadolint ignore=DL3006
+FROM $BASE_IMAGE AS rosdep-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
@@ -78,13 +79,12 @@ RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
     > /rosdep-exec-depend-packages.txt \
     && cat /rosdep-exec-depend-packages.txt
 
-FROM base as autoware-core
+FROM base AS autoware-core
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG SETUP_ARGS
 ENV CCACHE_DIR="/root/.ccache"
 
-# cspell: ignore libcu libnv
 # Set up development environment
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -100,17 +100,20 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
-RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
-  --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && colcon build --cmake-args \
     " -Wno-dev" \
     " --no-warn-unused-cli" \
+    --merge-install \
+    --install-base /opt/autoware \
     --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && rm -rf /autoware/build
 
-FROM autoware-core as autoware-universe
+FROM autoware-core AS autoware-universe
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG SETUP_ARGS
@@ -125,19 +128,29 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Build Autoware
-RUN --mount=type=bind,from=rosdep-depend,source=/autoware/src,target=/autoware/src \
-  --mount=type=cache,target=${CCACHE_DIR} \
+# hadolint ignore=SC1091
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/param,target=/autoware/src/param \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/sensor_component,target=/autoware/src/sensor_component \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/sensor_kit,target=/autoware/src/sensor_kit \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe,target=/autoware/src/universe \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/vehicle,target=/autoware/src/vehicle \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && colcon build --cmake-args \
     " -Wno-dev" \
     " --no-warn-unused-cli" \
+    --merge-install \
+    --install-base /opt/autoware \
     --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && rm -rf /autoware/build
 
 CMD ["/bin/bash"]
 
-FROM autoware-universe as devel
+FROM autoware-universe AS devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install development tools and artifacts
@@ -147,14 +160,13 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
-COPY src /autoware/src
 # Create entrypoint
 COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base as runtime
+FROM base AS runtime
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -179,11 +191,11 @@ RUN --mount=type=ssh \
     /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
-COPY --from=autoware-universe /autoware/install/ /autoware/install/
+COPY --from=autoware-universe /opt/autoware /opt/autoware
 
 # Copy bash aliases
 COPY docker/etc/.bash_aliases /root/.bash_aliases
-RUN echo "source /autoware/install/setup.bash" > /etc/bash.bashrc
+RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 
 # Create entrypoint
 COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
