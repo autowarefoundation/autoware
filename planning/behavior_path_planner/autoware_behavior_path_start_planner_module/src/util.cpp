@@ -92,7 +92,6 @@ lanelet::ConstLanelets getPullOutLanes(
     /*forward_only_in_route*/ true);
 }
 
-// cppcheck-suppress unusedFunction
 std::optional<PathWithLaneId> extractCollisionCheckSection(
   const PullOutPath & path, const double collision_check_distance_from_end)
 {

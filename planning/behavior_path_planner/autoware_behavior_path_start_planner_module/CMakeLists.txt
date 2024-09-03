@@ -8,6 +8,7 @@ pluginlib_export_plugin_description_file(autoware_behavior_path_planner plugins.
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/start_planner_module.cpp
   src/manager.cpp
+  src/pull_out_planner_base.cpp
   src/freespace_pull_out.cpp
   src/geometric_pull_out.cpp
   src/shift_pull_out.cpp
