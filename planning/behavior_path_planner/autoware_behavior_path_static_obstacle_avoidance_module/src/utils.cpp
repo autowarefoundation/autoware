@@ -92,28 +92,6 @@ size_t findFirstNearestIndex(const T & points, const geometry_msgs::msg::Point &
   return min_idx;
 }
 
-template <class T>
-size_t findFirstNearestSegmentIndex(const T & points, const geometry_msgs::msg::Point & point)
-{
-  const size_t nearest_idx = findFirstNearestIndex(points, point);
-
-  if (nearest_idx == 0) {
-    return 0;
-  }
-  if (nearest_idx == points.size() - 1) {
-    return points.size() - 2;
-  }
-
-  const double signed_length =
-    autoware::motion_utils::calcLongitudinalOffsetToSegment(points, nearest_idx, point);
-
-  if (signed_length <= 0) {
-    return nearest_idx - 1;
-  }
-
-  return nearest_idx;
-}
-
 geometry_msgs::msg::Polygon createVehiclePolygon(
   const autoware::vehicle_info_utils::VehicleInfo & vehicle_info, const double offset)
 {
