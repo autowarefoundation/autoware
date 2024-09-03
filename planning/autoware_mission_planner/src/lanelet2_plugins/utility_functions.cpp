@@ -18,9 +18,6 @@
 
 #include <lanelet2_core/geometry/Lanelet.h>
 
-#include <unordered_set>
-#include <utility>
-
 autoware::universe_utils::Polygon2d convert_linear_ring_to_polygon(
   autoware::universe_utils::LinearRing2d footprint)
 {
@@ -39,63 +36,6 @@ void insert_marker_array(
   visualization_msgs::msg::MarkerArray * a1, const visualization_msgs::msg::MarkerArray & a2)
 {
   a1->markers.insert(a1->markers.end(), a2.markers.begin(), a2.markers.end());
-}
-
-lanelet::ConstLanelet combine_lanelets_with_shoulder(
-  const lanelet::ConstLanelets & lanelets,
-  const autoware::route_handler::RouteHandler & route_handler)
-{
-  lanelet::Points3d lefts;
-  lanelet::Points3d rights;
-  lanelet::Points3d centers;
-  std::vector<uint64_t> left_bound_ids;
-  std::vector<uint64_t> right_bound_ids;
-
-  for (const auto & llt : lanelets) {
-    if (llt.id() != lanelet::InvalId) {
-      left_bound_ids.push_back(llt.leftBound().id());
-      right_bound_ids.push_back(llt.rightBound().id());
-    }
-  }
-
-  // lambda to add bound to target_bound
-  const auto add_bound = [](const auto & bound, auto & target_bound) {
-    std::transform(
-      bound.begin(), bound.end(), std::back_inserter(target_bound),
-      [](const auto & pt) { return lanelet::Point3d(pt); });
-  };
-  for (const auto & llt : lanelets) {
-    // check if shoulder lanelets which has RIGHT bound same to LEFT bound of lanelet exist
-    const auto left_shared_shoulder = route_handler.getLeftShoulderLanelet(llt);
-    if (left_shared_shoulder) {
-      // if exist, add left bound of SHOULDER lanelet to lefts
-      add_bound(left_shared_shoulder->leftBound(), lefts);
-    } else if (
-      // if not exist, add left bound of lanelet to lefts
-      // if the **left** of this lanelet does not match any of the **right** bounds of `lanelets`,
-      // then its left bound constitutes the left boundary of the entire merged lanelet
-      std::count(right_bound_ids.begin(), right_bound_ids.end(), llt.leftBound().id()) < 1) {
-      add_bound(llt.leftBound(), lefts);
-    }
-
-    // check if shoulder lanelets which has LEFT bound same to RIGHT bound of lanelet exist
-    const auto right_shared_shoulder = route_handler.getRightShoulderLanelet(llt);
-    if (right_shared_shoulder) {
-      // if exist, add right bound of SHOULDER lanelet to rights
-      add_bound(right_shared_shoulder->rightBound(), rights);
-    } else if (
-      // if not exist, add right bound of lanelet to rights
-      // if the **right** of this lanelet does not match any of the **left** bounds of `lanelets`,
-      // then its right bound constitutes the right boundary of the entire merged lanelet
-      std::count(left_bound_ids.begin(), left_bound_ids.end(), llt.rightBound().id()) < 1) {
-      add_bound(llt.rightBound(), rights);
-    }
-  }
-
-  const auto left_bound = lanelet::LineString3d(lanelet::InvalId, lefts);
-  const auto right_bound = lanelet::LineString3d(lanelet::InvalId, rights);
-  auto combined_lanelet = lanelet::Lanelet(lanelet::InvalId, left_bound, right_bound);
-  return std::move(combined_lanelet);
 }
 
 std::vector<geometry_msgs::msg::Point> convertCenterlineToPoints(const lanelet::Lanelet & lanelet)

@@ -27,7 +27,6 @@
 #include <lanelet2_routing/RoutingGraph.h>
 #include <lanelet2_traffic_rules/TrafficRulesFactory.h>
 
-#include <memory>
 #include <vector>
 
 namespace autoware::mission_planner::lanelet2
@@ -44,17 +43,17 @@ struct DefaultPlannerParameters
 class DefaultPlanner : public mission_planner::PlannerPlugin
 {
 public:
-  DefaultPlanner() : is_graph_ready_(false), route_handler_(), param_(), node_(nullptr) {}
+  DefaultPlanner() : vehicle_info_(), is_graph_ready_(false), param_(), node_(nullptr) {}
 
   void initialize(rclcpp::Node * node) override;
   void initialize(rclcpp::Node * node, const LaneletMapBin::ConstSharedPtr msg) override;
-  bool ready() const override;
+  [[nodiscard]] bool ready() const override;
   LaneletRoute plan(const RoutePoints & points) override;
   void updateRoute(const PlannerPlugin::LaneletRoute & route) override;
   void clearRoute() override;
-  MarkerArray visualize(const LaneletRoute & route) const override;
-  MarkerArray visualize_debug_footprint(
-    autoware::universe_utils::LinearRing2d goal_footprint) const;
+  [[nodiscard]] MarkerArray visualize(const LaneletRoute & route) const override;
+  [[nodiscard]] static MarkerArray visualize_debug_footprint(
+    autoware::universe_utils::LinearRing2d goal_footprint);
   autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
 private:
@@ -85,17 +84,16 @@ private:
    * @param next_lane_length the accumulated total length from the start lanelet of the search to
    * the lanelet of current goal query
    */
-  bool check_goal_footprint_inside_lanes(
-    const lanelet::ConstLanelet & current_lanelet,
-    const lanelet::ConstLanelet & combined_prev_lanelet,
-    const autoware::universe_utils::Polygon2d & goal_footprint, double & next_lane_length,
-    const double search_margin = 2.0);
+  [[nodiscard]] bool check_goal_footprint_inside_lanes(
+    const lanelet::ConstLanelet & current_lanelet, const lanelet::ConstLanelets & path_lanelets,
+    const universe_utils::Polygon2d & goal_footprint) const;
 
   /**
    * @brief return true if (1)the goal is in parking area or (2)the goal is on the lanes and the
    * footprint around the goal does not overlap the lanes
    */
-  bool is_goal_valid(const geometry_msgs::msg::Pose & goal, lanelet::ConstLanelets path_lanelets);
+  bool is_goal_valid(
+    const geometry_msgs::msg::Pose & goal, const lanelet::ConstLanelets & path_lanelets);
 
   /**
    * @brief project the specified goal pose onto the goal lanelet(the last preferred lanelet of

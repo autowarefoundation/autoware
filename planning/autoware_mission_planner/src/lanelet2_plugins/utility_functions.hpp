@@ -27,8 +27,6 @@
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/primitives/LaneletSequence.h>
 
-#include <string>
-#include <unordered_set>
 #include <vector>
 
 template <typename T>
@@ -46,16 +44,6 @@ autoware::universe_utils::Polygon2d convert_linear_ring_to_polygon(
   autoware::universe_utils::LinearRing2d footprint);
 void insert_marker_array(
   visualization_msgs::msg::MarkerArray * a1, const visualization_msgs::msg::MarkerArray & a2);
-
-/**
- * @brief create a single merged lanelet whose left/right bounds consist of the leftmost/rightmost
- * bound of the original lanelets or the left/right bound of its adjacent road_shoulder respectively
- * @param lanelets topologically sorted sequence of lanelets
- * @param route_handler route handler to query the lanelet map
- */
-lanelet::ConstLanelet combine_lanelets_with_shoulder(
-  const lanelet::ConstLanelets & lanelets,
-  const autoware::route_handler::RouteHandler & route_handler);
 
 std::vector<geometry_msgs::msg::Point> convertCenterlineToPoints(const lanelet::Lanelet & lanelet);
 geometry_msgs::msg::Pose convertBasicPoint3dToPose(
