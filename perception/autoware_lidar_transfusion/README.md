@@ -32,9 +32,13 @@ We trained the models using <https://github.com/open-mmlab/mmdetection3d>.
 
 ## Parameters
 
-### TransFusion
+### TransFusion node
 
-{{ json_to_markdown("perception/autoware_lidar_transfusion/schema/transfusion.schema.json") }}
+{{ json_to_markdown("perception/autoware_lidar_transfusion/schema/transfusion.schema.dummy.json") }}
+
+### TransFusion model
+
+{{ json_to_markdown("perception/autoware_lidar_transfusion/schema/transfusion_ml_package.schema.json") }}
 
 ### Detection class remapper
 

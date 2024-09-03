@@ -1,0 +1,7 @@
+/**:
+  ros__parameters:
+    class_names: ["CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"]
+    voxels_num: [5000, 30000, 60000]  # [min, opt, max]
+    point_cloud_range: [-92.16, -92.16, -3.0, 92.16, 92.16, 7.0]  # [x_min, y_min, z_min, x_max, y_max, z_max]
+    voxel_size: [0.24, 0.24, 10.0]  # [x, y, z]
+    num_proposals: 500

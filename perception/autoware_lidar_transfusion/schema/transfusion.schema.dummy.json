@@ -1,20 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Parameters for LiDAR TransFusion Node",
+  "$comment": "This schema is not considered in CI workflow. See https://github.com/autowarefoundation/autoware.universe/pull/8205#issuecomment-2255074224.",
   "type": "object",
   "definitions": {
     "transfusion": {
       "type": "object",
       "properties": {
-        "class_names": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "An array of class names will be predicted.",
-          "default": ["CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"],
-          "uniqueItems": true
-        },
         "trt_precision": {
           "type": "string",
           "description": "A precision of TensorRT engine.",
@@ -27,34 +19,6 @@
           "default": 2000000,
           "minimum": 1
         },
-        "voxels_num": {
-          "type": "array",
-          "items": {
-            "type": "integer"
-          },
-          "description": "A maximum number of voxels [min, opt, max].",
-          "default": [5000, 30000, 60000]
-        },
-        "point_cloud_range": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "description": "An array of distance ranges of each class.",
-          "default": [-76.8, -76.8, -3.0, 76.8, 76.8, 5.0],
-          "minItems": 6,
-          "maxItems": 6
-        },
-        "voxel_size": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "description": "Voxels size [x, y, z].",
-          "default": [0.3, 0.3, 8.0],
-          "minItems": 3,
-          "maxItems": 3
-        },
         "onnx_path": {
           "type": "string",
           "description": "A path to ONNX model file.",
@@ -66,18 +30,6 @@
           "description": "A path to TensorRT engine file.",
           "default": "$(var model_path)/transfusion.engine",
           "pattern": "\\.engine$"
-        },
-        "num_proposals": {
-          "type": "integer",
-          "description": "Number of proposals at TransHead.",
-          "default": 500,
-          "minimum": 1
-        },
-        "down_sample_factor": {
-          "type": "integer",
-          "description": "A scale factor of downsampling points",
-          "default": 1,
-          "minimum": 1
         },
         "densification_num_past_frames": {
           "type": "integer",
@@ -136,11 +88,8 @@
         }
       },
       "required": [
-        "class_names",
         "trt_precision",
-        "voxels_num",
-        "point_cloud_range",
-        "voxel_size",
+        "cloud_capacity",
         "onnx_path",
         "engine_path",
         "densification_num_past_frames",

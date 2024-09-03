@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for LiDAR TransFusion Node",
+  "type": "object",
+  "definitions": {
+    "transfusion": {
+      "type": "object",
+      "properties": {
+        "class_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "An array of class names will be predicted.",
+          "default": ["CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"],
+          "uniqueItems": true
+        },
+        "voxels_num": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "A maximum number of voxels [min, opt, max].",
+          "default": [5000, 30000, 60000]
+        },
+        "point_cloud_range": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "An array of distance ranges of each class.",
+          "default": [-76.8, -76.8, -3.0, 76.8, 76.8, 5.0],
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "voxel_size": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Voxels size [x, y, z].",
+          "default": [0.3, 0.3, 8.0],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "num_proposals": {
+          "type": "integer",
+          "description": "Number of proposals at TransHead.",
+          "default": 500,
+          "minimum": 1
+        }
+      },
+      "required": ["class_names", "voxels_num", "point_cloud_range", "voxel_size", "num_proposals"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/transfusion"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

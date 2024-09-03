@@ -3,8 +3,10 @@
   <arg name="input/pointcloud" default="/sensing/lidar/pointcloud"/>
   <arg name="output/objects" default="objects"/>
   <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
+  <arg name="model_name" default="transfusion" description="options: `transfusion`"/>
   <arg name="model_path" default="$(var data_path)/lidar_transfusion"/>
-  <arg name="model_param_path" default="$(find-pkg-share autoware_lidar_transfusion)/config/transfusion.param.yaml"/>
+  <arg name="model_param_path" default="$(find-pkg-share autoware_lidar_transfusion)/config/$(var model_name).param.yaml"/>
+  <arg name="ml_package_param_path" default="$(var model_path)/$(var model_name)_ml_package.param.yaml"/>
   <arg name="class_remapper_param_path" default="$(find-pkg-share autoware_lidar_transfusion)/config/detection_class_remapper.param.yaml"/>
   <arg name="build_only" default="false" description="shutdown node after TensorRT engine file is built"/>
   <arg name="log_level" default="info"/>
@@ -18,6 +20,7 @@
         <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
         <remap from="~/output/objects" to="$(var output/objects)"/>
         <param from="$(var model_param_path)" allow_substs="true"/>
+        <param from="$(var ml_package_param_path)" allow_substs="true"/>
         <param from="$(var class_remapper_param_path)"/>
 
         <!-- This parameter shall NOT be included in param file. See also: https://github.com/autowarefoundation/autoware.universe/pull/6167 -->
@@ -30,6 +33,7 @@
       <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
       <remap from="~/output/objects" to="$(var output/objects)"/>
       <param from="$(var model_param_path)" allow_substs="true"/>
+      <param from="$(var ml_package_param_path)" allow_substs="true"/>
       <param from="$(var class_remapper_param_path)"/>
 
       <!-- This parameter shall NOT be included in param file. See also: https://github.com/autowarefoundation/autoware.universe/pull/6167 -->
