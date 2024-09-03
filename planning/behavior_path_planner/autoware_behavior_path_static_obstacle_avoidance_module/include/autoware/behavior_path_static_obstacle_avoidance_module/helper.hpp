@@ -305,7 +305,7 @@ public:
   {
     const auto & p = parameters_;
     return prepare_distance >
-           std::max(getEgoSpeed() * p->min_prepare_distance, p->min_prepare_distance);
+           std::max(getEgoSpeed() * p->min_prepare_time, p->min_prepare_distance);
   }
 
   bool isComfortable(const AvoidLineArray & shift_lines) const
