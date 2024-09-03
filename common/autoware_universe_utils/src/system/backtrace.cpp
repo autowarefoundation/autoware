@@ -26,6 +26,7 @@
 namespace autoware::universe_utils
 {
 
+// cppcheck-suppress unusedFunction
 void print_backtrace()
 {
   constexpr size_t max_frames = 100;
