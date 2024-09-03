@@ -1,0 +1,21 @@
+/**:
+  ros__parameters:
+
+    # weight files
+    encoder_onnx_path: "$(var model_path)/pts_voxel_encoder_$(var model_name).onnx"
+    encoder_engine_path: "$(var model_path)/pts_voxel_encoder_$(var model_name).engine"
+    head_onnx_path: "$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"
+    head_engine_path: "$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"
+    trt_precision: fp16
+    cloud_capacity: 2000000
+    post_process_params:
+      # post-process params
+      circle_nms_dist_threshold: 0.5
+      iou_nms_target_class_names: ["CAR"]
+      iou_nms_search_distance_2d: 10.0
+      iou_nms_threshold: 0.1
+      yaw_norm_thresholds: [0.3, 0.3, 0.3, 0.3, 0.0]
+      score_threshold: 0.35
+    densification_params:
+      world_frame_id: map
+      num_past_frames: 1
