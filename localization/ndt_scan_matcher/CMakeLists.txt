@@ -35,7 +35,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 target_link_libraries(ndt_scan_matcher ${PCL_LIBRARIES})
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "NDTScanMatcher"
+  PLUGIN "autoware::ndt_scan_matcher::NDTScanMatcher"
   EXECUTABLE ${PROJECT_NAME}_node
   EXECUTOR MultiThreadedExecutor
 )

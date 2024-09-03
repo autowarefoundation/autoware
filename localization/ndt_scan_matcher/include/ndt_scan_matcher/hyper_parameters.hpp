@@ -24,6 +24,9 @@
 #include <string>
 #include <vector>
 
+namespace autoware::ndt_scan_matcher
+{
+
 enum class ConvergedParamType {
   TRANSFORM_PROBABILITY = 0,
   NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD = 1
@@ -190,5 +193,7 @@ public:
       node->declare_parameter<double>("dynamic_map_loading.lidar_radius");
   }
 };
+
+}  // namespace autoware::ndt_scan_matcher
 
 #endif  // NDT_SCAN_MATCHER__HYPER_PARAMETERS_HPP_

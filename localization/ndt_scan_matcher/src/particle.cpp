@@ -15,6 +15,8 @@
 #include "ndt_scan_matcher/particle.hpp"
 
 #include "localization_util/util_func.hpp"
+namespace autoware::ndt_scan_matcher
+{
 
 void push_debug_markers(
   visualization_msgs::msg::MarkerArray & marker_array, const builtin_interfaces::msg::Time & stamp,
@@ -61,3 +63,5 @@ void push_debug_markers(
   marker.color = exchange_color_crc(static_cast<double>(i) / 100.0);
   marker_array.markers.push_back(marker);
 }
+
+}  // namespace autoware::ndt_scan_matcher

@@ -14,6 +14,9 @@
 
 #include "ndt_scan_matcher/map_update_module.hpp"
 
+namespace autoware::ndt_scan_matcher
+{
+
 MapUpdateModule::MapUpdateModule(
   rclcpp::Node * node, std::mutex * ndt_ptr_mutex, NdtPtrType & ndt_ptr,
   HyperParameters::DynamicMapLoading param)
@@ -312,3 +315,5 @@ void MapUpdateModule::publish_partial_pcd_map()
 
   loaded_pcd_pub_->publish(map_msg);
 }
+
+}  // namespace autoware::ndt_scan_matcher

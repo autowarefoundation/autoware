@@ -40,6 +40,9 @@
 #include <thread>
 #include <vector>
 
+namespace autoware::ndt_scan_matcher
+{
+
 class MapUpdateModule
 {
   using PointSource = pcl::PointXYZ;
@@ -94,5 +97,7 @@ private:
   // Keep the last_update_position_ unchanged while checking map range
   std::mutex last_update_position_mtx_;
 };
+
+}  // namespace autoware::ndt_scan_matcher
 
 #endif  // NDT_SCAN_MATCHER__MAP_UPDATE_MODULE_HPP_

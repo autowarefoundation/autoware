@@ -20,6 +20,9 @@
 
 #include <string>
 
+namespace autoware::ndt_scan_matcher
+{
+
 struct Particle
 {
   Particle(
@@ -37,5 +40,7 @@ struct Particle
 void push_debug_markers(
   visualization_msgs::msg::MarkerArray & marker_array, const builtin_interfaces::msg::Time & stamp,
   const std::string & map_frame_, const Particle & particle, const size_t i);
+
+}  // namespace autoware::ndt_scan_matcher
 
 #endif  // NDT_SCAN_MATCHER__PARTICLE_HPP_

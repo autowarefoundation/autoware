@@ -53,7 +53,7 @@ protected:
         node_options.parameter_overrides().push_back(param);
       }
     }
-    node_ = std::make_shared<NDTScanMatcher>(node_options);
+    node_ = std::make_shared<autoware::ndt_scan_matcher::NDTScanMatcher>(node_options);
     rcl_yaml_node_struct_fini(params_st);
 
     // prepare tf_static "base_link -> sensor_frame"
@@ -79,7 +79,7 @@ protected:
     sensor_pcd_publisher_ = std::make_shared<StubSensorPcdPublisher>();
   }
 
-  std::shared_ptr<NDTScanMatcher> node_;
+  std::shared_ptr<autoware::ndt_scan_matcher::NDTScanMatcher> node_;
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tf_broadcaster_;
   std::shared_ptr<StubPcdLoader> pcd_loader_;
   std::shared_ptr<StubInitialposeClient> initialpose_client_;
