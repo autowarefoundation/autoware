@@ -59,6 +59,7 @@ RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     | sort \
     > /rosdep-core-depend-packages.txt \
     && cat /rosdep-core-depend-packages.txt
+
 COPY src/universe/external /autoware/src/universe/external
 COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
 # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/8695 is resolved
@@ -71,6 +72,25 @@ RUN rosdep keys --ignore-src --from-paths src \
     | sort \
     > /rosdep-universe-common-depend-packages.txt \
     && cat /rosdep-universe-common-depend-packages.txt
+
+FROM rosdep-depend AS autoware-universe-sensing-perception-depend
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
+COPY src/universe/autoware.universe/perception /autoware/src/universe/autoware.universe/perception
+COPY src/universe/autoware.universe/sensing /autoware/src/universe/autoware.universe/sensing
+RUN rosdep keys --ignore-src --from-paths src \
+    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
+    | grep -v '^#' \
+    | sed 's/ \+/\n/g'\
+    | sort \
+    > /rosdep-universe-common-depend-packages.txt \
+    && cat /rosdep-universe-sensing-perception-depend-packages.txt
+
+FROM rosdep-depend AS autoware-universe-depend
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
 COPY src/launcher /autoware/src/launcher
 COPY src/param /autoware/src/param
 COPY src/sensor_component /autoware/src/sensor_component
@@ -84,6 +104,7 @@ RUN rosdep keys --ignore-src --from-paths src \
     | sort \
     > /rosdep-universe-depend-packages.txt \
     && cat /rosdep-universe-depend-packages.txt
+
 RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
