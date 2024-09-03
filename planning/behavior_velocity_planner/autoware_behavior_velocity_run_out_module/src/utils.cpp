@@ -134,20 +134,6 @@ bool isSamePoint(const geometry_msgs::msg::Point & p1, const geometry_msgs::msg:
   return false;
 }
 
-// if path points have the same point as target_point, return the index
-std::optional<size_t> haveSamePoint(
-  const PathPointsWithLaneId & path_points, const geometry_msgs::msg::Point & target_point)
-{
-  for (size_t i = 0; i < path_points.size(); i++) {
-    const auto & path_point = path_points.at(i).point.pose.position;
-    if (isSamePoint(path_point, target_point)) {
-      return i;
-    }
-  }
-
-  return {};
-}
-
 // insert path velocity which doesn't exceed original velocity
 void insertPathVelocityFromIndexLimited(
   const size_t & start_idx, const float velocity_mps, PathPointsWithLaneId & path_points)
