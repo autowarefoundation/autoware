@@ -35,29 +35,6 @@ namespace autoware::path_sampler
 {
 namespace trajectory_utils
 {
-void compensateLastPose(
-  const PathPoint & last_path_point, std::vector<TrajectoryPoint> & traj_points,
-  const double delta_dist_threshold, const double delta_yaw_threshold)
-{
-  if (traj_points.empty()) {
-    traj_points.push_back(convertToTrajectoryPoint(last_path_point));
-    return;
-  }
-
-  const geometry_msgs::msg::Pose last_traj_pose = traj_points.back().pose;
-
-  const double dist = autoware::universe_utils::calcDistance2d(
-    last_path_point.pose.position, last_traj_pose.position);
-  const double norm_diff_yaw = [&]() {
-    const double diff_yaw =
-      tf2::getYaw(last_path_point.pose.orientation) - tf2::getYaw(last_traj_pose.orientation);
-    return autoware::universe_utils::normalizeRadian(diff_yaw);
-  }();
-  if (dist > delta_dist_threshold || std::fabs(norm_diff_yaw) > delta_yaw_threshold) {
-    traj_points.push_back(convertToTrajectoryPoint(last_path_point));
-  }
-}
-
 std::vector<TrajectoryPoint> resampleTrajectoryPoints(
   const std::vector<TrajectoryPoint> & traj_points, const double interval)
 {

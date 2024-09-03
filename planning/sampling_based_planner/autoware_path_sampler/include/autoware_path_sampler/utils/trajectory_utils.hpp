@@ -117,10 +117,6 @@ inline std::vector<TrajectoryPoint> convertToTrajectoryPoints(
   return traj_points;
 }
 
-void compensateLastPose(
-  const PathPoint & last_path_point, std::vector<TrajectoryPoint> & traj_points,
-  const double delta_dist_threshold, const double delta_yaw_threshold);
-
 template <class T>
 size_t findEgoIndex(
   const std::vector<T> & points, const geometry_msgs::msg::Pose & ego_pose,
