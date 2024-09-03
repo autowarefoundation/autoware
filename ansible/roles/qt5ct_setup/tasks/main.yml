@@ -4,7 +4,7 @@
   ansible.builtin.apt:
     name: qt5ct
     state: present
-  become: yes
+  become: true
 
 # Find the autoware directories
 - name: Find autoware directories
@@ -44,7 +44,7 @@
 
 # Comment out the QT_QPA_PLATFORMTHEME export line
 - name: Comment out QT_QPA_PLATFORMTHEME export line
-  become: yes
+  become: true
   lineinfile:
     path: "{{ item.path }}"
     regexp: '^\s*export QT_QPA_PLATFORMTHEME=qt5ct'
@@ -122,7 +122,7 @@
 
 # Update QSS file paths
 - name: Update QSS file paths
-  become: yes
+  become: true
   replace:
     path: "{{ autoware_dir }}/ansible/roles/qt5ct_setup/files/autoware.qss"
     regexp: 'url\("\./'
