@@ -84,7 +84,7 @@ RUN rosdep keys --ignore-src --from-paths src \
     | grep -v '^#' \
     | sed 's/ \+/\n/g'\
     | sort \
-    > /rosdep-universe-common-depend-packages.txt \
+    > /rosdep-universe-sensing-perception-depend-packages.txt \
     && cat /rosdep-universe-sensing-perception-depend-packages.txt
 
 FROM autoware-core-depend AS autoware-universe-depend
