@@ -59,14 +59,14 @@ bool DistanceBasedStaticMapLoader::is_close_to_map(
   }
 
   std::vector<int> nn_indices(1);
-  std::vector<float> nn_distances(1);
+  std::vector<float> nn_sqr_distances(1);
   if (!isFinite(point)) {
     return false;
   }
-  if (!tree_->nearestKSearch(point, 1, nn_indices, nn_distances)) {
+  if (!tree_->nearestKSearch(point, 1, nn_indices, nn_sqr_distances)) {
     return false;
   }
-  if (nn_distances[0] > distance_threshold) {
+  if (nn_sqr_distances[0] > distance_threshold * distance_threshold) {
     return false;
   }
   return true;
