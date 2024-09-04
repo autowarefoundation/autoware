@@ -14,19 +14,19 @@ target "base" {
   target = "base"
 }
 
-target "autoware-core-devel" {
+target "core-devel" {
   inherits = ["docker-metadata-action-autoware-core-devel"]
   dockerfile = "docker/Dockerfile"
   target = "core-devel"
 }
 
-target "autoware-universe-devel" {
+target "universe-devel" {
   inherits = ["docker-metadata-action-autoware-universe-devel"]
   dockerfile = "docker/Dockerfile"
   target = "universe-devel"
 }
 
-target "autoware-universe" {
+target "universe" {
   inherits = ["docker-metadata-action-autoware-universe"]
   dockerfile = "docker/Dockerfile"
   target = "universe"
