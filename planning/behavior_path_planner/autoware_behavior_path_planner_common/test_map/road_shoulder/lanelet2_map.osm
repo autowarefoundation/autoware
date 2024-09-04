@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <osm generator="VMB">
-  <MetaInfo format_version="1" map_version="1"/>
+  <MetaInfo format_version="2" map_version="1"/>
   <node id="8" lat="0.00091815748" lon="-1.20048259655">
     <tag k="local_x" v="274.3833"/>
     <tag k="local_y" v="101.5344"/>
@@ -6793,6 +6793,66 @@
     <tag k="local_y" v="406.4862"/>
     <tag k="ele" v="100"/>
   </node>
+  <node id="18501" lat="0.00389152267" lon="-1.19773255123">
+    <tag k="local_x" v="580.5463"/>
+    <tag k="local_y" v="430.3445"/>
+    <tag k="ele" v="100"/>
+  </node>
+  <node id="18502" lat="0.00384556171" lon="-1.19774034165">
+    <tag k="local_x" v="579.679"/>
+    <tag k="local_y" v="425.2619"/>
+    <tag k="ele" v="100"/>
+  </node>
+  <node id="18503" lat="0.00374086677" lon="-1.19772799573">
+    <tag k="local_x" v="581.0535"/>
+    <tag k="local_y" v="413.6842"/>
+    <tag k="ele" v="100"/>
+  </node>
+  <node id="18505" lat="0.00373707518" lon="-1.19775601055">
+    <tag k="local_x" v="577.9346"/>
+    <tag k="local_y" v="413.2649"/>
+    <tag k="ele" v="100"/>
+  </node>
+  <node id="18506" lat="0.00377689158" lon="-1.1977642023">
+    <tag k="local_x" v="577.0226"/>
+    <tag k="local_y" v="417.668"/>
+    <tag k="ele" v="100"/>
+  </node>
+  <node id="18507" lat="0.00384385179" lon="-1.19777165834">
+    <tag k="local_x" v="576.1925"/>
+    <tag k="local_y" v="425.0728"/>
+    <tag k="ele" v="100"/>
+  </node>
+  <node id="18513" lat="0.00358160582" lon="-1.20050835808">
+    <tag k="local_x" v="271.5149"/>
+    <tag k="local_y" v="396.0717"/>
+    <tag k="ele" v="100"/>
+  </node>
+  <node id="18514" lat="0.00369930538" lon="-1.20050796442">
+    <tag k="local_x" v="271.5587"/>
+    <tag k="local_y" v="409.0875"/>
+    <tag k="ele" v="100"/>
+  </node>
+  <node id="18516" lat="0.00369927458" lon="-1.20048351553">
+    <tag k="local_x" v="274.2806"/>
+    <tag k="local_y" v="409.0841"/>
+    <tag k="ele" v="100"/>
+  </node>
+  <node id="18517" lat="0.00369951331" lon="-1.20048055228">
+    <tag k="local_x" v="274.6105"/>
+    <tag k="local_y" v="409.1105"/>
+    <tag k="ele" v="100"/>
+  </node>
+  <node id="18518" lat="0.00358228669" lon="-1.20048067826">
+    <tag k="local_x" v="274.5965"/>
+    <tag k="local_y" v="396.147"/>
+    <tag k="ele" v="100"/>
+  </node>
+  <node id="18519" lat="0.00358218454" lon="-1.20050037103">
+    <tag k="local_x" v="272.4041"/>
+    <tag k="local_y" v="396.1357"/>
+    <tag k="ele" v="100"/>
+  </node>
   <way id="53">
     <nd ref="49"/>
     <nd ref="50"/>
@@ -9012,6 +9072,25 @@
     <tag k="type" v="parking_lot"/>
     <tag k="area" v="yes"/>
   </way>
+  <way id="18508">
+    <nd ref="18502"/>
+    <nd ref="18503"/>
+    <nd ref="18505"/>
+    <nd ref="18506"/>
+    <nd ref="18507"/>
+    <tag k="type" v="bus_stop_area"/>
+    <tag k="area" v="yes"/>
+  </way>
+  <way id="18520">
+    <nd ref="18513"/>
+    <nd ref="18514"/>
+    <nd ref="18516"/>
+    <nd ref="18517"/>
+    <nd ref="18518"/>
+    <nd ref="18519"/>
+    <tag k="type" v="bus_stop_area"/>
+    <tag k="area" v="yes"/>
+  </way>
   <relation id="14">
     <member type="way" role="left" ref="1241"/>
     <member type="way" role="right" ref="1243"/>
@@ -9042,6 +9121,7 @@
   <relation id="66">
     <member type="way" role="left" ref="62"/>
     <member type="way" role="right" ref="1271"/>
+    <member type="relation" role="regulatory_element" ref="18521"/>
     <tag k="type" v="lanelet"/>
     <tag k="subtype" v="road_shoulder"/>
     <tag k="speed_limit" v="10"/>
@@ -9963,6 +10043,7 @@
   <relation id="18500">
     <member type="way" role="left" ref="18491"/>
     <member type="way" role="right" ref="18490"/>
+    <member type="relation" role="regulatory_element" ref="18512"/>
     <tag k="type" v="lanelet"/>
     <tag k="subtype" v="road_shoulder"/>
     <tag k="speed_limit" v="20"/>
@@ -9973,5 +10054,15 @@
     <member type="way" role="refers" ref="819"/>
     <tag k="type" v="regulatory_element"/>
     <tag k="subtype" v="no_parking_area"/>
+  </relation>
+  <relation id="18512">
+    <member type="way" role="refers" ref="18508"/>
+    <tag k="type" v="regulatory_element"/>
+    <tag k="subtype" v="bus_stop_area"/>
+  </relation>
+  <relation id="18521">
+    <member type="way" role="refers" ref="18520"/>
+    <tag k="type" v="regulatory_element"/>
+    <tag k="subtype" v="bus_stop_area"/>
   </relation>
 </osm>
