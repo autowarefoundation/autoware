@@ -34,7 +34,7 @@ RUN --mount=type=ssh \
 CMD ["/bin/bash"]
 
 # hadolint ignore=DL3006
-FROM $BASE_IMAGE AS rosdep-depend
+FROM $BASE_IMAGE AS autoware-core-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
@@ -73,7 +73,7 @@ RUN rosdep keys --ignore-src --from-paths src \
     > /rosdep-universe-common-depend-packages.txt \
     && cat /rosdep-universe-common-depend-packages.txt
 
-FROM rosdep-depend AS autoware-universe-sensing-perception-depend
+FROM autoware-core-depend AS autoware-universe-sensing-perception-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
@@ -87,7 +87,7 @@ RUN rosdep keys --ignore-src --from-paths src \
     > /rosdep-universe-sensing-perception-depend-packages.txt \
     && cat /rosdep-universe-sensing-perception-depend-packages.txt
 
-FROM rosdep-depend AS autoware-universe-depend
+FROM autoware-core-depend AS autoware-universe-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
@@ -126,7 +126,7 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # Install rosdep dependencies
-COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
+COPY --from=autoware-core-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -134,7 +134,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
+  --mount=type=bind,from=autoware-core-depend,source=/autoware/src/core,target=/autoware/src/core \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && colcon build --cmake-args \
@@ -152,7 +152,7 @@ ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
-COPY --from=rosdep-depend /rosdep-universe-common-depend-packages.txt /tmp/rosdep-universe-common-depend-packages.txt
+COPY --from=autoware-core-depend /rosdep-universe-common-depend-packages.txt /tmp/rosdep-universe-common-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   apt-get update \
@@ -162,10 +162,10 @@ RUN --mount=type=ssh \
 # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/8695 is resolved
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/common,target=/autoware/src/universe/autoware.universe/common \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/simulator/dummy_perception_publisher,target=/autoware/src/universe/autoware.universe/simulator/dummy_perception_publisher \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/vehicle/autoware_vehicle_info_utils,target=/autoware/src/universe/autoware.universe/vehicle/autoware_vehicle_info_utils \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/external,target=/autoware/src/universe/external \
+  --mount=type=bind,from=autoware-core-depend,source=/autoware/src/universe/autoware.universe/common,target=/autoware/src/universe/autoware.universe/common \
+  --mount=type=bind,from=autoware-core-depend,source=/autoware/src/universe/autoware.universe/simulator/dummy_perception_publisher,target=/autoware/src/universe/autoware.universe/simulator/dummy_perception_publisher \
+  --mount=type=bind,from=autoware-core-depend,source=/autoware/src/universe/autoware.universe/vehicle/autoware_vehicle_info_utils,target=/autoware/src/universe/autoware.universe/vehicle/autoware_vehicle_info_utils \
+  --mount=type=bind,from=autoware-core-depend,source=/autoware/src/universe/external,target=/autoware/src/universe/external \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
