@@ -89,60 +89,49 @@ runs:
         echo "$EOF" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Docker meta for base
+    - name: Docker meta for autoware:base
       id: meta-base
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
         bake-target: docker-metadata-action-base
         flavor: |
           latest=false
           suffix=-base${{ inputs.tag-suffix }}
 
-    - name: Docker meta for autoware-core
-      id: meta-autoware-core
+    - name: Docker meta for autoware:core-devel
+      id: meta-core-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
-        bake-target: docker-metadata-action-autoware-core
+        bake-target: docker-metadata-action-core-devel
         flavor: |
           latest=false
-          suffix=-autoware-core${{ inputs.tag-suffix }}
+          suffix=-core-devel${{ inputs.tag-suffix }}
 
-    - name: Docker meta for autoware-universe
-      id: meta-autoware-universe
+    - name: Docker meta for autoware:universe-devel
+      id: meta-universe-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
-        bake-target: docker-metadata-action-autoware-universe
+        bake-target: docker-metadata-action-universe-devel
         flavor: |
           latest=false
-          suffix=-autoware-universe${{ inputs.tag-suffix }}
+          suffix=-universe-devel${{ inputs.tag-suffix }}
 
-    - name: Docker meta for devel
-      id: meta-devel
+    - name: Docker meta for autoware:universe
+      id: meta-universe
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
-        bake-target: docker-metadata-action-devel
+        bake-target: docker-metadata-action-universe
         flavor: |
           latest=false
-          suffix=-devel${{ inputs.tag-suffix }}
-
-    - name: Docker meta for runtime
-      id: meta-runtime
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
-        tags: ${{ steps.set-docker-tags.outputs.tags }}
-        bake-target: docker-metadata-action-runtime
-        flavor: |
-          latest=auto
-          suffix=-runtime${{ inputs.tag-suffix }}
+          suffix=-universe${{ inputs.tag-suffix }}
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
@@ -158,10 +147,9 @@ runs:
         files: |
           docker/docker-bake.hcl
           ${{ steps.meta-base.outputs.bake-file }}
-          ${{ steps.meta-autoware-core.outputs.bake-file }}
-          ${{ steps.meta-autoware-universe.outputs.bake-file }}
-          ${{ steps.meta-devel.outputs.bake-file }}
-          ${{ steps.meta-runtime.outputs.bake-file }}
+          ${{ steps.meta-core-devel.outputs.bake-file }}
+          ${{ steps.meta-universe-devel.outputs.bake-file }}
+          ${{ steps.meta-universe.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}
