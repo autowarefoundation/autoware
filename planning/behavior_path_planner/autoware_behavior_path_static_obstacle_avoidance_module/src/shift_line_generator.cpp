@@ -248,6 +248,11 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
     return s.start_longitudinal > 0.0 && s.start_longitudinal < s.end_longitudinal;
   };
 
+  const auto is_approved = [this](const auto & object) {
+    return (helper_->getShift(object.getPosition()) > 0.0 && isOnRight(object)) ||
+           (helper_->getShift(object.getPosition()) < 0.0 && !isOnRight(object));
+  };
+
   ObjectDataArray unavoidable_objects;
 
   // target objects are sorted by longitudinal distance.
@@ -284,6 +289,11 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
     // calculate feasible shift length based on behavior policy
     const auto feasible_shift_profile = get_shift_profile(o, desire_shift_length);
     if (!feasible_shift_profile.has_value()) {
+      if (is_approved(o)) {
+        // the avoidance path for this object has already approved
+        o.is_avoidable = true;
+        continue;
+      }
       if (o.avoid_required && is_forward_object(o) && is_on_path(o)) {
         break;
       } else {
@@ -394,7 +404,7 @@ AvoidOutlines ShiftLineGenerator::generateAvoidOutline(
       outlines.emplace_back(al_avoid, std::nullopt);
     } else if (is_valid_shift_line(al_avoid) && is_valid_shift_line(al_return)) {
       outlines.emplace_back(al_avoid, al_return);
-    } else {
+    } else if (!is_approved(o)) {
       o.info = ObjectInfo::INVALID_SHIFT_LINE;
       continue;
     }
