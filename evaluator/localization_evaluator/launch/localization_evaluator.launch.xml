@@ -3,7 +3,7 @@
   <arg name="input/localization/ref" default="/geometry_msgs/PoseWithCovarianceStampedGt"/>
 
   <node name="localization_evaluator" exec="localization_evaluator" pkg="localization_evaluator" output="screen">
-    <param from="$(find-pkg-share localization_evaluator)/param/localization_evaluator.defaults.yaml"/>
+    <param from="$(find-pkg-share localization_evaluator)/config/localization_evaluator.param.yaml"/>
     <remap from="~/input/localization" to="$(var input/localization)"/>
     <remap from="~/input/localization/ref" to="$(var input/localization/ref)"/>
   </node>

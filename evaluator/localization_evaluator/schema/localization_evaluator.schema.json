@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Localization Evaluator",
+  "type": "object",
+  "definitions": {
+    "localization_evaluator": {
+      "type": "object",
+      "properties": {
+        "output_file": {
+          "type": "string",
+          "default": "loc_metrics.results",
+          "description": "if empty, metrics are not written to file"
+        },
+        "selected_metrics": {
+          "type": "array",
+          "default": "['lateral_error', 'absolute_error']",
+          "description": "metrics to be calculated"
+        }
+      },
+      "required": ["output_file", "selected_metrics"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/localization_evaluator"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
