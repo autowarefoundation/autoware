@@ -507,6 +507,8 @@ PidLongitudinalController::ControlData PidLongitudinalController::getControlData
   // calculate the target motion for delay compensation
   constexpr double min_running_dist = 0.01;
   if (control_data.state_after_delay.running_distance > min_running_dist) {
+    control_data.interpolated_traj.points =
+      autoware::motion_utils::removeOverlapPoints(control_data.interpolated_traj.points);
     const auto target_pose = longitudinal_utils::findTrajectoryPoseAfterDistance(
       control_data.nearest_idx, control_data.state_after_delay.running_distance,
       control_data.interpolated_traj);
