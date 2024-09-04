@@ -101,7 +101,7 @@ runs:
         bake-target: docker-metadata-action-base
         flavor: |
           latest=false
-          suffix=-base
+          suffix=-base${{ inputs.tag-suffix }}
 
     - name: Docker meta for autoware-core
       id: meta-autoware-core
