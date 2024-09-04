@@ -25,7 +25,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "motion_planning::ObstacleStopPlannerNode"
+  PLUGIN "autoware::motion_planning::ObstacleStopPlannerNode"
   EXECUTABLE ${PROJECT_NAME}_node
 )
 

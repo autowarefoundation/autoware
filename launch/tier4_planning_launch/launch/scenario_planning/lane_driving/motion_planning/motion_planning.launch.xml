@@ -179,7 +179,7 @@
 
     <group if="$(eval &quot;'$(var motion_stop_planner_type)' == 'obstacle_stop_planner'&quot;)">
       <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
-        <composable_node pkg="obstacle_stop_planner" plugin="motion_planning::ObstacleStopPlannerNode" name="obstacle_stop_planner" namespace="">
+        <composable_node pkg="autoware_obstacle_stop_planner" plugin="autoware::motion_planning::ObstacleStopPlannerNode" name="obstacle_stop_planner" namespace="">
           <!-- topic remap -->
           <remap from="~/input/trajectory" to="motion_velocity_planner/trajectory"/>
           <remap from="~/input/odometry" to="/localization/kinematic_state"/>
