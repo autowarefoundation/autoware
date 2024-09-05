@@ -459,7 +459,7 @@ void GoalPlannerModule::updateData()
 {
   universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
 
-  // extract static and dynamic objects in extraction polygon for path coliision check
+  // extract static and dynamic objects in extraction polygon for path collision check
   {
     const auto & p = parameters_;
     const auto & rh = *(planner_data_->route_handler);
