@@ -122,17 +122,6 @@ runs:
           latest=false
           suffix=-universe-devel${{ inputs.tag-suffix }}
 
-    - name: Docker meta for autoware:devel
-      id: meta-devel
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
-        tags: ${{ steps.set-docker-tags.outputs.tags }}
-        bake-target: docker-metadata-action-devel
-        flavor: |
-          latest=false
-          suffix=-devel${{ inputs.tag-suffix }}
-
     - name: Docker meta for autoware:universe
       id: meta-universe
       uses: docker/metadata-action@v5
@@ -160,7 +149,6 @@ runs:
           ${{ steps.meta-base.outputs.bake-file }}
           ${{ steps.meta-core-devel.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
-          ${{ steps.meta-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
         provenance: false
         set: |

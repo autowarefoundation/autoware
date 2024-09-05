@@ -1,12 +1,11 @@
 group "default" {
-  targets = ["base", "core-devel", "universe-devel", "devel", "universe"]
+  targets = ["base", "core-devel", "universe-devel", "universe"]
 }
 
 // For docker/metadata-action
 target "docker-metadata-action-base" {}
 target "docker-metadata-action-core-devel" {}
 target "docker-metadata-action-universe-devel" {}
-target "docker-metadata-action-devel" {}
 target "docker-metadata-action-universe" {}
 
 target "base" {
@@ -25,12 +24,6 @@ target "universe-devel" {
   inherits = ["docker-metadata-action-universe-devel"]
   dockerfile = "docker/Dockerfile"
   target = "universe-devel"
-}
-
-target "devel" {
-  inherits = ["docker-metadata-action-devel"]
-  dockerfile = "docker/Dockerfile"
-  target = "devel"
 }
 
 target "universe" {

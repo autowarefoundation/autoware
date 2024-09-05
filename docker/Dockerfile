@@ -31,6 +31,9 @@ RUN --mount=type=ssh \
   && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
 
 # Create entrypoint
+COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
+RUN chmod +x /ros_entrypoint.sh
+ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
 # hadolint ignore=DL3006
@@ -110,10 +113,11 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
 
-# Set up development environment
+# Set up development environment and tools
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all openadkit \
+  && ./setup-dev-env.sh -y --module dev-tools openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
@@ -137,6 +141,9 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && rm -rf /autoware/build
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
 
 FROM core-devel AS universe-common-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -170,6 +177,9 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && rm -rf /autoware/build
 
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
 FROM universe-common-devel AS universe-sensing-perception-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -199,6 +209,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && rm -rf /autoware/build
 
+ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
 FROM universe-common-devel AS universe-devel
@@ -244,21 +255,6 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && rm -rf /autoware/build
 
-CMD ["/bin/bash"]
-
-FROM universe-devel AS devel
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-# Install development tools and artifacts
-RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module dev-tools openadkit \
-  && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache
-
-# Create entrypoint
-COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
-RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
@@ -293,8 +289,5 @@ COPY --from=universe-devel /opt/autoware /opt/autoware
 COPY docker/etc/.bash_aliases /root/.bash_aliases
 RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 
-# Create entrypoint
-COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
-RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["bash"]
+CMD ["/bin/bash"]
