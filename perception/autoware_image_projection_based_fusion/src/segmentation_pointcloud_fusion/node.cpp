@@ -49,10 +49,31 @@ void SegmentPointCloudFusionNode::preprocess(__attribute__((unused)) PointCloud2
   return;
 }
 
-void SegmentPointCloudFusionNode::postprocess(__attribute__((unused)) PointCloud2 & pointcloud_msg)
+void SegmentPointCloudFusionNode::postprocess(PointCloud2 & pointcloud_msg)
 {
+  auto original_cloud = std::make_shared<PointCloud2>(pointcloud_msg);
+
+  int point_step = original_cloud->point_step;
+  size_t output_pointcloud_size = 0;
+  pointcloud_msg.data.clear();
+  pointcloud_msg.data.resize(original_cloud->data.size());
+
+  for (size_t global_offset = 0; global_offset < original_cloud->data.size();
+       global_offset += point_step) {
+    if (filter_global_offset_set_.find(global_offset) == filter_global_offset_set_.end()) {
+      copyPointCloud(
+        *original_cloud, point_step, global_offset, pointcloud_msg, output_pointcloud_size);
+    }
+  }
+
+  pointcloud_msg.data.resize(output_pointcloud_size);
+  pointcloud_msg.row_step = output_pointcloud_size / pointcloud_msg.height;
+  pointcloud_msg.width = output_pointcloud_size / pointcloud_msg.point_step / pointcloud_msg.height;
+
+  filter_global_offset_set_.clear();
   return;
 }
+
 void SegmentPointCloudFusionNode::fuseOnSingleImage(
   const PointCloud2 & input_pointcloud_msg, __attribute__((unused)) const std::size_t image_id,
   [[maybe_unused]] const Image & input_mask, __attribute__((unused)) const CameraInfo & camera_info,
@@ -101,15 +122,7 @@ void SegmentPointCloudFusionNode::fuseOnSingleImage(
   int x_offset = input_pointcloud_msg.fields[pcl::getFieldIndex(input_pointcloud_msg, "x")].offset;
   int y_offset = input_pointcloud_msg.fields[pcl::getFieldIndex(input_pointcloud_msg, "y")].offset;
   int z_offset = input_pointcloud_msg.fields[pcl::getFieldIndex(input_pointcloud_msg, "z")].offset;
-  size_t output_pointcloud_size = 0;
-  output_cloud.data.clear();
-  output_cloud.data.resize(input_pointcloud_msg.data.size());
-  output_cloud.fields = input_pointcloud_msg.fields;
-  output_cloud.header = input_pointcloud_msg.header;
-  output_cloud.height = input_pointcloud_msg.height;
-  output_cloud.point_step = input_pointcloud_msg.point_step;
-  output_cloud.is_bigendian = input_pointcloud_msg.is_bigendian;
-  output_cloud.is_dense = input_pointcloud_msg.is_dense;
+
   for (size_t global_offset = 0; global_offset < transformed_cloud.data.size();
        global_offset += point_step) {
     float transformed_x =
@@ -120,8 +133,6 @@ void SegmentPointCloudFusionNode::fuseOnSingleImage(
       *reinterpret_cast<float *>(&transformed_cloud.data[global_offset + z_offset]);
     // skip filtering pointcloud behind the camera or too far from camera
     if (transformed_z <= 0.0 || transformed_z > filter_distance_threshold_) {
-      copyPointCloud(
-        input_pointcloud_msg, point_step, global_offset, output_cloud, output_pointcloud_size);
       continue;
     }
 
@@ -131,28 +142,20 @@ void SegmentPointCloudFusionNode::fuseOnSingleImage(
     bool is_inside_image = projected_point.x() > 0 && projected_point.x() < camera_info.width &&
                            projected_point.y() > 0 && projected_point.y() < camera_info.height;
     if (!is_inside_image) {
-      copyPointCloud(
-        input_pointcloud_msg, point_step, global_offset, output_cloud, output_pointcloud_size);
       continue;
     }
 
     // skip filtering pointcloud where semantic id out of the defined list
     uint8_t semantic_id = mask.at<uint8_t>(
       static_cast<uint16_t>(projected_point.y()), static_cast<uint16_t>(projected_point.x()));
-    if (static_cast<size_t>(semantic_id) >= filter_semantic_label_target_list_.size()) {
-      copyPointCloud(
-        input_pointcloud_msg, point_step, global_offset, output_cloud, output_pointcloud_size);
+    if (
+      static_cast<size_t>(semantic_id) >= filter_semantic_label_target_list_.size() ||
+      !filter_semantic_label_target_list_.at(semantic_id).second) {
       continue;
     }
-    if (!filter_semantic_label_target_list_.at(semantic_id).second) {
-      copyPointCloud(
-        input_pointcloud_msg, point_step, global_offset, output_cloud, output_pointcloud_size);
-    }
-  }
 
-  output_cloud.data.resize(output_pointcloud_size);
-  output_cloud.row_step = output_pointcloud_size / output_cloud.height;
-  output_cloud.width = output_pointcloud_size / output_cloud.point_step / output_cloud.height;
+    filter_global_offset_set_.insert(global_offset);
+  }
 }
 
 bool SegmentPointCloudFusionNode::out_of_scope(__attribute__((unused))

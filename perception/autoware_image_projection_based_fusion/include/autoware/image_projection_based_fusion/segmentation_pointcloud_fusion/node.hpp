@@ -21,6 +21,7 @@
 #include <image_transport/image_transport.hpp>
 
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -47,6 +48,7 @@ private:
 
   image_transport::Publisher pub_debug_mask_ptr_;
   bool is_publish_debug_mask_;
+  std::unordered_set<size_t> filter_global_offset_set_;
 
 public:
   explicit SegmentPointCloudFusionNode(const rclcpp::NodeOptions & options);
