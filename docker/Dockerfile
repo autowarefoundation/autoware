@@ -209,6 +209,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && rm -rf /autoware/build
 
+ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
 FROM universe-common-devel AS universe-devel
@@ -288,6 +289,5 @@ COPY --from=universe-devel /opt/autoware /opt/autoware
 COPY docker/etc/.bash_aliases /root/.bash_aliases
 RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 
-# Create entrypoint
 ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["bash"]
+CMD ["/bin/bash"]
