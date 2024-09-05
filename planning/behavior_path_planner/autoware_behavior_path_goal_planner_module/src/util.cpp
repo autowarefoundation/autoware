@@ -191,7 +191,7 @@ std::optional<Polygon2d> generateObjectExtractionPolygon(
     constexpr double INTERSECTION_CHECK_DISTANCE = 10.0;
     std::vector<Point> modified_bound{};
     size_t i = 0;
-    while (i < bound.size() - 2) {
+    while (i < bound.size() - 1) {
       BoostPoint p1(bound.at(i).x, bound.at(i).y);
       BoostPoint p2(bound.at(i + 1).x, bound.at(i + 1).y);
       LineString p_line{};
