@@ -1028,7 +1028,7 @@ QToolButton {
   height: 36px;
   margin: 2px;
   padding: 2px;
-  border-radius: 20px;
+  border-radius: 16px;
 }
 
 QToolButton:hover {
@@ -1041,8 +1041,7 @@ QToolButton:pressed {
 
 QToolButton:checked {
   background: #525252;
-  border-left: 3px solid rgba(132, 194, 230, 0.7);
-  border-bottom: 3px solid rgba(132, 194, 230, 0.7);
+  border: 3px solid rgba(132, 194, 230, 0.7);
 }
 
 /*  ------------------------------------------------------------------------  */
