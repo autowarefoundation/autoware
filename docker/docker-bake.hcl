@@ -1,13 +1,13 @@
 group "default" {
-  targets = ["base", "autoware-core", "autoware-universe", "devel", "runtime"]
+  targets = ["base", "core-devel", "universe-devel", "devel", "universe"]
 }
 
 // For docker/metadata-action
 target "docker-metadata-action-base" {}
-target "docker-metadata-action-autoware-core" {}
-target "docker-metadata-action-autoware-universe" {}
+target "docker-metadata-action-core-devel" {}
+target "docker-metadata-action-universe-devel" {}
 target "docker-metadata-action-devel" {}
-target "docker-metadata-action-runtime" {}
+target "docker-metadata-action-universe" {}
 
 target "base" {
   inherits = ["docker-metadata-action-base"]
@@ -15,16 +15,16 @@ target "base" {
   target = "base"
 }
 
-target "autoware-core" {
-  inherits = ["docker-metadata-action-autoware-core"]
+target "core-devel" {
+  inherits = ["docker-metadata-action-core-devel"]
   dockerfile = "docker/Dockerfile"
-  target = "autoware-core"
+  target = "core-devel"
 }
 
-target "autoware-universe" {
-  inherits = ["docker-metadata-action-autoware-universe"]
+target "universe-devel" {
+  inherits = ["docker-metadata-action-universe-devel"]
   dockerfile = "docker/Dockerfile"
-  target = "autoware-universe"
+  target = "universe-devel"
 }
 
 target "devel" {
@@ -33,8 +33,8 @@ target "devel" {
   target = "devel"
 }
 
-target "runtime" {
-  inherits = ["docker-metadata-action-runtime"]
+target "universe" {
+  inherits = ["docker-metadata-action-universe"]
   dockerfile = "docker/Dockerfile"
-  target = "runtime"
+  target = "universe"
 }
