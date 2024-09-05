@@ -130,7 +130,7 @@ runs:
         tags: ${{ steps.set-docker-tags.outputs.tags }}
         bake-target: docker-metadata-action-universe
         flavor: |
-          latest=false
+          latest=auto
           suffix=-universe${{ inputs.tag-suffix }}
 
     - name: Login to GitHub Container Registry
