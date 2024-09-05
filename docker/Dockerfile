@@ -170,7 +170,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && rm -rf /autoware/build
 
-FROM universe-common-devel AS universe-sensing-perception
+FROM universe-common-devel AS universe-sensing-perception-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -201,7 +201,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 
 CMD ["/bin/bash"]
 
-FROM universe-common-devel AS universe
+FROM universe-common-devel AS universe-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -214,7 +214,7 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-COPY --from=universe-sensing-perception /opt/autoware /opt/autoware
+COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
@@ -246,7 +246,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 
 CMD ["/bin/bash"]
 
-FROM universe AS devel
+FROM universe-devel AS devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install development tools and artifacts
@@ -287,7 +287,7 @@ RUN --mount=type=ssh \
     /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
-COPY --from=universe /opt/autoware /opt/autoware
+COPY --from=universe-devel /opt/autoware /opt/autoware
 
 # Copy bash aliases
 COPY docker/etc/.bash_aliases /root/.bash_aliases
