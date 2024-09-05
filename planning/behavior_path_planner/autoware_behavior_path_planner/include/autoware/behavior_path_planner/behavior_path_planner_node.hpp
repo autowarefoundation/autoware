@@ -147,9 +147,6 @@ private:
   void takeData();
   bool isDataReady();
 
-  // parameters
-  BehaviorPathPlannerParameters getCommonParam();
-
   // callback
   void onOdometry(const Odometry::ConstSharedPtr msg);
   void onAcceleration(const AccelWithCovarianceStamped::ConstSharedPtr msg);

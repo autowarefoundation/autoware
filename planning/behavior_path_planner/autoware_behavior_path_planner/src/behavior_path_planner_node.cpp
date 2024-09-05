@@ -40,8 +40,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   // data_manager
   {
     planner_data_ = std::make_shared<PlannerData>();
-    planner_data_->parameters = getCommonParam();
-    planner_data_->drivable_area_expansion_parameters.init(*this);
+    planner_data_->init_parameters(*this);
   }
 
   // publisher
@@ -151,75 +150,6 @@ std::vector<std::string> BehaviorPathPlannerNode::getRunningModules()
     }
   }
   return running_modules;
-}
-
-BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
-{
-  BehaviorPathPlannerParameters p{};
-
-  p.traffic_light_signal_timeout = declare_parameter<double>("traffic_light_signal_timeout");
-
-  // vehicle info
-  const auto vehicle_info = VehicleInfoUtils(*this).getVehicleInfo();
-  p.vehicle_info = vehicle_info;
-  p.vehicle_width = vehicle_info.vehicle_width_m;
-  p.vehicle_length = vehicle_info.vehicle_length_m;
-  p.wheel_tread = vehicle_info.wheel_tread_m;
-  p.wheel_base = vehicle_info.wheel_base_m;
-  p.front_overhang = vehicle_info.front_overhang_m;
-  p.rear_overhang = vehicle_info.rear_overhang_m;
-  p.left_over_hang = vehicle_info.left_overhang_m;
-  p.right_over_hang = vehicle_info.right_overhang_m;
-  p.base_link2front = vehicle_info.max_longitudinal_offset_m;
-  p.base_link2rear = p.rear_overhang;
-
-  // NOTE: backward_path_length is used not only calculating path length but also calculating the
-  // size of a drivable area.
-  //       The drivable area has to cover not the base link but the vehicle itself. Therefore
-  //       rear_overhang must be added to backward_path_length. In addition, because of the
-  //       calculation of the drivable area in the autoware_path_optimizer package, the drivable
-  //       area has to be a little longer than the backward_path_length parameter by adding
-  //       min_backward_offset.
-  constexpr double min_backward_offset = 1.0;
-  const double backward_offset = vehicle_info.rear_overhang_m + min_backward_offset;
-
-  // ROS parameters
-  p.backward_path_length = declare_parameter<double>("backward_path_length") + backward_offset;
-  p.forward_path_length = declare_parameter<double>("forward_path_length");
-
-  // acceleration parameters
-  p.min_acc = declare_parameter<double>("normal.min_acc");
-  p.max_acc = declare_parameter<double>("normal.max_acc");
-
-  p.max_vel = declare_parameter<double>("max_vel");
-  p.backward_length_buffer_for_end_of_pull_over =
-    declare_parameter<double>("backward_length_buffer_for_end_of_pull_over");
-  p.backward_length_buffer_for_end_of_pull_out =
-    declare_parameter<double>("backward_length_buffer_for_end_of_pull_out");
-
-  p.minimum_pull_over_length = declare_parameter<double>("minimum_pull_over_length");
-  p.refine_goal_search_radius_range = declare_parameter<double>("refine_goal_search_radius_range");
-  p.turn_signal_intersection_search_distance =
-    declare_parameter<double>("turn_signal_intersection_search_distance");
-  p.turn_signal_intersection_angle_threshold_deg =
-    declare_parameter<double>("turn_signal_intersection_angle_threshold_deg");
-  p.turn_signal_minimum_search_distance =
-    declare_parameter<double>("turn_signal_minimum_search_distance");
-  p.turn_signal_search_time = declare_parameter<double>("turn_signal_search_time");
-  p.turn_signal_shift_length_threshold =
-    declare_parameter<double>("turn_signal_shift_length_threshold");
-  p.turn_signal_remaining_shift_length_threshold =
-    declare_parameter<double>("turn_signal_remaining_shift_length_threshold");
-  p.turn_signal_on_swerving = declare_parameter<bool>("turn_signal_on_swerving");
-
-  p.enable_akima_spline_first = declare_parameter<bool>("enable_akima_spline_first");
-  p.enable_cog_on_centerline = declare_parameter<bool>("enable_cog_on_centerline");
-  p.input_path_interval = declare_parameter<double>("input_path_interval");
-  p.output_path_interval = declare_parameter<double>("output_path_interval");
-  p.ego_nearest_dist_threshold = declare_parameter<double>("ego_nearest_dist_threshold");
-  p.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
-
-  return p;
 }
 
 void BehaviorPathPlannerNode::takeData()
