@@ -13,6 +13,10 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
+generate_parameter_library(surround_obstacle_checker_node_parameters
+  param/surround_obstacle_checker_node_parameters.yaml
+)
+
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/debug_marker.cpp
   src/node.cpp
@@ -20,6 +24,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 
 target_link_libraries(${PROJECT_NAME}
   ${PCL_LIBRARIES}
+  surround_obstacle_checker_node_parameters
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}

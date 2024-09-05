@@ -1,0 +1,57 @@
+surround_obstacle_checker_node:
+  pointcloud:
+    enable_check:
+      type: bool
+      description: Enable to check surrounding obstacle
+  object_types:
+    type: string_array
+    default_value: [unknown, car, truck, bus, trailer, motorcycle, bicycle, pedestrian]
+  __map_object_types:
+    enable_check:
+      type: bool
+      description: Enable to check surrounding obstacle
+  obstacle_types:
+    type: string_array
+    default_value: [pointcloud, unknown, car, truck, bus, trailer, motorcycle, bicycle, pedestrian]
+  __map_obstacle_types:
+    surround_check_front_distance:
+      type: double
+      description: If objects exist in this distance, transit to 'exist-surrounding-obstacle' status. [m]
+      validation:
+        gt_eq<>: [0.0]
+    surround_check_side_distance:
+      type: double
+      description: If objects exist in this distance, transit to 'exist-surrounding-obstacle' status. [m]
+      validation:
+        gt_eq<>: [0.0]
+    surround_check_back_distance:
+      type: double
+      description: If objects exist in this distance, transit to 'exist-surrounding-obstacle' status. [m]
+      validation:
+        gt_eq<>: [0.0]
+  surround_check_hysteresis_distance:
+    type: double
+    description:
+      If no object exists in this hysteresis distance added to the above distance, transit to
+      'non-surrounding-obstacle' status [m]
+    validation:
+      gt_eq<>: [0.0]
+  state_clear_time:
+    type: double
+    description: Threshold to clear stop state [s]
+    validation:
+      gt_eq<>: [0.0]
+  stop_state_ego_speed:
+    type: double
+    description: Threshold to check ego vehicle stopped [m/s]
+    validation:
+      gt_eq<>: [0.0]
+  publish_debug_footprints:
+    type: bool
+    description: Publish vehicle footprint & footprints with surround_check_distance and
+      surround_check_recover_distance offsets.
+  debug_footprint_label:
+    type: string
+    description: Select the label for debug footprint
+    validation:
+      one_of<>: [[pointcloud, unknown, car, truck, bus, trailer, motorcycle, bicycle, pedestrian]]
