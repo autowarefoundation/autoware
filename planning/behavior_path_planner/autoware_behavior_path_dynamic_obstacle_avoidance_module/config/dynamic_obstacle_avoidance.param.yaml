@@ -51,6 +51,7 @@
           max_object_vel: 0.5 # [m/s] The object will be determined as stopped if the velocity is smaller than this value.
 
       drivable_area_generation:
+        expand_drivable_area: false
         polygon_generation_method: "ego_path_base" # choose "ego_path_base" and "object_path_base"
         object_path_base:
           min_longitudinal_polygon_margin: 3.0 # [m]

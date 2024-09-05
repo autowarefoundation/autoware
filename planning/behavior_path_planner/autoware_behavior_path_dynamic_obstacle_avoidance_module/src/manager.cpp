@@ -108,6 +108,7 @@ void DynamicObstacleAvoidanceModuleManager::init(rclcpp::Node * node)
 
   {  // drivable_area_generation
     const std::string ns = "dynamic_avoidance.drivable_area_generation.";
+    p.expand_drivable_area = node->declare_parameter<bool>(ns + "expand_drivable_area");
     p.polygon_generation_method = convertToPolygonGenerationMethod(
       node->declare_parameter<std::string>(ns + "polygon_generation_method"));
     p.min_obj_path_based_lon_polygon_margin =
@@ -238,6 +239,7 @@ void DynamicObstacleAvoidanceModuleManager::updateModuleParams(
       p->polygon_generation_method =
         convertToPolygonGenerationMethod(polygon_generation_method_str);
     }
+    updateParam<bool>(parameters, ns + "expand_drivable_area", p->expand_drivable_area);
     updateParam<double>(
       parameters, ns + "object_path_base.min_longitudinal_polygon_margin",
       p->min_obj_path_based_lon_polygon_margin);
