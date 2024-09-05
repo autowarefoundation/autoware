@@ -240,35 +240,6 @@ std::vector<double> getAccelerationValues(
   return sampled_values;
 }
 
-lanelet::ConstLanelets getTargetPreferredLanes(
-  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
-  const lanelet::ConstLanelets & target_lanes, const Direction & direction,
-  const LaneChangeModuleType & type)
-{
-  if (type != LaneChangeModuleType::NORMAL) {
-    return target_lanes;
-  }
-
-  const auto target_lane =
-    utils::lane_change::getLaneChangeTargetLane(route_handler, current_lanes, type, direction);
-  if (!target_lane) {
-    return target_lanes;
-  }
-
-  const auto itr = std::find_if(
-    target_lanes.begin(), target_lanes.end(),
-    [&](const lanelet::ConstLanelet & lane) { return lane.id() == target_lane->id(); });
-
-  if (itr == target_lanes.end()) {
-    return target_lanes;
-  }
-
-  const int target_id = std::distance(target_lanes.begin(), itr);
-  const lanelet::ConstLanelets target_preferred_lanes(
-    target_lanes.begin() + target_id, target_lanes.end());
-  return target_preferred_lanes;
-}
-
 lanelet::ConstLanelets getTargetNeighborLanes(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const LaneChangeModuleType & type)
@@ -669,22 +640,6 @@ bool hasEnoughLengthToLaneChangeAfterAbort(
   }
 
   return true;
-}
-
-double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer)
-{
-  return lateral_buffer + 0.5 * vehicle_width;
-}
-
-std::string getStrDirection(const std::string & name, const Direction direction)
-{
-  if (direction == Direction::LEFT) {
-    return name + "_left";
-  }
-  if (direction == Direction::RIGHT) {
-    return name + "_right";
-  }
-  return "";
 }
 
 std::vector<std::vector<int64_t>> getSortedLaneIds(
