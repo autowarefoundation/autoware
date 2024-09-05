@@ -38,16 +38,7 @@ public:
   virtual ~VehicleCorrector() = default;
 
   bool correct(
-    autoware_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose) override
-  {
-    // Guard
-    if (!params_) return false;
-
-    if (use_reference_yaw_)
-      return corrector_utils::correctWithReferenceYaw(params_.get(), shape, pose);
-    else
-      return correctWithDefaultValue(params_.get(), shape, pose);
-  }
+    autoware_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose) override;
 
   void setParams(const corrector_utils::CorrectionBBParameters & params) { params_ = params; }
 };

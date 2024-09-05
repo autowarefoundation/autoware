@@ -33,6 +33,8 @@ set(${PROJECT_NAME}_SOURCES
   lib/filter/utils.cpp
   lib/corrector/utils.cpp
   lib/corrector/no_corrector.cpp
+  lib/corrector/vehicle_corrector.cpp
+  lib/corrector/reference_shape_size_corrector.cpp
 )
 
 if(${CUDA_FOUND} AND ${CUDNN_FOUND} AND ${TENSORRT_FOUND})
