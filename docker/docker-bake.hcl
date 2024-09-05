@@ -1,5 +1,5 @@
 group "default" {
-  targets = ["base", "core", "universe", "devel", "universe"]
+  targets = ["base", "core-devel", "universe-devel", "devel", "universe"]
 }
 
 // For docker/metadata-action
