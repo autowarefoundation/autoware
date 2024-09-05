@@ -97,19 +97,6 @@ const size_t traffic_obj_nearest_idx = findNearestIndexFromLaneId(path_with_lane
 const size_t traffic_obj_nearest_seg_idx = findNearestSegmentIndexFromLaneId(path_with_lane_id, traffic_obj_pos, lane_id);
 ```
 
-## Path/Trajectory length calculation between designated points
-
-Based on the discussion so far, the nearest index search algorithm is different depending on the object type.
-Therefore, we recommended using the wrapper utility functions which require the nearest index search (e.g., calculating the path length) with each nearest index search.
-
-For example, when we want to calculate the path length between the ego and the dynamic object, the implementation is as follows.
-
-```cpp
-const size_t ego_nearest_seg_idx = findFirstNearestSegmentIndex(points, ego_pose, ego_nearest_dist_threshold, ego_nearest_yaw_threshold);
-const size_t dyn_obj_nearest_seg_idx = findFirstNearestSegmentIndex(points, dyn_obj_pose, dyn_obj_nearest_dist_threshold);
-const double length_from_ego_to_obj = calcSignedArcLength(points, ego_pose, ego_nearest_seg_idx, dyn_obj_pose, dyn_obj_nearest_seg_idx);
-```
-
 ## For developers
 
 Some of the template functions in `trajectory.hpp` are mostly used for specific types (`autoware_planning_msgs::msg::PathPoint`, `autoware_planning_msgs::msg::PathPoint`, `autoware_planning_msgs::msg::TrajectoryPoint`), so they are exported as `extern template` functions to speed-up compilation time.
