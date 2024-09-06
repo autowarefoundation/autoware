@@ -6,7 +6,7 @@ Detailed instructions on how to use the containers can be found in the [Open AD 
 
 ## Multi-stage Dockerfile structure
 
-![](./img/Dockerfile.svg)
+![](./Dockerfile.svg)
 
 The suffix `-devel` (e.g. `universe-devel`) is intended for use as a development container. On the other hand, those without the `-devel` suffix (e.g. `universe`) are intended to be used as a runtime container.
 
