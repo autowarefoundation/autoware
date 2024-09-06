@@ -8,6 +8,8 @@ Detailed instructions on how to use the containers can be found in the [Open AD 
 
 ![](./img/Dockerfile.svg)
 
+The suffix `-devel` (e.g. `universe-devel`) is intended for use as a development container. On the other hand, those without the `-devel` suffix (e.g. `universe`) are intended to be used as a runtime container.
+
 ### `$BASE_IMAGE`
 
 This is a base image of this Dockerfile. [`ros:humble-ros-base-jammy`](https://hub.docker.com/_/ros/tags?page=&page_size=&ordering=&name=humble-ros-base-jammy) will be given.
@@ -18,19 +20,21 @@ This stage performs only the basic setup required for all Autoware images.
 
 ### `rosdep-depend`
 
-The following three ROS dependency package list files will be generated:
-
-- `/rosdep-core-depend-packages.txt`: A dependency package list file for the packages under the `core` directory of `autoware.repos`.
-- `/rosdep-universe-depend-packages.txt`: A dependency package list file for the packages under the `universe` directory of `autoware.repos`.
-- `/rosdep-exec-depend-packages.txt`: A dependency package list file required for running Autoware.
-
-These files will be used in the subsequent `autoware-core`, `autoware-universe`, and `runtime` stages.
+The ROS dependency package list files will be generated.
+These files will be used in the subsequent `core-devel`, `universe-COMPONENT-devel` `universe-COMPONENT`, `universe-devel`, and `universe` stages.
 
 By generating only the package list files and copying them to the subsequent stages, the dependency packages will not be reinstalled during the container build process unless the dependency packages change.
 
-### `autoware-core`
+### `core-devel`
 
 This stage installs the dependency packages based on `/rosdep-core-depend-packages.txt` and build the packages under the `core` directory of `autoware.repos`.
+
+### `universe-common-devel`
+
+This stage installs the dependency packages based on `/rosdep-universe-common-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
+
+- `universe/external`
+- `universe/autoware.universe/common`
 
 ### `autoware-universe`
 
