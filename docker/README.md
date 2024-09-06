@@ -8,7 +8,7 @@ Detailed instructions on how to use the containers can be found in the [Open AD 
 
 ![](./Dockerfile.svg)
 
-The suffix `-devel` (e.g. `universe-devel`) is intended for use as a development container. On the other hand, those without the `-devel` suffix (e.g. `universe`) are intended to be used as a runtime container.
+The suffix `-devel` (e.g. `universe-devel`) is intended for use as a [development container](https://containers.dev). On the other hand, those without the `-devel` suffix (e.g. `universe`) are intended to be used as a runtime container.
 
 ### `$BASE_IMAGE`
 
@@ -21,7 +21,14 @@ This stage performs only the basic setup required for all Autoware images.
 ### `rosdep-depend`
 
 The ROS dependency package list files will be generated.
-These files will be used in the subsequent `core-devel`, `universe-COMPONENT-devel` `universe-COMPONENT`, `universe-devel`, and `universe` stages.
+These files will be used in the subsequent stages:
+
+- `core-devel`
+- `universe-common`
+- `universe-COMPONENT-devel` (e.g. `universe-sensing-perception-devel`)
+- `universe-COMPONENT` (e.g. `universe-sensing-perception`)
+- `universe-devel`
+- `universe`
 
 By generating only the package list files and copying them to the subsequent stages, the dependency packages will not be reinstalled during the container build process unless the dependency packages change.
 
@@ -49,7 +56,7 @@ This stage is a Autoware Universe Sensing/Perception runtime container. It only 
 
 ### `universe-devel`
 
-This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and build the remaining packages of `autoware.repos` not included in the containers for each of the above stages.
+This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and build the remaining packages of `autoware.repos`:
 
 - `launcher`
 - `param`
@@ -66,6 +73,8 @@ This stage installs the dependency packages based on `/rosdep-universe-depend-pa
 - `universe/autoware.universe/tools`
 - `universe/autoware.universe/vehicle`
 - `vehicle`
+
+This stage provides an all-in-one development container to Autoware developers. By running the host's source code with volume mounting, it allows for easy building and debugging of Autoware.
 
 ### `universe`
 
