@@ -36,14 +36,37 @@ This stage installs the dependency packages based on `/rosdep-universe-common-de
 - `universe/external`
 - `universe/autoware.universe/common`
 
-### `autoware-universe`
+### `universe-sensing-perception-devel`
 
-This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and build the packages under the `universe` directory of `autoware.repos`.
+This stage installs the dependency packages based on `/rosdep-universe-sensing-perception-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
 
-### `devel`
+- `universe/autoware.universe/perception`
+- `universe/autoware.universe/sensing`
 
-This stage provides a [development container](https://containers.dev) to Autoware developers. By running the host's source code with volume mounting, it allows for easy building and debugging of Autoware.
+### `universe-sensing-perception`
 
-### `runtime`
+This stage is a Autoware Universe Sensing/Perception runtime container. It only includes the dependencies given by `/rosdep-universe-sensing-perception-exec-depend-packages.txt`, the binaries built in the `universe-sensing-perception-devel` stage.
 
-This stage is an Autoware runtime container. It only includes the dependencies given by `/rosdep-exec-depend-packages.txt`, the binaries built in the `autoware-universe` stage, and artifacts.
+### `universe-devel`
+
+This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and build the remaining packages of `autoware.repos` not included in the containers for each of the above stages.
+
+- `launcher`
+- `param`
+- `sensor_component`
+- `sensor_kit`
+- `universe/autoware.universe/control`
+- `universe/autoware.universe/evaluator`
+- `universe/autoware.universe/launch`
+- `universe/autoware.universe/localization`
+- `universe/autoware.universe/map`
+- `universe/autoware.universe/planning`
+- `universe/autoware.universe/simulator`
+- `universe/autoware.universe/system`
+- `universe/autoware.universe/tools`
+- `universe/autoware.universe/vehicle`
+- `vehicle`
+
+### `universe`
+
+This stage is an Autoware Universe runtime container. It only includes the dependencies given by `/rosdep-exec-depend-packages.txt`, the binaries built in the `universe-devel` stage, and artifacts.
