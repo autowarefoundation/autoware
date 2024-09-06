@@ -50,12 +50,6 @@ public:
   };
 
   /**
-   * @brief get the index corresponding to the given value TYPE
-   * @param [in] type the TYPE enum for which to get the index
-   * @return index of the type
-   */
-  static int getValuesIdx(const TYPE type) { return static_cast<int>(type); }
-  /**
    * @brief get all the debug values as an std::array
    * @return array of all debug values
    */
