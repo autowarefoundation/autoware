@@ -48,7 +48,8 @@ MarkerArray createAmbiguousObjectsMarkerArray(
 MarkerArray createStopTargetObjectMarkerArray(const AvoidancePlanningData & data);
 
 MarkerArray createDebugMarkerArray(
-  const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug,
+  const BehaviorModuleOutput & output, const AvoidancePlanningData & data,
+  const PathShifter & shifter, const DebugData & debug,
   const std::shared_ptr<AvoidanceParameters> & parameters);
 }  // namespace autoware::behavior_path_planner::utils::static_obstacle_avoidance
 

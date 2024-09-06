@@ -229,6 +229,67 @@ MarkerArray unAvoidableObjectsMarkerArray(const ObjectDataArray & objects, std::
   return msg;
 }
 
+MarkerArray createTurnSignalMarkerArray(const TurnSignalInfo & turn_signal_info, std::string && ns)
+{
+  MarkerArray msg;
+
+  if (turn_signal_info.turn_signal.command == TurnIndicatorsCommand::NO_COMMAND) {
+    return msg;
+  }
+
+  const auto yaw_offset = [&turn_signal_info]() {
+    if (turn_signal_info.turn_signal.command == TurnIndicatorsCommand::ENABLE_RIGHT) {
+      return -1.0 * M_PI_2;
+    }
+
+    if (turn_signal_info.turn_signal.command == TurnIndicatorsCommand::ENABLE_LEFT) {
+      return M_PI_2;
+    }
+
+    return 0.0;
+  }();
+
+  size_t i = 0;
+  {
+    auto marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, i++, Marker::ARROW,
+      createMarkerScale(0.6, 0.3, 0.3), createMarkerColor(0.0, 0.0, 1.0, 0.999));
+    marker.pose = turn_signal_info.desired_start_point;
+    marker.pose = calcOffsetPose(marker.pose, 0.0, 0.0, 0.0, yaw_offset);
+
+    msg.markers.push_back(marker);
+  }
+  {
+    auto marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, i++, Marker::ARROW,
+      createMarkerScale(0.6, 0.3, 0.3), createMarkerColor(0.0, 0.0, 1.0, 0.999));
+    marker.pose = turn_signal_info.desired_end_point;
+    marker.pose = calcOffsetPose(marker.pose, 0.0, 0.0, 0.0, yaw_offset);
+
+    msg.markers.push_back(marker);
+  }
+  {
+    auto marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, i++, Marker::ARROW,
+      createMarkerScale(0.8, 0.4, 0.4), createMarkerColor(1.0, 0.0, 0.0, 0.999));
+    marker.pose = turn_signal_info.required_start_point;
+    marker.pose = calcOffsetPose(marker.pose, 0.0, 0.0, 0.0, yaw_offset);
+
+    msg.markers.push_back(marker);
+  }
+  {
+    auto marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, i++, Marker::ARROW,
+      createMarkerScale(0.8, 0.4, 0.4), createMarkerColor(1.0, 0.0, 0.0, 0.999));
+    marker.pose = turn_signal_info.required_end_point;
+    marker.pose = calcOffsetPose(marker.pose, 0.0, 0.0, 0.0, yaw_offset);
+
+    msg.markers.push_back(marker);
+  }
+
+  return msg;
+}
+
 }  // namespace
 
 MarkerArray createAvoidLineMarkerArray(
@@ -494,7 +555,8 @@ MarkerArray createDrivableBounds(
 }
 
 MarkerArray createDebugMarkerArray(
-  const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug,
+  const BehaviorModuleOutput & output, const AvoidancePlanningData & data,
+  const PathShifter & shifter, const DebugData & debug,
   const std::shared_ptr<AvoidanceParameters> & parameters)
 {
   using autoware::behavior_path_planner::utils::transformToLanelets;
@@ -630,6 +692,7 @@ MarkerArray createDebugMarkerArray(
   // misc
   if (parameters->enable_misc_marker) {
     add(createPathMarkerArray(path, "centerline_resampled", 0, 0.0, 0.9, 0.5));
+    add(createTurnSignalMarkerArray(output.turn_signal_info, "turn_signal_info"));
   }
 
   return msg;

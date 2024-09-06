@@ -91,7 +91,7 @@ bool StaticObstacleAvoidanceModule::isExecutionRequested() const
 
   // Check ego is in preferred lane
   updateInfoMarker(avoid_data_);
-  updateDebugMarker(avoid_data_, path_shifter_, debug_data_);
+  updateDebugMarker(BehaviorModuleOutput{}, avoid_data_, path_shifter_, debug_data_);
 
   // there is object that should be avoid. return true.
   if (!!avoid_data_.stop_target_object) {
@@ -945,6 +945,112 @@ PathWithLaneId StaticObstacleAvoidanceModule::extendBackwardLength(
   return extended_path;
 }
 
+auto StaticObstacleAvoidanceModule::getTurnSignal(
+  const ShiftedPath & spline_shift_path, const ShiftedPath & linear_shift_path) -> TurnSignalInfo
+{
+  using autoware::motion_utils::calcSignedArcLength;
+
+  const auto is_ignore_signal = [this](const UUID & uuid) {
+    if (!ignore_signal_.has_value()) {
+      return false;
+    }
+
+    return ignore_signal_.value() == uuid;
+  };
+
+  const auto update_ignore_signal = [this](const UUID & uuid, const bool is_ignore) {
+    ignore_signal_ = is_ignore ? std::make_optional(uuid) : std::nullopt;
+  };
+
+  const auto is_large_deviation = [this](const auto & path) {
+    constexpr double threshold = 1.0;
+    const auto current_seg_idx = planner_data_->findEgoSegmentIndex(path.points);
+    const auto lateral_deviation =
+      autoware::motion_utils::calcLateralOffset(path.points, getEgoPosition(), current_seg_idx);
+    return std::abs(lateral_deviation) > threshold;
+  };
+
+  auto shift_lines = path_shifter_.getShiftLines();
+  if (shift_lines.empty()) {
+    return getPreviousModuleOutput().turn_signal_info;
+  }
+
+  if (is_large_deviation(spline_shift_path.path)) {
+    return getPreviousModuleOutput().turn_signal_info;
+  }
+
+  const auto itr =
+    std::remove_if(shift_lines.begin(), shift_lines.end(), [&, this](const auto & s) {
+      const auto threshold = planner_data_->parameters.turn_signal_shift_length_threshold;
+      return std::abs(s.start_shift_length - s.end_shift_length) < threshold ||
+             is_ignore_signal(s.id);
+    });
+  shift_lines.erase(itr, shift_lines.end());
+
+  if (shift_lines.empty()) {
+    return getPreviousModuleOutput().turn_signal_info;
+  }
+
+  const auto target_shift_line = [&]() {
+    const auto & s1 = shift_lines.front();
+
+    for (size_t i = 1; i < shift_lines.size(); i++) {
+      const auto & s2 = shift_lines.at(i);
+
+      const auto s1_relative_length = s1.start_shift_length - s1.end_shift_length;
+      const auto s2_relative_length = s2.start_shift_length - s2.end_shift_length;
+
+      // same side shift
+      if (s1_relative_length > 0.0 && s2_relative_length > 0.0) {
+        continue;
+      }
+
+      // same side shift
+      if (s1_relative_length < 0.0 && s2_relative_length < 0.0) {
+        continue;
+      }
+
+      // different side shift
+      const auto & points = path_shifter_.getReferencePath().points;
+      const size_t idx = planner_data_->findEgoIndex(points);
+
+      // output turn signal for near shift line.
+      if (calcSignedArcLength(points, idx, s1.start_idx) > 0.0) {
+        return s1;
+      }
+
+      // output turn signal for far shift line.
+      if (
+        calcSignedArcLength(points, idx, s2.start_idx) <
+        getEgoSpeed() * parameters_->max_prepare_time) {
+        return s2;
+      }
+
+      // output turn signal for near shift line.
+      return s1;
+    }
+
+    return s1;
+  }();
+
+  const auto original_signal = getPreviousModuleOutput().turn_signal_info;
+
+  constexpr bool is_driving_forward = true;
+  constexpr bool egos_lane_is_shifted = true;
+
+  const auto [new_signal, is_ignore] = planner_data_->getBehaviorTurnSignalInfo(
+    linear_shift_path, target_shift_line, avoid_data_.current_lanelets, helper_->getEgoShift(),
+    is_driving_forward, egos_lane_is_shifted);
+
+  update_ignore_signal(target_shift_line.id, is_ignore);
+
+  const auto current_seg_idx = planner_data_->findEgoSegmentIndex(spline_shift_path.path.points);
+  return planner_data_->turn_signal_decider.overwrite_turn_signal(
+    spline_shift_path.path, getEgoPose(), current_seg_idx, original_signal, new_signal,
+    planner_data_->parameters.ego_nearest_dist_threshold,
+    planner_data_->parameters.ego_nearest_yaw_threshold);
+}
+
 BehaviorModuleOutput StaticObstacleAvoidanceModule::plan()
 {
   universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
@@ -990,48 +1096,9 @@ BehaviorModuleOutput StaticObstacleAvoidanceModule::plan()
 
   BehaviorModuleOutput output;
 
-  const auto is_ignore_signal = [this](const UUID & uuid) {
-    if (!ignore_signal_.has_value()) {
-      return false;
-    }
-
-    return ignore_signal_.value() == uuid;
-  };
-
-  const auto update_ignore_signal = [this](const UUID & uuid, const bool is_ignore) {
-    ignore_signal_ = is_ignore ? std::make_optional(uuid) : std::nullopt;
-  };
-
-  const auto is_large_deviation = [this](const auto & path) {
-    constexpr double threshold = 1.0;
-    const auto current_seg_idx = planner_data_->findEgoSegmentIndex(path.points);
-    const auto lateral_deviation =
-      autoware::motion_utils::calcLateralOffset(path.points, getEgoPosition(), current_seg_idx);
-    return std::abs(lateral_deviation) > threshold;
-  };
-
-  // turn signal info
-  if (path_shifter_.getShiftLines().empty()) {
-    output.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
-  } else if (is_ignore_signal(path_shifter_.getShiftLines().front().id)) {
-    output.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
-  } else if (is_large_deviation(spline_shift_path.path)) {
-    output.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
-  } else {
-    const auto original_signal = getPreviousModuleOutput().turn_signal_info;
-
-    constexpr bool is_driving_forward = true;
-    constexpr bool egos_lane_is_shifted = true;
-    const auto [new_signal, is_ignore] = planner_data_->getBehaviorTurnSignalInfo(
-      linear_shift_path, path_shifter_.getShiftLines().front(), avoid_data_.current_lanelets,
-      helper_->getEgoShift(), is_driving_forward, egos_lane_is_shifted);
-
-    const auto current_seg_idx = planner_data_->findEgoSegmentIndex(spline_shift_path.path.points);
-    output.turn_signal_info = planner_data_->turn_signal_decider.overwrite_turn_signal(
-      spline_shift_path.path, getEgoPose(), current_seg_idx, original_signal, new_signal,
-      planner_data_->parameters.ego_nearest_dist_threshold,
-      planner_data_->parameters.ego_nearest_yaw_threshold);
-    update_ignore_signal(path_shifter_.getShiftLines().front().id, is_ignore);
+  // turn signal
+  {
+    output.turn_signal_info = getTurnSignal(spline_shift_path, linear_shift_path);
   }
 
   // sparse resampling for computational cost
@@ -1044,7 +1111,7 @@ BehaviorModuleOutput StaticObstacleAvoidanceModule::plan()
   {
     updateEgoBehavior(data, spline_shift_path);
     updateInfoMarker(avoid_data_);
-    updateDebugMarker(avoid_data_, path_shifter_, debug_data_);
+    updateDebugMarker(output, avoid_data_, path_shifter_, debug_data_);
   }
 
   if (isDrivingSameLane(helper_->getPreviousDrivingLanes(), data.current_lanelets)) {
@@ -1490,12 +1557,13 @@ void StaticObstacleAvoidanceModule::updateInfoMarker(const AvoidancePlanningData
 }
 
 void StaticObstacleAvoidanceModule::updateDebugMarker(
-  const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug) const
+  const BehaviorModuleOutput & output, const AvoidancePlanningData & data,
+  const PathShifter & shifter, const DebugData & debug) const
 {
   universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   debug_marker_.markers.clear();
-  debug_marker_ =
-    utils::static_obstacle_avoidance::createDebugMarkerArray(data, shifter, debug, parameters_);
+  debug_marker_ = utils::static_obstacle_avoidance::createDebugMarkerArray(
+    output, data, shifter, debug, parameters_);
 }
 
 void StaticObstacleAvoidanceModule::updateAvoidanceDebugData(

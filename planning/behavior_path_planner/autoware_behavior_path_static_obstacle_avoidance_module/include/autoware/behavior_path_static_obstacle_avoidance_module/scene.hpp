@@ -346,7 +346,8 @@ private:
    * @brief fill debug markers.
    */
   void updateDebugMarker(
-    const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug) const;
+    const BehaviorModuleOutput & output, const AvoidancePlanningData & data,
+    const PathShifter & shifter, const DebugData & debug) const;
 
   /**
    * @brief fill information markers that are shown in Rviz by default.
@@ -367,6 +368,9 @@ private:
    * @return result.
    */
   bool isSafePath(ShiftedPath & shifted_path, DebugData & debug) const;
+
+  auto getTurnSignal(const ShiftedPath & spline_shift_path, const ShiftedPath & linear_shift_path)
+    -> TurnSignalInfo;
 
   // post process
 
