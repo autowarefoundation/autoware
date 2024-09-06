@@ -260,16 +260,18 @@ FrenetPath PathGenerator::generateFrenetPath(
 
   path.reserve(static_cast<size_t>(duration / sampling_time_interval_));
   for (double t = 0.0; t <= duration; t += sampling_time_interval_) {
+    const auto t2 = t * t;
+    const auto t3 = t2 * t;
+    const auto t4 = t3 * t;
+    const auto t5 = t4 * t;
     const double current_acc =
       0.0;  // Currently we assume the object is traveling at a constant speed
-    const double d_next_ = current_point.d + current_point.d_vel * t +
-                           current_acc * 2.0 * std::pow(t, 2) + lat_coeff(0) * std::pow(t, 3) +
-                           lat_coeff(1) * std::pow(t, 4) + lat_coeff(2) * std::pow(t, 5);
+    const double d_next_ = current_point.d + current_point.d_vel * t + current_acc * 2.0 * t2 +
+                           lat_coeff(0) * t3 + lat_coeff(1) * t4 + lat_coeff(2) * t5;
     // t > lateral_duration: 0.0, else d_next_
     const double d_next = t > lateral_duration ? 0.0 : d_next_;
-    const double s_next = current_point.s + current_point.s_vel * t +
-                          2.0 * current_acc * std::pow(t, 2) + lon_coeff(0) * std::pow(t, 3) +
-                          lon_coeff(1) * std::pow(t, 4);
+    const double s_next = current_point.s + current_point.s_vel * t + 2.0 * current_acc * t2 +
+                          lon_coeff(0) * t3 + lon_coeff(1) * t4;
     if (s_next > max_length) {
       break;
     }
@@ -302,10 +304,14 @@ Eigen::Vector3d PathGenerator::calcLatCoefficients(
   // b = np.matrix([[xe - self.a0 - self.a1 * T - self.a2 * T**2],
   //                [vxe - self.a1 - 2 * self.a2 * T],
   //                [axe - 2 * self.a2]])
+  const auto T2 = T * T;
+  const auto T3 = T2 * T;
+  const auto T4 = T3 * T;
+  const auto T5 = T4 * T;
+
   Eigen::Matrix3d A_lat_inv;
-  A_lat_inv << 10 / std::pow(T, 3), -4 / std::pow(T, 2), 1 / (2 * T), -15 / std::pow(T, 4),
-    7 / std::pow(T, 3), -1 / std::pow(T, 2), 6 / std::pow(T, 5), -3 / std::pow(T, 4),
-    1 / (2 * std::pow(T, 3));
+  A_lat_inv << 10 / T3, -4 / T2, 1 / (2 * T), -15 / T4, 7 / T3, -1 / T2, 6 / T5, -3 / T4,
+    1 / (2 * T3);
   Eigen::Vector3d b_lat;
   b_lat[0] = target_point.d - current_point.d - current_point.d_vel * T;
   b_lat[1] = target_point.d_vel - current_point.d_vel;
@@ -323,9 +329,11 @@ Eigen::Vector2d PathGenerator::calcLonCoefficients(
   //                         [-1/(2*T**3), 1/(4*T**2)]])
   // b = np.matrix([[vxe - self.a1 - 2 * self.a2 * T],
   //               [axe - 2 * self.a2]])
+  const auto T2 = T * T;
+  const auto T3 = T2 * T;
+
   Eigen::Matrix2d A_lon_inv;
-  A_lon_inv << 1 / std::pow(T, 2), -1 / (3 * T), -1 / (2 * std::pow(T, 3)),
-    1 / (4 * std::pow(T, 2));
+  A_lon_inv << 1 / T2, -1 / (3 * T), -1 / (2 * T3), 1 / (4 * T2);
   Eigen::Vector2d b_lon;
   b_lon[0] = target_point.s_vel - current_point.s_vel;
   b_lon[1] = 0.0;
@@ -474,6 +482,8 @@ FrenetPoint PathGenerator::getFrenetPoint(
     // Get velocity after time horizon
     const auto terminal_velocity = v + a * (1.0 / lambda) * (1 - std::exp(-lambda * t_h));
 
+    const auto lambda_2 = lambda * lambda;
+
     // If vehicle is decelerating, make sure its speed does not change signs (we assume it will, at
     // most stop, not reverse its direction)
     if (!have_same_sign(terminal_velocity, v)) {
@@ -489,8 +499,7 @@ FrenetPoint PathGenerator::getFrenetPoint(
 
       // Calculate the distance traveled until stopping
       auto distance_to_reach_zero_speed =
-        v * t_stop + a * t_stop * (1.0 / lambda) +
-        a * (1.0 / std::pow(lambda, 2)) * std::expm1(-lambda * t_h);
+        v * t_stop + a * t_stop * (1.0 / lambda) + a * (1.0 / lambda_2) * std::expm1(-lambda * t_h);
       // Output an equivalent constant speed
       return distance_to_reach_zero_speed / t_h;
     }
@@ -500,7 +509,7 @@ FrenetPoint PathGenerator::getFrenetPoint(
     // assume it will continue accelerating (reckless driving)
     const bool object_has_surpassed_limit_already = v > speed_limit;
     if (terminal_velocity < speed_limit || object_has_surpassed_limit_already)
-      return v + a * (1.0 / lambda) + (a / (t_h * std::pow(lambda, 2))) * std::expm1(-lambda * t_h);
+      return v + a * (1.0 / lambda) + (a / (t_h * lambda_2)) * std::expm1(-lambda * t_h);
 
     // It is assumed the vehicle accelerates until final_speed is reached and
     // then continues at constant speed for the rest of the time horizon
@@ -510,8 +519,7 @@ FrenetPoint PathGenerator::getFrenetPoint(
     const double t_f = (-1.0 / lambda) * std::log(1 - ((speed_limit - v) * lambda) / a);
     const double distance_covered =
       // Distance covered while accelerating
-      a * (1.0 / lambda) * t_f + a * (1.0 / std::pow(lambda, 2)) * std::expm1(-lambda * t_f) +
-      v * t_f +
+      a * (1.0 / lambda) * t_f + a * (1.0 / lambda_2) * std::expm1(-lambda * t_f) + v * t_f +
       // Distance covered at constant speed for the rest of the horizon time
       speed_limit * (t_h - t_f);
     return distance_covered / t_h;
