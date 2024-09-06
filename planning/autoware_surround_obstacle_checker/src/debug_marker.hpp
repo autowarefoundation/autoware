@@ -66,9 +66,6 @@ public:
   bool pushObstaclePoint(const geometry_msgs::msg::Point & obstacle_point, const PointType & type);
   void publish();
   void publishFootprints();
-  void updateFootprintMargin(
-    const std::string & object_label, const double front_distance, const double side_distance,
-    const double back_distance);
 
 private:
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_viz_pub_;

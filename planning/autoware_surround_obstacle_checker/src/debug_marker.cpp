@@ -236,14 +236,4 @@ PolygonStamped SurroundObstacleCheckerDebugNode::boostPolygonToPolygonStamped(
   return polygon_stamped;
 }
 
-void SurroundObstacleCheckerDebugNode::updateFootprintMargin(
-  const std::string & object_label, const double front_distance, const double side_distance,
-  const double back_distance)
-{
-  object_label_ = object_label;
-  surround_check_front_distance_ = front_distance;
-  surround_check_side_distance_ = side_distance;
-  surround_check_back_distance_ = back_distance;
-}
-
 }  // namespace autoware::surround_obstacle_checker
