@@ -85,6 +85,13 @@ RUN rosdep keys --ignore-src --from-paths src \
     | sort \
     > /rosdep-universe-sensing-perception-depend-packages.txt \
     && cat /rosdep-universe-sensing-perception-depend-packages.txt
+RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
+    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
+    | grep -v '^#' \
+    | sed 's/ \+/\n/g'\
+    | sort \
+    > /rosdep-universe-sensing-perception-exec-depend-packages.txt \
+    && cat /rosdep-universe-sensing-perception-exec-depend-packages.txt
 
 COPY src/launcher /autoware/src/launcher
 COPY src/param /autoware/src/param
@@ -254,6 +261,40 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && rm -rf /autoware/build
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+FROM base AS universe-sensing-perception
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ARG LIB_DIR
+ARG SETUP_ARGS
+
+# Set up runtime environment and artifacts
+COPY --from=rosdep-depend /rosdep-universe-sensing-perception-exec-depend-packages.txt /tmp/rosdep-universe-sensing-perception-exec-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadkit \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get update \
+  && cat /tmp/rosdep-universe-sensing-perception-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
+  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
+  && find / -name "*.o" -type f -delete \
+  && find / -name "*.h" -type f -delete \
+  && find / -name "*.hpp" -type f -delete \
+  && rm -rf /autoware/ansible \
+    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
+    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
+    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
+
+COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
+
+# Copy bash aliases
+COPY docker/etc/.bash_aliases /root/.bash_aliases
+RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]

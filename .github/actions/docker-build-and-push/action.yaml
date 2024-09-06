@@ -111,6 +111,28 @@ runs:
           latest=false
           suffix=-core-devel${{ inputs.tag-suffix }}
 
+    - name: Docker meta for autoware:universe-sensing-perception-devel
+      id: meta-universe-sensing-perception-devel
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: ${{ steps.set-docker-tags.outputs.tags }}
+        bake-target: docker-metadata-action-universe-sensing-perception-devel
+        flavor: |
+          latest=false
+          suffix=-universe-sensing-perception-devel${{ inputs.tag-suffix }}
+
+    - name: Docker meta for autoware:universe-sensing-perception
+      id: meta-universe-sensing-perception
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: ${{ steps.set-docker-tags.outputs.tags }}
+        bake-target: docker-metadata-action-universe-sensing-perception
+        flavor: |
+          latest=false
+          suffix=-universe-sensing-perception${{ inputs.tag-suffix }}
+
     - name: Docker meta for autoware:universe-devel
       id: meta-universe-devel
       uses: docker/metadata-action@v5
@@ -148,6 +170,8 @@ runs:
           docker/docker-bake.hcl
           ${{ steps.meta-base.outputs.bake-file }}
           ${{ steps.meta-core-devel.outputs.bake-file }}
+          ${{ steps.meta-universe-sensing-perception-devel.outputs.bake-file }}
+          ${{ steps.meta-universe-sensing-perception.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
         provenance: false
