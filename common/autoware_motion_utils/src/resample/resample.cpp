@@ -21,6 +21,8 @@
 #include "interpolation/spline_interpolation.hpp"
 #include "interpolation/zero_order_hold.hpp"
 
+#include <cstdlib>
+
 namespace autoware::motion_utils
 {
 std::vector<geometry_msgs::msg::Point> resamplePointVector(
@@ -601,11 +603,13 @@ autoware_planning_msgs::msg::Trajectory resampleTrajectory(
   rear_wheel_angle.push_back(input_trajectory.points.front().rear_wheel_angle_rad);
   time_from_start.push_back(
     rclcpp::Duration(input_trajectory.points.front().time_from_start).seconds());
+
   for (size_t i = 1; i < input_trajectory.points.size(); ++i) {
     const auto & prev_pt = input_trajectory.points.at(i - 1);
     const auto & curr_pt = input_trajectory.points.at(i);
     const double ds =
       autoware::universe_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
+
     input_arclength.push_back(ds + input_arclength.back());
     input_pose.push_back(curr_pt.pose);
     v_lon.push_back(curr_pt.longitudinal_velocity_mps);
@@ -615,6 +619,19 @@ autoware_planning_msgs::msg::Trajectory resampleTrajectory(
     front_wheel_angle.push_back(curr_pt.front_wheel_angle_rad);
     rear_wheel_angle.push_back(curr_pt.rear_wheel_angle_rad);
     time_from_start.push_back(rclcpp::Duration(curr_pt.time_from_start).seconds());
+  }
+
+  // Set Zero Velocity After Stop Point
+  // If the longitudinal velocity is zero, set the velocity to zero after that point.
+  bool stop_point_found_in_v_lon = false;
+  constexpr double epsilon = 1e-4;
+  for (size_t i = 0; i < v_lon.size(); ++i) {
+    if (std::abs(v_lon.at(i)) < epsilon) {
+      stop_point_found_in_v_lon = true;
+    }
+    if (stop_point_found_in_v_lon) {
+      v_lon.at(i) = 0.0;
+    }
   }
 
   // Interpolate
