@@ -20,7 +20,7 @@
 #include <numeric>
 
 // random number generator
-std::mt19937_64 TreeStructuredParzenEstimator::engine(std::random_device{}());
+std::mt19937_64 TreeStructuredParzenEstimator::engine(0);
 
 TreeStructuredParzenEstimator::TreeStructuredParzenEstimator(
   const Direction direction, const int64_t n_startup_trials, std::vector<double> sample_mean,

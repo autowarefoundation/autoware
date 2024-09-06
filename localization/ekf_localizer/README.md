@@ -180,6 +180,13 @@ Note that, although the dimension gets larger since the analytical expansion can
 <img src="./media/ekf_diagnostics.png" width="320">
 </p>
 
+<p align="center">
+<img src="./media/ekf_diagnostics_callback_pose.png" width="320">
+</p>
+<p align="center">
+<img src="./media/ekf_diagnostics_callback_twist.png" width="320">
+</p>
+
 ### The conditions that result in a WARN state
 
 - The node is not in the activate state.

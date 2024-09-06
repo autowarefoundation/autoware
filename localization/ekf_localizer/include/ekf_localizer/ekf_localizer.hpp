@@ -101,6 +101,12 @@ class EKFLocalizer : public rclcpp::Node
 public:
   explicit EKFLocalizer(const rclcpp::NodeOptions & options);
 
+  // This function is only used in static tools to know when timer callbacks are triggered.
+  std::chrono::nanoseconds time_until_trigger() const
+  {
+    return timer_control_->time_until_trigger();
+  }
+
 private:
   const std::shared_ptr<Warning> warning_;
 
@@ -217,6 +223,12 @@ private:
    */
   void publish_diagnostics(
     const geometry_msgs::msg::PoseStamped & current_ekf_pose, const rclcpp::Time & current_time);
+
+  /**
+   * @brief publish diagnostics message for return
+   */
+  void publish_callback_return_diagnostics(
+    const std::string & callback_name, const rclcpp::Time & current_time);
 
   /**
    * @brief update simple 1d filter
