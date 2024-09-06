@@ -33,45 +33,6 @@
 
 namespace autoware::frenet_planner
 {
-std::vector<Trajectory> generateTrajectories(
-  const autoware::sampler_common::transform::Spline2D & reference_spline,
-  const FrenetState & initial_state, const SamplingParameters & sampling_parameters)
-{
-  std::vector<Trajectory> trajectories;
-  trajectories.reserve(sampling_parameters.parameters.size());
-  for (const auto & parameter : sampling_parameters.parameters) {
-    auto trajectory = generateCandidate(
-      initial_state, parameter.target_state, parameter.target_duration,
-      sampling_parameters.resolution);
-    trajectory.sampling_parameter = parameter;
-    calculateCartesian(reference_spline, trajectory);
-    std::stringstream ss;
-    ss << parameter;
-    trajectory.tag = ss.str();
-    trajectories.push_back(trajectory);
-  }
-  return trajectories;
-}
-
-std::vector<Trajectory> generateLowVelocityTrajectories(
-  const autoware::sampler_common::transform::Spline2D & reference_spline,
-  const FrenetState & initial_state, const SamplingParameters & sampling_parameters)
-{
-  std::vector<Trajectory> trajectories;
-  trajectories.reserve(sampling_parameters.parameters.size());
-  for (const auto & parameter : sampling_parameters.parameters) {
-    auto trajectory = generateLowVelocityCandidate(
-      initial_state, parameter.target_state, parameter.target_duration,
-      sampling_parameters.resolution);
-    calculateCartesian(reference_spline, trajectory);
-    std::stringstream ss;
-    ss << parameter;
-    trajectory.tag = ss.str();
-    trajectories.push_back(trajectory);
-  }
-  return trajectories;
-}
-
 std::vector<Path> generatePaths(
   const autoware::sampler_common::transform::Spline2D & reference_spline,
   const FrenetState & initial_state, const SamplingParameters & sampling_parameters)
@@ -104,30 +65,6 @@ Trajectory generateCandidate(
     trajectory.times.push_back(t);
     trajectory.frenet_points.emplace_back(
       trajectory.longitudinal_polynomial->position(t), trajectory.lateral_polynomial->position(t));
-  }
-  return trajectory;
-}
-
-Trajectory generateLowVelocityCandidate(
-  const FrenetState & initial_state, const FrenetState & target_state, const double duration,
-  const double time_resolution)
-{
-  Trajectory trajectory;
-  trajectory.longitudinal_polynomial = Polynomial(
-    initial_state.position.s, initial_state.longitudinal_velocity,
-    initial_state.longitudinal_acceleration, target_state.position.s,
-    target_state.longitudinal_velocity, target_state.longitudinal_acceleration, duration);
-  const auto delta_s = target_state.position.s - initial_state.position.s;
-  trajectory.lateral_polynomial = Polynomial(
-    initial_state.position.d, initial_state.lateral_velocity, initial_state.lateral_acceleration,
-    target_state.position.d, target_state.lateral_velocity, target_state.lateral_acceleration,
-    delta_s);
-  for (double t = 0.0; t <= duration; t += time_resolution) {
-    trajectory.times.push_back(t);
-    const auto s = trajectory.longitudinal_polynomial->position(t);
-    const auto ds = s - initial_state.position.s;
-    const auto d = trajectory.lateral_polynomial->position(ds);
-    trajectory.frenet_points.emplace_back(s, d);
   }
   return trajectory;
 }

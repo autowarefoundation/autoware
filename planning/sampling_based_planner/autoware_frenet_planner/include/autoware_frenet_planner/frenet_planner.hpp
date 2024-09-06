@@ -25,16 +25,6 @@
 
 namespace autoware::frenet_planner
 {
-/// @brief generate trajectories relative to the reference for the given initial state and sampling
-/// parameters
-std::vector<Trajectory> generateTrajectories(
-  const autoware::sampler_common::transform::Spline2D & reference_spline,
-  const FrenetState & initial_state, const SamplingParameters & sampling_parameters);
-/// @brief generate trajectories relative to the reference for the given initial state and sampling
-/// parameters
-std::vector<Trajectory> generateLowVelocityTrajectories(
-  const autoware::sampler_common::transform::Spline2D & reference_spline,
-  const FrenetState & initial_state, const SamplingParameters & sampling_parameters);
 /// @brief generate paths relative to the reference for the given initial state and sampling
 /// parameters
 std::vector<Path> generatePaths(
@@ -49,12 +39,6 @@ Path generateCandidate(
 /// @details the polynomials for lateral motion (d) and longitudinal motion (s) are calculated over
 /// time: d(t) and s(t).
 Trajectory generateCandidate(
-  const FrenetState & initial_state, const FrenetState & target_state, const double duration,
-  const double time_resolution);
-/// @brief generate a low velocity candidate trajectory
-/// @details the polynomial for lateral motion (d) is calculated over the longitudinal displacement
-/// (s) rather than over time: d(s) and s(t).
-Trajectory generateLowVelocityCandidate(
   const FrenetState & initial_state, const FrenetState & target_state, const double duration,
   const double time_resolution);
 /// @brief calculate the cartesian frame of the given path
