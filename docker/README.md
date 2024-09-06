@@ -52,7 +52,7 @@ This stage installs the dependency packages based on `/rosdep-universe-sensing-p
 
 ### `universe-sensing-perception`
 
-This stage is a Autoware Universe Sensing/Perception runtime container. It only includes the dependencies given by `/rosdep-universe-sensing-perception-exec-depend-packages.txt`, the binaries built in the `universe-sensing-perception-devel` stage.
+This stage is a Autoware Universe Sensing/Perception runtime container. It only includes the dependencies given by `/rosdep-universe-sensing-perception-exec-depend-packages.txt` and the binaries built in the `universe-sensing-perception-devel` stage.
 
 ### `universe-devel`
 
