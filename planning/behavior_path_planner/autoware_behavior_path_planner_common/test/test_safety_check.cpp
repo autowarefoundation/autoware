@@ -27,13 +27,35 @@
 
 constexpr double epsilon = 1e-6;
 
+using autoware::behavior_path_planner::utils::path_safety_checker::calcInterpolatedPoseWithVelocity;
 using autoware::behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
+using autoware::behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
+using autoware::universe_utils::createPoint;
+using autoware::universe_utils::createQuaternionFromRPY;
 using autoware::universe_utils::Point2d;
 using autoware::universe_utils::Polygon2d;
 using autoware_perception_msgs::msg::Shape;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
+
+geometry_msgs::msg::Pose createPose(
+  double x, double y, double z, double roll, double pitch, double yaw)
+{
+  geometry_msgs::msg::Pose p;
+  p.position = createPoint(x, y, z);
+  p.orientation = createQuaternionFromRPY(roll, pitch, yaw);
+  return p;
+}
+
+std::vector<PoseWithVelocityStamped> createTestPath()
+{
+  std::vector<PoseWithVelocityStamped> path;
+  path.emplace_back(0.0, createPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 1.0);
+  path.emplace_back(1.0, createPose(1.0, 0.0, 0.0, 0.0, 0.0, 0.0), 2.0);
+  path.emplace_back(2.0, createPose(2.0, 0.0, 0.0, 0.0, 0.0, 0.0), 3.0);
+  return path;
+}
 
 TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
 {
@@ -206,4 +228,75 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, calcRssDistance)
 
     EXPECT_NEAR(calcRssDistance(front_vel, rear_vel, params), 63.75, epsilon);
   }
+}
+
+// Basic interpolation test
+TEST(CalcInterpolatedPoseWithVelocityTest, BasicInterpolation)
+{
+  auto path = createTestPath();
+  auto result = calcInterpolatedPoseWithVelocity(path, 0.5);
+
+  ASSERT_TRUE(result.has_value());
+  EXPECT_NEAR(result->time, 0.5, 1e-6);
+  EXPECT_NEAR(result->pose.position.x, 0.5, 1e-6);
+  EXPECT_NEAR(result->velocity, 1.5, 1e-6);
+}
+
+// Boundary conditions test
+TEST(CalcInterpolatedPoseWithVelocityTest, BoundaryConditions)
+{
+  auto path = createTestPath();
+
+  // First point of the path
+  auto start_result = calcInterpolatedPoseWithVelocity(path, 0.0);
+  ASSERT_TRUE(start_result.has_value());
+  EXPECT_NEAR(start_result->time, 0.0, 1e-6);
+  EXPECT_NEAR(start_result->pose.position.x, 0.0, 1e-6);
+  EXPECT_NEAR(start_result->velocity, 1.0, 1e-6);
+
+  // Last point of the path
+  auto end_result = calcInterpolatedPoseWithVelocity(path, 2.0);
+  ASSERT_TRUE(end_result.has_value());
+  EXPECT_NEAR(end_result->time, 2.0, 1e-6);
+  EXPECT_NEAR(end_result->pose.position.x, 2.0, 1e-6);
+  EXPECT_NEAR(end_result->velocity, 3.0, 1e-6);
+}
+
+// Invalid input test
+TEST(CalcInterpolatedPoseWithVelocityTest, InvalidInput)
+{
+  auto path = createTestPath();
+
+  // Empty path
+  EXPECT_FALSE(calcInterpolatedPoseWithVelocity({}, 1.0).has_value());
+
+  // Negative relative time
+  EXPECT_FALSE(calcInterpolatedPoseWithVelocity(path, -1.0).has_value());
+
+  // Relative time greater than the last time in the path
+  EXPECT_FALSE(calcInterpolatedPoseWithVelocity(path, 3.0).has_value());
+}
+
+// Special cases test
+TEST(CalcInterpolatedPoseWithVelocityTest, DISABLED_SpecialCases)
+{
+  // Case with consecutive points at the same time
+  std::vector<PoseWithVelocityStamped> same_time_path;
+  same_time_path.emplace_back(0.0, createPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 1.0);
+  same_time_path.emplace_back(0.0, createPose(1.0, 0.0, 0.0, 0.0, 0.0, 0.0), 2.0);
+  same_time_path.emplace_back(1.0, createPose(2.0, 0.0, 0.0, 0.0, 0.0, 0.0), 3.0);
+
+  auto same_time_result = calcInterpolatedPoseWithVelocity(same_time_path, 0.0);
+  ASSERT_TRUE(same_time_result.has_value());
+  EXPECT_NEAR(same_time_result->pose.position.x, 0.0, 1e-6);
+  EXPECT_NEAR(same_time_result->velocity, 1.0, 1e-6);
+
+  // Case with reversed time order
+  std::vector<PoseWithVelocityStamped> reverse_time_path;
+  reverse_time_path.emplace_back(2.0, createPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 1.0);
+  reverse_time_path.emplace_back(1.0, createPose(1.0, 0.0, 0.0, 0.0, 0.0, 0.0), 2.0);
+  reverse_time_path.emplace_back(0.0, createPose(2.0, 0.0, 0.0, 0.0, 0.0, 0.0), 3.0);
+
+  auto reverse_time_result = calcInterpolatedPoseWithVelocity(reverse_time_path, 1.5);
+  ASSERT_FALSE(reverse_time_result.has_value());
 }
