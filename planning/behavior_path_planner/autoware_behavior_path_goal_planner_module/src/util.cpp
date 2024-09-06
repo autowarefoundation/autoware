@@ -274,17 +274,6 @@ PredictedObjects extractObjectsInExpandedPullOverLanes(
   return objects_in_lanes;
 }
 
-PredictedObjects extractStaticObjectsInExpandedPullOverLanes(
-  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
-  const double forward_distance, double bound_offset, const PredictedObjects & objects,
-  const double velocity_thresh)
-{
-  const auto objects_in_lanes = extractObjectsInExpandedPullOverLanes(
-    route_handler, left_side, backward_distance, forward_distance, bound_offset, objects);
-
-  return utils::path_safety_checker::filterObjectsByVelocity(objects_in_lanes, velocity_thresh);
-}
-
 PredictedObjects filterObjectsByLateralDistance(
   const Pose & ego_pose, const double vehicle_width, const PredictedObjects & objects,
   const double distance_thresh, const bool filter_inside)
