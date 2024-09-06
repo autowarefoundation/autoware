@@ -16,6 +16,7 @@ ament_auto_add_library(autoware_universe_utils SHARED
   src/geometry/pose_deviation.cpp
   src/geometry/boost_polygon_utils.cpp
   src/geometry/random_convex_polygon.cpp
+  src/geometry/random_concave_polygon.cpp
   src/geometry/gjk_2d.cpp
   src/geometry/sat_2d.cpp
   src/math/sin_table.cpp
@@ -25,6 +26,7 @@ ament_auto_add_library(autoware_universe_utils SHARED
   src/ros/logger_level_configure.cpp
   src/system/backtrace.cpp
   src/system/time_keeper.cpp
+  src/geometry/ear_clipping.cpp
 )
 
 target_link_libraries(autoware_universe_utils

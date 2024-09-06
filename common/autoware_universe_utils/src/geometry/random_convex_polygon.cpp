@@ -27,7 +27,7 @@ namespace
 struct VectorsWithMin
 {
   std::vector<double> vectors;
-  double min;
+  double min{};
 };
 
 VectorsWithMin prepare_coordinate_vectors(
@@ -38,6 +38,7 @@ VectorsWithMin prepare_coordinate_vectors(
   std::default_random_engine & random_engine)
 {
   std::vector<double> v;
+  v.reserve(nb_vertices);
   for (auto i = 0UL; i < nb_vertices; ++i) {
     v.push_back(random_double(random_engine));
   }
