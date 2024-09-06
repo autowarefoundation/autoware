@@ -36,15 +36,6 @@
 namespace autoware::compare_map_segmentation
 {
 template <typename T, typename U>
-double distance3D(const T p1, const U p2)
-{
-  double dx = p1.x - p2.x;
-  double dy = p1.y - p2.y;
-  double dz = p1.z - p2.z;
-  return dx * dx + dy * dy + dz * dz;
-}
-
-template <typename T, typename U>
 double distance2D(const T p1, const U p2)
 {
   double dx = p1.x - p2.x;
