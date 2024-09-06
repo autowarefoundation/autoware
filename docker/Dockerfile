@@ -76,6 +76,10 @@ RUN rosdep keys --ignore-src --from-paths src \
     > /rosdep-universe-common-depend-packages.txt \
     && cat /rosdep-universe-common-depend-packages.txt
 
+FROM rosdep-depend AS rosdep-universe-sensing-perception-depend
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
 COPY src/universe/autoware.universe/perception /autoware/src/universe/autoware.universe/perception
 COPY src/universe/autoware.universe/sensing /autoware/src/universe/autoware.universe/sensing
 RUN rosdep keys --ignore-src --from-paths src \
@@ -92,6 +96,24 @@ RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
     | sort \
     > /rosdep-universe-sensing-perception-exec-depend-packages.txt \
     && cat /rosdep-universe-sensing-perception-exec-depend-packages.txt
+
+FROM rosdep-depend AS rosdep-universe-localization-mapping-depend
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
+COPY src/universe/autoware.universe/localization /autoware/src/universe/autoware.universe/localization
+COPY src/universe/autoware.universe/map /autoware/src/universe/autoware.universe/map
+RUN rosdep keys --ignore-src --from-paths src \
+    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
+    | grep -v '^#' \
+    | sed 's/ \+/\n/g'\
+    | sort \
+    > /rosdep-universe-localization-mapping-depend-packages.txt \
+    && cat /rosdep-universe-localization-mapping-depend-packages.txt
+
+FROM rosdep-depend AS rosdep-universe-depend
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
 
 COPY src/launcher /autoware/src/launcher
 COPY src/param /autoware/src/param
