@@ -1,5 +1,4 @@
 ---
-
 - name: Install qt5ct
   ansible.builtin.apt:
     name: qt5ct
