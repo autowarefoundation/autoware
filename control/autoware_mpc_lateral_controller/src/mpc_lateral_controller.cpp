@@ -137,7 +137,9 @@ MpcLateralController::MpcLateralController(
   m_mpc->ego_nearest_dist_threshold = m_ego_nearest_dist_threshold;
   m_mpc->ego_nearest_yaw_threshold = m_ego_nearest_yaw_threshold;
 
-  m_mpc->m_debug_publish_predicted_trajectory = dp_bool("debug_publish_predicted_trajectory");
+  m_mpc->m_use_delayed_initial_state = dp_bool("use_delayed_initial_state");
+
+  m_mpc->m_publish_debug_trajectories = dp_bool("publish_debug_trajectories");
 
   m_pub_predicted_traj = node.create_publisher<Trajectory>("~/output/predicted_trajectory", 1);
   m_pub_debug_values =
