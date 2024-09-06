@@ -2,31 +2,31 @@
 
 ![fig](./images/purpose/rviz.png)
 
-## Purpose / Role
+## Purpose/Role
 
-This is a rule-based avoidance module, which is running based on perception output data, HDMap, current path and route. This module is designed for creating avoidance path for static (=stopped) objects in simple situation. On the other hand, this module doesn't support dynamic (=moving) objects for now.
+This is a rule-based avoidance module, which runs based on perception output data, HDMap, current path and route. This module is designed to create avoidance paths for static (=stopped) objects in simple situations. Currently, this module doesn't support dynamic (=moving) objects.
 
 ![fig](./images/purpose/avoidance.png)
 
-This module has [RTC interface](../../autoware_rtc_interface/README.md), and user can select operation mode from MANUAL/AUTO depending on the vehicle sensor performance. If user selects MANUAL mode, this module outputs avoidance path as candidate and waits operator approval. In the case where the sensor/perception performance is not enough and false positive maybe occurs, we recommend to use this module with MANUAL mode in order to prevent unnecessary avoidance maneuver.
+This module has an [RTC interface](../../autoware_rtc_interface/README.md), and the user can select operation mode from MANUAL/AUTO depending on the performance of the vehicle's sensors. If the user selects MANUAL mode, this module outputs a candidate avoidance path and awaits operator approval. In the case where the sensor/perception performance is insufficient and false positives occur, we recommend MANUAL mode to prevent unnecessary avoidance maneuvers.
 
-On the other hand, if user selects AUTO mode, this module modifies current following path without operator approval. If the sensor/perception performance is good enough, user can use this module with AUTO mode.
+If the user selects AUTO mode, this module modifies the current following path without operator approval. If the sensor/perception performance is sufficient, use AUTO mode.
 
 ### Limitations
 
-This module allows developers to design vehicle behavior in avoidance planning using specific rules. Due to the property of rule-based planning, the algorithm can not compensate for not colliding with obstacles in complex cases. This is a trade-off between "be intuitive and easy to design" and "be hard to tune but can handle many cases". This module adopts the former policy and therefore this output should be checked more strictly in the later stage. In the .iv reference implementation, there is another avoidance module in motion planning module that uses optimization to handle the avoidance in complex cases. (Note that, the motion planner needs to be adjusted so that the behavior result will not be changed much in the simple case and this is a typical challenge for the behavior-motion hierarchical architecture.)
+This module allows developers to design vehicle behavior in avoidance planning using specific rules. Due to the property of rule-based planning, the algorithm cannot compensate for not colliding with obstacles in complex cases. This is a trade-off between "be intuitive and easy to design" and "be hard to tune but can handle many cases". This module adopts the former policy and therefore this output should be checked more strictly in the later stage. In the .iv reference implementation, there is another avoidance module in the motion planning module that uses optimization to handle the avoidance in complex cases. (Note that, the motion planner needs to be adjusted so that the behavior result will not be changed much in the simple case and this is a typical challenge for the behavior-motion hierarchical architecture.)
 
 ### Why is avoidance in behavior module?
 
-This module executes avoidance over lanes, and the decision requires the lane structure information to take care of traffic rules (e.g. it needs to send an indicator signal when the vehicle crosses a lane). The difference between motion and behavior module in the planning stack is whether the planner takes traffic rules into account, which is why this avoidance module exists in the behavior module.
+This module executes avoidance over lanes, and the decision requires the lane structure information to take care of traffic rules (e.g. it needs to send an indicator signal when the vehicle crosses a lane). The difference between the motion and behavior modules in the planning stack is whether the planner takes traffic rules into account, which is why this avoidance module exists in the behavior module.
 
 <br>
 
 If you would like to know the overview rather than the detail, please skip the next section and refer to [FAQ](#frequently-asked-questions).
 
-## Inner-workings / Algorithms
+## Inner workings/Algorithms
 
-This module mainly has two parts, target filtering part and path generation part. At first, all objects are filtered by several conditions. In this step, this module checks avoidance feasibility and necessity as well. After that, this module generates avoidance path outline, whom we call **shift line**, based on filtered objects. The shift lines are set into [path shifter](../autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design.md), which is a library for path generation, to create smooth shift path. Additionally, this module has feature to check non-target objects so that the ego can avoid target object safely. This feature receives generated avoidance path and surround objects and judges current situation. Lastly, this module update current ego behavior.
+This module mainly has two parts, target filtering and path generation. At first, all objects are filtered by several conditions. In this step, the module checks avoidance feasibility and necessity. After that, this module generates avoidance path outline, which we call **shift line**, based on filtered objects. The shift lines are set into [path shifter](../autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design.md), which is a library for path generation, to create a smooth shift path. Additionally, this module has a feature to check non-target objects so that the ego can avoid target objects safely. This feature receives a generated avoidance path and surrounding objects, and judges the current situation. Lastly, this module updates current ego behavior.
 
 ```plantuml
 @startuml
@@ -47,15 +47,15 @@ note right
  - drivable bounds
  - avoidance start point
       calculate the point where the ego should start avoidance maneuver
-      depending on traffic siganl.
+      depending on traffic signal.
  - avoidance return point
       calculate the point where the ego should return original lane
-      depending on traffic siganl and goal position.
+      depending on traffic signal and goal position.
 end note
 
 :fillAvoidanceTargetObjects();
 note right
-  This module checks following conditions:
+  This module checks the following conditions:
   - target object type
   - being stopped
   - being around the ego-driving lane
@@ -76,7 +76,7 @@ partition fillShiftLine() {
 :check candidate path;
 note right
   This module checks following conditions:
-  - is there enough distance between surround moving vehicle and ego path to avoid target safely?
+  - is there enough distance between surrounding moving vehicles and ego path to avoid target safely?
   - is the path jerky?
   - is the path within drivable area?
 end note
@@ -86,9 +86,9 @@ partition fillEgoStatus() {
 :getCurrentModuleState();
 note right
   This module has following status:
-  - RUNNING: target object is still remaining. Or, the ego hasn't returned original lane.
+  - RUNNING: target object is still remaining. Or, the ego hasn't returned to original lane.
   - CANCEL: target object has gone. And, the ego hasn't initiated avoidance maneuver.
-  - SUCCEEDED: the ego finishes avoiding all objects and returns original lane.
+  - SUCCEEDED: the ego finishes avoiding all objects and returns to original lane.
 end note
 
 if (canYieldManeuver()) then (yes)
@@ -110,7 +110,7 @@ stop
 
 start
 partition isExecutionRequested() {
-if (Is there object that should/can be avoid immediately?) then (yes)
+if (Is there an object that should/can be avoided immediately?) then (yes)
 :return true;
 stop
 else (no)
@@ -125,8 +125,8 @@ endif
 if (Is there object that is potentially avoidable?) then (yes)
 :return true;
 note right
-  Sometimes, we meet the situation where there is enough space to avoid
-  but ego speed is to high to avoid target object under lateral jerk constraints.
+  Sometimes, there are situations where there is enough space to avoid
+  but ego speed is too high to avoid target object under lateral jerk constraints.
   This module keeps running in this case in order to decelerate ego speed.
 end note
 stop
@@ -210,30 +210,30 @@ stop
 
 ### Overview
 
-The module uses following conditions to filter avoidance target objects.
+The module uses the following conditions to filter avoidance target objects.
 
-| Check condition                                                                              | Target class             | Details                                                                                                                                                                        | If conditions are not met       |
-| -------------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
-| Is an avoidance target class object?                                                         | All                      | Use can select avoidance target class from config file.                                                                                                                        | Never avoid it.                 |
-| Is a stopped object?                                                                         | All                      | Objects keep higher speed than `th_moving_speed` for longer period of time than `th_moving_time` is judged as moving.                                                          | Never avoid it.                 |
-| Is within detection area?                                                                    | All                      | The module creates detection area to filter target objects roughly based on lateral margin in config file. (see [here](#width-of-detection-area))                              | Never avoid it.                 |
-| Isn't there enough lateral distance between the object and path?                             | All                      | -                                                                                                                                                                              | Never avoid it.                 |
-| Is near the centerline of ego lane?                                                          | All                      | -                                                                                                                                                                              | It depends on other conditions. |
-| Is there a crosswalk near the object?                                                        | Pedestrian, Bicycle      | The module don't avoid the Pedestrian and Bicycle nearer the crosswalk because the ego should stop in front of it if they're crossing road. (see [here](#for-crosswalk-users)) | Never avoid it.                 |
-| Is the distance between the object and traffic light along the path longer than threshold?   | Car, Truck, Bus, Trailer | The module used this condition if there is ambiguity as to whether the vehicle is a parked vehicle or not.                                                                     | It depends on other conditions. |
-| Is the distance between the object and crosswalk light along the path longer than threshold? | Car, Truck, Bus, Trailer | Same as above.                                                                                                                                                                 | It depends on other conditions. |
-| Is the stopping time longer than threshold?                                                  | Car, Truck, Bus, Trailer | Same as above.                                                                                                                                                                 | It depends on other conditions. |
-| Is within intersection?                                                                      | Car, Truck, Bus, Trailer | The module assumes that there isn't any parked vehicle within intersection.                                                                                                    | It depends on other conditions. |
-| Is on ego lane?                                                                              | Car, Truck, Bus, Trailer | -                                                                                                                                                                              | It depends on other conditions. |
-| Is a parked vehicle?                                                                         | Car, Truck, Bus, Trailer | The module judges whether the vehicle is a parked vehicle based on its lateral offset. (see [here](#judge-if-its-a-parked-vehicle))                                            | It depends on other conditions. |
-| Is merging to ego lane from other lane?                                                      | Car, Truck, Bus, Trailer | The module judges the vehicle behavior based on its yaw angle and offset direction. (see [here](#judge-vehicle-behavior))                                                      | It depends on other conditions. |
-| Is merging to other lane from ego lane?                                                      | Car, Truck, Bus, Trailer | Same as above.                                                                                                                                                                 | It depends on other conditions. |
+| Check condition                                                                                | Target class             | Details                                                                                                                                                                              | If conditions are not met       |
+| ---------------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
+| Is an avoidance target class object?                                                           | All                      | Use can select avoidance target class from config file.                                                                                                                              | Never avoid it.                 |
+| Is a stopped object?                                                                           | All                      | Objects keep higher speed than `th_moving_speed` for longer period of time than `th_moving_time` is judged as moving.                                                                | Never avoid it.                 |
+| Is within detection area?                                                                      | All                      | The module creates detection area to filter target objects roughly based on lateral margin in config file. (see [here](#width-of-detection-area))                                    | Never avoid it.                 |
+| Isn't there enough lateral distance between the object and path?                               | All                      | -                                                                                                                                                                                    | Never avoid it.                 |
+| Is near the centerline of ego lane?                                                            | All                      | -                                                                                                                                                                                    | It depends on other conditions. |
+| Is there a crosswalk near the object?                                                          | Pedestrian, Bicycle      | The module doesn't avoid the Pedestrian and Bicycle nearer the crosswalk because the ego should stop in front of it if they're crossing the road. (see [here](#for-crosswalk-users)) | Never avoid it.                 |
+| Is the distance between the object and traffic light along the path longer than the threshold? | Car, Truck, Bus, Trailer | The module uses this condition when there is ambiguity about whether the vehicle is parked.                                                                                          | It depends on other conditions. |
+| Is the distance between the object and crosswalk light along the path longer than threshold?   | Car, Truck, Bus, Trailer | Same as above.                                                                                                                                                                       | It depends on other conditions. |
+| Is the stopping time longer than threshold?                                                    | Car, Truck, Bus, Trailer | Same as above.                                                                                                                                                                       | It depends on other conditions. |
+| Is within intersection?                                                                        | Car, Truck, Bus, Trailer | The module assumes that there isn't any parked vehicle within intersection.                                                                                                          | It depends on other conditions. |
+| Is on ego lane?                                                                                | Car, Truck, Bus, Trailer | -                                                                                                                                                                                    | It depends on other conditions. |
+| Is a parked vehicle?                                                                           | Car, Truck, Bus, Trailer | The module judges whether the vehicle is a parked vehicle based on its lateral offset. (see [here](#judge-if-its-a-parked-vehicle))                                                  | It depends on other conditions. |
+| Is merging into ego lane from other lane?                                                      | Car, Truck, Bus, Trailer | The module judges the vehicle behavior based on its yaw angle and offset direction. (see [here](#judge-vehicle-behavior))                                                            | It depends on other conditions. |
+| Is merging into other lane from ego lane?                                                      | Car, Truck, Bus, Trailer | Same as above.                                                                                                                                                                       | It depends on other conditions. |
 
 ### Common conditions
 
 #### Detection area
 
-The module generates detection area for target filtering based on following params:
+The module generates detection area for target filtering based on the following parameters:
 
 ```yaml
       # avoidance is performed for the object type with true
@@ -257,14 +257,14 @@ The module generates detection area for target filtering based on following para
 
 ##### Width of detection area
 
-1. get the largest lateral margin of all classes (Car, Truck, ...). The margin is sum of `soft_margin` and `hard_margin_for_parked_vehicle`.
-2. the detection area width is sum of ego vehicle width and the largest lateral margin.
+1. Get the largest lateral margin of all classes (Car, Truck, ...). The margin is the sum of `soft_margin` and `hard_margin_for_parked_vehicle`.
+2. The detection area width is the sum of ego vehicle width and the largest lateral margin.
 
 ##### Longitudinal distance of detection area
 
 If the parameter `detection_area.static` is set to `true`, the module creates detection area whose longitudinal distance is `max_forward_distance`.
 
-If the parameter `detection_area.static` is set to `false`, the module creates detection area so that the ego can avoid objects with minimum lateral jerk value. Thus, the longitudinal distance is depends on lateral maximum shift length, lateral jerk constraints and current ego speed. Additionally, it has to consider distance used for prepare phase.
+If the parameter `detection_area.static` is set to `false`, the module creates a detection area so that the ego can avoid objects with minimum lateral jerk value. Thus, the longitudinal distance depends on maximum lateral shift length, lateral jerk constraints and current ego speed. Additionally, it has to consider the distance used for the preparation phase.
 
 ```c++
 ...
@@ -295,7 +295,7 @@ If Pedestrian and Bicycle are closer to crosswalk than threshold 2.0m (hard code
 
 #### Judge vehicle behavior
 
-The module classifies vehicles into following three behavior based on its yaw angle and offset direction.
+The module classifies vehicles into the following three behaviors based on yaw angle and offset direction.
 
 ```yaml
 # params for filtering objects that are in intersection
@@ -354,7 +354,7 @@ stop
 
 #### Judge if it's a parked vehicle
 
-Not only the length from the centerline, but also the length from the road shoulder is calculated and used for the filtering process. In this logic, it calculates ratio of **actual shift length** to **shiftable shift length** as follow. If the result is larger than threshold `th_shiftable_ratio`, the module judges the vehicle as a parked vehicle.
+Not only the length from the centerline, but also the length from the road shoulder is calculated and used for the filtering process. In this logic, it calculates ratio of **actual shift length** to **shiftable shift length** as follows. If the result is larger than threshold `th_shiftable_ratio`, the module judges the vehicle is a parked vehicle.
 
 $$
 L_{d} = \frac{W_{lane} - W_{obj}}{2}, \\
@@ -370,22 +370,22 @@ $$
 
 ### Target object filtering
 
-| Situation                                                                                                                        | Details                                                     | Ego behavior                                                                                               |
-| -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Vehicle is within intersection area defined in HDMap. The module ignores vehicle which is following lane or merging to ego lane. | ![fig](./images/target_filter/never_avoid_intersection.png) | Never avoid it.                                                                                            |
-| Vehicle is on ego lane. There are adjacent lanes for both side.                                                                  | ![fig](./images/target_filter/never_avoid_not_edge.png)     | Never avoid it.                                                                                            |
-| Vehicle is merging to other lane from ego lane. Most part of its footprint is on ego lane.                                       | ![fig](./images/target_filter/never_avoid_deviating.png)    | Never avoid it.                                                                                            |
-| Vehicle is merging to ego lane from other lane. Most part of its footprint is on ego lane.                                       | ![fig](./images/target_filter/never_avoid_merging.png)      | Never avoid it.                                                                                            |
-| Vehicle is not a obvious parked vehicle and stopping in front of the crosswalk or traffic light.                                 | ![fig](./images/target_filter/never_avoid_stop_factor.png)  | Never avoid it.                                                                                            |
-| Vehicle stops on ego lane with pulling over to the side of the road.                                                             | ![fig](./images/target_filter/avoid_on_ego_lane.png)        | Avoid it immediately.                                                                                      |
-| Vehicle stops on adjacent lane.                                                                                                  | ![fig](./images/target_filter/avoid_not_on_ego_lane.png)    | Avoid it immediately.                                                                                      |
-| Vehicle stops on ego lane without pulling over to the side of the road.                                                          | ![fig](./images/target_filter/ambiguous_parallel.png)       | Set the parameter `avoidance_for_ambiguous_vehicle.enable` to `true`, the module avoids ambiguous vehicle. |
-| Vehicle is merging to ego lane from other lane.                                                                                  | ![fig](./images/target_filter/ambiguous_merging.png)        | Set the parameter `avoidance_for_ambiguous_vehicle.enable` to `true`, the module avoids ambiguous vehicle. |
-| Vehicle is merging to other lane from ego lane.                                                                                  | ![fig](./images/target_filter/ambiguous_deviating.png)      | Set the parameter `avoidance_for_ambiguous_vehicle.enable` to `true`, the module avoids ambiguous vehicle. |
+| Situation                                                                                                                    | Details                                                     | Ego behavior                                                                                               |
+| ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Vehicle is within intersection area defined in HDMap. The module ignores vehicles following a lane or merging into ego lane. | ![fig](./images/target_filter/never_avoid_intersection.png) | Never avoid it.                                                                                            |
+| Vehicle is on ego lane. There are adjacent lanes for both sides.                                                             | ![fig](./images/target_filter/never_avoid_not_edge.png)     | Never avoid it.                                                                                            |
+| Vehicle is merging into other lane from ego lane. Most of its footprint is on ego lane.                                      | ![fig](./images/target_filter/never_avoid_deviating.png)    | Never avoid it.                                                                                            |
+| Vehicle is merging into ego lane from other lane. Most of its footprint is on ego lane.                                      | ![fig](./images/target_filter/never_avoid_merging.png)      | Never avoid it.                                                                                            |
+| Vehicle does not appear to be parked and is stopped in front of a crosswalk or traffic light.                                | ![fig](./images/target_filter/never_avoid_stop_factor.png)  | Never avoid it.                                                                                            |
+| Vehicle stops on ego lane while pulling over to the side of the road.                                                        | ![fig](./images/target_filter/avoid_on_ego_lane.png)        | Avoid it immediately.                                                                                      |
+| Vehicle stops on adjacent lane.                                                                                              | ![fig](./images/target_filter/avoid_not_on_ego_lane.png)    | Avoid it immediately.                                                                                      |
+| Vehicle stops on ego lane without pulling over to the side of the road.                                                      | ![fig](./images/target_filter/ambiguous_parallel.png)       | Set the parameter `avoidance_for_ambiguous_vehicle.enable` to `true`, the module avoids ambiguous vehicle. |
+| Vehicle is merging into ego lane from other lane.                                                                            | ![fig](./images/target_filter/ambiguous_merging.png)        | Set the parameter `avoidance_for_ambiguous_vehicle.enable` to `true`, the module avoids ambiguous vehicle. |
+| Vehicle is merging into other lane from ego lane.                                                                            | ![fig](./images/target_filter/ambiguous_deviating.png)      | Set the parameter `avoidance_for_ambiguous_vehicle.enable` to `true`, the module avoids ambiguous vehicle. |
 
 ### Flowchart
 
-There are three main filtering functions `isSatisfiedWithCommonCondition()`, `isSatisfiedWithVehicleCondition()` and `isSatisfiedWithNonVehicleCondition()`. The filtering process is executed according to following flowchart. Additionally, the module checks avoidance necessity in `isNoNeedAvoidanceBehavior()` based on the object pose, ego path and lateral margin in config file.
+There are three main filtering functions `isSatisfiedWithCommonCondition()`, `isSatisfiedWithVehicleCondition()` and `isSatisfiedWithNonVehicleCondition()`. The filtering process is executed according to the following flowchart. Additionally, the module checks avoidance necessity in `isNoNeedAvoidanceBehavior()` based on the object pose, ego path and lateral margin in the config file.
 
 ```plantuml
 @startuml
@@ -434,7 +434,7 @@ stop
 
 #### Common conditions
 
-At first, the function `isSatisfiedWithCommonCondition()` includes conditions used for all object class.
+At first, the function `isSatisfiedWithCommonCondition()` includes conditions used for all object classes.
 
 ```plantuml
 @startuml
@@ -451,11 +451,11 @@ if(Is moving object?) then (yes)
 #00FFB1 :return false;
 stop
 else (\n no)
-if(Is object farther than forward distance threshold ?) then (yes)
+if(Is object farther than forward distance threshold?) then (yes)
 #00FFB1 :return false;
 stop
 else (\n no)
-If(Is object farther than backward distance threshold ?) then (yes)
+If(Is object farther than backward distance threshold?) then (yes)
 #00FFB1 :return false;
 stop
 else (\n no)
@@ -487,7 +487,7 @@ Target class:
 - Bus
 - Trailer
 
-As a next step, object is filtered by condition specialized for its class.
+As a next step, the object is filtered by a condition specialized for its class.
 
 ```plantuml
 @startuml
@@ -522,7 +522,7 @@ else (\n no)
 endif
 else (\n no)
 
-if(Is object merging to ego lane?) then (yes)
+if(Is object merging into ego lane?) then (yes)
 #FF006C :return true(ambiguous);
 stop
 else (\n no)
@@ -570,7 +570,7 @@ stop
 else (\n no)
 endif
 
-if(Is object merging to ego lane?) then (yes)
+if(Is object merging into ego lane?) then (yes)
 #00FFB1 :return true;
 stop
 else (\n no)
@@ -579,7 +579,7 @@ endif
 else (\n no)
 endif
 
-if(Is object merging to ego lane?) then (yes)
+if(Is object merging into ego lane?) then (yes)
 if(Is overhang distance larger than threshold?) then (yes)
 #00FFB1 :return true;
 stop
@@ -607,7 +607,7 @@ else (\n no)
 endif
 
 if(isCloseToStopFactor()) then (yes)
-if(Is object on ego lane? AND Isn't object a parked vehile?) then (no)
+if(Is object on ego lane? AND Isn't object a parked vehicle?) then (no)
 #00FFB1 :return true;
 stop
 else (\n no)
@@ -721,24 +721,24 @@ cancel:
   enable: true # [-]
 ```
 
-If above parameter is `true`, this module reverts avoidance path when following conditions are met.
+If the above parameter is `true`, this module reverts avoidance path when the following conditions are met.
 
-- all target objects have gone.
-- the ego vehicle hasn't initiated avoidance maneuver yet.
+- All target objects have gone.
+- The ego vehicle hasn't initiated avoidance maneuver yet.
 
 ![fig](./images/cancel/cancel.png)
 
-If the parameter is `false`, this module keeps running even after target object has gone.
+If the parameter is `false`, this module keeps running even after the target object has gone.
 
 ## Path generation
 
 ### How to prevent shift line chattering that is caused by perception noise
 
-Since object recognition result contains noise related to position, orientation and polygon shape, if the module uses the raw object recognition results in path generation, the output path will be directly affected by the noise. Therefore, in order to reduce the influence of the noise, this module generates polygon for each target objects, and the output path is generated based on that.
+Since the object recognition result contains noise related to position, orientation and polygon shape, if the module uses the raw object recognition results in path generation, the output path will be directly affected by the noise. Therefore, in order to reduce the influence of the noise, this module generates a polygon for each target object, and the output path is generated based on that.
 
 ![fig](./images/path_generation/envelope_polygon_rviz.png)
 
-The envelope polygon is a rectangle box, whose size depends on object's polygon and buffer parameter `envelope_buffer_margin`. Additionally, it is always parallel to reference path. When the module finds target object for the first time, it initializes the polygon.
+The envelope polygon is a rectangle box, whose size depends on the object's polygon and buffer parameter `envelope_buffer_margin`. Additionally, it is always parallel to the reference path. When the module finds a target object for the first time, it initializes the polygon.
 
 ```yaml
         car:
@@ -748,15 +748,15 @@ The envelope polygon is a rectangle box, whose size depends on object's polygon 
 
 ![fig](./images/path_generation/envelope_polygon.png)
 
-The module creates one-shot envelope polygon by using latest object pose and raw polygon in every planning cycle. On the other hand, the module envelope polygon information which is created in last planning cycle as well in order to update envelope polygon according to following logic. If the one-shot envelope polygon is not within previous envelope polygon, the module creates new envelope polygon. Otherwise, it keeps previous envelope polygon. By doing this process, the envelope polygon size and pose will converge even if perception output includes noise in object pose or shape.
+The module creates a one-shot envelope polygon by using the latest object pose and raw polygon in every planning cycle. On the other hand, the module uses the envelope polygon information created in the last planning cycle in order to update the envelope polygon according to the following logic. If the one-shot envelope polygon is not within the previous envelope polygon, the module creates a new envelope polygon. Otherwise, it keeps the previous envelope polygon. By doing this process, the envelope polygon size and pose will converge even if perception output includes noise in object pose or shape.
 
 ![fig](./images/path_generation/polygon_update.png)
 
 ### Relationship between envelope polygon and avoidance path
 
-The avoidance path has two shift section, whose start or end point position depends on envelope polygon. The end point of avoidance shift section and start point of return shift section are fixed based on envelope polygon and the other side edges are dynamically changed based on ego speed, shift length, lateral jerk constraints, etc...
+The avoidance path has two shift sections, whose start or end point position depends on the envelope polygon. The end point of the avoidance shift section and start point of the return shift section are fixed based on the envelope polygon and the other side edges are dynamically changed based on ego speed, shift length, lateral jerk constraints, etc.
 
-The lateral positions of the two points are decided so that there can be enough space (=lateral margin) between ego body and the most overhang point of envelope polygon edge points. User can adjust lateral margin with following parameters.
+The lateral positions of the two points are decided so that there can be enough space (=lateral margin) between ego body and the most overhang point of the envelope polygon edge points. User can adjust lateral margin with the following parameters.
 
 ```yaml
         car:
@@ -767,7 +767,7 @@ The lateral positions of the two points are decided so that there can be enough 
             hard_margin_for_parked_vehicle: 0.7         # [m]
 ```
 
-The longitudinal positions depends on envelope polygon, ego vehicle specification and following parameters. The longitudinal distance between avoidance shift section end point and envelope polygon (=front longitudinal buffer) is sum of `front_overhang` defined in `vehicle_info.param.yaml` and `longitudinal_margin` if the parameter `consider_front_overhang` is `true`. If `consider_front_overhang` is `false`, only `longitudinal_margin` is considered. Similarly, the distance between return shift section start point and envelope polygon (=rear longitudinal buffer) is sum of `rear_overhang` and `longitudinal_margin`.
+The longitudinal positions depends on the envelope polygon, ego vehicle specification and the following parameters. The longitudinal distance between avoidance shift section end point and envelope polygon (=front longitudinal buffer) is the sum of `front_overhang` defined in `vehicle_info.param.yaml` and `longitudinal_margin` if the parameter `consider_front_overhang` is `true`. If `consider_front_overhang` is `false`, only `longitudinal_margin` is considered. Similarly, the distance between the return shift section start point and envelope polygon (=rear longitudinal buffer) is the sum of `rear_overhang` and `longitudinal_margin`.
 
 ```yaml
 
@@ -789,7 +789,7 @@ The longitudinal positions depends on envelope polygon, ego vehicle specificatio
 
 ### Lateral margin
 
-As mentioned above, user can adjust lateral margin by changing following two types parameter. The `soft_margin` is a soft constraint parameter for lateral margin. The `hard_margin` and `hard_margin_for_parked_vehicle` are hard constraint parameter.
+As mentioned above, user can adjust lateral margin by changing the following two types of parameters. The `soft_margin` is a soft constraint parameter for lateral margin. The `hard_margin` and `hard_margin_for_parked_vehicle` are hard constraint parameters.
 
 ```yaml
         car:
@@ -800,61 +800,61 @@ As mentioned above, user can adjust lateral margin by changing following two typ
             hard_margin_for_parked_vehicle: 0.7         # [m]
 ```
 
-Basically, this module tries to generate avoidance path in order to keep lateral distance, which is sum of `soft_margin` and `hard_margin`/`hard_margin_for_parked_vehicle`, from avoidance target object.
+Basically, this module tries to generate an avoidance path in order to keep lateral distance, which is the sum of `soft_margin` and `hard_margin`/`hard_margin_for_parked_vehicle`, from the avoidance target object.
 
 ![fig](./images/path_generation/soft_hard.png)
 
 But if there isn't enough space to keep `soft_margin` distance, this module shortens soft constraint lateral margin. The parameter `soft_margin` is a maximum value of soft constraint, and actual soft margin can be a value between 0.0 and `soft_margin`. On the other hand, this module definitely keeps `hard_margin` or `hard_margin_for_parked_vehicle` depending on the situation. Thus, the minimum value of total lateral margin is `hard_margin`/`hard_margin_for_parked_vehicle`, and the maximum value is the sum of `hard_margin`/`hard_margin_for_parked_vehicle` and `soft_margin`.
 
-Following figure shows the situation where this module shortens lateral soft constraint in order not to drive opposite direction lane when user set a parameter `use_lane_type` to `same_direction_lane`.
+The following figure shows the situation where this module shortens lateral soft constraint in order not to drive in the opposite lane when user sets parameter `use_lane_type` to `same_direction_lane`.
 
 ![fig](./images/path_generation/adjust_margin.png)
 
-This module avoids not only parked vehicle but also non-parked vehicle which stops temporarily for some reason (e.g. waiting for traffic light to change red to green.). Additionally, this module has two types hard margin parameters, `hard_margin` and `hard_margin_for_parked_vehicle` and judges if it's a parked vehicle or not for each vehicles because it takes the risk of vehicle doors opening suddenly and people getting out from parked vehicle into consideration.
+This module avoids not only parked vehicles but also non-parked vehicles that stop temporarily for some reason (e.g. waiting for traffic light to change from red to green). Additionally, this module has two types of hard margin parameters, `hard_margin` and `hard_margin_for_parked_vehicle` and judges if it is a parked vehicle or not for each vehicle because it takes the risk of vehicle doors opening suddenly and people getting out from parked vehicles into consideration.
 
-Basically, user had better make `hard_margin_for_parked_vehicle` larger than `hard_margin` to prevent collision with doors or people who suddenly get out from vehicle.
+Users should set `hard_margin_for_parked_vehicle` larger than `hard_margin` to prevent collisions with doors or people who suddenly exit a vehicle.
 
-On the other hand, this module has only one parameter `soft_margin` for soft lateral margin constraint.
+This module has only one parameter `soft_margin` for soft lateral margin constraint.
 
 ![fig](./images/path_generation/hard_margin.png)
 
-As the hard margin parameters the distance which the user definitely want to keep, they are used in the logic to check whether the ego can pass side of the target object without avoidance maneuver as well.
+As the hard margin parameters define the distance the user definitely wants to maintain, they are used in the logic to check whether the ego can pass the side of the target object without executing an avoidance maneuver as well.
 
-If the lateral distance is less than `hard_margin`/`hard_margin_for_parked_vehicle` when assuming that the ego follows current lane without avoidance maneuver, this module thinks the ego can not pass the side of the object safely and the ego must avoid it. In this case, this module inserts stop point until the avoidance maneuver is allowed to execute so that the ego can avoid the object after approval. (e.g. The ego keeps stopping in front of such a object until operator approves avoidance maneuver if user uses this module in MANUAL mode.)
+If the lateral distance is less than `hard_margin`/`hard_margin_for_parked_vehicle` when assuming that the ego follows the current lane without an avoidance maneuver, this module thinks the ego can not pass the side of the object safely and the ego must avoid it. In this case, this module inserts a stop point until the avoidance maneuver is allowed to execute so that the ego can avoid the object after approval. (For example, the ego keeps stopping in front of such an object until the operator approves the avoidance maneuver if the module is in MANUAL mode.)
 
 ![fig](./images/path_generation/must_avoid.png)
 
-On the other hand, if the lateral distance is larger than `hard_margin`/`hard_margin_for_parked_vehicle`, this module doesn't insert stop point even when it's waiting approval because it thinks it's possible to pass the side of the object safely.
+On the other hand, if the lateral distance is larger than `hard_margin`/`hard_margin_for_parked_vehicle`, this module doesn't insert a stop point even when it is waiting for approval because it thinks it is possible to pass the side of the object safely.
 
 ![fig](./images/path_generation/pass_through.png)
 
 ### When there is not enough space
 
-This module inserts stop point only when the ego can potentially avoid the object. So, if it is not able to keep distance more than `hard_margin`/`hard_margin_for_parked_vehicle`, this module does nothing. Following figure shows the situation where this module is not able to keep enough lateral distance when user set a parameter `use_lane_type` to `same_direction_lane`.
+This module inserts a stop point only when the ego can potentially avoid the object. So, if it is not able to keep a distance more than `hard_margin`/`hard_margin_for_parked_vehicle`, this module does nothing. The following figure shows the situation where this module is not able to keep enough lateral distance when the user sets parameter `use_lane_type` to `same_direction_lane`.
 
 ![fig](./images/path_generation/do_nothing.png)
 
 !!! info
 
-    In this situation, obstacle stop feature in [obstacle_cruise_planner](../../autoware_obstacle_cruise_planner/README.md) is responsible for ego vehicle safety.
+    In this situation, the obstacle stop feature in [obstacle_cruise_planner](../../autoware_obstacle_cruise_planner/README.md) is responsible for ego vehicle safety.
 
 ![fig](./images/path_generation/insufficient_drivable_space.png)
 
 ### Shift length calculation
 
-The lateral shift length is sum of `overhang_distance`, lateral margin, whose value is set in config file, and the half of ego vehicle width defined in `vehicle_info.param.yaml`. On the other hand, the module limits the shift length depending on the space which the module can use for avoidance maneuver and the parameters `soft_drivable_bound_margin` `hard_drivable_bound_margin`. Basically, the shift length is limited so that the ego doesn't get closer than `soft_drivable_bound_margin` to drivable boundary. But it allows to relax the threshold `soft_drivable_bound_margin` to `hard_drivable_bound_margin` when the road is narrow.
+The lateral shift length is the sum of `overhang_distance`, lateral margin, whose value is set in the config file, and half of ego vehicle width defined in `vehicle_info.param.yaml`. On the other hand, the module limits the shift length depending on the space the module can use for an avoidance maneuver and the parameters `soft_drivable_bound_margin` `hard_drivable_bound_margin`. Basically, the shift length is limited so that the ego doesn't get closer than `soft_drivable_bound_margin` to the drivable boundary. But the module allows the threshold to be relaxed from `soft_drivable_bound_margin` to `hard_drivable_bound_margin` when the road is narrow.
 
 ![fig](./images/path_generation/lateral.png)
 
-Usable lane for avoidance module can be selected by config file.
+Usable lanes for the avoidance module can be selected using the config file.
 
 ```yaml
       ...
-      # drivable lane setting. this module is able to use not only current lane but also right/left lane
-      # if the current lane(=lanelt::Lanelet) and the rignt/left lane share the boundary(=lanelet::Linestring) in HDMap.
-      # "current_lane"           : use only current lane. this module doesn't use adjacent lane to avoid object.
-      # "same_direction_lane"    : this module uses same direction lane to avoid object if need.
-      # "opposite_direction_lane": this module uses both same direction and opposite direction lane.
+      # drivable lane setting. This module is able to use not only current lane but also right/left lane
+      # if the current lane(=lanelet::Lanelet) and the right/left lane share the boundary(=lanelet::Linestring) in HDMap.
+      # "current_lane"           : use only current lane. This module doesn't use adjacent lane to avoid object.
+      # "same_direction_lane"    : this module uses same direction lane to avoid object if needed.
+      # "opposite_direction_lane": this module uses both same direction and opposite direction lanes.
       use_lane_type: "opposite_direction_lane"
 ```
 
@@ -868,9 +868,9 @@ When user set parameter `use_lane_type` to `same_direction_lane`, the module doe
 
 ### Shift line generation
 
-As mentioned above, the end point of avoidance shift path and the start point of return shift path, which are FIXED points, are calculated from envelope polygon. As a next step, the module adjusts the other side points depending on shift length, current ego speed and lateral jerk constrain params defined in config file.
+As mentioned above, the end point of the avoidance shift path and the start point of the return shift path, which are FIXED points, are calculated from envelope polygon. As a next step, the module adjusts the other side points depending on shift length, current ego speed and lateral jerk constrain params defined in the config file.
 
-Since the two points are always on centerline of ego lane, the module only calculates longitudinal distance between shift start and end point based on following function. This function is defined in path shifter library, so please see [this](../autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design.md) page as well.
+Since the two points are always on the centerline of the ego lane, the module only calculates longitudinal distance between the shift start and end point based on the following function. This function is defined in the path shifter library. See [this](../autoware_behavior_path_planner_common/docs/behavior_path_planner_path_generation_design.md) page as well.
 
 ```c++
 double PathShifter::calcLongitudinalDistFromJerk(
@@ -886,9 +886,9 @@ double PathShifter::calcLongitudinalDistFromJerk(
 }
 ```
 
-We call the line which connects shift start and end point `shift_line`, whom the avoidance path is generated from with spline completion.
+We call the line that connects shift start and end point `shift_line`, which the avoidance path is generated from with spline completion.
 
-The start point of avoidance has another longitudinal constraint. In order to keep turning on the blinker for few seconds before starting avoidance maneuver, the avoidance start point must be further than the value (we call the distance `prepare_length`.) depending on ego speed from ego position.
+The start point of avoidance has another longitudinal constraint. In order to keep turning on the blinker for a few seconds before starting the avoidance maneuver, the avoidance start point must be further than the value (we call the distance `prepare_length`.) depending on ego speed from ego position.
 
 ```yaml
 longitudinal:
@@ -903,35 +903,35 @@ The `prepare_length` is calculated as the product of ego speed and `max_prepare_
 
 ## Planning at RED traffic light
 
-This module takes traffic light information into account so that the ego can behave properly. Sometimes, the ego straddles lane boundary but we want to prevent the ego from stopping in front of red traffic signal in such a situation. This is because the ego will block adjacent lane and it's inconvenient for other vehicles.
+This module takes traffic light information into account so that the ego can behave properly. Sometimes, the ego straddles the lane boundary but we want to prevent the ego from stopping in front of a red traffic signal in such a situation. This is because the ego will block adjacent lanes and it is inconvenient for other vehicles.
 
 ![fig](./images/traffic_light/traffic_light.png)
 
-So, this module controls shift length and shift start/end point in order to prevent above situation.
+So, this module controls shift length and shift start/end point in order to prevent the above situation.
 
 ### Control shift length
 
-At first, if the ego hasn't initiated avoidance maneuver yet, this module limits maximum shift length and uses **ONLY** current lane during red traffic signal. This prevents the ego from blocking other vehicles even if this module executes avoidance maneuver and the ego is caught by red traffic signal.
+At first, if the ego hasn't initiated an avoidance maneuver yet, this module limits maximum shift length and uses **ONLY** current lane during a red traffic signal. This prevents the ego from blocking other vehicles even if this module executes the avoidance maneuver and the ego is caught by a red traffic signal.
 
 ![fig](./images/traffic_light/limit_shift_length.png)
 
 ### Control avoidance shift start point
 
-Additionally, if the target object is farther than stop line for traffic light, this module set avoidance shift start point on the stop line in order to prevent the ego from stopping by red traffic signal in middle of avoidance maneuver.
+Additionally, if the target object is farther than the stop line of the traffic light, this module sets the avoidance shift start point on the stop line in order to prevent the ego from stopping at a red traffic signal in the middle of an avoidance maneuver.
 
 ![fig](./images/traffic_light/shift_from_current_pos.png)
 ![fig](./images/traffic_light/shift_from_stop_line.png)
 
 ### Control return shift end point
 
-If the ego has already initiated avoidance maneuver, this module tries to set return shift end point on the stop line.
+If the ego has already initiated an avoidance maneuver, this module tries to set the return shift end point on the stop line.
 
 ![fig](./images/traffic_light/return_after_stop_line.png)
 ![fig](./images/traffic_light/return_before_stop_line.png)
 
 ## Safety check
 
-This feature can be enable by setting following parameter to `true`.
+This feature can be enabled by setting the following parameter to `true`.
 
 ```yaml
       safety_check:
@@ -939,15 +939,15 @@ This feature can be enable by setting following parameter to `true`.
         enable: true                                    # [-]
 ```
 
-This module pay attention not only avoidance target objects but also non-target objects that are near the avoidance path, and if avoidance path is unsafe due to surround objects, it reverts avoidance maneuver and yields lane to them.
+This module pays attention not only to avoidance target objects but also non-target objects that are near the avoidance path, and if the avoidance path is unsafe due to surrounding objects, it reverts the avoidance maneuver and yields the lane to them.
 
 ![fig](./images/safety_check/safety_check_flow.png)
 
 ### Yield maneuver
 
-Additionally, this module basically inserts stop point in front of avoidance target during yielding maneuver in order to keep enough distance to avoid the target after it is safe situation. If the shift side lane is congested, the ego stops the point and waits.
+Additionally, this module basically inserts a stop point in front of an avoidance target during yielding maneuvers in order to keep enough distance to avoid the target when it is safe to do so. If the shift side lane is congested, the ego stops at a point and waits.
 
-This feature can be enable by setting following parameter to `true`.
+This feature can be enabled by setting the following parameter to `true`.
 
 ```yaml
 yield:
@@ -956,13 +956,13 @@ yield:
 
 ![fig](./images/safety_check/stop.png)
 
-But if the lateral margin is larger than `hard_margin` (or `hard_margin_for_parked_vehicle`), this module doesn't insert stop point because the ego can pass side of the object safely without avoidance maneuver.
+But if the lateral margin is larger than `hard_margin` (or `hard_margin_for_parked_vehicle`), this module doesn't insert a stop point because the ego can pass the side of the object safely without an avoidance maneuver.
 
 ![fig](./images/safety_check/not_stop.png)
 
 ### Safety check target lane
 
-User can select safety check area by following params. Basically, we recommend following configuration to check only sift side lane. But if user want to confirm safety strictly, please set `check_current_lane` and/or `check_other_side_lane` to `true`.
+User can select the safety check area with the following parameters. Basically, we recommend the following configuration to check only the shift side lane. If users want to confirm safety strictly, please set `check_current_lane` and/or `check_other_side_lane` to `true`.
 
 ```yaml
       safety_check:
@@ -972,7 +972,7 @@ User can select safety check area by following params. Basically, we recommend f
         check_other_side_lane: false                    # [-]
 ```
 
-In avoidance module, the function `path_safety_checker::isCentroidWithinLanelet` is used for filtering objects by lane.
+In the avoidance module, the function `path_safety_checker::isCentroidWithinLanelet` is used for filtering objects by lane.
 
 ```c++
 bool isCentroidWithinLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet)
@@ -985,7 +985,7 @@ bool isCentroidWithinLanelet(const PredictedObject & object, const lanelet::Cons
 
 !!! info
 
-    If it set `check_current_lane` and/or `check_other_side_lane` to `true`, maybe the possibility of false positive occurring and unnecessary yield maneuver execution increases.
+    If `check_current_lane` and/or `check_other_side_lane` are set to `true`, the possibility of false positives and unnecessary yield maneuvers increase.
 
 ### Safety check algorithm
 
@@ -995,38 +995,38 @@ This module uses common safety check logic implemented in `path_safety_checker` 
 
 #### Limitation-1
 
-The current behavior when the module judges it's unsafe is so conservative because it is difficult to achieve aggressive (e.g. increase speed in order to increase the distance to behind vehicle.) for current planning architecture.
+The current behavior when the module judges it is unsafe is so conservative because it is difficult to achieve aggressive maneuvers (e.g. increase speed in order to increase the distance from rear vehicle) for current planning architecture.
 
 #### Limitation-2
 
-The yield maneuver is executed **ONLY** when the vehicle has **NOT** initiated avoidance maneuver yet. (This module checks objects on opposite lane but it's necessary to find very far objects to judge unsafe before avoidance maneuver.) If it detects vehicle which is closing to ego during avoidance maneuver, this module doesn't neither revert the path nor insert stop point. For now, there is no feature to deal with this situation in this module. Thus, new module is needed to adjust path to avoid moving objects, or operator should do override.
+The yield maneuver is executed **ONLY** when the vehicle has **NOT** initiated avoidance maneuver yet. (This module checks objects in the opposite lane but it is necessary to find very far objects to judge whether it is unsafe before avoidance maneuver.) If it detects a vehicle which is approaching the ego during an avoidance maneuver, this module doesn't revert the path or insert a stop point. For now, there is no feature to deal with this situation in this module. Thus, a new module is needed to adjust the path to avoid moving objects, or an operator must override.
 
 !!! info
 
-    This module has a threshold parameter `th_avoid_execution` for the shift length, and judge that the vehicle is initiating avoidance if the vehicle current shift exceeds the value.
+    This module has a threshold parameter `th_avoid_execution` for the shift length, and judges that the vehicle is initiating avoidance if the vehicle current shift exceeds the value.
 
 ## Other features
 
 ### Compensation for detection lost
 
-In order to prevent chattering of recognition results, once an obstacle is targeted, it is hold for a while even if it disappears. This is effective when recognition is unstable. However, since it will result in over-detection (increase a number of false-positive), it is necessary to adjust parameters according to the recognition accuracy (if `object_last_seen_threshold = 0.0`, the recognition result is 100% trusted).
+In order to prevent chattering of recognition results, once an obstacle is targeted, it is held for a while even if it disappears. This is effective when recognition is unstable. However, since it will result in over-detection (increases number of false-positives), it is necessary to adjust parameters according to the recognition accuracy (if `object_last_seen_threshold = 0.0`, the recognition result is 100% trusted).
 
 ### Drivable area expansion
 
 This module supports drivable area expansion for following polygons defined in HDMap.
 
-- intersection area
-- hatched road marking
-- freespace area
+- Intersection area
+- Hatched road marking
+- Freespace area
 
-Please set the flags to `true` when user wants to make it possible to use those areas in avoidance maneuver.
+Please set the flags to `true` when user wants to make it possible to use those areas in avoidance maneuvers.
 
 ```yaml
-# drivable lane setting. this module is able to use not only current lane but also right/left lane
-# if the current lane(=lanelt::Lanelet) and the rignt/left lane share the boundary(=lanelet::Linestring) in HDMap.
-# "current_lane"           : use only current lane. this module doesn't use adjacent lane to avoid object.
-# "same_direction_lane"    : this module uses same direction lane to avoid object if need.
-# "opposite_direction_lane": this module uses both same direction and opposite direction lane.
+# drivable lane setting. This module is able to use not only current lane but also right/left lane
+# if the current lane(=lanelet::Lanelet) and the right/left lane share the boundary(=lanelet::Linestring) in HDMap.
+# "current_lane"           : use only current lane. This module doesn't use adjacent lane to avoid object.
+# "same_direction_lane"    : this module uses the same direction lane to avoid object if needed.
+# "opposite_direction_lane": this module uses both same direction and opposite direction lanes.
 use_lane_type: "opposite_direction_lane"
 # drivable area setting
 use_intersection_areas: true
@@ -1042,12 +1042,12 @@ use_freespace_areas: true
 | hatched road markings                  | ![fig](./images/advanced/avoidance_zebra.png)              | The hatched road marking is defined on Lanelet map. See [here](https://github.com/autowarefoundation/autoware_lanelet2_extension/blob/main/autoware_lanelet2_extension/docs/lanelet2_format_extension.md#hatched-road-markings-area) |
 | freespace area                         | ![fig](./images/advanced/avoidance_freespace.png)          | The freespace area is defined on Lanelet map. (unstable)                                                                                                                                                                             |
 
-## Future extensions / Unimplemented parts
+## Future extensions/Unimplemented parts
 
 - **Consideration of the speed of the avoidance target**
 
   - In the current implementation, only stopped vehicle is targeted as an avoidance target. It is needed to support the overtaking function for low-speed vehicles, such as a bicycle. (It is actually possible to overtake the low-speed objects by changing the parameter, but the logic is not supported and thus the safety cannot be guaranteed.)
-  - The overtaking (e.g., to overtake a vehicle running in front at 20 km/h at 40 km/h) may need to be handled outside the avoidance module. It should be discussed which module should handle it.
+  - Overtaking (e.g., to overtake a vehicle running in front at 20 km/h at 40 km/h) may need to be handled outside the avoidance module. It should be discussed which module should handle it.
 
 - **Cancel avoidance when target disappears**
 
@@ -1055,21 +1055,21 @@ use_freespace_areas: true
 
 - **Improved performance of avoidance target selection**
 
-  - Essentially, avoidance targets are judged based on whether they are static objects or not. For example, a vehicle waiting at a traffic light should not be avoided because we know that it will start moving in the future. However this decision cannot be made in the current Autoware due to the lack of the perception functions. Therefore, the current avoidance module limits the avoidance target to vehicles parked on the shoulder of the road, and executes avoidance only for vehicles that are stopped away from the center of the lane. However, this logic cannot avoid a vehicle that has broken down and is stopped in the center of the lane, which should be recognized as a static object by the perception module. There is room for improvement in the performance of this decision.
+  - Essentially, avoidance targets are judged based on whether they are static objects or not. For example, a vehicle waiting at a traffic light should not be avoided because we know that it will start moving in the future. However this decision cannot be made in the current Autoware due to the lack of perception functions. Therefore, the current avoidance module limits the avoidance target to vehicles parked on the shoulder of the road, and executes avoidance only for vehicles that are stopped away from the center of the lane. However, this logic cannot avoid a vehicle that has broken down and is stopped in the center of the lane, which should be recognized as a static object by the perception module. There is room for improvement in the performance of this decision.
 
 - **Resampling path**
-  - Now the rough resolution resampling is processed to the output path in order to reduce the computational cost for the later modules. This resolution is set to a uniformly large value (e.g. `5m`), but small resolution should be applied for complex paths.
+  - Now the rough resolution resampling is processed to the output path in order to reduce the computational cost for the later modules. This resolution is set to a uniformly large value (e.g. `5m`), but a small resolution should be applied for complex paths.
 
 ## Debug
 
 ### Show `RCLCPP_DEBUG` on console
 
-All of debug messages are logged in following namespaces.
+All debug messages are logged in the following namespaces.
 
 - `planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner.static_obstacle_avoidance` or,
 - `planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner.static_obstacle_avoidance.utils`
 
-User can see debug information by following command.
+User can see debug information with the following command.
 
 ```bash
 ros2 service call /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/config_logger logging_demo/srv/ConfigLogger "{logger_name: 'planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner.static_obstacle_avoidance', level: DEBUG}"
@@ -1077,7 +1077,7 @@ ros2 service call /planning/scenario_planning/lane_driving/behavior_planning/beh
 
 ### Visualize debug markers
 
-Use can enable to publish debug markers by following parameters.
+User can enable publishing of debug markers with the following parameters.
 
 ```yaml
 debug:
@@ -1111,24 +1111,25 @@ ros2 topic echo /planning/scenario_planning/lane_driving/behavior_planning/behav
 
 #### Does it avoid static objects and dynamic objects?
 
-This module avoids static (stopped) objects and does not support dynamic (moving) objects avoidance. Dynamic objects are coped within the [dynamic obstacle avoidance module](../autoware_behavior_path_dynamic_obstacle_avoidance_module/README.md).
+This module avoids static (stopped) objects and does not support dynamic (moving) objects avoidance. Dynamic objects are handled within the [dynamic obstacle avoidance module](../autoware_behavior_path_dynamic_obstacle_avoidance_module/README.md).
 
 #### What type (class) of object would it avoid?
 
-It avoids car, truck, bus, trailer, bicycle, motorcycle, pedestrian, and unknown objects by default. Details are in the [Target object filtering section](#target-object-filtering).
+It avoids cars, trucks, buses, trailers, bicycles, motorcycles, pedestrians, and unknown objects by default. Details are in the [Target object filtering section](#target-object-filtering).
 The above objects are divided into vehicle type objects and non-vehicle type objects; the target object filtering would differ for vehicle types and non-vehicle types.
--Vehicle type objects: Car, Truck, Bus, Trailer, Motorcycle
--Non-vehicle type objects: Pedestrian, Bicycle
+
+- Vehicle type objects: Car, Truck, Bus, Trailer, Motorcycle
+- Non-vehicle type objects: Pedestrian, Bicycle
 
 #### How does it judge if it is a target object or not?
 
-The conditions for vehicle type objects and non-vehicle type objects are different, though the main idea is that static objects on road shoulders within the planned path would be avoided.
-Below are some examples when avoidance path is generated for vehicle type objects.
+The conditions for vehicle type objects and non-vehicle type objects are different. However, the main idea is that static objects on road shoulders within the planned path would be avoided.
+Below are some examples when an avoidance path is generated for vehicle type objects.
 
-- Vehicle stopping on ego lane with pulling over to the side of the road
+- Vehicle stopping on ego lane while pulling over to the side of the road
 - Vehicle stopping on adjacent lane
 
-For more detail refer to [vehicle type object](#conditions-for-vehicle-type-objects) and [non-vehicle object](#conditions-for-non-vehicle-type-objects).
+For more details refer to [vehicle type object](#conditions-for-vehicle-type-objects) and [non-vehicle object](#conditions-for-non-vehicle-type-objects).
 
 #### What is an ambiguous target?
 
@@ -1154,13 +1155,13 @@ Details are explained in the [How to decide path shape section](#multiple-obstac
 
 #### Which lanes are used to avoid objects?
 
-This module is able to use not only current lane but also adjacent lanes and opposite lanes. Usable lanes could be selected by the configuration file as noted in the [shift length calculation section](#shift-length-calculation).
-It is assumed that there is no parking vehicles on the central lane in a situation where there are lanes on the left and right.
+This module is able to use not only the current lane but also adjacent lanes and opposite lanes. Usable lanes can be selected by the configuration file as noted in the [shift length calculation section](#shift-length-calculation).
+It is assumed that there are no parked vehicles on the central lane in a situation where there are lanes on the left and right.
 
 #### Would it avoid objects inside intersections?
 
-Basically the module assumes that there isn't any parked vehicle within intersection. Vehicles that follow the lane or merging to ego lane are non-target objects.
-Vehicles waiting to make a right/left turn within the intersection could be avoided by expanding the drivable area in the configuration file, as noted in the [drivable area expansion section](#drivable-area-expansion).
+Basically, the module assumes that there are no parked vehicles within intersections. Vehicles that follow the lane or merge into ego lane are non-target objects.
+Vehicles waiting to make a right/left turn within an intersection can be avoided by expanding the drivable area in the configuration file, as noted in the [drivable area expansion section](#drivable-area-expansion).
 
 #### Does it generate avoidance paths for any road type?
 
@@ -1182,8 +1183,8 @@ Currently, avoiding left-shifted obstacles from the left side is not supported (
 
 #### Why is an envelope polygon used for the target object?
 
-It is employed to reduce the influence of the perception/tracking noise for each target objects.
-The envelope polygon is a rectangle box, whose size depends on object's polygon and buffer parameter and is always parallel to the reference path.
+It is employed to reduce the influence of the perception/tracking noise for each target object.
+The envelope polygon is a rectangle, whose size depends on the object's polygon and buffer parameter and it is always parallel to the reference path.
 The envelope polygon is created by using the latest one-shot envelope polygon and the previous envelope polygon.
 Details are explained in [How to prevent shift line chattering that is caused by perception noise section](#how-to-prevent-shift-line-chattering-that-is-caused-by-perception-noise).
 
@@ -1193,11 +1194,11 @@ If the module cannot find a safe avoidance path, the vehicle may stop or continu
 If there is a target object and there is enough space to avoid, the ego vehicle would stop at a position where an avoidance path could be generated; this is called the [yield manuever](#yield-maneuver).
 On the other hand, where there is not enough space, this module has nothing to do and the [obstacle cruise planner](../../autoware_obstacle_cruise_planner/README.md) would be in charge of the object.
 
-#### There seems to be an avoidance path, though the vehicle stops. What is happening?
+#### There seems to be an avoidance path, but the vehicle stops. What is happening?
 
-This situation occurs when the module is operating in AUTO mode and the target object is ambiguous or when operated in MANUAL mode.
+This situation occurs when the module is operating in AUTO mode and the target object is ambiguous or when operating in MANUAL mode.
 The generated avoidance path is presented as a candidate and requires operator approval before execution.
-If the operator does not approve the path the ego vehicle would stop where it is possible to generate a avoidance path.
+If the operator does not approve the path the ego vehicle would stop where it is possible to generate an avoidance path.
 
 ### Operation
 
@@ -1214,7 +1215,7 @@ The avoidance manuever would not be changed by specific vehicle types.
 
 ## Appendix: Shift line generation pipeline
 
-### Flow-chart of the process
+### Flow chart of the process
 
 <!-- spell-checker:disable -->
 
@@ -1321,7 +1322,7 @@ stop
 
 ### How to decide the path shape
 
-Generate shift points for obstacles with given lateral jerk. These points are integrated to generate an avoidance path. The detailed process flow for each case corresponding to the obstacle placement are described below. The actual implementation is not separated for each case, but the function corresponding to `multiple obstacle case (both directions)` is always running.
+Generate shift points for obstacles with a given lateral jerk. These points are integrated to generate an avoidance path. The detailed process flow for each case corresponding to the obstacle placement are described below. The actual implementation is not separated for each case, but the function corresponding to `multiple obstacle case (both directions)` is always running.
 
 #### One obstacle case
 
@@ -1331,12 +1332,12 @@ Additionally, the following processes are executed in special cases.
 
 #### Lateral jerk relaxation conditions
 
-- If the ego vehicle is close to the avoidance target, the lateral jerk will be relaxed up to the maximum jerk
+- If the ego vehicle is close to the avoidance target, the lateral jerk will be relaxed up to the maximum jerk.
 - When returning to the center line after avoidance, if there is not enough distance left to the goal (end of path), the jerk condition will be relaxed as above.
 
 #### Minimum velocity relaxation conditions
 
-There is a problem that we can not know the actual speed during avoidance in advance. This is especially critical when the ego vehicle speed is 0.
+There is a problem that we cannot know the actual speed during avoidance in advance. This is especially critical when the ego vehicle speed is 0.
 To solve that, this module provides a parameter for the minimum avoidance speed, which is used for the lateral jerk calculation when the vehicle speed is low.
 
 - If the ego vehicle speed is lower than "nominal" minimum speed, use the minimum speed in the calculation of the jerk.
@@ -1348,7 +1349,7 @@ To solve that, this module provides a parameter for the minimum avoidance speed,
 
 Generate shift points for multiple obstacles. All of them are merged to generate new shift points along the reference path. The new points are filtered (e.g. remove small-impact shift points), and the avoidance path is computed for the filtered shift points.
 
-**Merge process of raw shift points**: check the shift length on each path points. If the shift points are overlapped, the maximum shift value is selected for the same direction.
+**Merge process of raw shift points**: check the shift length on each path point. If the shift points are overlapped, the maximum shift value is selected for the same direction.
 
 For the details of the shift point filtering, see [filtering for shift points](#filtering-for-shift-points).
 
@@ -1371,6 +1372,6 @@ The shift points are modified by a filtering process in order to get the expecte
 
 ## Appendix: All parameters
 
-The avoidance specific parameter configuration file can be located at `src/autoware/launcher/planning_launch/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/autoware_behavior_path_static_obstacle_avoidance_module/static_obstacle_avoidance.param.yaml`.
+Location of the avoidance specific parameter configuration file: `src/autoware/launcher/planning_launch/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/autoware_behavior_path_static_obstacle_avoidance_module/static_obstacle_avoidance.param.yaml`.
 
 {{ json_to_markdown("planning/behavior_path_planner/autoware_behavior_path_static_obstacle_avoidance_module/schema/static_obstacle_avoidance.schema.json") }}
