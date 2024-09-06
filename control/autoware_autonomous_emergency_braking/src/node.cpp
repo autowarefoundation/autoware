@@ -21,6 +21,7 @@
 #include <autoware/universe_utils/ros/marker_helper.hpp>
 #include <autoware/universe_utils/ros/update_param.hpp>
 #include <pcl_ros/transforms.hpp>
+#include <rclcpp/node.hpp>
 
 #include <geometry_msgs/msg/polygon.hpp>
 
@@ -45,6 +46,7 @@
 #include <functional>
 #include <limits>
 #include <optional>
+#include <vector>
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -247,20 +249,13 @@ void AEB::onTimer()
 void AEB::onImu(const Imu::ConstSharedPtr input_msg)
 {
   // transform imu
-  geometry_msgs::msg::TransformStamped transform_stamped{};
-  try {
-    transform_stamped = tf_buffer_.lookupTransform(
-      "base_link", input_msg->header.frame_id, rclcpp::Time(0),
-      rclcpp::Duration::from_seconds(0.5));
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_ERROR_STREAM(
-      get_logger(),
-      "[AEB] Failed to look up transform from base_link to" << input_msg->header.frame_id);
-    return;
-  }
+  const auto logger = get_logger();
+  const auto transform_stamped =
+    utils::getTransform("base_link", input_msg->header.frame_id, tf_buffer_, logger);
+  if (!transform_stamped.has_value()) return;
 
   angular_velocity_ptr_ = std::make_shared<Vector3>();
-  tf2::doTransform(input_msg->angular_velocity, *angular_velocity_ptr_, transform_stamped);
+  tf2::doTransform(input_msg->angular_velocity, *angular_velocity_ptr_, transform_stamped.value());
 }
 
 void AEB::onPointCloud(const PointCloud2::ConstSharedPtr input_msg)
@@ -274,22 +269,15 @@ void AEB::onPointCloud(const PointCloud2::ConstSharedPtr input_msg)
       get_logger(),
       "[AEB]: Input point cloud frame is not base_link and it is " << input_msg->header.frame_id);
     // transform pointcloud
-    geometry_msgs::msg::TransformStamped transform_stamped{};
-    try {
-      transform_stamped = tf_buffer_.lookupTransform(
-        "base_link", input_msg->header.frame_id, input_msg->header.stamp,
-        rclcpp::Duration::from_seconds(0.5));
-    } catch (tf2::TransformException & ex) {
-      RCLCPP_ERROR_STREAM(
-        get_logger(),
-        "[AEB] Failed to look up transform from base_link to" << input_msg->header.frame_id);
-      return;
-    }
+    const auto logger = get_logger();
+    const auto transform_stamped =
+      utils::getTransform("base_link", input_msg->header.frame_id, tf_buffer_, logger);
+    if (!transform_stamped.has_value()) return;
 
     // transform by using eigen matrix
     PointCloud2 transformed_points{};
     const Eigen::Matrix4f affine_matrix =
-      tf2::transformToEigen(transform_stamped.transform).matrix().cast<float>();
+      tf2::transformToEigen(transform_stamped.value().transform).matrix().cast<float>();
     pcl_ros::transformPointCloud(affine_matrix, *input_msg, transformed_points);
     pcl::fromROSMsg(transformed_points, *pointcloud_ptr);
   }
@@ -442,29 +430,48 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
     return false;
   }
 
-  auto check_collision = [&](
-                           const auto & path, const colorTuple & debug_colors,
-                           const std::string & debug_ns,
-                           pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects) {
+  auto merge_expanded_path_polys = [&](const std::vector<Path> & paths) {
+    std::vector<Polygon2d> merged_expanded_path_polygons;
+    for (const auto & path : paths) {
+      generatePathFootprint(
+        path, expand_width_ + path_footprint_extra_margin_, merged_expanded_path_polygons);
+    }
+    return merged_expanded_path_polygons;
+  };
+
+  auto get_objects_on_path = [&](
+                               const auto & path, PointCloud::Ptr points_belonging_to_cluster_hulls,
+                               const colorTuple & debug_colors, const std::string & debug_ns) {
     // Check which points of the cropped point cloud are on the ego path, and get the closest one
     const auto ego_polys = generatePathFootprint(path, expand_width_);
-    auto objects = std::invoke([&]() {
-      std::vector<ObjectData> objects;
-      // Crop out Pointcloud using an extra wide ego path
-      if (use_pointcloud_data_) {
-        const auto expanded_ego_polys =
-          generatePathFootprint(path, expand_width_ + path_footprint_extra_margin_);
-        cropPointCloudWithEgoFootprintPath(expanded_ego_polys, filtered_objects);
-        const auto current_time = obstacle_ros_pointcloud_ptr_->header.stamp;
-        createObjectDataUsingPointCloudClusters(
-          path, ego_polys, current_time, objects, filtered_objects);
-      }
-      if (use_predicted_object_data_) {
-        createObjectDataUsingPredictedObjects(path, ego_polys, objects);
-      }
-      return objects;
-    });
+    std::vector<ObjectData> objects;
+    // Crop out Pointcloud using an extra wide ego path
+    if (use_pointcloud_data_ && !points_belonging_to_cluster_hulls->empty()) {
+      const auto current_time = obstacle_ros_pointcloud_ptr_->header.stamp;
+      getClosestObjectsOnPath(
+        path, ego_polys, current_time, points_belonging_to_cluster_hulls, objects);
+    }
+    if (use_predicted_object_data_) {
+      createObjectDataUsingPredictedObjects(path, ego_polys, objects);
+    }
 
+    // Add debug markers
+    if (publish_debug_markers_) {
+      const auto [color_r, color_g, color_b, color_a] = debug_colors;
+      addMarker(
+        this->get_clock()->now(), path, ego_polys, objects, collision_data_keeper_.get(), color_r,
+        color_g, color_b, color_a, debug_ns, debug_markers);
+    }
+    return objects;
+  };
+
+  auto check_collision = [&](
+                           const Path & path, const colorTuple & debug_colors,
+                           const std::string & debug_ns,
+                           PointCloud::Ptr points_belonging_to_cluster_hulls) {
+    time_keeper_->start_track("has_collision_with_" + debug_ns);
+    auto objects =
+      get_objects_on_path(path, points_belonging_to_cluster_hulls, debug_colors, debug_ns);
     // Get only the closest object and calculate its speed
     const auto closest_object_point = std::invoke([&]() -> std::optional<ObjectData> {
       const auto closest_object_point_itr =
@@ -490,53 +497,61 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
                                  ? hasCollision(current_v, closest_object_point.value())
                                  : false;
 
-    // Add debug markers
-    if (publish_debug_markers_) {
-      const auto [color_r, color_g, color_b, color_a] = debug_colors;
-      addMarker(
-        this->get_clock()->now(), path, ego_polys, objects, collision_data_keeper_.get(), color_r,
-        color_g, color_b, color_a, debug_ns, debug_markers);
-    }
+    time_keeper_->end_track("has_collision_with_" + debug_ns);
     // check collision using rss distance
     return has_collision;
   };
 
   // step3. make function to check collision with ego path created with sensor data
-  time_keeper_->start_track("has_collision_imu_path");
-  const auto has_collision_ego = [&](pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects) -> bool {
-    if (!use_imu_path_ || !angular_velocity_ptr_) return false;
-    const double current_w = angular_velocity_ptr_->z;
-    constexpr colorTuple debug_color = {0.0 / 256.0, 148.0 / 256.0, 205.0 / 256.0, 0.999};
-    const std::string ns = "ego";
-    const auto ego_path = generateEgoPath(current_v, current_w);
+  const auto ego_imu_path = (!use_imu_path_ || !angular_velocity_ptr_)
+                              ? Path{}
+                              : generateEgoPath(current_v, angular_velocity_ptr_->z);
 
-    return check_collision(ego_path, debug_color, ns, filtered_objects);
+  const auto ego_mpc_path = (!use_predicted_trajectory_ || !predicted_traj_ptr_)
+                              ? std::nullopt
+                              : generateEgoPath(*predicted_traj_ptr_);
+
+  PointCloud::Ptr filtered_objects = pcl::make_shared<PointCloud>();
+  if (use_pointcloud_data_) {
+    const std::vector<Path> paths = [&]() {
+      std::vector<Path> paths;
+      if (use_imu_path_) paths.push_back(ego_imu_path);
+      if (ego_mpc_path.has_value()) {
+        paths.push_back(ego_mpc_path.value());
+      }
+      return paths;
+    }();
+
+    if (paths.empty()) return false;
+    const std::vector<Polygon2d> merged_path_polygons = merge_expanded_path_polys(paths);
+    // Data of filtered point cloud
+    cropPointCloudWithEgoFootprintPath(merged_path_polygons, filtered_objects);
+  }
+
+  PointCloud::Ptr points_belonging_to_cluster_hulls = pcl::make_shared<PointCloud>();
+  getPointsBelongingToClusterHulls(filtered_objects, points_belonging_to_cluster_hulls);
+
+  const auto has_collision_imu_path =
+    [&](const PointCloud::Ptr points_belonging_to_cluster_hulls) -> bool {
+    if (!use_imu_path_ || !angular_velocity_ptr_) return false;
+    constexpr colorTuple debug_color = {0.0 / 256.0, 148.0 / 256.0, 205.0 / 256.0, 0.999};
+    const std::string ns = "imu";
+    return check_collision(ego_imu_path, debug_color, ns, points_belonging_to_cluster_hulls);
   };
-  time_keeper_->end_track("has_collision_imu_path");
 
   // step4. make function to check collision with predicted trajectory from control module
-  time_keeper_->start_track("has_collision_mpc_path");
-  const auto has_collision_predicted =
-    [&](pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects) -> bool {
-    if (!use_predicted_trajectory_ || !predicted_traj_ptr_) return false;
-    const auto predicted_traj_ptr = predicted_traj_ptr_;
-    const auto predicted_path_opt = generateEgoPath(*predicted_traj_ptr);
-
-    if (!predicted_path_opt) return false;
+  const auto has_collision_mpc_path =
+    [&](const PointCloud::Ptr points_belonging_to_cluster_hulls) -> bool {
+    if (!use_predicted_trajectory_ || !ego_mpc_path.has_value()) return false;
     constexpr colorTuple debug_color = {0.0 / 256.0, 100.0 / 256.0, 0.0 / 256.0, 0.999};
-    const std::string ns = "predicted";
-    const auto & predicted_path = predicted_path_opt.value();
-
-    return check_collision(predicted_path, debug_color, ns, filtered_objects);
+    const std::string ns = "mpc";
+    return check_collision(
+      ego_mpc_path.value(), debug_color, ns, points_belonging_to_cluster_hulls);
   };
-  time_keeper_->end_track("has_collision_mpc_path");
 
-  // Data of filtered point cloud
-  pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects =
-    pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
   // evaluate if there is a collision for both paths
-  const bool has_collision =
-    has_collision_ego(filtered_objects) || has_collision_predicted(filtered_objects);
+  const bool has_collision = has_collision_imu_path(points_belonging_to_cluster_hulls) ||
+                             has_collision_mpc_path(points_belonging_to_cluster_hulls);
 
   // Debug print
   if (!filtered_objects->empty() && publish_debug_pointcloud_) {
@@ -627,27 +642,17 @@ std::optional<Path> AEB::generateEgoPath(const Trajectory & predicted_traj)
   if (predicted_traj.points.empty()) {
     return std::nullopt;
   }
-  time_keeper_->start_track("lookUpTransform");
-  geometry_msgs::msg::TransformStamped transform_stamped{};
-  try {
-    transform_stamped = tf_buffer_.lookupTransform(
-      "base_link", predicted_traj.header.frame_id, rclcpp::Time(0),
-      rclcpp::Duration::from_seconds(0.5));
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_ERROR_STREAM(
-      get_logger(),
-      "[AEB] Failed to look up transform from base_link to " + predicted_traj.header.frame_id);
-    return std::nullopt;
-  }
-  time_keeper_->end_track("lookUpTransform");
-
+  const auto logger = get_logger();
+  const auto transform_stamped =
+    utils::getTransform("base_link", predicted_traj.header.frame_id, tf_buffer_, logger);
+  if (!transform_stamped.has_value()) return std::nullopt;
   // create path
   time_keeper_->start_track("createPath");
   Path path;
   path.reserve(predicted_traj.points.size());
   for (size_t i = 0; i < predicted_traj.points.size(); ++i) {
     geometry_msgs::msg::Pose map_pose;
-    tf2::doTransform(predicted_traj.points.at(i).pose, map_pose, transform_stamped);
+    tf2::doTransform(predicted_traj.points.at(i).pose, map_pose, transform_stamped.value());
     path.push_back(map_pose);
 
     if (i * mpc_prediction_time_interval_ > mpc_prediction_time_horizon_) {
@@ -658,11 +663,21 @@ std::optional<Path> AEB::generateEgoPath(const Trajectory & predicted_traj)
   return path;
 }
 
+void AEB::generatePathFootprint(
+  const Path & path, const double extra_width_margin, std::vector<Polygon2d> & polygons)
+{
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+  for (size_t i = 0; i < path.size() - 1; ++i) {
+    polygons.push_back(
+      createPolygon(path.at(i), path.at(i + 1), vehicle_info_, extra_width_margin));
+  }
+}
+
 std::vector<Polygon2d> AEB::generatePathFootprint(
   const Path & path, const double extra_width_margin)
 {
-  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   std::vector<Polygon2d> polygons;
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   for (size_t i = 0; i < path.size() - 1; ++i) {
     polygons.push_back(
       createPolygon(path.at(i), path.at(i + 1), vehicle_info_, extra_width_margin));
@@ -702,19 +717,14 @@ void AEB::createObjectDataUsingPredictedObjects(
       return obj_vel_norm * std::cos(obj_yaw - path_yaw);
     };
 
-  geometry_msgs::msg::TransformStamped transform_stamped{};
-  try {
-    transform_stamped = tf_buffer_.lookupTransform(
-      "base_link", predicted_objects_ptr_->header.frame_id, rclcpp::Time(0),
-      rclcpp::Duration::from_seconds(0.5));
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_ERROR_STREAM(get_logger(), "[AEB] Failed to look up transform from base_link to map");
-    return;
-  }
-
+  const auto logger = get_logger();
+  const auto transform_stamped_opt =
+    utils::getTransform("base_link", predicted_objects_ptr_->header.frame_id, tf_buffer_, logger);
+  if (!transform_stamped_opt.has_value()) return;
   // Check which objects collide with the ego footprints
   std::for_each(objects.begin(), objects.end(), [&](const auto & predicted_object) {
     // get objects in base_link frame
+    const auto & transform_stamped = transform_stamped_opt.value();
     const auto t_predicted_object =
       utils::transformObjectFrame(predicted_object, transform_stamped);
     const auto & obj_pose = t_predicted_object.kinematics.initial_pose_with_covariance.pose;
@@ -758,18 +768,14 @@ void AEB::createObjectDataUsingPredictedObjects(
   });
 }
 
-void AEB::createObjectDataUsingPointCloudClusters(
-  const Path & ego_path, const std::vector<Polygon2d> & ego_polys, const rclcpp::Time & stamp,
-  std::vector<ObjectData> & objects, const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_points_ptr)
+void AEB::getPointsBelongingToClusterHulls(
+  const PointCloud::Ptr obstacle_points_ptr,
+  const PointCloud::Ptr points_belonging_to_cluster_hulls)
 {
   autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
-  // check if the predicted path has valid number of points
-  if (ego_path.size() < 2 || ego_polys.empty() || obstacle_points_ptr->empty()) {
-    return;
-  }
-
   // eliminate noisy points by only considering points belonging to clusters of at least a certain
   // size
+  if (obstacle_points_ptr->empty()) return;
   const std::vector<pcl::PointIndices> cluster_indices = std::invoke([&]() {
     std::vector<pcl::PointIndices> cluster_idx;
     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
@@ -783,8 +789,6 @@ void AEB::createObjectDataUsingPointCloudClusters(
     ec.extract(cluster_idx);
     return cluster_idx;
   });
-
-  PointCloud::Ptr points_belonging_to_cluster_hulls(new PointCloud);
   for (const auto & indices : cluster_indices) {
     PointCloud::Ptr cluster(new PointCloud);
     bool cluster_surpasses_threshold_height{false};
@@ -801,11 +805,22 @@ void AEB::createObjectDataUsingPointCloudClusters(
     hull.setDimension(2);
     hull.setInputCloud(cluster);
     std::vector<pcl::Vertices> polygons;
-    PointCloud::Ptr surface_hull(new pcl::PointCloud<pcl::PointXYZ>);
+    PointCloud::Ptr surface_hull(new PointCloud);
     hull.reconstruct(*surface_hull, polygons);
     for (const auto & p : *surface_hull) {
       points_belonging_to_cluster_hulls->push_back(p);
     }
+  }
+}
+
+void AEB::getClosestObjectsOnPath(
+  const Path & ego_path, const std::vector<Polygon2d> & ego_polys, const rclcpp::Time & stamp,
+  const PointCloud::Ptr points_belonging_to_cluster_hulls, std::vector<ObjectData> & objects)
+{
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+  // check if the predicted path has valid number of points
+  if (ego_path.size() < 2 || ego_polys.empty() || points_belonging_to_cluster_hulls->empty()) {
+    return;
   }
 
   // select points inside the ego footprint path
@@ -845,7 +860,7 @@ void AEB::createObjectDataUsingPointCloudClusters(
 }
 
 void AEB::cropPointCloudWithEgoFootprintPath(
-  const std::vector<Polygon2d> & ego_polys, pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_objects)
+  const std::vector<Polygon2d> & ego_polys, PointCloud::Ptr filtered_objects)
 {
   autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   PointCloud::Ptr full_points_ptr(new PointCloud);
@@ -863,7 +878,7 @@ void AEB::cropPointCloudWithEgoFootprintPath(
   hull.setDimension(2);
   hull.setInputCloud(path_polygon_points);
   std::vector<pcl::Vertices> polygons;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr surface_hull(new pcl::PointCloud<pcl::PointXYZ>);
+  PointCloud::Ptr surface_hull(new PointCloud);
   hull.reconstruct(*surface_hull, polygons);
   // Filter out points outside of the path's convex hull
   pcl::CropHull<pcl::PointXYZ> path_polygon_hull_filter;
@@ -946,20 +961,15 @@ void AEB::addVirtualStopWallMarker(MarkerArray & markers)
 {
   autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   const auto ego_map_pose = std::invoke([this]() -> std::optional<geometry_msgs::msg::Pose> {
-    geometry_msgs::msg::TransformStamped tf_current_pose;
+    const auto logger = get_logger();
+    const auto tf_current_pose = utils::getTransform("map", "base_link", tf_buffer_, logger);
+    if (!tf_current_pose.has_value()) return std::nullopt;
+    const auto transform = tf_current_pose.value().transform;
     geometry_msgs::msg::Pose p;
-    try {
-      tf_current_pose = tf_buffer_.lookupTransform(
-        "map", "base_link", rclcpp::Time(0), rclcpp::Duration::from_seconds(1.0));
-    } catch (tf2::TransformException & ex) {
-      RCLCPP_ERROR(get_logger(), "%s", ex.what());
-      return std::nullopt;
-    }
-
-    p.orientation = tf_current_pose.transform.rotation;
-    p.position.x = tf_current_pose.transform.translation.x;
-    p.position.y = tf_current_pose.transform.translation.y;
-    p.position.z = tf_current_pose.transform.translation.z;
+    p.orientation = transform.rotation;
+    p.position.x = transform.translation.x;
+    p.position.y = transform.translation.y;
+    p.position.z = transform.translation.z;
     return std::make_optional(p);
   });
 

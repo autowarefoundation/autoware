@@ -414,6 +414,16 @@ public:
    * @brief Generate the footprint of the path with extra width margin
    * @param path Ego vehicle path
    * @param extra_width_margin Extra width margin for the footprint
+   * @param polygons vector to be filled with the polygons
+   * @return Vector of polygons representing the path footprint
+   */
+  void generatePathFootprint(
+    const Path & path, const double extra_width_margin, std::vector<Polygon2d> & polygons);
+
+  /**
+   * @brief Generate the footprint of the path with extra width margin
+   * @param path Ego vehicle path
+   * @param extra_width_margin Extra width margin for the footprint
    * @return Vector of polygons representing the path footprint
    */
   std::vector<Polygon2d> generatePathFootprint(const Path & path, const double extra_width_margin);
@@ -426,10 +436,19 @@ public:
    * @param objects Vector to store the created object data
    * @param obstacle_points_ptr Pointer to the point cloud of obstacles
    */
-  void createObjectDataUsingPointCloudClusters(
+  void getClosestObjectsOnPath(
     const Path & ego_path, const std::vector<Polygon2d> & ego_polys, const rclcpp::Time & stamp,
-    std::vector<ObjectData> & objects,
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_points_ptr);
+    const PointCloud::Ptr points_belonging_to_cluster_hulls, std::vector<ObjectData> & objects);
+
+  /**
+   * @brief Create object data using point cloud clusters
+   * @param obstacle_points_ptr Pointer to the point cloud of obstacles
+   * @param points_belonging_to_cluster_hulls output: pointer to the point cloud of points belonging
+   * to cluster hulls
+   */
+  void getPointsBelongingToClusterHulls(
+    const PointCloud::Ptr obstacle_points_ptr,
+    const PointCloud::Ptr points_belonging_to_cluster_hulls);
 
   /**
    * @brief Create object data using predicted objects

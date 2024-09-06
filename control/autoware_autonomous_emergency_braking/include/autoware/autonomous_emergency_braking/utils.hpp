@@ -24,6 +24,8 @@
 #include <boost/geometry/algorithms/correct.hpp>
 
 #include <tf2/utils.h>
+
+#include <string>
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -48,7 +50,7 @@ using geometry_msgs::msg::TransformStamped;
  * @param transform_stamped the tf2 transform
  */
 PredictedObject transformObjectFrame(
-  const PredictedObject & input, geometry_msgs::msg::TransformStamped & transform_stamped);
+  const PredictedObject & input, const geometry_msgs::msg::TransformStamped & transform_stamped);
 
 /**
  * @brief Get the predicted objects polygon as a geometry polygon
@@ -80,6 +82,10 @@ Polygon2d convertBoundingBoxObjectToGeometryPolygon(
  * @param obj the object
  */
 Polygon2d convertObjToPolygon(const PredictedObject & obj);
+
+std::optional<geometry_msgs::msg::TransformStamped> getTransform(
+  const std::string & target_frame, const std::string & source_frame,
+  const tf2_ros::Buffer & tf_buffer, const rclcpp::Logger & logger);
 }  // namespace autoware::motion::control::autonomous_emergency_braking::utils
 
 #endif  // AUTOWARE__AUTONOMOUS_EMERGENCY_BRAKING__UTILS_HPP_
