@@ -313,9 +313,9 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/planning,target=/autoware/src/universe/autoware.universe/planning \
   # TODO(youtalk): Remove COPYs https://github.com/youtalk/autoware/actions/runs/10747958687/job/29811071927?pr=110#step:4:2018 is resolved
-  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/map_loader,target=/autoware/src/universe/autoware.universe/map/map_loader
-  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader
-  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/map_loader,target=/autoware/src/universe/autoware.universe/map/map_loader \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
