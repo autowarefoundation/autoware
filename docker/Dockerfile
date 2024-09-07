@@ -124,6 +124,10 @@ ARG ROS_DISTRO
 
 COPY src/universe/autoware.universe/control /autoware/src/universe/autoware.universe/control
 COPY src/universe/autoware.universe/planning /autoware/src/universe/autoware.universe/planning
+# TODO(youtalk): Remove COPYs
+COPY src/universe/autoware.universe/map/map_loader /autoware/src/universe/autoware.universe/map/map_loader
+COPY src/universe/autoware.universe/map/autoware_map_projection_loader /autoware/src/universe/autoware.universe/map/autoware_map_projection_loader
+COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -308,6 +312,10 @@ RUN --mount=type=ssh \
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/planning,target=/autoware/src/universe/autoware.universe/planning \
+  # TODO(youtalk): Remove COPYs
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/map_loader,target=/autoware/src/universe/autoware.universe/map/map_loader
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
