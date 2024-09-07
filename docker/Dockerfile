@@ -122,8 +122,8 @@ FROM rosdep-depend AS rosdep-universe-planning-control-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
-COPY src/universe/autoware.universe/localization /autoware/src/universe/autoware.universe/localization
-COPY src/universe/autoware.universe/map /autoware/src/universe/autoware.universe/map
+COPY src/universe/autoware.universe/control /autoware/src/universe/autoware.universe/control
+COPY src/universe/autoware.universe/planning /autoware/src/universe/autoware.universe/planning
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
