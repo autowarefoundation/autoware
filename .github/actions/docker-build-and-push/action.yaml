@@ -159,7 +159,7 @@ runs:
       id: meta-universe-planning-control-devel
       uses: docker/metadata-action@v5
       with:
-        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
         bake-target: docker-metadata-action-universe-planning-control-devel
         flavor: |
@@ -170,7 +170,7 @@ runs:
       id: meta-universe-planning-control
       uses: docker/metadata-action@v5
       with:
-        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: ${{ steps.set-docker-tags.outputs.tags }}
         bake-target: docker-metadata-action-universe-planning-control
         flavor: |
