@@ -33,6 +33,27 @@
 
 namespace autoware::frenet_planner
 {
+// cppcheck-suppress unusedFunction
+std::vector<Trajectory> generateTrajectories(
+  const autoware::sampler_common::transform::Spline2D & reference_spline,
+  const FrenetState & initial_state, const SamplingParameters & sampling_parameters)
+{
+  std::vector<Trajectory> trajectories;
+  trajectories.reserve(sampling_parameters.parameters.size());
+  for (const auto & parameter : sampling_parameters.parameters) {
+    auto trajectory = generateCandidate(
+      initial_state, parameter.target_state, parameter.target_duration,
+      sampling_parameters.resolution);
+    trajectory.sampling_parameter = parameter;
+    calculateCartesian(reference_spline, trajectory);
+    std::stringstream ss;
+    ss << parameter;
+    trajectory.tag = ss.str();
+    trajectories.push_back(trajectory);
+  }
+  return trajectories;
+}
+
 std::vector<Path> generatePaths(
   const autoware::sampler_common::transform::Spline2D & reference_spline,
   const FrenetState & initial_state, const SamplingParameters & sampling_parameters)

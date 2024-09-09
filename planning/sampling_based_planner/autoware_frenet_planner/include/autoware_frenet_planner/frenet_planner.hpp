@@ -25,6 +25,11 @@
 
 namespace autoware::frenet_planner
 {
+/// @brief generate trajectories relative to the reference for the given initial state and sampling
+/// parameters
+std::vector<Trajectory> generateTrajectories(
+  const autoware::sampler_common::transform::Spline2D & reference_spline,
+  const FrenetState & initial_state, const SamplingParameters & sampling_parameters);
 /// @brief generate paths relative to the reference for the given initial state and sampling
 /// parameters
 std::vector<Path> generatePaths(
