@@ -2,6 +2,46 @@
 
 `external_cmd_converter` is a node that converts desired mechanical input to acceleration and velocity by using accel/brake map.
 
+## Algorithm
+
+### How to calculate reference acceleration and velocity
+
+A reference acceleration and velocity are derived from the throttle and brake values of external control commands.
+
+#### Reference Acceleration
+
+A reference acceleration is calculated from accel_brake_map based on values of a desired_pedal and a current velocity;
+
+$$
+    pedal_d = throttle_d - brake_d,
+$$
+
+$$
+    acc_{ref} = Acc(pedal_d, v_{x,current}).
+$$
+
+| Parameter       | Description                                                                               |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| $throttle_d$    | throttle value of external control command (`~/in/external_control_cmd.control.throttle`) |
+| $brake_d$       | brake value of external control command (`~/in/external_control_cmd.control.brake`)       |
+| $v_{x,current}$ | current longitudinal velocity (`~/in/odometry.twist.twist.linear.x`)                      |
+| Acc             | accel_brake_map                                                                           |
+
+#### Reference Velocity
+
+A reference velocity is calculated based on a current velocity and a reference acceleration:
+
+$$
+v_{ref} =
+    v_{x,current} + k_{v_{ref}} \cdot \text{sign}_{gear} \cdot acc_{ref}.
+$$
+
+| Parameter            | Description                                                           |
+| -------------------- | --------------------------------------------------------------------- |
+| $acc_{ref}$          | reference acceleration                                                |
+| $k_{v_{ref}}$        | reference velocity gain                                               |
+| $\text{sign}_{gear}$ | gear command (`~/in/shift_cmd`) (Drive/Low: 1, Reverse: -1, Other: 0) |
+
 ## Input topics
 
 | Name                        | Type                                         | Description                                                                                                       |
@@ -22,6 +62,7 @@
 
 | Parameter                 | Type   | Description                                           |
 | ------------------------- | ------ | ----------------------------------------------------- |
+| `ref_vel_gain_`           | double | reference velocity gain                               |
 | `timer_rate`              | double | timer's update rate                                   |
 | `wait_for_first_topic`    | double | if time out check is done after receiving first topic |
 | `control_command_timeout` | double | time out check for control command                    |
