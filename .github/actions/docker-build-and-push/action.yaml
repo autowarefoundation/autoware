@@ -36,9 +36,14 @@ runs:
         mkdir src
         vcs import src < autoware.repos
       shell: bash
+    
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
 
-    - name: Setup Docker Buildx
+    - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        platforms: linux/amd64,linux/arm64
 
     - name: Restore ccache
       uses: actions/cache/restore@v4
