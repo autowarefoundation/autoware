@@ -1320,10 +1320,6 @@ QSplitter::handle:horizontal {
   image: url("/icons_path/primary/splitter-horizontal.svg");
 }
 
-QMainWindow::separator:vertical {
-  width: 4px;
-}
-
 QMainWindow::separator:horizontal,
 QSplitter::handle:vertical {
   image: url("/icons_path/primary/splitter-vertical.svg");
