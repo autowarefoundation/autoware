@@ -596,15 +596,25 @@ bool GoalPlannerModule::isExecutionRequested() const
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
   const Pose goal_pose = route_handler->getOriginalGoalPose();
 
-  // check if goal_pose is in current_lanes.
-  lanelet::ConstLanelet current_lane{};
-  // const lanelet::ConstLanelets current_lanes = utils::getCurrentLanes(planner_data_);
+  // check if goal_pose is in current_lanes or neighboring road lanes
   const lanelet::ConstLanelets current_lanes =
     utils::getCurrentLanesFromPath(getPreviousModuleOutput().reference_path, planner_data_);
-  lanelet::utils::query::getClosestLanelet(current_lanes, current_pose, &current_lane);
-  const bool goal_is_in_current_lanes = std::any_of(
-    current_lanes.begin(), current_lanes.end(), [&](const lanelet::ConstLanelet & current_lane) {
-      return lanelet::utils::isInLanelet(goal_pose, current_lane);
+  const auto getNeighboringLane =
+    [&](const lanelet::ConstLanelet & lane) -> std::optional<lanelet::ConstLanelet> {
+    return left_side_parking_ ? route_handler->getLeftLanelet(lane, false, true)
+                              : route_handler->getRightLanelet(lane, false, true);
+  };
+  lanelet::ConstLanelets goal_check_lanes = current_lanes;
+  for (const auto & lane : current_lanes) {
+    auto neighboring_lane = getNeighboringLane(lane);
+    while (neighboring_lane) {
+      goal_check_lanes.push_back(neighboring_lane.value());
+      neighboring_lane = getNeighboringLane(neighboring_lane.value());
+    }
+  }
+  const bool goal_is_in_current_segment_lanes = std::any_of(
+    goal_check_lanes.begin(), goal_check_lanes.end(), [&](const lanelet::ConstLanelet & lane) {
+      return lanelet::utils::isInLanelet(goal_pose, lane);
     });
 
   // check that goal is in current neighbor shoulder lane
@@ -621,7 +631,7 @@ bool GoalPlannerModule::isExecutionRequested() const
 
   // if goal is not in current_lanes and current_shoulder_lanes, do not execute goal_planner,
   // because goal arc coordinates cannot be calculated.
-  if (!goal_is_in_current_lanes && !goal_is_in_current_shoulder_lanes) {
+  if (!goal_is_in_current_segment_lanes && !goal_is_in_current_shoulder_lanes) {
     return false;
   }
 
@@ -629,7 +639,7 @@ bool GoalPlannerModule::isExecutionRequested() const
   // 1) goal_pose is in current_lanes, plan path to the original fixed goal
   // 2) goal_pose is NOT in current_lanes, do not execute goal_planner
   if (!utils::isAllowedGoalModification(route_handler)) {
-    return goal_is_in_current_lanes;
+    return goal_is_in_current_segment_lanes;
   }
 
   // if goal arc coordinates can be calculated, check if goal is in request_length
@@ -651,7 +661,12 @@ bool GoalPlannerModule::isExecutionRequested() const
     parameters_->forward_goal_search_length);
   lanelet::ConstLanelet target_lane{};
   lanelet::utils::query::getClosestLanelet(pull_over_lanes, goal_pose, &target_lane);
-  if (!isCrossingPossible(current_lane, target_lane)) {
+
+  lanelet::ConstLanelet previous_module_terminal_lane{};
+  route_handler->getClosestLaneletWithinRoute(
+    getPreviousModuleOutput().path.points.back().point.pose, &previous_module_terminal_lane);
+
+  if (!isCrossingPossible(previous_module_terminal_lane, target_lane)) {
     return false;
   }
 
@@ -2236,14 +2251,10 @@ bool GoalPlannerModule::isCrossingPossible(
     end_lane_sequence = route_handler->getLaneletSequence(end_lane, dist, dist, false);
   }
 
-  // Lambda function to get the neighboring lanelet based on left_side_parking_
-  auto getNeighboringLane =
+  const auto getNeighboringLane =
     [&](const lanelet::ConstLanelet & lane) -> std::optional<lanelet::ConstLanelet> {
-    const auto neighboring_lane = left_side_parking_ ? route_handler->getLeftShoulderLanelet(lane)
-                                                     : route_handler->getRightShoulderLanelet(lane);
-    if (neighboring_lane) return neighboring_lane;
-    return left_side_parking_ ? route_handler->getLeftLanelet(lane)
-                              : route_handler->getRightLanelet(lane);
+    return left_side_parking_ ? route_handler->getLeftLanelet(lane, false, true)
+                              : route_handler->getRightLanelet(lane, false, true);
   };
 
   // Iterate through start_lane_sequence to find a path to end_lane_sequence
