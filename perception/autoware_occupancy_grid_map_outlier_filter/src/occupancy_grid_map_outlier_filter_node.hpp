@@ -17,6 +17,7 @@
 
 #include "autoware/pointcloud_preprocessor/filter.hpp"
 #include "autoware/universe_utils/ros/published_time_publisher.hpp"
+#include "autoware/universe_utils/system/time_keeper.hpp"
 
 #include <pcl/common/impl/common.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -128,6 +129,11 @@ private:
   std::string map_frame_;
   std::string base_link_frame_;
   int cost_threshold_;
+
+  // time keeper
+  rclcpp::Publisher<autoware::universe_utils::ProcessingTimeDetail>::SharedPtr
+    detailed_processing_time_publisher_;
+  std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_;
 };
 }  // namespace autoware::occupancy_grid_map_outlier_filter
 

@@ -10,3 +10,6 @@
     cost_threshold: 45
     use_radius_search_2d_filter: true
     enable_debugger: false
+
+    # debug parameters
+    publish_processing_time_detail: False
