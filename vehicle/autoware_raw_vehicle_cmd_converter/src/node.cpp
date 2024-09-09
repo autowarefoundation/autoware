@@ -271,7 +271,7 @@ void RawVehicleCommandConverterNode::onActuationStatus(
 {
   actuation_status_ptr_ = msg;
 
-  if (!convert_actuation_to_steering_status_ || convert_steer_cmd_method_.has_value()) {
+  if (!convert_actuation_to_steering_status_ || !convert_steer_cmd_method_.has_value()) {
     return;
   }
 
