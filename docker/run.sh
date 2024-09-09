@@ -91,7 +91,7 @@ parse_arguments() {
 set_variables() {
     if [ "$option_devel" = "true" ]; then
         # Set image based on option
-        IMAGE="ghcr.io/autowarefoundation/autoware:latest-devel"
+        IMAGE="ghcr.io/autowarefoundation/autoware:universe-devel"
 
         # Set workspace path, if not provided use the current directory
         if [ "$WORKSPACE_PATH" = "" ]; then
