@@ -38,7 +38,7 @@
       # params for the pass judge logic against the crosswalk users such as pedestrians or bicycles
       pass_judge:
         ego_pass_first_margin_x: [0.0] # [[s]] time to collision margin vector for ego pass first situation (the module judges that ego don't have to stop at TTC + MARGIN < TTV condition)
-        ego_pass_first_margin_y: [3.0] # [[s]] time to vehicle margin vector for ego pass first situation (the module judges that ego don't have to stop at TTC + MARGIN < TTV condition)
+        ego_pass_first_margin_y: [4.0] # [[s]] time to vehicle margin vector for ego pass first situation (the module judges that ego don't have to stop at TTC + MARGIN < TTV condition)
         ego_pass_first_additional_margin: 0.5 # [s] additional time margin for ego pass first situation to suppress chattering
         ego_pass_later_margin_x: [0.0] # [[s]] time to vehicle margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN < TTC condition)
         ego_pass_later_margin_y: [13.0] # [[s]] time to collision margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN < TTC condition)
@@ -75,8 +75,8 @@
         enable: true  # if true, ego will slowdown around crosswalks that are occluded
         occluded_object_velocity: 1.0 # [m/s] assumed velocity of objects that may come out of the occluded space
         slow_down_velocity: 1.0  # [m/s]
-        time_buffer: 1.0  # [s] consecutive time with/without an occlusion to add/remove the slowdown
-        min_size: 0.5  # [m] minimum size of an occlusion (square side size)
+        time_buffer: 0.5  # [s] consecutive time with/without an occlusion to add/remove the slowdown
+        min_size: 1.0  # [m] minimum size of an occlusion (square side size)
         free_space_max: 43  # [-] maximum value of a free space cell in the occupancy grid
         occupied_min: 58    # [-] minimum value of an occupied cell in the occupancy grid
         ignore_with_traffic_light: true  # [-] if true, occlusions at crosswalks with traffic lights are ignored
