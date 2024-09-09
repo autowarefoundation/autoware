@@ -19,8 +19,10 @@
 #include "autoware/behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 #include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
+#include "autoware_lanelet2_extension/regulatory_elements/bus_stop_area.hpp"
 #include "autoware_lanelet2_extension/regulatory_elements/no_parking_area.hpp"
 #include "autoware_lanelet2_extension/regulatory_elements/no_stopping_area.hpp"
+#include "autoware_lanelet2_extension/utility/query.hpp"
 #include "autoware_lanelet2_extension/utility/utilities.hpp"
 
 #include <boost/geometry/algorithms/union.hpp>
@@ -485,6 +487,18 @@ BasicPolygons2d GoalSearcher::getNoStoppingAreaPolygons(const lanelet::ConstLane
         const auto & area_poly = lanelet::utils::to2D(area).basicPolygon();
         area_polygons.push_back(area_poly);
       }
+    }
+  }
+  return area_polygons;
+}
+
+BasicPolygons2d GoalSearcher::getBusStopAreaPolygons(const lanelet::ConstLanelets & lanes) const
+{
+  BasicPolygons2d area_polygons{};
+  for (const auto & bus_stop_area_reg_elem : lanelet::utils::query::busStopAreas(lanes)) {
+    for (const auto & area : bus_stop_area_reg_elem->busStopAreas()) {
+      const auto & area_poly = lanelet::utils::to2D(area).basicPolygon();
+      area_polygons.push_back(area_poly);
     }
   }
   return area_polygons;
