@@ -24,10 +24,7 @@ This implementation inherits `autoware::pointcloud_preprocessor::Filter` class, 
 
 ### Core Parameters
 
-| Name            | Type   | Description                                                                                                              |
-| --------------- | ------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `min_neighbors` | int    | If points in the circle centered on reference point is less than `min_neighbors`, a reference point is judged as outlier |
-| `search_radius` | double | Searching number of points included in `search_radius`                                                                   |
+{{ json_to_markdown("sensing/autoware_pointcloud_preprocessor/schema/radius_search_2d_outlier_filter_node.schema.json") }}
 
 ## Assumptions / Known limits
 

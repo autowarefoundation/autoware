@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    min_neighbors: 5
+    search_radius: 0.2

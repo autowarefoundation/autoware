@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/pointcloud_preprocessor/outlier_filter/radius_search_2d_outlier_filter_nodelet.hpp"
+#include "autoware/pointcloud_preprocessor/outlier_filter/radius_search_2d_outlier_filter_node.hpp"
 
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/search/kdtree.h>
@@ -28,8 +28,8 @@ RadiusSearch2DOutlierFilterComponent::RadiusSearch2DOutlierFilterComponent(
 {
   // set initial parameters
   {
-    min_neighbors_ = static_cast<size_t>(declare_parameter("min_neighbors", 5));
-    search_radius_ = static_cast<double>(declare_parameter("search_radius", 0.2));
+    min_neighbors_ = static_cast<size_t>(declare_parameter<int64_t>("min_neighbors"));
+    search_radius_ = declare_parameter<double>("search_radius");
   }
 
   kd_tree_ = pcl::make_shared<pcl::search::KdTree<pcl::PointXY>>(false);
