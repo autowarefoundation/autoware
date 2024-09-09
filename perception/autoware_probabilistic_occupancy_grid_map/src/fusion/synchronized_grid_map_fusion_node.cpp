@@ -21,6 +21,7 @@
 
 namespace autoware::occupancy_grid_map
 {
+using autoware::universe_utils::ScopedTimeTrack;
 using costmap_2d::OccupancyGridMapFixedBlindSpot;
 using costmap_2d::OccupancyGridMapLOBFUpdater;
 using geometry_msgs::msg::Pose;
@@ -142,6 +143,16 @@ GridMapFusionNode::GridMapFusionNode(const rclcpp::NodeOptions & node_options)
     debug_publisher_ptr_ = std::make_unique<DebugPublisher>(this, "synchronized_grid_map_fusion");
     stop_watch_ptr_->tic("cyclic_time");
     stop_watch_ptr_->tic("processing_time");
+
+    // time keeper setup
+    bool use_time_keeper = declare_parameter<bool>("publish_processing_time_detail");
+    if (use_time_keeper) {
+      detailed_processing_time_publisher_ =
+        this->create_publisher<autoware::universe_utils::ProcessingTimeDetail>(
+          "~/debug/processing_time_detail_ms", 1);
+      auto time_keeper = autoware::universe_utils::TimeKeeper(detailed_processing_time_publisher_);
+      time_keeper_ = std::make_shared<autoware::universe_utils::TimeKeeper>(time_keeper);
+    }
   }
 }
 
@@ -176,6 +187,9 @@ void GridMapFusionNode::onGridMap(
   const nav_msgs::msg::OccupancyGrid::ConstSharedPtr & occupancy_grid_msg,
   const std::string & topic_name)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   std::lock_guard<std::mutex> lock(mutex_);
   const bool is_already_subscribed_this = (gridmap_dict_[topic_name] != nullptr);
   const bool is_already_subscribed_tmp = std::any_of(
@@ -260,6 +274,9 @@ void GridMapFusionNode::timer_callback()
  */
 void GridMapFusionNode::publish()
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   stop_watch_ptr_->toc("processing_time", true);
   builtin_interfaces::msg::Time latest_stamp = get_clock()->now();
   double height = 0.0;
@@ -267,12 +284,18 @@ void GridMapFusionNode::publish()
   // merge available gridmap
   std::vector<OccupancyGridMapFixedBlindSpot> subscribed_maps;
   std::vector<double> weights;
-  for (const auto & e : gridmap_dict_) {
-    if (e.second != nullptr) {
-      subscribed_maps.push_back(GridMapFusionNode::OccupancyGridMsgToGridMap(*e.second));
-      weights.push_back(input_topic_weights_map_[e.first]);
-      latest_stamp = e.second->header.stamp;
-      height = e.second->info.origin.position.z;
+  {  // merging grid map
+    std::unique_ptr<ScopedTimeTrack> inner_st_ptr;
+    if (time_keeper_)
+      inner_st_ptr = std::make_unique<ScopedTimeTrack>("merge_grid_map", *time_keeper_);
+
+    for (const auto & e : gridmap_dict_) {
+      if (e.second != nullptr) {
+        subscribed_maps.push_back(GridMapFusionNode::OccupancyGridMsgToGridMap(*e.second));
+        weights.push_back(input_topic_weights_map_[e.first]);
+        latest_stamp = e.second->header.stamp;
+        height = e.second->info.origin.position.z;
+      }
     }
   }
 
@@ -322,6 +345,9 @@ OccupancyGridMapFixedBlindSpot GridMapFusionNode::SingleFrameOccupancyFusion(
   std::vector<OccupancyGridMapFixedBlindSpot> & occupancy_grid_maps,
   const builtin_interfaces::msg::Time latest_stamp, const std::vector<double> & weights)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   // if only single map
   if (occupancy_grid_maps.size() == 1) {
     return occupancy_grid_maps[0];
@@ -336,42 +362,51 @@ OccupancyGridMapFixedBlindSpot GridMapFusionNode::SingleFrameOccupancyFusion(
     return occupancy_grid_maps[0];
   }
 
-  // init fused map with calculated origin
-  OccupancyGridMapFixedBlindSpot fused_map(
-    occupancy_grid_maps[0].getSizeInCellsX(), occupancy_grid_maps[0].getSizeInCellsY(),
-    occupancy_grid_maps[0].getResolution());
-  fused_map.updateOrigin(
-    gridmap_origin.position.x - fused_map.getSizeInMetersX() / 2,
-    gridmap_origin.position.y - fused_map.getSizeInMetersY() / 2);
+  {  // create fused occupancy grid map
+    std::unique_ptr<ScopedTimeTrack> inner_st_ptr;
+    if (time_keeper_)
+      inner_st_ptr = std::make_unique<ScopedTimeTrack>("create_fused_map", *time_keeper_);
 
-  // fix origin of each map
-  for (auto & map : occupancy_grid_maps) {
-    map.updateOrigin(fused_map.getOriginX(), fused_map.getOriginY());
-  }
+    // init fused map with calculated origin
+    OccupancyGridMapFixedBlindSpot fused_map(
+      occupancy_grid_maps[0].getSizeInCellsX(), occupancy_grid_maps[0].getSizeInCellsY(),
+      occupancy_grid_maps[0].getResolution());
+    fused_map.updateOrigin(
+      gridmap_origin.position.x - fused_map.getSizeInMetersX() / 2,
+      gridmap_origin.position.y - fused_map.getSizeInMetersY() / 2);
 
-  // assume map is same size and resolutions
-  for (unsigned int x = 0; x < fused_map.getSizeInCellsX(); x++) {
-    for (unsigned int y = 0; y < fused_map.getSizeInCellsY(); y++) {
-      // get cost of each map
-      std::vector<unsigned char> costs;
-      for (auto & map : occupancy_grid_maps) {
-        costs.push_back(map.getCost(x, y));
-      }
-
-      // set fusion policy
-      auto fused_cost = fusion_policy::singleFrameOccupancyFusion(costs, fusion_method_, weights);
-
-      // set max cost to fused map
-      fused_map.setCost(x, y, fused_cost);
+    // fix origin of each map
+    for (auto & map : occupancy_grid_maps) {
+      map.updateOrigin(fused_map.getOriginX(), fused_map.getOriginY());
     }
-  }
 
-  return fused_map;
+    // assume map is same size and resolutions
+    for (unsigned int x = 0; x < fused_map.getSizeInCellsX(); x++) {
+      for (unsigned int y = 0; y < fused_map.getSizeInCellsY(); y++) {
+        // get cost of each map
+        std::vector<unsigned char> costs;
+        for (auto & map : occupancy_grid_maps) {
+          costs.push_back(map.getCost(x, y));
+        }
+
+        // set fusion policy
+        auto fused_cost = fusion_policy::singleFrameOccupancyFusion(costs, fusion_method_, weights);
+
+        // set max cost to fused map
+        fused_map.setCost(x, y, fused_cost);
+      }
+    }
+
+    return fused_map;
+  }  // scope for time keeper ends
 }
 
 OccupancyGridMapFixedBlindSpot GridMapFusionNode::OccupancyGridMsgToGridMap(
   const nav_msgs::msg::OccupancyGrid & occupancy_grid_map)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   OccupancyGridMapFixedBlindSpot gridmap(
     occupancy_grid_map.info.width, occupancy_grid_map.info.height,
     occupancy_grid_map.info.resolution);
@@ -392,6 +427,9 @@ nav_msgs::msg::OccupancyGrid::UniquePtr GridMapFusionNode::OccupancyGridMapToMsg
   const std::string & frame_id, const builtin_interfaces::msg::Time & stamp,
   const float & robot_pose_z, const nav2_costmap_2d::Costmap2D & occupancy_grid_map)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   auto msg_ptr = std::make_unique<OccupancyGrid>();
 
   msg_ptr->header.frame_id = frame_id;

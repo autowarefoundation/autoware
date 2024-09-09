@@ -37,6 +37,7 @@
 
 namespace autoware::occupancy_grid_map
 {
+using autoware::universe_utils::ScopedTimeTrack;
 using costmap_2d::OccupancyGridMap;
 using costmap_2d::OccupancyGridMapBBFUpdater;
 using geometry_msgs::msg::Pose;
@@ -104,11 +105,24 @@ LaserscanBasedOccupancyGridMapNode::LaserscanBasedOccupancyGridMapNode(
       map_length / map_resolution, map_width / map_resolution, map_resolution);
   }
   occupancy_grid_map_updater_ptr_->initRosParam(*this);
+
+  // time keeper setup
+  bool use_time_keeper = declare_parameter<bool>("publish_processing_time_detail");
+  if (use_time_keeper) {
+    detailed_processing_time_publisher_ =
+      this->create_publisher<autoware::universe_utils::ProcessingTimeDetail>(
+        "~/debug/processing_time_detail_ms", 1);
+    auto time_keeper = autoware::universe_utils::TimeKeeper(detailed_processing_time_publisher_);
+    time_keeper_ = std::make_shared<autoware::universe_utils::TimeKeeper>(time_keeper);
+  }
 }
 
 PointCloud2::SharedPtr LaserscanBasedOccupancyGridMapNode::convertLaserscanToPointCLoud2(
   const LaserScan::ConstSharedPtr & input)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   // check over max range point
   const float max_range =
     static_cast<float>(occupancy_grid_map_updater_ptr_->getSizeInCellsX()) * 0.5f +
@@ -136,6 +150,9 @@ void LaserscanBasedOccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRa
   const PointCloud2::ConstSharedPtr & input_obstacle_msg,
   const PointCloud2::ConstSharedPtr & input_raw_msg)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   // Laserscan to pointcloud2
   PointCloud2::ConstSharedPtr laserscan_pc_ptr = convertLaserscanToPointCLoud2(input_laserscan_msg);
 
@@ -143,6 +160,10 @@ void LaserscanBasedOccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRa
   PointCloud2 cropped_obstacle_pc{};
   PointCloud2 cropped_raw_pc{};
   if (use_height_filter_) {
+    std::unique_ptr<ScopedTimeTrack> inner_st_ptr;
+    if (time_keeper_)
+      inner_st_ptr = std::make_unique<ScopedTimeTrack>("height_filter", *time_keeper_);
+
     if (!utils::cropPointcloudByHeight(
           *input_obstacle_msg, *tf2_, base_link_frame_, min_height_, max_height_,
           cropped_obstacle_pc)) {
@@ -163,51 +184,77 @@ void LaserscanBasedOccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRa
   PointCloud2 trans_raw_pc{};
   Pose gridmap_origin{};
   Pose scan_origin{};
-  try {
-    utils::transformPointcloud(*laserscan_pc_ptr, *tf2_, map_frame_, trans_laserscan_pc);
-    utils::transformPointcloud(filtered_obstacle_pc, *tf2_, map_frame_, trans_obstacle_pc);
-    utils::transformPointcloud(filtered_raw_pc, *tf2_, map_frame_, trans_raw_pc);
-    gridmap_origin =
-      utils::getPose(laserscan_pc_ptr->header.stamp, *tf2_, gridmap_origin_frame_, map_frame_);
-    scan_origin =
-      utils::getPose(laserscan_pc_ptr->header.stamp, *tf2_, scan_origin_frame_, map_frame_);
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN_STREAM(get_logger(), ex.what());
-    return;
+
+  {  // transform pointclouds
+    std::unique_ptr<ScopedTimeTrack> inner_st_ptr;
+    if (time_keeper_)
+      inner_st_ptr = std::make_unique<ScopedTimeTrack>("transformPointcloud", *time_keeper_);
+
+    try {
+      utils::transformPointcloud(*laserscan_pc_ptr, *tf2_, map_frame_, trans_laserscan_pc);
+      utils::transformPointcloud(filtered_obstacle_pc, *tf2_, map_frame_, trans_obstacle_pc);
+      utils::transformPointcloud(filtered_raw_pc, *tf2_, map_frame_, trans_raw_pc);
+      gridmap_origin =
+        utils::getPose(laserscan_pc_ptr->header.stamp, *tf2_, gridmap_origin_frame_, map_frame_);
+      scan_origin =
+        utils::getPose(laserscan_pc_ptr->header.stamp, *tf2_, scan_origin_frame_, map_frame_);
+    } catch (tf2::TransformException & ex) {
+      RCLCPP_WARN_STREAM(get_logger(), ex.what());
+      return;
+    }
   }
 
-  // Create single frame occupancy grid map
-  OccupancyGridMap single_frame_occupancy_grid_map(
-    occupancy_grid_map_updater_ptr_->getSizeInCellsX(),
-    occupancy_grid_map_updater_ptr_->getSizeInCellsY(),
-    occupancy_grid_map_updater_ptr_->getResolution());
-  single_frame_occupancy_grid_map.updateOrigin(
-    gridmap_origin.position.x - single_frame_occupancy_grid_map.getSizeInMetersX() / 2,
-    gridmap_origin.position.y - single_frame_occupancy_grid_map.getSizeInMetersY() / 2);
-  single_frame_occupancy_grid_map.updateFreespaceCells(trans_raw_pc);
-  single_frame_occupancy_grid_map.raytrace2D(trans_laserscan_pc, scan_origin);
-  single_frame_occupancy_grid_map.updateOccupiedCells(trans_obstacle_pc);
+  {  // create occupancy grid map and publish it
+    std::unique_ptr<ScopedTimeTrack> inner_st_ptr;
+    if (time_keeper_)
+      inner_st_ptr = std::make_unique<ScopedTimeTrack>("create_occupancy_grid_map", *time_keeper_);
 
-  if (enable_single_frame_mode_) {
-    // publish
-    occupancy_grid_map_pub_->publish(OccupancyGridMapToMsgPtr(
-      map_frame_, laserscan_pc_ptr->header.stamp, gridmap_origin.position.z,
-      single_frame_occupancy_grid_map));
-  } else {
-    // Update with bayes filter
-    occupancy_grid_map_updater_ptr_->update(single_frame_occupancy_grid_map);
+    // Create single frame occupancy grid map
+    OccupancyGridMap single_frame_occupancy_grid_map(
+      occupancy_grid_map_updater_ptr_->getSizeInCellsX(),
+      occupancy_grid_map_updater_ptr_->getSizeInCellsY(),
+      occupancy_grid_map_updater_ptr_->getResolution());
+    single_frame_occupancy_grid_map.updateOrigin(
+      gridmap_origin.position.x - single_frame_occupancy_grid_map.getSizeInMetersX() / 2,
+      gridmap_origin.position.y - single_frame_occupancy_grid_map.getSizeInMetersY() / 2);
+    single_frame_occupancy_grid_map.updateFreespaceCells(trans_raw_pc);
+    single_frame_occupancy_grid_map.raytrace2D(trans_laserscan_pc, scan_origin);
+    single_frame_occupancy_grid_map.updateOccupiedCells(trans_obstacle_pc);
 
-    // publish
-    occupancy_grid_map_pub_->publish(OccupancyGridMapToMsgPtr(
-      map_frame_, laserscan_pc_ptr->header.stamp, gridmap_origin.position.z,
-      *occupancy_grid_map_updater_ptr_));
-  }
+    if (enable_single_frame_mode_) {
+      std::unique_ptr<ScopedTimeTrack> publish_st_ptr;
+      if (time_keeper_)
+        publish_st_ptr =
+          std::make_unique<ScopedTimeTrack>("publish_occupancy_grid_map", *time_keeper_);
+
+      // publish
+      occupancy_grid_map_pub_->publish(OccupancyGridMapToMsgPtr(
+        map_frame_, laserscan_pc_ptr->header.stamp, gridmap_origin.position.z,
+        single_frame_occupancy_grid_map));
+    } else {
+      std::unique_ptr<ScopedTimeTrack> publish_and_update_st_ptr;
+      if (time_keeper_)
+        publish_and_update_st_ptr =
+          std::make_unique<ScopedTimeTrack>("update_and_publish_occupancy_grid_map", *time_keeper_);
+
+      // Update with bayes filter
+      occupancy_grid_map_updater_ptr_->update(single_frame_occupancy_grid_map);
+
+      // publish
+      occupancy_grid_map_pub_->publish(OccupancyGridMapToMsgPtr(
+        map_frame_, laserscan_pc_ptr->header.stamp, gridmap_origin.position.z,
+        *occupancy_grid_map_updater_ptr_));
+    }
+  }  //  scope for time keeper ends
 }
 
 OccupancyGrid::UniquePtr LaserscanBasedOccupancyGridMapNode::OccupancyGridMapToMsgPtr(
   const std::string & frame_id, const Time & stamp, const float & robot_pose_z,
   const Costmap2D & occupancy_grid_map)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   auto msg_ptr = std::make_unique<OccupancyGrid>();
 
   msg_ptr->header.frame_id = frame_id;

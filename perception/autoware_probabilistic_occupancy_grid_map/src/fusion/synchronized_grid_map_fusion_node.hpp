@@ -22,6 +22,7 @@
 
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
+#include <autoware/universe_utils/system/time_keeper.hpp>
 #include <builtin_interfaces/msg/time.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -118,6 +119,11 @@ private:
   float fusion_map_length_y_;
   float fusion_map_resolution_;
   fusion_policy::FusionMethod fusion_method_;
+
+  // time keeper
+  rclcpp::Publisher<autoware::universe_utils::ProcessingTimeDetail>::SharedPtr
+    detailed_processing_time_publisher_;
+  std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_;
 };
 
 }  // namespace autoware::occupancy_grid_map

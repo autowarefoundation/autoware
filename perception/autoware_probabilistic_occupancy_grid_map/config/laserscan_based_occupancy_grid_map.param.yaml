@@ -16,3 +16,6 @@
     map_length: 150.0
     map_width: 150.0
     map_resolution: 0.5
+
+    # debug parameters
+    publish_processing_time_detail: false

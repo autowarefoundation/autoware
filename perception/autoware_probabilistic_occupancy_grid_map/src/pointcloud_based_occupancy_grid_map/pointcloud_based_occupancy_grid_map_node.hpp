@@ -21,6 +21,7 @@
 
 #include <autoware/universe_utils/ros/debug_publisher.hpp>
 #include <autoware/universe_utils/system/stop_watch.hpp>
+#include <autoware/universe_utils/system/time_keeper.hpp>
 #include <builtin_interfaces/msg/time.hpp>
 #include <laser_geometry/laser_geometry.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -91,6 +92,11 @@ private:
   double max_height_;
   bool enable_single_frame_mode_;
   bool filter_obstacle_pointcloud_by_raw_pointcloud_;
+
+  // time keeper
+  rclcpp::Publisher<autoware::universe_utils::ProcessingTimeDetail>::SharedPtr
+    detailed_processing_time_publisher_;
+  std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_;
 };
 
 }  // namespace autoware::occupancy_grid_map

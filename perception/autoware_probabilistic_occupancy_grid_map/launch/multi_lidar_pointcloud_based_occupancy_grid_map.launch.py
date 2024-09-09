@@ -219,7 +219,7 @@ def launch_setup(context, *args, **kwargs):
     gridmap_fusion_node = [
         ComposableNode(
             package="autoware_probabilistic_occupancy_grid_map",
-            plugin="synchronized_grid_map_fusion::GridMapFusionNode",
+            plugin="autoware::occupancy_grid_map::GridMapFusionNode",
             name="occupancy_grid_map_fusion_node",
             remappings=[
                 ("~/output/occupancy_grid_map", LaunchConfiguration("output")),
