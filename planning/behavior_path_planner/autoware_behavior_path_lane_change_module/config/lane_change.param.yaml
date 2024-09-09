@@ -28,8 +28,8 @@
 
       skip_process:
         longitudinal_distance_diff_threshold:
-          prepare: 0.5
-          lane_changing: 0.5
+          prepare: 1.0
+          lane_changing: 1.0
 
       # safety check
       safety_check:
@@ -42,7 +42,7 @@
           rear_vehicle_safety_time_margin: 1.0
           lateral_distance_max_threshold: 2.0
           longitudinal_distance_min_threshold: 3.0
-          longitudinal_velocity_delta_time: 0.8
+          longitudinal_velocity_delta_time: 0.0
         parked:
           expected_front_deceleration: -1.0
           expected_rear_deceleration: -2.0
@@ -58,7 +58,7 @@
           rear_vehicle_safety_time_margin: 0.8
           lateral_distance_max_threshold: 1.0
           longitudinal_distance_min_threshold: 2.5
-          longitudinal_velocity_delta_time: 0.6
+          longitudinal_velocity_delta_time: 0.0
         stuck:
           expected_front_deceleration: -1.0
           expected_rear_deceleration: -1.0
@@ -66,18 +66,18 @@
           rear_vehicle_safety_time_margin: 1.0
           lateral_distance_max_threshold: 2.0
           longitudinal_distance_min_threshold: 3.0
-          longitudinal_velocity_delta_time: 0.8
+          longitudinal_velocity_delta_time: 0.0
 
         # lane expansion for object filtering
         lane_expansion:
-          left_offset: 0.0 # [m]
-          right_offset: 0.0 # [m]
+          left_offset: 1.0 # [m]
+          right_offset: 1.0 # [m]
 
       # lateral acceleration map
       lateral_acceleration:
         velocity: [0.0, 4.0, 10.0]
-        min_values: [0.15, 0.15, 0.15]
-        max_values: [0.5, 0.5, 0.5]
+        min_values: [0.4,0.4,0.4]
+        max_values: [0.65,0.65,0.65]
 
       # target object
       target_object:
@@ -85,20 +85,20 @@
         truck: true
         bus: true
         trailer: true
-        unknown: true
+        unknown: false
         bicycle: true
         motorcycle: true
         pedestrian: true
 
       # lane change regulations
       regulation:
-        crosswalk: false
-        intersection: false
+        crosswalk: true
+        intersection: true
         traffic_light: true
 
       # ego vehicle stuck detection
       stuck_detection:
-        velocity: 0.1 # [m/s]
+        velocity: 0.5 # [m/s]
         stop_time: 3.0 # [s]
 
       # collision check
@@ -107,9 +107,9 @@
         intersection: true
         turns: true
       stopped_object_velocity_threshold: 1.0 # [m/s]
-      check_objects_on_current_lanes: true
-      check_objects_on_other_lanes: true
-      use_all_predicted_path: true
+      check_objects_on_current_lanes: false
+      check_objects_on_other_lanes: false
+      use_all_predicted_path: false
 
       # lane change cancel
       cancel:
@@ -117,9 +117,9 @@
         enable_on_lane_changing_phase: true
         delta_time: 1.0                     # [s]
         duration: 5.0                       # [s]
-        max_lateral_jerk: 1000.0            # [m/s3]
+        max_lateral_jerk: 100.0            # [m/s3]
         overhang_tolerance: 0.0             # [m]
-        unsafe_hysteresis_threshold: 10     # [/]
+        unsafe_hysteresis_threshold: 5     # [/]
         deceleration_sampling_num: 5 # [/]
 
       lane_change_finish_judge_buffer: 2.0      # [m]
@@ -127,4 +127,4 @@
       finish_judge_lateral_angle_deviation: 1.0 # [deg]
 
       # debug
-      publish_debug_marker: false
+      publish_debug_marker: true

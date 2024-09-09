@@ -14,14 +14,14 @@
           lateral_weight: 40.0
         prioritize_goals_before_objects: true
         parking_policy: "left_side" # "left_side" or "right_side"
-        forward_goal_search_length: 20.0
+        forward_goal_search_length: 40.0
         backward_goal_search_length: 20.0
         goal_search_interval: 2.0
         longitudinal_margin: 3.0
-        max_lateral_offset: 0.5
-        lateral_offset_interval: 0.25
+        max_lateral_offset: 1.0
+        lateral_offset_interval: 0.5
         ignore_distance_from_lane_start: 0.0
-        margin_from_boundary: 0.5
+        margin_from_boundary: 0.75
         high_curvature_threshold: 0.1
 
       # occupancy grid map
@@ -35,7 +35,7 @@
 
       # object recognition
       object_recognition:
-        use_object_recognition: false
+        use_object_recognition: true
         collision_check_soft_margins: [5.0, 4.5, 4.0, 3.5, 3.0, 2.5, 2.0, 1.5, 1.0]  # the maximum margin when ego and objects are oriented.
         collision_check_hard_margins: [0.6]  # this should be larger than `surround_check_distance` of surround_obstacle_checker.
         object_recognition_collision_check_max_extra_stopping_margin: 1.0
@@ -46,7 +46,7 @@
 
       # pull over
       pull_over:
-        minimum_request_length: 100.0
+        minimum_request_length: 0.0
         pull_over_velocity: 3.0
         pull_over_minimum_velocity: 1.38
         decide_path_distance: 10.0
@@ -91,13 +91,13 @@
           velocity: 1.0
           vehicle_shape_margin: 1.0
           time_limit: 3000.0
-          max_turning_ratio: 0.7
+          max_turning_ratio: 0.5
           turning_steps: 1
           # search configs
           search_configs:
-            theta_size: 144
+            theta_size: 120
             angle_goal_range: 6.0
-            curve_weight: 1.2
+            curve_weight: 0.5
             reverse_weight: 1.0
             lateral_goal_range: 0.5
             longitudinal_goal_range: 2.0
@@ -108,8 +108,8 @@
           astar:
             search_method: "forward"  # options: forward, backward
             only_behind_solutions: false
-            use_back: false
-            distance_heuristic_weight: 1.0
+            use_back: true
+            distance_heuristic_weight: 2.0
           # -- RRT* search Configurations --
           rrtstar:
             enable_update: true
@@ -124,7 +124,7 @@
       path_safety_check:
         # EgoPredictedPath
         ego_predicted_path:
-          min_velocity: 0.0
+          min_velocity: 1.0
           min_acceleration: 1.0
           time_horizon_for_front_object: 10.0
           time_horizon_for_rear_object: 10.0
@@ -135,7 +135,7 @@
           safety_check_time_horizon: 10.0
           safety_check_time_resolution: 1.0
           # detection range
-          object_check_forward_distance: 10.0
+          object_check_forward_distance: 100.0
           object_check_backward_distance: 100.0
           ignore_object_velocity_threshold: 1.0
           # ObjectTypesToCheck
@@ -184,7 +184,7 @@
           hysteresis_factor_expand_rate: 1.0
           collision_check_yaw_diff_threshold: 3.1416
           # temporary
-          backward_path_length: 100.0
+          backward_path_length: 30.0
           forward_path_length: 100.0
 
       # debug

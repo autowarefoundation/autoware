@@ -10,7 +10,7 @@
       enabled: true
       print_runtime: false
       max_expansion_distance: 0.0 # [m] maximum distance by which the drivable area can be expended (0.0 means no limit)
-      min_bound_interval: 0.1  # [m] minimum interval between two consecutive bound points (before expansion)
+      min_bound_interval: 1.0  # [m] minimum interval between two consecutive bound points (before expansion)
       smoothing:
         curvature_average_window: 3  # window size used for smoothing the curvatures using a moving window average
         max_bound_rate: 1.0  # [m/m] maximum rate of change of the bound lateral distance over its arc length
@@ -20,17 +20,18 @@
         extra_front_overhang: 0.5 # [m] extra length to add to the front overhang
         extra_width: 1.0 # [m] extra length to add to the width
       dynamic_objects:
-        avoid: true # if true, the drivable area is not expanded in the predicted path of dynamic objects
+        avoid: false # if true, the drivable area is not expanded in the predicted path of dynamic objects
         extra_footprint_offset:
           front: 0.5 # [m] extra length to add to the front of the dynamic object footprint
           rear: 0.5 # [m] extra length to add to the rear of the dynamic object footprint
           left: 0.5 # [m] extra length to add to the left of the dynamic object footprint
           right: 0.5 # [m] extra length to add to the rear of the dynamic object footprint
       path_preprocessing:
-        max_arc_length: 50.0 # [m] maximum arc length along the path where the ego footprint is projected (0.0 means no limit)
+        max_arc_length: 100.0 # [m] maximum arc length along the path where the ego footprint is projected (0.0 means no limit)
         resample_interval: 2.0 # [m] fixed interval between resampled path points (0.0 means path points are directly used)
         reuse_max_deviation: 0.5 # [m] if the path changes by more than this value, the curvatures are recalculated. Otherwise they are reused.
       avoid_linestring:
         types: # linestring types in the lanelet maps that will not be crossed when expanding the drivable area
           - road_border
+          - curbstone
         distance: 0.0 # [m] distance to keep between the drivable area and the linestrings to avoid

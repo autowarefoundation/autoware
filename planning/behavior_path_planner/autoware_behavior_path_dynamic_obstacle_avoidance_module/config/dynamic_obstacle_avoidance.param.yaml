@@ -59,7 +59,7 @@
         lat_offset_from_obstacle: 1.0 # [m]
         margin_distance_around_pedestrian: 2.0 # [m]
         predicted_path:
-          end_time_to_consider: 3.0 # [s]
+          end_time_to_consider: 2.0 # [s]
           threshold_confidence: 0.0 # [] not probability
         max_lat_offset_to_avoid: 0.5 # [m]
         max_time_for_object_lat_shift: 0.0 # [s]

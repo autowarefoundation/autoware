@@ -23,7 +23,3 @@
     enable_cog_on_centerline: false
     input_path_interval: 2.0
     output_path_interval: 2.0
-
-    closest_lanelet:
-      distance_threshold: 5.0 # [m]
-      yaw_threshold: 0.79 # [rad]

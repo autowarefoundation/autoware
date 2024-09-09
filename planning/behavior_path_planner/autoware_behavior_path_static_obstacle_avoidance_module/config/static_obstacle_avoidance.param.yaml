@@ -23,44 +23,44 @@
           th_moving_time: 2.0                           # [s]
           longitudinal_margin: 0.0                      # [m]
           lateral_margin:
-            soft_margin: 0.3                            # [m]
+            soft_margin: 0.7                            # [m]
             hard_margin: 0.2                            # [m]
             hard_margin_for_parked_vehicle: 0.7         # [m]
           max_expand_ratio: 0.0                         # [-] FOR DEVELOPER
-          envelope_buffer_margin: 0.5                   # [m] FOR DEVELOPER
+          envelope_buffer_margin: 0.1                   # [m] FOR DEVELOPER
           th_error_eclipse_long_radius : 0.6            # [m]
         truck:
           th_moving_speed: 1.0
           th_moving_time: 2.0
           longitudinal_margin: 0.0
           lateral_margin:
-            soft_margin: 0.3
+            soft_margin: 0.7
             hard_margin: 0.2
             hard_margin_for_parked_vehicle: 0.7
           max_expand_ratio: 0.0
-          envelope_buffer_margin: 0.5
+          envelope_buffer_margin: 0.1
           th_error_eclipse_long_radius : 0.6
         bus:
           th_moving_speed: 1.0
           th_moving_time: 2.0
           longitudinal_margin: 0.0
           lateral_margin:
-            soft_margin: 0.3
+            soft_margin: 0.7
             hard_margin: 0.2
             hard_margin_for_parked_vehicle: 0.7
           max_expand_ratio: 0.0
-          envelope_buffer_margin: 0.5
+          envelope_buffer_margin: 0.1
           th_error_eclipse_long_radius : 0.6
         trailer:
           th_moving_speed: 1.0
           th_moving_time: 2.0
           longitudinal_margin: 0.0
           lateral_margin:
-            soft_margin: 0.3
+            soft_margin: 0.7
             hard_margin: 0.2
             hard_margin_for_parked_vehicle: 0.7
           max_expand_ratio: 0.0
-          envelope_buffer_margin: 0.5
+          envelope_buffer_margin: 0.1
           th_error_eclipse_long_radius : 0.6
         unknown:
           th_moving_speed: 0.28
@@ -150,16 +150,16 @@
           # "auto"   : generate candidate path. if RTC is running as AUTO mode, the ego avoids it automatically.
           # "manual" : generate candidate path and wait operator approval even if RTC is running as AUTO mode.
           # "ignore" : never avoid it.
-          policy: "auto"                                # [-]
+          policy: "manual"                                # [-]
           condition:
             th_stopped_time: 3.0                        # [s]
             th_moving_distance: 1.0                     # [m]
           ignore_area:
             traffic_light:
-              front_distance: 100.0                     # [m]
+              front_distance: 20.0                     # [m]
             crosswalk:
-              front_distance: 30.0                      # [m]
-              behind_distance: 30.0                     # [m]
+              front_distance: 20.0                      # [m]
+              behind_distance: 0.0                     # [m]
           wait_and_see:
             target_behaviors: ["MERGING", "DEVIATING"]  # [-]
             th_closest_distance: 10.0                   # [m]
@@ -232,7 +232,7 @@
         # avoidance distance parameters
         longitudinal:
           min_prepare_time: 1.0                         # [s]
-          max_prepare_time: 2.0                         # [s]
+          max_prepare_time: 3.0                         # [s]
           min_prepare_distance: 1.0                     # [m]
           min_slow_down_speed: 1.38                     # [m/s]
           buf_slow_down_speed: 0.56                     # [m/s] FOR DEVELOPER
@@ -291,7 +291,7 @@
       constraints:
         # lateral constraints
         lateral:
-          velocity: [1.0, 1.38, 11.1]                   # [m/s]
+          velocity: [1.39, 4.17, 11.1]                   # [m/s]
           max_accel_values: [0.5, 0.5, 0.5]             # [m/ss]
           min_jerk_values: [0.2, 0.2, 0.2]              # [m/sss]
           max_jerk_values: [1.0, 1.0, 1.0]              # [m/sss]
@@ -327,8 +327,8 @@
 
       # for debug
       debug:
-        enable_other_objects_marker: false
-        enable_other_objects_info: false
+        enable_other_objects_marker: true
+        enable_other_objects_info: true
         enable_detection_area_marker: false
         enable_drivable_bound_marker: false
         enable_safety_check_marker: false

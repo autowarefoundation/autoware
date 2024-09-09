@@ -47,7 +47,7 @@
 
     start_planner:
       enable_rtc: false
-      enable_simultaneous_execution_as_approved_module: false
+      enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: false
 
     side_shift:
@@ -57,7 +57,7 @@
 
     goal_planner:
       enable_rtc: false
-      enable_simultaneous_execution_as_approved_module: false
+      enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: false
 
     static_obstacle_avoidance:

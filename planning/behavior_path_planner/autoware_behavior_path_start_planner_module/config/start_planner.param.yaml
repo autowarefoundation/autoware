@@ -32,7 +32,7 @@
       minimum_lateral_acc: 0.15
       maximum_lateral_acc: 0.5
       maximum_curvature: 0.07
-      end_pose_curvature_threshold: 0.01
+      end_pose_curvature_threshold: 0.1
       # geometric pull out
       enable_geometric_pull_out: true
       geometric_collision_check_distance_from_end: 0.0
@@ -66,9 +66,9 @@
         turning_steps: 1
         # search configs
         search_configs:
-          theta_size: 144
+          theta_size: 120
           angle_goal_range: 6.0
-          curve_weight: 1.2
+          curve_weight: 0.5
           reverse_weight: 1.0
           lateral_goal_range: 0.5
           longitudinal_goal_range: 2.0
@@ -79,8 +79,8 @@
         astar:
           search_method: "forward"  # options: forward, backward
           only_behind_solutions: false
-          use_back: false
-          distance_heuristic_weight: 1.0
+          use_back: true
+          distance_heuristic_weight: 2.0
         # -- RRT* search Configurations --
         rrtstar:
           enable_update: true
@@ -103,7 +103,7 @@
           delay_until_departure: 1.0
         # For target object filtering
         target_filtering:
-          safety_check_time_horizon: 5.0
+          safety_check_time_horizon: 10.0
           safety_check_time_resolution: 1.0
           # detection range
           object_check_forward_distance: 10.0
