@@ -59,6 +59,12 @@ GoalPlannerParameters GoalPlannerModuleManager::initGoalPlannerParameters(
       node->declare_parameter<double>(ns + "ignore_distance_from_lane_start");
     p.margin_from_boundary = node->declare_parameter<double>(ns + "margin_from_boundary");
     p.high_curvature_threshold = node->declare_parameter<double>(ns + "high_curvature_threshold");
+    p.bus_stop_area.use_bus_stop_area =
+      node->declare_parameter<bool>(ns + "bus_stop_area.use_bus_stop_area");
+    p.bus_stop_area.goal_search_interval =
+      node->declare_parameter<double>(ns + "bus_stop_area.goal_search_interval");
+    p.bus_stop_area.lateral_offset_interval =
+      node->declare_parameter<double>(ns + "bus_stop_area.lateral_offset_interval");
 
     const std::string parking_policy_name =
       node->declare_parameter<std::string>(ns + "parking_policy");

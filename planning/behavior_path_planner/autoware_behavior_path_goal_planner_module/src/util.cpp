@@ -16,6 +16,7 @@
 
 #include "autoware/behavior_path_planner_common/utils/path_safety_checker/objects_filtering.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
+#include "autoware_lanelet2_extension/regulatory_elements/bus_stop_area.hpp"
 
 #include <autoware/universe_utils/ros/marker_helper.hpp>
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
@@ -288,6 +289,40 @@ PredictedObjects filterObjectsByLateralDistance(
   }
 
   return filtered_objects;
+}
+
+bool isIntersectingAreas(
+  const LinearRing2d & footprint, const std::vector<lanelet::BasicPolygon2d> & areas)
+{
+  for (const auto & area : areas) {
+    if (boost::geometry::intersects(area, footprint)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool isWithinAreas(
+  const LinearRing2d & footprint, const std::vector<lanelet::BasicPolygon2d> & areas)
+{
+  for (const auto & area : areas) {
+    if (boost::geometry::within(footprint, area)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::vector<lanelet::BasicPolygon2d> getBusStopAreaPolygons(const lanelet::ConstLanelets & lanes)
+{
+  std::vector<lanelet::BasicPolygon2d> area_polygons{};
+  for (const auto & bus_stop_area_reg_elem : lanelet::utils::query::busStopAreas(lanes)) {
+    for (const auto & area : bus_stop_area_reg_elem->busStopAreas()) {
+      const auto & area_poly = lanelet::utils::to2D(area).basicPolygon();
+      area_polygons.push_back(area_poly);
+    }
+  }
+  return area_polygons;
 }
 
 MarkerArray createPullOverAreaMarkerArray(

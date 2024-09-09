@@ -19,7 +19,6 @@
 #include "autoware/behavior_path_planner_common/utils/path_utils.hpp"
 #include "autoware/behavior_path_planner_common/utils/utils.hpp"
 #include "autoware/universe_utils/geometry/boost_polygon_utils.hpp"
-#include "autoware_lanelet2_extension/regulatory_elements/bus_stop_area.hpp"
 #include "autoware_lanelet2_extension/regulatory_elements/no_parking_area.hpp"
 #include "autoware_lanelet2_extension/regulatory_elements/no_stopping_area.hpp"
 #include "autoware_lanelet2_extension/utility/query.hpp"
@@ -107,7 +106,10 @@ GoalCandidates GoalSearcher::search(const std::shared_ptr<const PlannerData> & p
   const double forward_length = parameters_.forward_goal_search_length;
   const double backward_length = parameters_.backward_goal_search_length;
   const double margin_from_boundary = parameters_.margin_from_boundary;
-  const double lateral_offset_interval = parameters_.lateral_offset_interval;
+  const bool use_bus_stop_area = parameters_.bus_stop_area.use_bus_stop_area;
+  const double lateral_offset_interval = use_bus_stop_area
+                                           ? parameters_.bus_stop_area.lateral_offset_interval
+                                           : parameters_.lateral_offset_interval;
   const double max_lateral_offset = parameters_.max_lateral_offset;
   const double ignore_distance_from_lane_start = parameters_.ignore_distance_from_lane_start;
   const double vehicle_width = planner_data->parameters.vehicle_width;
@@ -126,9 +128,15 @@ GoalCandidates GoalSearcher::search(const std::shared_ptr<const PlannerData> & p
     lanelet::utils::getArcCoordinates(pull_over_lanes, reference_goal_pose_);
   const double s_start = std::max(0.0, goal_arc_coords.length - backward_length);
   const double s_end = goal_arc_coords.length + forward_length;
+  const double longitudinal_interval = use_bus_stop_area
+                                         ? parameters_.bus_stop_area.goal_search_interval
+                                         : parameters_.goal_search_interval;
   auto center_line_path = utils::resamplePathWithSpline(
-    route_handler->getCenterLinePath(pull_over_lanes, s_start, s_end),
-    parameters_.goal_search_interval);
+    route_handler->getCenterLinePath(pull_over_lanes, s_start, s_end), longitudinal_interval);
+
+  const auto no_parking_area_polygons = getNoParkingAreaPolygons(pull_over_lanes);
+  const auto no_stopping_area_polygons = getNoStoppingAreaPolygons(pull_over_lanes);
+  const auto bus_stop_area_polygons = goal_planner_utils::getBusStopAreaPolygons(pull_over_lanes);
 
   std::vector<Pose> original_search_poses{};  // for search area visualizing
   size_t goal_id = 0;
@@ -152,7 +160,8 @@ GoalCandidates GoalSearcher::search(const std::shared_ptr<const PlannerData> & p
 
     const double sign = left_side_parking_ ? -1.0 : 1.0;
     const double offset_from_center_line =
-      -distance_from_bound.value() + sign * margin_from_boundary;
+      use_bus_stop_area ? -distance_from_bound.value()
+                        : -distance_from_bound.value() + sign * margin_from_boundary;
     // original means non lateral offset poses
     const Pose original_search_pose = calcOffsetPose(center_pose, 0, offset_from_center_line, 0);
     const double longitudinal_distance_from_original_goal =
@@ -167,12 +176,20 @@ GoalCandidates GoalSearcher::search(const std::shared_ptr<const PlannerData> & p
       const auto transformed_vehicle_footprint =
         transformVector(vehicle_footprint_, autoware::universe_utils::pose2transform(search_pose));
 
-      if (isInAreas(transformed_vehicle_footprint, getNoParkingAreaPolygons(pull_over_lanes))) {
+      if (
+        parameters_.bus_stop_area.use_bus_stop_area &&
+        !goal_planner_utils::isWithinAreas(transformed_vehicle_footprint, bus_stop_area_polygons)) {
+        continue;
+      }
+
+      if (goal_planner_utils::isIntersectingAreas(
+            transformed_vehicle_footprint, no_parking_area_polygons)) {
         // break here to exclude goals located laterally in no_parking_areas
         break;
       }
 
-      if (isInAreas(transformed_vehicle_footprint, getNoStoppingAreaPolygons(pull_over_lanes))) {
+      if (goal_planner_utils::isIntersectingAreas(
+            transformed_vehicle_footprint, no_stopping_area_polygons)) {
         // break here to exclude goals located laterally in no_stopping_areas
         break;
       }
@@ -490,28 +507,6 @@ BasicPolygons2d GoalSearcher::getNoStoppingAreaPolygons(const lanelet::ConstLane
     }
   }
   return area_polygons;
-}
-
-BasicPolygons2d GoalSearcher::getBusStopAreaPolygons(const lanelet::ConstLanelets & lanes) const
-{
-  BasicPolygons2d area_polygons{};
-  for (const auto & bus_stop_area_reg_elem : lanelet::utils::query::busStopAreas(lanes)) {
-    for (const auto & area : bus_stop_area_reg_elem->busStopAreas()) {
-      const auto & area_poly = lanelet::utils::to2D(area).basicPolygon();
-      area_polygons.push_back(area_poly);
-    }
-  }
-  return area_polygons;
-}
-
-bool GoalSearcher::isInAreas(const LinearRing2d & footprint, const BasicPolygons2d & areas) const
-{
-  for (const auto & area : areas) {
-    if (boost::geometry::intersects(area, footprint)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 GoalCandidate GoalSearcher::getClosetGoalCandidateAlongLanes(
