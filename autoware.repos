@@ -28,21 +28,17 @@ repositories:
   core/autoware_lanelet2_extension:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
-    version: 0.5.0
+    version: 0.6.1
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
     version: main
-  core/external/autoware_auto_msgs: # TODO(mfc): Remove when autoware_msgs is merged
-    type: git
-    url: https://github.com/tier4/autoware_auto_msgs.git
-    version: tier4/main
   # universe
   universe/autoware.universe:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
     version: main
-  universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
+  universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Migrate to AD API
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
     version: tier4/universe
@@ -50,10 +46,11 @@ repositories:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
     version: tier4/universe
+  # Fix the version not to merge https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs/pull/9
   universe/external/morai_msgs:
     type: git
     url: https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs.git
-    version: main
+    version: e2e75fc1603a9798773e467a679edf68b448e705
   universe/external/muSSP:
     type: git
     url: https://github.com/tier4/muSSP.git
@@ -135,6 +132,10 @@ repositories:
   vehicle/sample_vehicle_launch:
     type: git
     url: https://github.com/autowarefoundation/sample_vehicle_launch.git
+    version: main
+  vehicle/awsim_labs_vehicle_launch:
+    type: git
+    url: https://github.com/autowarefoundation/awsim_labs_vehicle_launch.git
     version: main
   vehicle/external/pacmod_interface:
     type: git
