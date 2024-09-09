@@ -2,19 +2,19 @@
   ros__parameters:
     out_of_lane:  # module to stop or slowdown before overlapping another lane with other objects
       mode: ttc # mode used to consider a conflict with an object. "threshold", or "ttc"
-      skip_if_already_overlapping: true # do not run this module when ego already overlaps another lane
+      skip_if_already_overlapping: false # do not run this module when ego already overlaps another lane
       max_arc_length: 100.0  # [m] maximum trajectory arc length that is checked for out_of_lane collisions
 
       threshold:
         time_threshold: 5.0  # [s] consider objects that will reach an overlap within this time
       ttc:
-        threshold: 3.0 # [s] consider objects with an estimated time to collision bellow this value while on the overlap
+        threshold: 1.0 # [s] consider objects with an estimated time to collision bellow this value while on the overlap
 
       objects:
         minimum_velocity: 0.5  # [m/s] objects lower than this velocity will be ignored
         predicted_path_min_confidence : 0.1  # when using predicted paths, ignore the ones whose confidence is lower than this value.
         cut_predicted_paths_beyond_red_lights: true # if true, predicted paths are cut beyond the stop line of red traffic lights
-        ignore_behind_ego: true # if true, objects behind the ego vehicle are ignored
+        ignore_behind_ego: false # if true, objects behind the ego vehicle are ignored
 
       action:  # action to insert in the trajectory if an object causes a conflict at an overlap
         precision: 0.1  # [m] precision when inserting a stop pose in the trajectory

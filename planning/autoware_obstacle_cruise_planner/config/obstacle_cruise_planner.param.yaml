@@ -12,7 +12,7 @@
       idling_time: 2.0 # idling time to detect front vehicle starting deceleration [s]
       min_ego_accel_for_rss: -1.0 # ego's acceleration to calculate RSS distance [m/ss]
       min_object_accel_for_rss: -1.0 # front obstacle's acceleration to calculate RSS distance [m/ss]
-      safe_distance_margin : 6.0 # This is also used as a stop margin [m]
+      safe_distance_margin : 5.0 # This is also used as a stop margin [m]
       terminal_safe_distance_margin : 3.0 # Stop margin at the goal. This value cannot exceed safe distance margin. [m]
       hold_stop_velocity_threshold: 0.01 # The maximum ego velocity to hold stopping [m/s]
       hold_stop_distance_threshold: 0.3 # The ego keeps stopping if the distance to stop changes within the threshold [m]
@@ -23,10 +23,10 @@
       nearest_yaw_deviation_threshold: 1.57 # [rad] for finding nearest index
       min_behavior_stop_margin: 3.0 # [m]
       stop_on_curve:
-        enable_approaching: true # false
-        additional_safe_distance_margin: 0.0 # [m]
+        enable_approaching: false # false
+        additional_safe_distance_margin: 3.0 # [m]
         min_safe_distance_margin: 3.0 # [m]
-      suppress_sudden_obstacle_stop: true
+      suppress_sudden_obstacle_stop: false
 
       stop_obstacle_type:
         unknown: true
@@ -109,7 +109,7 @@
           ego_obstacle_overlap_time_threshold : 2.0 #  time threshold to decide cut-in obstacle for cruise or stop [s]
           max_prediction_time_for_collision_check : 20.0 # prediction time to check collision between obstacle and ego
         yield:
-          enable_yield: false
+          enable_yield: true
           lat_distance_threshold: 5.0 # lateral margin between obstacle in neighbor lanes and trajectory band with ego's width for yielding
           max_lat_dist_between_obstacles: 2.5 # lateral margin between moving obstacle in neighbor lanes and stopped obstacle in front of it
           max_obstacles_collision_time: 10.0 # how far the blocking obstacle
@@ -125,7 +125,7 @@
       # Both the lateral error and the yaw error are assumed to decrease to zero by the time duration "time_to_convergence"
       # The both errors decrease with constant rates against the time.
       consider_current_pose:
-        enable_to_consider_current_pose: false
+        enable_to_consider_current_pose: true
         time_to_convergence: 1.5 #[s]
 
     cruise:
@@ -196,29 +196,17 @@
       # parameters to calculate slow down velocity by linear interpolation
       labels:
         - "default"
-        - "pedestrian"
       default:
         moving:
-          min_lat_margin: 0.8
-          max_lat_margin: 1.3
-          min_ego_velocity: 0.5
-          max_ego_velocity: 1.5
+          min_lat_margin: 0.2
+          max_lat_margin: 1.0
+          min_ego_velocity: 2.0
+          max_ego_velocity: 8.0
         static:
           min_lat_margin: 0.2
           max_lat_margin: 1.0
           min_ego_velocity: 4.0
           max_ego_velocity: 8.0
-      pedestrian:
-        moving:
-          min_lat_margin: 0.8
-          max_lat_margin: 1.3
-          min_ego_velocity: 0.5
-          max_ego_velocity: 0.8
-        static:
-          min_lat_margin: 0.8
-          max_lat_margin: 1.3
-          min_ego_velocity: 1.0
-          max_ego_velocity: 2.0
 
       moving_object_speed_threshold: 0.5 # [m/s] how fast the object needs to move to be considered as "moving"
       moving_object_hysteresis_range: 0.1 # [m/s] hysteresis range used to prevent chattering when obstacle moves close to moving_object_speed_threshold

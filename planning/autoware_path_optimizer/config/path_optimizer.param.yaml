@@ -3,12 +3,12 @@
     option:
       enable_skip_optimization: false                              # skip elastic band and model predictive trajectory
       enable_reset_prev_optimization: false                        # If true, optimization has no fix constraint to the previous result.
-      enable_outside_drivable_area_stop: true                      # stop if the ego's trajectory footprint is outside the drivable area
+      enable_outside_drivable_area_stop: false                      # stop if the ego's trajectory footprint is outside the drivable area
       use_footprint_polygon_for_outside_drivable_area_check: false # If false, only the footprint's corner points are considered.
 
       debug:
         # flag to publish
-        enable_pub_debug_marker: true           # publish debug marker
+        enable_pub_debug_marker: false           # publish debug marker
         enable_pub_extra_debug_marker: false    # publish extra debug marker
 
         # flag to show
@@ -31,7 +31,7 @@
       max_ego_moving_dist: 5.0                 # threshold of ego's moving distance for replan [m]
       # make max_goal_moving_dist long to keep start point fixed for pull over
       max_goal_moving_dist: 15.0               # threshold of goal's moving distance for replan [m]
-      max_delta_time_sec: 1.0                  # threshold of delta time for replan [second]
+      max_delta_time_sec: 0.0                  # threshold of delta time for replan [second]
 
     # mpt param
     mpt:
@@ -40,7 +40,7 @@
         steer_limit_constraint: false
         visualize_sampling_num: 1
         enable_manual_warm_start: false
-        enable_warm_start: true
+        enable_warm_start: false
         enable_optimization_validation: false
 
       common:
@@ -62,7 +62,7 @@
       # weight parameter for optimization
       weight:
         # collision free
-        soft_collision_free_weight: 1000.0        # soft weight for lateral error around the middle point
+        soft_collision_free_weight: 1.0        # soft weight for lateral error around the middle point
 
         # tracking error
         lat_error_weight: 1.0       # weight for lateral error
