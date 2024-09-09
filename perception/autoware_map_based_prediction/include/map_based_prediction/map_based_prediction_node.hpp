@@ -127,6 +127,7 @@ struct PredictedRefPath
 {
   float probability;
   double speed_limit;
+  double width;
   PosePath path;
   Maneuver maneuver;
 };
@@ -291,6 +292,8 @@ private:
     const std::string & object_id);
   std::string tryMatchNewObjectToDisappeared(
     const std::string & object_id, std::unordered_map<std::string, TrackedObject> & current_users);
+  std::optional<size_t> searchProperStartingRefPathIndex(
+    const TrackedObject & object, const PosePath & pose_path) const;
   std::vector<PredictedRefPath> getPredictedReferencePath(
     const TrackedObject & object, const LaneletsData & current_lanelets_data,
     const double object_detected_time, const double time_horizon);
@@ -315,9 +318,11 @@ private:
     const Maneuver & maneuver, std::vector<PredictedRefPath> & reference_paths,
     const double speed_limit = 0.0);
 
-  mutable universe_utils::LRUCache<lanelet::routing::LaneletPaths, std::vector<PosePath>>
+  mutable universe_utils::LRUCache<
+    lanelet::routing::LaneletPaths, std::vector<std::pair<PosePath, double>>>
     lru_cache_of_convert_path_type_{1000};
-  std::vector<PosePath> convertPathType(const lanelet::routing::LaneletPaths & paths) const;
+  std::vector<std::pair<PosePath, double>> convertPathType(
+    const lanelet::routing::LaneletPaths & paths) const;
 
   void updateFuturePossibleLanelets(
     const TrackedObject & object, const lanelet::routing::LaneletPaths & paths);
