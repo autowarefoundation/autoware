@@ -23,7 +23,11 @@
 #include <autoware_perception_msgs/msg/tracked_objects.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
+#include <tf2/LinearMath/Quaternion.h>
 
 #include <memory>
 #include <utility>
@@ -95,8 +99,9 @@ public:
     const TrackedObject & object, const double duration) const;
 
   PredictedPath generatePathForOnLaneVehicle(
-    const TrackedObject & object, const PosePath & ref_paths, const double duration,
-    const double lateral_duration, const double speed_limit = 0.0) const;
+    const TrackedObject & object, const PosePath & ref_path, const double duration,
+    const double lateral_duration, const double path_width = 0.0,
+    const double speed_limit = 0.0) const;
 
   PredictedPath generatePathForCrosswalkUser(
     const TrackedObject & object, const CrosswalkEdgePoints & reachable_crosswalk,
@@ -129,7 +134,8 @@ private:
 
   PredictedPath generatePolynomialPath(
     const TrackedObject & object, const PosePath & ref_path, const double duration,
-    const double lateral_duration, const double speed_limit = 0.0) const;
+    const double lateral_duration, const double path_width, const double backlash_width,
+    const double speed_limit = 0.0) const;
 
   FrenetPath generateFrenetPath(
     const FrenetPoint & current_point, const FrenetPoint & target_point, const double max_length,
@@ -139,6 +145,13 @@ private:
   Eigen::Vector2d calcLonCoefficients(
     const FrenetPoint & current_point, const FrenetPoint & target_point, const double T) const;
 
+  std::vector<double> interpolationLerp(
+    const std::vector<double> & base_keys, const std::vector<double> & base_values,
+    const std::vector<double> & query_keys) const;
+  std::vector<tf2::Quaternion> interpolationLerp(
+    const std::vector<double> & base_keys, const std::vector<tf2::Quaternion> & base_values,
+    const std::vector<double> & query_keys) const;
+
   PosePath interpolateReferencePath(
     const PosePath & base_path, const FrenetPath & frenet_predicted_path) const;
 
@@ -147,7 +160,7 @@ private:
     const PosePath & ref_path) const;
 
   FrenetPoint getFrenetPoint(
-    const TrackedObject & object, const PosePath & ref_path, const double duration,
+    const TrackedObject & object, const geometry_msgs::msg::Pose & ref_pose, const double duration,
     const double speed_limit = 0.0) const;
 };
 }  // namespace autoware::map_based_prediction

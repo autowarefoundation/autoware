@@ -175,17 +175,37 @@ PredictedPath PathGenerator::generatePathForOffLaneVehicle(
 }
 
 PredictedPath PathGenerator::generatePathForOnLaneVehicle(
-  const TrackedObject & object, const PosePath & ref_paths, const double duration,
-  const double lateral_duration, const double speed_limit) const
+  const TrackedObject & object, const PosePath & ref_path, const double duration,
+  const double lateral_duration, const double path_width, const double speed_limit) const
 {
   std::unique_ptr<ScopedTimeTrack> st_ptr;
   if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
 
-  if (ref_paths.size() < 2) {
+  if (ref_path.size() < 2) {
     return generateStraightPath(object, duration);
   }
 
-  return generatePolynomialPath(object, ref_paths, duration, lateral_duration, speed_limit);
+  // if the object is moving backward, we generate a straight path
+  if (object.kinematics.twist_with_covariance.twist.linear.x < 0.0) {
+    return generateStraightPath(object, duration);
+  }
+
+  // get object width
+  double object_width = 5.0;  // a large number
+  if (object.shape.type == autoware_perception_msgs::msg::Shape::BOUNDING_BOX) {
+    object_width = object.shape.dimensions.y;
+  } else if (object.shape.type == autoware_perception_msgs::msg::Shape::CYLINDER) {
+    object_width = object.shape.dimensions.x;
+  }
+  // Calculate the backlash width, which represents the maximum distance the object can be biased
+  // from the reference path
+  constexpr double margin =
+    0.5;  // Set a safety margin of 0.5m for the object to stay away from the edge of the lane
+  double backlash_width = (path_width - object_width) / 2.0 - margin;
+  backlash_width = std::max(backlash_width, 0.0);  // minimum is 0.0
+
+  return generatePolynomialPath(
+    object, ref_path, duration, lateral_duration, path_width, backlash_width, speed_limit);
 }
 
 PredictedPath PathGenerator::generateStraightPath(
@@ -210,37 +230,68 @@ PredictedPath PathGenerator::generateStraightPath(
 
 PredictedPath PathGenerator::generatePolynomialPath(
   const TrackedObject & object, const PosePath & ref_path, const double duration,
-  const double lateral_duration, const double speed_limit) const
+  const double lateral_duration, const double path_width, const double backlash_width,
+  const double speed_limit) const
 {
   std::unique_ptr<ScopedTimeTrack> st_ptr;
   if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
 
   // Get current Frenet Point
   const double ref_path_len = autoware::motion_utils::calcArcLength(ref_path);
-  const auto current_point = getFrenetPoint(object, ref_path, duration, speed_limit);
+  const auto current_point = getFrenetPoint(object, ref_path.at(0), duration, speed_limit);
 
-  // Step1. Set Target Frenet Point
+  // Step 1. Set Target Frenet Point
   // Note that we do not set position s,
   // since we don't know the target longitudinal position
   FrenetPoint terminal_point;
-  terminal_point.s_vel = current_point.s_vel;
+  terminal_point.s_vel = std::hypot(current_point.s_vel, current_point.d_vel);
   terminal_point.s_acc = 0.0;
-  terminal_point.d = 0.0;
   terminal_point.d_vel = 0.0;
   terminal_point.d_acc = 0.0;
 
-  // Step2. Generate Predicted Path on a Frenet coordinate
+  // calculate terminal d position, based on backlash width
+  {
+    if (backlash_width < 0.01 /*m*/) {
+      // If the backlash width is less than 0.01m, do not consider the backlash width and reduce
+      // calculation cost
+      terminal_point.d = 0.0;
+    } else {
+      const double return_width = path_width / 2.0;  // [m]
+      const double current_momentum_d =
+        current_point.d + 0.5 * current_point.d_vel * lateral_duration;
+      const double momentum_d_abs = std::abs(current_momentum_d);
+
+      if (momentum_d_abs < backlash_width) {
+        // If the object momentum is within the backlash width, we set the target d position to the
+        // current momentum
+        terminal_point.d = current_momentum_d;
+      } else if (
+        momentum_d_abs >= backlash_width && momentum_d_abs < backlash_width + return_width) {
+        // If the object momentum is within the return zone, we set the target d position close to
+        // the zero gradually
+        terminal_point.d =
+          (backlash_width + return_width - momentum_d_abs) * backlash_width / return_width;
+        terminal_point.d *= (current_momentum_d > 0) ? 1 : -1;
+      } else {
+        // If the object momentum is outside the backlash width + return zone, we set the target d
+        // position to 0
+        terminal_point.d = 0.0;
+      }
+    }
+  }
+
+  // Step 2. Generate Predicted Path on a Frenet coordinate
   const auto frenet_predicted_path =
     generateFrenetPath(current_point, terminal_point, ref_path_len, duration, lateral_duration);
 
-  // Step3. Interpolate Reference Path for converting predicted path coordinate
+  // Step 3. Interpolate Reference Path for converting predicted path coordinate
   const auto interpolated_ref_path = interpolateReferencePath(ref_path, frenet_predicted_path);
 
   if (frenet_predicted_path.size() < 2 || interpolated_ref_path.size() < 2) {
     return generateStraightPath(object, duration);
   }
 
-  // Step4. Convert predicted trajectory from Frenet to Cartesian coordinate
+  // Step 4. Convert predicted trajectory from Frenet to Cartesian coordinate
   return convertToPredictedPath(object, frenet_predicted_path, interpolated_ref_path);
 }
 
@@ -258,6 +309,7 @@ FrenetPath PathGenerator::generateFrenetPath(
     calcLatCoefficients(current_point, target_point, lateral_duration);
   const Eigen::Vector2d lon_coeff = calcLonCoefficients(current_point, target_point, duration);
 
+  // Generate the trajectory
   path.reserve(static_cast<size_t>(duration / sampling_time_interval_));
   for (double t = 0.0; t <= duration; t += sampling_time_interval_) {
     const auto t2 = t * t;
@@ -268,22 +320,19 @@ FrenetPath PathGenerator::generateFrenetPath(
       0.0;  // Currently we assume the object is traveling at a constant speed
     const double d_next_ = current_point.d + current_point.d_vel * t + current_acc * 2.0 * t2 +
                            lat_coeff(0) * t3 + lat_coeff(1) * t4 + lat_coeff(2) * t5;
-    // t > lateral_duration: 0.0, else d_next_
-    const double d_next = t > lateral_duration ? 0.0 : d_next_;
+    // t > lateral_duration: target_point.d, else d_next_
+    const double d_next = t > lateral_duration ? target_point.d : d_next_;
     const double s_next = current_point.s + current_point.s_vel * t + 2.0 * current_acc * t2 +
                           lon_coeff(0) * t3 + lon_coeff(1) * t4;
+
     if (s_next > max_length) {
       break;
     }
 
-    // We assume the object is traveling at a constant speed along s direction
+    // Fill the FrenetPoint, velocity and acceleration are not used in the path generator
     FrenetPoint point;
-    point.s = std::max(s_next, 0.0);
-    point.s_vel = current_point.s_vel;
-    point.s_acc = current_point.s_acc;
+    point.s = s_next;
     point.d = d_next;
-    point.d_vel = current_point.d_vel;
-    point.d_acc = current_point.d_acc;
     path.push_back(point);
   }
 
@@ -340,6 +389,107 @@ Eigen::Vector2d PathGenerator::calcLonCoefficients(
   return A_lon_inv * b_lon;
 }
 
+std::vector<double> PathGenerator::interpolationLerp(
+  const std::vector<double> & base_keys, const std::vector<double> & base_values,
+  const std::vector<double> & query_keys) const
+{
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_)
+    st_ptr = std::make_unique<ScopedTimeTrack>("interpolationLerp_double", *time_keeper_);
+
+  // calculate linear interpolation
+  // extrapolate the value if the query key is out of the base key range
+  std::vector<double> query_values;
+  size_t key_index = 0;
+  double last_query_key = query_keys.at(0);
+  for (const auto query_key : query_keys) {
+    // search for the closest key index
+    // if current query key is larger than the last query key, search base_keys increasing order
+    if (query_key >= last_query_key) {
+      while (base_keys.at(key_index + 1) < query_key) {
+        if (key_index == base_keys.size() - 2) {
+          break;
+        }
+        ++key_index;
+      }
+    } else {
+      // if current query key is smaller than the last query key, search base_keys decreasing order
+      while (base_keys.at(key_index) > query_key) {
+        if (key_index == 0) {
+          break;
+        }
+        --key_index;
+      }
+    }
+    last_query_key = query_key;
+
+    const double & src_val = base_values.at(key_index);
+    const double & dst_val = base_values.at(key_index + 1);
+    const double ratio = (query_key - base_keys.at(key_index)) /
+                         (base_keys.at(key_index + 1) - base_keys.at(key_index));
+
+    const double interpolated_val = src_val + (dst_val - src_val) * ratio;
+    query_values.push_back(interpolated_val);
+  }
+
+  return query_values;
+}
+
+std::vector<tf2::Quaternion> PathGenerator::interpolationLerp(
+  const std::vector<double> & base_keys, const std::vector<tf2::Quaternion> & base_values,
+  const std::vector<double> & query_keys) const
+{
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_)
+    st_ptr = std::make_unique<ScopedTimeTrack>("interpolationLerp_quaternion", *time_keeper_);
+
+  // calculate linear interpolation
+  // extrapolate the value if the query key is out of the base key range
+  std::vector<tf2::Quaternion> query_values;
+  size_t key_index = 0;
+  double last_query_key = query_keys.at(0);
+  for (const auto query_key : query_keys) {
+    // search for the closest key index
+    // if current query key is larger than the last query key, search base_keys increasing order
+    if (query_key >= last_query_key) {
+      while (base_keys.at(key_index + 1) < query_key) {
+        if (key_index == base_keys.size() - 2) {
+          break;
+        }
+        ++key_index;
+      }
+    } else {
+      // if current query key is smaller than the last query key, search base_keys decreasing order
+      while (base_keys.at(key_index) > query_key) {
+        if (key_index == 0) {
+          break;
+        }
+        --key_index;
+      }
+    }
+    last_query_key = query_key;
+
+    const tf2::Quaternion & src_val = base_values.at(key_index);
+    const tf2::Quaternion & dst_val = base_values.at(key_index + 1);
+    const double ratio = (query_key - base_keys.at(key_index)) /
+                         (base_keys.at(key_index + 1) - base_keys.at(key_index));
+
+    // in case of extrapolation, export the nearest quaternion
+    if (ratio < 0.0) {
+      query_values.push_back(src_val);
+      continue;
+    }
+    if (ratio > 1.0) {
+      query_values.push_back(dst_val);
+      continue;
+    }
+    const auto interpolated_quat = tf2::slerp(src_val, dst_val, ratio);
+    query_values.push_back(interpolated_quat);
+  }
+
+  return query_values;
+}
+
 PosePath PathGenerator::interpolateReferencePath(
   const PosePath & base_path, const FrenetPath & frenet_predicted_path) const
 {
@@ -353,49 +503,47 @@ PosePath PathGenerator::interpolateReferencePath(
     return interpolated_path;
   }
 
+  // Prepare base path vectors
   std::vector<double> base_path_x(base_path.size());
   std::vector<double> base_path_y(base_path.size());
   std::vector<double> base_path_z(base_path.size());
+  std::vector<tf2::Quaternion> base_path_orientation(base_path.size());
   std::vector<double> base_path_s(base_path.size(), 0.0);
   for (size_t i = 0; i < base_path.size(); ++i) {
     base_path_x.at(i) = base_path.at(i).position.x;
     base_path_y.at(i) = base_path.at(i).position.y;
     base_path_z.at(i) = base_path.at(i).position.z;
+    tf2::Quaternion src_tf;
+    tf2::fromMsg(base_path.at(i).orientation, src_tf);
+    base_path_orientation.at(i) = src_tf;
     if (i > 0) {
       base_path_s.at(i) = base_path_s.at(i - 1) + autoware::universe_utils::calcDistance2d(
                                                     base_path.at(i - 1), base_path.at(i));
     }
   }
 
+  // Prepare resampled s vector
   std::vector<double> resampled_s(frenet_predicted_path.size());
   for (size_t i = 0; i < frenet_predicted_path.size(); ++i) {
     resampled_s.at(i) = frenet_predicted_path.at(i).s;
   }
-  if (resampled_s.front() > resampled_s.back()) {
-    std::reverse(resampled_s.begin(), resampled_s.end());
-  }
 
-  // Lerp Interpolation
-  std::vector<double> lerp_ref_path_x = interpolation::lerp(base_path_s, base_path_x, resampled_s);
-  std::vector<double> lerp_ref_path_y = interpolation::lerp(base_path_s, base_path_y, resampled_s);
-  std::vector<double> lerp_ref_path_z = interpolation::lerp(base_path_s, base_path_z, resampled_s);
+  // Linear Interpolation for x, y, z, and orientation
+  std::vector<double> lerp_ref_path_x = interpolationLerp(base_path_s, base_path_x, resampled_s);
+  std::vector<double> lerp_ref_path_y = interpolationLerp(base_path_s, base_path_y, resampled_s);
+  std::vector<double> lerp_ref_path_z = interpolationLerp(base_path_s, base_path_z, resampled_s);
+  std::vector<tf2::Quaternion> lerp_ref_path_orientation =
+    interpolationLerp(base_path_s, base_path_orientation, resampled_s);
 
+  // Set the interpolated PosePath
   interpolated_path.resize(interpolate_num);
-  for (size_t i = 0; i < interpolate_num - 1; ++i) {
+  for (size_t i = 0; i < interpolate_num; ++i) {
     geometry_msgs::msg::Pose interpolated_pose;
-    const auto current_point =
-      autoware::universe_utils::createPoint(lerp_ref_path_x.at(i), lerp_ref_path_y.at(i), 0.0);
-    const auto next_point = autoware::universe_utils::createPoint(
-      lerp_ref_path_x.at(i + 1), lerp_ref_path_y.at(i + 1), 0.0);
-    const double yaw = autoware::universe_utils::calcAzimuthAngle(current_point, next_point);
     interpolated_pose.position = autoware::universe_utils::createPoint(
       lerp_ref_path_x.at(i), lerp_ref_path_y.at(i), lerp_ref_path_z.at(i));
-    interpolated_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(yaw);
+    interpolated_pose.orientation = tf2::toMsg(lerp_ref_path_orientation.at(i));
     interpolated_path.at(i) = interpolated_pose;
   }
-  interpolated_path.back().position = autoware::universe_utils::createPoint(
-    lerp_ref_path_x.back(), lerp_ref_path_y.back(), lerp_ref_path_z.back());
-  interpolated_path.back().orientation = interpolated_path.at(interpolate_num - 2).orientation;
 
   return interpolated_path;
 }
@@ -407,27 +555,34 @@ PredictedPath PathGenerator::convertToPredictedPath(
   std::unique_ptr<ScopedTimeTrack> st_ptr;
   if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
 
+  // Object position
+  const auto & object_pose = object.kinematics.pose_with_covariance.pose;
+  const double object_height = object.shape.dimensions.z / 2.0;
+
+  // Convert Frenet Path to Cartesian Path
   PredictedPath predicted_path;
   predicted_path.time_step = rclcpp::Duration::from_seconds(sampling_time_interval_);
   predicted_path.path.resize(ref_path.size());
-  for (size_t i = 0; i < predicted_path.path.size(); ++i) {
+
+  // Set the first point as the object's current position
+  predicted_path.path.at(0) = object_pose;
+
+  // Convert the rest of the points
+  for (size_t i = 1; i < predicted_path.path.size(); ++i) {
     // Reference Point from interpolated reference path
     const auto & ref_pose = ref_path.at(i);
 
     // Frenet Point from frenet predicted path
     const auto & frenet_point = frenet_predicted_path.at(i);
+    double d_offset = frenet_point.d;
 
     // Converted Pose
-    auto predicted_pose =
-      autoware::universe_utils::calcOffsetPose(ref_pose, 0.0, frenet_point.d, 0.0);
-    predicted_pose.position.z = object.kinematics.pose_with_covariance.pose.position.z;
-    if (i == 0) {
-      predicted_pose.orientation = object.kinematics.pose_with_covariance.pose.orientation;
-    } else {
-      const double yaw = autoware::universe_utils::calcAzimuthAngle(
-        predicted_path.path.at(i - 1).position, predicted_pose.position);
-      predicted_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(yaw);
-    }
+    auto predicted_pose = autoware::universe_utils::calcOffsetPose(ref_pose, 0.0, d_offset, 0.0);
+    predicted_pose.position.z += object_height;
+    const double yaw = autoware::universe_utils::calcAzimuthAngle(
+      predicted_path.path.at(i - 1).position, predicted_pose.position);
+    predicted_pose.orientation = autoware::universe_utils::createQuaternionFromYaw(yaw);
+
     predicted_path.path.at(i) = predicted_pose;
   }
 
@@ -435,27 +590,27 @@ PredictedPath PathGenerator::convertToPredictedPath(
 }
 
 FrenetPoint PathGenerator::getFrenetPoint(
-  const TrackedObject & object, const PosePath & ref_path, const double duration,
+  const TrackedObject & object, const geometry_msgs::msg::Pose & ref_pose, const double duration,
   const double speed_limit) const
 {
   std::unique_ptr<ScopedTimeTrack> st_ptr;
   if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
 
   FrenetPoint frenet_point;
-  const auto obj_point = object.kinematics.pose_with_covariance.pose.position;
 
-  const size_t nearest_segment_idx =
-    autoware::motion_utils::findNearestSegmentIndex(ref_path, obj_point);
-  const double l = autoware::motion_utils::calcLongitudinalOffsetToSegment(
-    ref_path, nearest_segment_idx, obj_point);
-  const float vx = static_cast<float>(object.kinematics.twist_with_covariance.twist.linear.x);
-  const float vy = static_cast<float>(object.kinematics.twist_with_covariance.twist.linear.y);
+  // 1. Position
+  const auto obj_point = object.kinematics.pose_with_covariance.pose.position;
   const float obj_yaw =
     static_cast<float>(tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation));
-  const float lane_yaw =
-    static_cast<float>(tf2::getYaw(ref_path.at(nearest_segment_idx).orientation));
-  const float delta_yaw = obj_yaw - lane_yaw;
+  const float lane_yaw = static_cast<float>(tf2::getYaw(ref_pose.orientation));
+  frenet_point.s = (obj_point.x - ref_pose.position.x) * cos(lane_yaw) +
+                   (obj_point.y - ref_pose.position.y) * sin(lane_yaw);
+  frenet_point.d = -(obj_point.x - ref_pose.position.x) * sin(lane_yaw) +
+                   (obj_point.y - ref_pose.position.y) * cos(lane_yaw);
 
+  // 2. Velocity (adjusted by acceleration)
+  const float vx = static_cast<float>(object.kinematics.twist_with_covariance.twist.linear.x);
+  const float vy = static_cast<float>(object.kinematics.twist_with_covariance.twist.linear.y);
   const float ax =
     (use_vehicle_acceleration_)
       ? static_cast<float>(object.kinematics.acceleration_with_covariance.accel.linear.x)
@@ -464,8 +619,9 @@ FrenetPoint PathGenerator::getFrenetPoint(
     (use_vehicle_acceleration_)
       ? static_cast<float>(object.kinematics.acceleration_with_covariance.accel.linear.y)
       : 0.0;
+  const float delta_yaw = obj_yaw - lane_yaw;
 
-  // Using a decaying acceleration model. Consult the README for more information about the model.
+  // using a decaying acceleration model. Consult the README for more information about the model.
   const double t_h = duration;
   const float lambda = std::log(2) / acceleration_exponential_half_life_;
 
@@ -527,14 +683,12 @@ FrenetPoint PathGenerator::getFrenetPoint(
 
   const float acceleration_adjusted_velocity_x = get_acceleration_adjusted_velocity(vx, ax);
   const float acceleration_adjusted_velocity_y = get_acceleration_adjusted_velocity(vy, ay);
-
-  frenet_point.s =
-    autoware::motion_utils::calcSignedArcLength(ref_path, 0, nearest_segment_idx) + l;
-  frenet_point.d = autoware::motion_utils::calcLateralOffset(ref_path, obj_point);
   frenet_point.s_vel = acceleration_adjusted_velocity_x * std::cos(delta_yaw) -
                        acceleration_adjusted_velocity_y * std::sin(delta_yaw);
   frenet_point.d_vel = acceleration_adjusted_velocity_x * std::sin(delta_yaw) +
                        acceleration_adjusted_velocity_y * std::cos(delta_yaw);
+
+  // 3. Acceleration, assuming constant acceleration
   frenet_point.s_acc = 0.0;
   frenet_point.d_acc = 0.0;
 
