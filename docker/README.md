@@ -61,6 +61,10 @@ This stage installs the dependency packages based on `/rosdep-universe-localizat
 - `universe/autoware.universe/localization`
 - `universe/autoware.universe/map`
 
+### `universe-localization-mapping`
+
+This stage is a Autoware Universe Localization/Mapping runtime container. It only includes the dependencies given by `/rosdep-universe-localization-mapping-exec-depend-packages.txt` and the binaries built in the `universe-localization-mapping-devel` stage.
+
 ### `universe-devel`
 
 This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and build the remaining packages of `autoware.repos`:
