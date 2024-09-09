@@ -72,6 +72,10 @@ This stage installs the dependency packages based on `/rosdep-universe-planning-
 - `universe/autoware.universe/control`
 - `universe/autoware.universe/planning`
 
+### `universe-planning-control`
+
+This stage is a Autoware Universe Planning/Control runtime container. It only includes the dependencies given by `/rosdep-universe-planning-control-exec-depend-packages.txt` and the binaries built in the `universe-planning-control-devel` stage.
+
 ### `universe-devel`
 
 This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and build the remaining packages of `autoware.repos`:
