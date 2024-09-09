@@ -25,6 +25,11 @@
           "default": "base_link",
           "description": "Output frame id."
         },
+        "has_static_tf_only": {
+          "type": "boolean",
+          "default": false,
+          "description": "Flag to indicate if only static TF is used."
+        },
         "input_topics": {
           "type": "array",
           "items": {
@@ -40,7 +45,14 @@
           "description": "Max queue size of input/output topics."
         }
       },
-      "required": ["timeout_sec", "input_offset", "output_frame", "input_topics", "max_queue_size"]
+      "required": [
+        "timeout_sec",
+        "input_offset",
+        "output_frame",
+        "has_static_tf_only",
+        "input_topics",
+        "max_queue_size"
+      ]
     }
   },
   "properties": {

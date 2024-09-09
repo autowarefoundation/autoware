@@ -3,3 +3,4 @@
     base_frame: base_link
     use_imu: true
     use_3d_distortion_correction: false
+    has_static_tf_only: true

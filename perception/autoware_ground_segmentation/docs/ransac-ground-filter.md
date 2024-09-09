@@ -23,6 +23,7 @@ This implementation inherits `autoware::pointcloud_preprocessor::Filter` class, 
 | Name                    | Type   | Description                                                     |
 | ----------------------- | ------ | --------------------------------------------------------------- |
 | `base_frame`            | string | base_link frame                                                 |
+| `has_static_tf_only`    | bool   | Flag to listen TF only once                                     |
 | `unit_axis`             | string | The axis which we need to search ground plane                   |
 | `max_iterations`        | int    | The maximum number of iterations                                |
 | `outlier_threshold`     | double | The distance threshold to the model [m]                         |

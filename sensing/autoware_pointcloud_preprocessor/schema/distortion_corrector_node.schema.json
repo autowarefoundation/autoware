@@ -20,9 +20,14 @@
           "type": "boolean",
           "description": "Use 3d distortion correction algorithm, otherwise, use 2d distortion correction algorithm.",
           "default": "false"
+        },
+        "has_static_tf_only": {
+          "type": "boolean",
+          "description": "Flag to indicate if only static TF is used.",
+          "default": false
         }
       },
-      "required": ["base_frame", "use_imu", "use_3d_distortion_correction"]
+      "required": ["base_frame", "use_imu", "use_3d_distortion_correction", "has_static_tf_only"]
     }
   },
   "properties": {

@@ -31,6 +31,11 @@
           "default": "base_link",
           "description": "Output frame."
         },
+        "has_static_tf_only": {
+          "type": "boolean",
+          "default": false,
+          "description": "Flag to indicate if only static TF is used."
+        },
         "keep_input_frame_in_synchronized_pointcloud": {
           "type": "boolean",
           "default": true,
@@ -61,6 +66,7 @@
         "input_offset",
         "input_twist_topic_type",
         "output_frame",
+        "has_static_tf_only",
         "keep_input_frame_in_synchronized_pointcloud",
         "input_topics",
         "synchronized_pointcloud_postfix",

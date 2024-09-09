@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/universe_utils/ros/static_transform_buffer.hpp"
+#include "autoware/universe_utils/ros/managed_transform_buffer.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
@@ -22,11 +22,11 @@
 
 #include <memory>
 
-class TestStaticTransformBuffer : public ::testing::Test
+class TestManagedTransformBuffer : public ::testing::Test
 {
 protected:
   std::shared_ptr<rclcpp::Node> node_{nullptr};
-  std::shared_ptr<autoware::universe_utils::StaticTransformBuffer> static_tf_buffer_{nullptr};
+  std::shared_ptr<autoware::universe_utils::ManagedTransformBuffer> managed_tf_buffer_{nullptr};
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tf_broadcaster_;
   geometry_msgs::msg::TransformStamped tf_base_to_lidar_;
   Eigen::Matrix4f eigen_base_to_lidar_;
@@ -54,8 +54,9 @@ protected:
 
   void SetUp() override
   {
-    node_ = std::make_shared<rclcpp::Node>("test_static_transform_buffer");
-    static_tf_buffer_ = std::make_shared<autoware::universe_utils::StaticTransformBuffer>();
+    node_ = std::make_shared<rclcpp::Node>("test_managed_transform_buffer");
+    managed_tf_buffer_ =
+      std::make_shared<autoware::universe_utils::ManagedTransformBuffer>(node_.get(), true);
     tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node_);
 
     tf_base_to_lidar_ = generateTransformMsg(
@@ -91,109 +92,91 @@ protected:
     ASSERT_TRUE(rclcpp::ok());
   }
 
-  void TearDown() override { static_tf_buffer_.reset(); }
+  void TearDown() override { managed_tf_buffer_.reset(); }
 };
 
-TEST_F(TestStaticTransformBuffer, TestTransformNoExist)
+TEST_F(TestManagedTransformBuffer, TestTransformNoExist)
 {
   Eigen::Matrix4f transform;
-  auto success = static_tf_buffer_->getTransform(node_.get(), "base_link", "fake_link", transform);
+  auto success = managed_tf_buffer_->getTransform("base_link", "fake_link", transform);
   EXPECT_TRUE(transform.isIdentity());
   EXPECT_FALSE(success);
 }
 
-TEST_F(TestStaticTransformBuffer, TestTransformBase)
+TEST_F(TestManagedTransformBuffer, TestTransformBase)
 {
   Eigen::Matrix4f eigen_base_to_lidar;
-  auto success =
-    static_tf_buffer_->getTransform(node_.get(), "base_link", "lidar_top", eigen_base_to_lidar);
+  auto success = managed_tf_buffer_->getTransform("base_link", "lidar_top", eigen_base_to_lidar);
   EXPECT_TRUE(eigen_base_to_lidar.isApprox(eigen_base_to_lidar_, 0.001));
   EXPECT_TRUE(success);
 }
 
-TEST_F(TestStaticTransformBuffer, TestTransformSameFrame)
+TEST_F(TestManagedTransformBuffer, TestTransformSameFrame)
 {
   Eigen::Matrix4f eigen_base_to_base;
-  auto success =
-    static_tf_buffer_->getTransform(node_.get(), "base_link", "base_link", eigen_base_to_base);
+  auto success = managed_tf_buffer_->getTransform("base_link", "base_link", eigen_base_to_base);
   EXPECT_TRUE(eigen_base_to_base.isApprox(Eigen::Matrix4f::Identity(), 0.001));
   EXPECT_TRUE(success);
 }
 
-TEST_F(TestStaticTransformBuffer, TestTransformInverse)
+TEST_F(TestManagedTransformBuffer, TestTransformInverse)
 {
   Eigen::Matrix4f eigen_lidar_to_base;
-  auto success =
-    static_tf_buffer_->getTransform(node_.get(), "lidar_top", "base_link", eigen_lidar_to_base);
+  auto success = managed_tf_buffer_->getTransform("lidar_top", "base_link", eigen_lidar_to_base);
   EXPECT_TRUE(eigen_lidar_to_base.isApprox(eigen_base_to_lidar_.inverse(), 0.001));
   EXPECT_TRUE(success);
 }
 
-TEST_F(TestStaticTransformBuffer, TestTransformMultipleCall)
+TEST_F(TestManagedTransformBuffer, TestTransformMultipleCall)
 {
   Eigen::Matrix4f eigen_transform;
-  EXPECT_FALSE(
-    static_tf_buffer_->getTransform(node_.get(), "base_link", "fake_link", eigen_transform));
+  EXPECT_FALSE(managed_tf_buffer_->getTransform("base_link", "fake_link", eigen_transform));
   EXPECT_TRUE(eigen_transform.isApprox(Eigen::Matrix4f::Identity(), 0.001));
-  EXPECT_TRUE(
-    static_tf_buffer_->getTransform(node_.get(), "lidar_top", "base_link", eigen_transform));
+  EXPECT_TRUE(managed_tf_buffer_->getTransform("lidar_top", "base_link", eigen_transform));
   EXPECT_TRUE(eigen_transform.isApprox(eigen_base_to_lidar_.inverse(), 0.001));
-  EXPECT_TRUE(
-    static_tf_buffer_->getTransform(node_.get(), "fake_link", "fake_link", eigen_transform));
+  EXPECT_TRUE(managed_tf_buffer_->getTransform("fake_link", "fake_link", eigen_transform));
   EXPECT_TRUE(eigen_transform.isApprox(Eigen::Matrix4f::Identity(), 0.001));
-  EXPECT_TRUE(
-    static_tf_buffer_->getTransform(node_.get(), "base_link", "lidar_top", eigen_transform));
+  EXPECT_TRUE(managed_tf_buffer_->getTransform("base_link", "lidar_top", eigen_transform));
   EXPECT_TRUE(eigen_transform.isApprox(eigen_base_to_lidar_, 0.001));
-  EXPECT_FALSE(
-    static_tf_buffer_->getTransform(node_.get(), "fake_link", "lidar_top", eigen_transform));
+  EXPECT_FALSE(managed_tf_buffer_->getTransform("fake_link", "lidar_top", eigen_transform));
   EXPECT_TRUE(eigen_transform.isApprox(Eigen::Matrix4f::Identity(), 0.001));
-  EXPECT_TRUE(
-    static_tf_buffer_->getTransform(node_.get(), "base_link", "lidar_top", eigen_transform));
+  EXPECT_TRUE(managed_tf_buffer_->getTransform("base_link", "lidar_top", eigen_transform));
   EXPECT_TRUE(eigen_transform.isApprox(eigen_base_to_lidar_, 0.001));
 }
 
-TEST_F(TestStaticTransformBuffer, TestTransformEmptyPointCloud)
+TEST_F(TestManagedTransformBuffer, TestTransformEmptyPointCloud)
 {
   auto cloud_in = std::make_unique<sensor_msgs::msg::PointCloud2>();
   cloud_in->header.frame_id = "lidar_top";
   cloud_in->header.stamp = rclcpp::Time(10, 100'000'000);
   auto cloud_out = std::make_unique<sensor_msgs::msg::PointCloud2>();
 
-  EXPECT_FALSE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "lidar_top", *cloud_in, *cloud_out));
-  EXPECT_FALSE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "base_link", *cloud_in, *cloud_out));
-  EXPECT_FALSE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "fake_link", *cloud_in, *cloud_out));
+  EXPECT_FALSE(managed_tf_buffer_->transformPointcloud("lidar_top", *cloud_in, *cloud_out));
+  EXPECT_FALSE(managed_tf_buffer_->transformPointcloud("base_link", *cloud_in, *cloud_out));
+  EXPECT_FALSE(managed_tf_buffer_->transformPointcloud("fake_link", *cloud_in, *cloud_out));
 }
 
-TEST_F(TestStaticTransformBuffer, TestTransformEmptyPointCloudNoHeader)
+TEST_F(TestManagedTransformBuffer, TestTransformEmptyPointCloudNoHeader)
 {
   auto cloud_in = std::make_unique<sensor_msgs::msg::PointCloud2>();
   auto cloud_out = std::make_unique<sensor_msgs::msg::PointCloud2>();
 
-  EXPECT_FALSE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "lidar_top", *cloud_in, *cloud_out));
-  EXPECT_FALSE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "base_link", *cloud_in, *cloud_out));
-  EXPECT_FALSE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "fake_link", *cloud_in, *cloud_out));
+  EXPECT_FALSE(managed_tf_buffer_->transformPointcloud("lidar_top", *cloud_in, *cloud_out));
+  EXPECT_FALSE(managed_tf_buffer_->transformPointcloud("base_link", *cloud_in, *cloud_out));
+  EXPECT_FALSE(managed_tf_buffer_->transformPointcloud("fake_link", *cloud_in, *cloud_out));
 }
 
-TEST_F(TestStaticTransformBuffer, TestTransformPointCloud)
+TEST_F(TestManagedTransformBuffer, TestTransformPointCloud)
 {
   auto cloud_out = std::make_unique<sensor_msgs::msg::PointCloud2>();
 
   // Transform cloud with header
-  EXPECT_TRUE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "lidar_top", *cloud_in_, *cloud_out));
-  EXPECT_TRUE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "base_link", *cloud_in_, *cloud_out));
-  EXPECT_FALSE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "fake_link", *cloud_in_, *cloud_out));
+  EXPECT_TRUE(managed_tf_buffer_->transformPointcloud("lidar_top", *cloud_in_, *cloud_out));
+  EXPECT_TRUE(managed_tf_buffer_->transformPointcloud("base_link", *cloud_in_, *cloud_out));
+  EXPECT_FALSE(managed_tf_buffer_->transformPointcloud("fake_link", *cloud_in_, *cloud_out));
 }
 
-TEST_F(TestStaticTransformBuffer, TestTransformPointCloudNoHeader)
+TEST_F(TestManagedTransformBuffer, TestTransformPointCloudNoHeader)
 {
   auto cloud_out = std::make_unique<sensor_msgs::msg::PointCloud2>();
 
@@ -201,10 +184,7 @@ TEST_F(TestStaticTransformBuffer, TestTransformPointCloudNoHeader)
   auto cloud_in = std::make_unique<sensor_msgs::msg::PointCloud2>(*cloud_in_);
   cloud_in->header.frame_id = "";
   cloud_in->header.stamp = rclcpp::Time(0, 0);
-  EXPECT_FALSE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "lidar_top", *cloud_in, *cloud_out));
-  EXPECT_FALSE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "base_link", *cloud_in, *cloud_out));
-  EXPECT_FALSE(
-    static_tf_buffer_->transformPointcloud(node_.get(), "fake_link", *cloud_in, *cloud_out));
+  EXPECT_FALSE(managed_tf_buffer_->transformPointcloud("lidar_top", *cloud_in, *cloud_out));
+  EXPECT_FALSE(managed_tf_buffer_->transformPointcloud("base_link", *cloud_in, *cloud_out));
+  EXPECT_FALSE(managed_tf_buffer_->transformPointcloud("fake_link", *cloud_in, *cloud_out));
 }

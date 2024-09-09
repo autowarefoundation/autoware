@@ -35,6 +35,8 @@ DistortionCorrectorComponent::DistortionCorrectorComponent(const rclcpp::NodeOpt
   base_frame_ = declare_parameter<std::string>("base_frame");
   use_imu_ = declare_parameter<bool>("use_imu");
   use_3d_distortion_correction_ = declare_parameter<bool>("use_3d_distortion_correction");
+  auto has_static_tf_only =
+    declare_parameter<bool>("has_static_tf_only", false);  // TODO(amadeuszsz): remove default value
 
   // Publisher
   {
@@ -59,9 +61,9 @@ DistortionCorrectorComponent::DistortionCorrectorComponent(const rclcpp::NodeOpt
   // Setup the distortion corrector
 
   if (use_3d_distortion_correction_) {
-    distortion_corrector_ = std::make_unique<DistortionCorrector3D>(this);
+    distortion_corrector_ = std::make_unique<DistortionCorrector3D>(this, has_static_tf_only);
   } else {
-    distortion_corrector_ = std::make_unique<DistortionCorrector2D>(this);
+    distortion_corrector_ = std::make_unique<DistortionCorrector2D>(this, has_static_tf_only);
   }
 }
 

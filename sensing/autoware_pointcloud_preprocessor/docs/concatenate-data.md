@@ -28,12 +28,13 @@ The figure below represents the reception time of each sensor data and how it is
 
 ## Parameters
 
-| Name             | Type             | Default Value | Description                                                         |
-| ---------------- | ---------------- | ------------- | ------------------------------------------------------------------- |
-| `input/points`   | vector of string | []            | input topic names that type must be `sensor_msgs::msg::Pointcloud2` |
-| `input_frame`    | string           | ""            | input frame id                                                      |
-| `output_frame`   | string           | ""            | output frame id                                                     |
-| `max_queue_size` | int              | 5             | max queue size of input/output topics                               |
+| Name                 | Type             | Default Value | Description                                                         |
+| -------------------- | ---------------- | ------------- | ------------------------------------------------------------------- |
+| `input/points`       | vector of string | []            | input topic names that type must be `sensor_msgs::msg::Pointcloud2` |
+| `input_frame`        | string           | ""            | input frame id                                                      |
+| `output_frame`       | string           | ""            | output frame id                                                     |
+| `has_static_tf_only` | bool             | false         | flag to listen TF only once                                         |
+| `max_queue_size`     | int              | 5             | max queue size of input/output topics                               |
 
 ### Core Parameters
 
