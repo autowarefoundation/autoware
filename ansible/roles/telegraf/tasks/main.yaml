@@ -79,7 +79,7 @@
 - name: Copy get_telegraf_proccpu_json.sh to /opt/autoware/bin
   become: true
   ansible.builtin.copy:
-    src: '{{ role_path }}/files/get_telegraf_proccpu_json.sh'
+    src: "{{ role_path }}/files/get_telegraf_proccpu_json.sh"
     dest: /opt/autoware/bin/get_telegraf_proccpu_json.sh
     owner: root
     group: root
@@ -88,7 +88,7 @@
 - name: Copy get_telegraf_procmem_json.sh to /opt/autoware/bin
   become: true
   ansible.builtin.copy:
-    src: '{{ role_path }}/files/get_telegraf_procmem_json.sh'
+    src: "{{ role_path }}/files/get_telegraf_procmem_json.sh"
     dest: /opt/autoware/bin/get_telegraf_procmem_json.sh
     owner: root
     group: root
@@ -97,11 +97,11 @@
 - name: Copy telegraf.conf to /opt/autoware/bin
   become: true
   ansible.builtin.copy:
-    src: '{{ role_path }}/files/telegraf.conf'
+    src: "{{ role_path }}/files/telegraf.conf"
     dest: /etc/telegraf/telegraf.conf
     owner: root
     group: root
-    mode: '0644'
+    mode: 0644
     backup: true
   notify:
     - Restart telegraf
