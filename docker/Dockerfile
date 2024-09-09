@@ -118,6 +118,25 @@ RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
     > /rosdep-universe-localization-mapping-exec-depend-packages.txt \
     && cat /rosdep-universe-localization-mapping-exec-depend-packages.txt
 
+FROM rosdep-depend AS rosdep-universe-planning-control-depend
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
+COPY src/universe/autoware.universe/control /autoware/src/universe/autoware.universe/control
+COPY src/universe/autoware.universe/planning /autoware/src/universe/autoware.universe/planning
+# TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
+COPY src/universe/autoware.universe/map/map_loader /autoware/src/universe/autoware.universe/map/map_loader
+COPY src/universe/autoware.universe/map/autoware_map_projection_loader /autoware/src/universe/autoware.universe/map/autoware_map_projection_loader
+COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
+COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
+RUN rosdep keys --ignore-src --from-paths src \
+    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
+    | grep -v '^#' \
+    | sed 's/ \+/\n/g'\
+    | sort \
+    > /rosdep-universe-planning-control-depend-packages.txt \
+    && cat /rosdep-universe-planning-control-depend-packages.txt
+
 FROM rosdep-depend AS rosdep-universe-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -277,6 +296,40 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && rm -rf /autoware/build
 
+FROM universe-common-devel AS universe-planning-control-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+# Install rosdep dependencies
+COPY --from=rosdep-universe-planning-control-depend /rosdep-universe-planning-control-depend-packages.txt /tmp/rosdep-universe-planning-control-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  apt-get update \
+  && cat /tmp/rosdep-universe-planning-control-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+
+# hadolint ignore=SC1091
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/planning,target=/autoware/src/universe/autoware.universe/planning \
+  # TODO(youtalk): Remove --mount options when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/map_loader,target=/autoware/src/universe/autoware.universe/map/map_loader \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && colcon build --cmake-args \
+    " -Wno-dev" \
+    " --no-warn-unused-cli" \
+    --merge-install \
+    --install-base /opt/autoware \
+    --mixin release compile-commands ccache \
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && rm -rf /autoware/build
+
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
@@ -295,16 +348,15 @@ RUN --mount=type=ssh \
 
 COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
+COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/param,target=/autoware/src/param \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/sensor_component,target=/autoware/src/sensor_component \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/sensor_kit,target=/autoware/src/sensor_kit \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/evaluator,target=/autoware/src/universe/autoware.universe/evaluator \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/launch,target=/autoware/src/universe/autoware.universe/launch \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/planning,target=/autoware/src/universe/autoware.universe/planning \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/simulator,target=/autoware/src/universe/autoware.universe/simulator \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/system,target=/autoware/src/universe/autoware.universe/system \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/tools,target=/autoware/src/universe/autoware.universe/tools \
