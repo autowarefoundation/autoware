@@ -803,37 +803,39 @@ QProgressBar::chunk {
 /*  ------------------------------------------------------------------------  */
 /*  QScrollBar  */
 
-QScrollBar:horizontal {
+QScrollBar {
   border: 0;
-  background: #0f1417;
-  height: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+}
+
+QScrollBar:horizontal {
+  height: 10px;
 }
 
 QScrollBar:vertical {
-  border: 0;
-  background: #0f1417;
   width: 10px;
-  /* Margin around the scrollbar */
-  /* margin: 22px 0 22px 0;  */
 }
 
 QScrollBar::handle {
-  background: #84c2e6;
+  background: #8bd0f0;
+  border-radius: 5px;
 }
 
 QScrollBar::handle:horizontal {
   min-width: 24px;
-  background: #84c2e6;
 }
 
 QScrollBar::handle:vertical {
   min-height: 24px;
-  background: #84c2e6;
 }
 
-QScrollBar::handle:vertical:hover,
-QScrollBar::handle:horizontal:hover {
+QScrollBar::handle:hover {
   background-color: #84c2e6;
+}
+
+QScrollBar::handle:pressed {
+  background-color: #81bbe1;
 }
 
 QScrollBar::add-line:vertical,
@@ -849,8 +851,7 @@ QScrollBar::sub-line:horizontal {
 QScrollBar::sub-page:horizontal,
 QScrollBar::add-page:horizontal,
 QScrollBar::sub-page:vertical,
-QScrollBar::add-page:vertical,
-QScrolLBar:vertical {
+QScrollBar::add-page:vertical {
   background: transparent;
 }
 
@@ -1317,11 +1318,15 @@ QDialog QToolButton:disabled {
 QMainWindow::separator:vertical,
 QSplitter::handle:horizontal {
   image: url("/icons_path/primary/splitter-horizontal.svg");
+  background-color: rgba(255, 255, 255, 0.03);
+  width: 15px;
 }
 
 QMainWindow::separator:horizontal,
 QSplitter::handle:vertical {
   image: url("/icons_path/primary/splitter-vertical.svg");
+  background-color: rgba(255, 255, 255, 0.03);
+  height: 15px;
 }
 
 QSizeGrip {
