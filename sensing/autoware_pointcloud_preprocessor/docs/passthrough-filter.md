@@ -25,13 +25,8 @@ The `passthrough_filter` is a node that removes points on the outside of a range
 
 ### Core Parameters
 
-| Name                    | Type   | Default Value | Description                                            |
-| ----------------------- | ------ | ------------- | ------------------------------------------------------ |
-| `filter_limit_min`      | int    | 0             | minimum allowed field value                            |
-| `filter_limit_max`      | int    | 127           | maximum allowed field value                            |
-| `filter_field_name`     | string | "ring"        | filtering field name                                   |
-| `keep_organized`        | bool   | false         | flag to keep indices structure                         |
-| `filter_limit_negative` | bool   | false         | flag to return whether the data is inside limit or not |
+{{ json_to_markdown("sensing/autoware_pointcloud_preprocessor/schema/passthrough_filter_uint16_node.schema.json
+") }}
 
 ## Assumptions / Known limits
 
