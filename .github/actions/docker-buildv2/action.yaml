@@ -1,4 +1,4 @@
-name: docker-build-and-push
+name: docker-buildv2
 description: ""
 
 inputs:

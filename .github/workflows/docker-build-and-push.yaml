@@ -11,7 +11,7 @@ jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
 
-  docker-build-and-push:
+  docker-build:
     needs: load-env
     runs-on: ubuntu-latest
     strategy:
@@ -21,16 +21,27 @@ jobs:
           - no-cuda
           - cuda
         include:
-          - name: no-cuda
+          - name: amd64-no-cuda
             platform: amd64
             base_image_env: base_image
             lib_dir: x86_64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
-          - name: cuda
+          - name: amd64-cuda
             platform: amd64
             base_image_env: base_image
             lib_dir: x86_64
+            additional-tag-suffix: -cuda
+          - name: arm64-no-cuda
+            platform: arm64
+            base_image_env: base_image
+            lib_dir: aarch64
+            setup-args: --no-nvidia
+            additional-tag-suffix: ""
+          - name: arm64-cuda
+            platform: arm64
+            base_image_env: base_image
+            lib_dir: aarch64
             additional-tag-suffix: -cuda
     steps:
       - name: Check out repository
@@ -61,7 +72,7 @@ jobs:
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
-        uses: ./.github/actions/docker-build-and-push
+        uses: ./.github/actions/docker-buildv2
         with:
           name: ${{ matrix.name }}
           platform: ${{ matrix.platform }}
@@ -81,3 +92,35 @@ jobs:
       - name: Show disk space
         run: |
           df -h
+
+  combine-and-push-multi-arch:
+    needs: docker-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - name: Combine and push multi-arch images
+        run: |
+          for variant in "no-cuda" "cuda"; do
+            docker buildx imagetools create -t ghcr.io/${{ github.repository }}:${{ needs.load-env.outputs.rosdistro }}-${variant} \
+              ghcr.io/${{ github.repository }}:${{ needs.load-env.outputs.rosdistro }}-${variant}-amd64 \
+              ghcr.io/${{ github.repository }}:${{ needs.load-env.outputs.rosdistro }}-${variant}-arm64
+          done
+
+          # Push the combined images to the repository
+          for variant in "no-cuda" "cuda"; do
+            docker push ghcr.io/${{ github.repository }}:${{ needs.load-env.outputs.rosdistro }}-${variant}
+          done
+
+      - name: Show pushed images
+        run: |
+          docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ needs.load-env.outputs.rosdistro }}-no-cuda
+          docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ needs.load-env.outputs.rosdistro }}-cuda
