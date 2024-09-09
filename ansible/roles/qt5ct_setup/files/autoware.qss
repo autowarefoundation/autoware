@@ -1002,7 +1002,7 @@ QToolBar::separator:vertical {
 /*  QToolButton  */
 
 QToolButton {
-  background: #0f1417;
+  background: #171c1f;
   border: 0px;
   margin: 2px;
   padding: 2px;
@@ -1010,16 +1010,16 @@ QToolButton {
 }
 
 QToolButton:hover {
-  background: #525252;
+  background: #262931;
 }
 
 QToolButton:pressed {
-  background: #525252;
+  background: #2d303a;
 }
 
 QToolButton:checked {
-  background: #525252;
-  border: 1px solid rgba(132, 194, 230, 1);
+  background: #2d303a;
+  border: 1px solid #8bd0f0;
 }
 
 /*  ------------------------------------------------------------------------  */
