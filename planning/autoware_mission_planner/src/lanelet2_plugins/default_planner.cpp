@@ -28,6 +28,7 @@
 #include <autoware_lanelet2_extension/visualization/visualization.hpp>
 #include <autoware_vehicle_info_utils/vehicle_info_utils.hpp>
 
+#include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/difference.hpp>
 #include <boost/geometry/algorithms/is_empty.hpp>
 
@@ -266,7 +267,8 @@ lanelet::ConstLanelets next_lanelets_up_to(
 }
 
 bool DefaultPlanner::check_goal_footprint_inside_lanes(
-  const lanelet::ConstLanelet & current_lanelet, const lanelet::ConstLanelets & path_lanelets,
+  const lanelet::ConstLanelet & closest_lanelet_to_goal,
+  const lanelet::ConstLanelets & path_lanelets,
   const universe_utils::Polygon2d & goal_footprint) const
 {
   universe_utils::MultiPolygon2d ego_lanes;
@@ -275,20 +277,24 @@ bool DefaultPlanner::check_goal_footprint_inside_lanes(
     const auto left_shoulder = route_handler_.getLeftShoulderLanelet(ll);
     if (left_shoulder) {
       boost::geometry::convert(left_shoulder->polygon2d().basicPolygon(), poly);
+      boost::geometry::correct(poly);
       ego_lanes.push_back(poly);
     }
     const auto right_shoulder = route_handler_.getRightShoulderLanelet(ll);
     if (right_shoulder) {
       boost::geometry::convert(right_shoulder->polygon2d().basicPolygon(), poly);
+      boost::geometry::correct(poly);
       ego_lanes.push_back(poly);
     }
     boost::geometry::convert(ll.polygon2d().basicPolygon(), poly);
+    boost::geometry::correct(poly);
     ego_lanes.push_back(poly);
   }
-  const auto next_lanelets =
-    next_lanelets_up_to(current_lanelet, vehicle_info_.max_longitudinal_offset_m, route_handler_);
+  const auto next_lanelets = next_lanelets_up_to(
+    closest_lanelet_to_goal, vehicle_info_.max_longitudinal_offset_m, route_handler_);
   for (const auto & ll : next_lanelets) {
     boost::geometry::convert(ll.polygon2d().basicPolygon(), poly);
+    boost::geometry::correct(poly);
     ego_lanes.push_back(poly);
   }
 
@@ -318,9 +324,10 @@ bool DefaultPlanner::is_goal_valid(
       return true;
     }
   }
-  lanelet::ConstLanelet closest_lanelet;
+  lanelet::ConstLanelet closest_lanelet_to_goal;
   const auto road_lanelets_at_goal = route_handler_.getRoadLaneletsAtPose(goal);
-  if (!lanelet::utils::query::getClosestLanelet(road_lanelets_at_goal, goal, &closest_lanelet)) {
+  if (!lanelet::utils::query::getClosestLanelet(
+        road_lanelets_at_goal, goal, &closest_lanelet_to_goal)) {
     // if no road lanelets directly at the goal, find the closest one
     const lanelet::BasicPoint2d goal_point{goal.position.x, goal.position.y};
     auto closest_dist = std::numeric_limits<double>::max();
@@ -334,7 +341,7 @@ bool DefaultPlanner::is_goal_valid(
           const auto dist = lanelet::geometry::distance2d(goal_point, ll.polygon2d());
           if (route_handler_.isRoadLanelet(ll) && dist < closest_dist) {
             closest_dist = dist;
-            closest_lanelet = ll;
+            closest_lanelet_to_goal = ll;
           }
           return false;  // continue the search
         });
@@ -350,7 +357,7 @@ bool DefaultPlanner::is_goal_valid(
   // check if goal footprint exceeds lane when the goal isn't in parking_lot
   if (
     param_.check_footprint_inside_lanes &&
-    !check_goal_footprint_inside_lanes(closest_lanelet, path_lanelets, polygon_footprint) &&
+    !check_goal_footprint_inside_lanes(closest_lanelet_to_goal, path_lanelets, polygon_footprint) &&
     !is_in_parking_lot(
       lanelet::utils::query::getAllParkingLots(route_handler_.getLaneletMapPtr()),
       lanelet::utils::conversion::toLaneletPoint(goal.position))) {
@@ -358,8 +365,8 @@ bool DefaultPlanner::is_goal_valid(
     return false;
   }
 
-  if (is_in_lane(closest_lanelet, goal_lanelet_pt)) {
-    const auto lane_yaw = lanelet::utils::getLaneletAngle(closest_lanelet, goal.position);
+  if (is_in_lane(closest_lanelet_to_goal, goal_lanelet_pt)) {
+    const auto lane_yaw = lanelet::utils::getLaneletAngle(closest_lanelet_to_goal, goal.position);
     const auto goal_yaw = tf2::getYaw(goal.orientation);
     const auto angle_diff = autoware::universe_utils::normalizeRadian(lane_yaw - goal_yaw);
 

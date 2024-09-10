@@ -56,7 +56,7 @@ public:
     autoware::universe_utils::LinearRing2d goal_footprint);
   autoware::vehicle_info_utils::VehicleInfo vehicle_info_;
 
-private:
+protected:
   using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
   using Pose = geometry_msgs::msg::Pose;
   bool is_graph_ready_;
@@ -72,20 +72,19 @@ private:
   void map_callback(const LaneletMapBin::ConstSharedPtr msg);
 
   /**
-   * @brief check if the goal_footprint is within the combined lanelet of route_lanelets plus the
+   * @brief check if the goal_footprint is within the route lanelets plus the
    * succeeding lanelets around the goal
    * @attention this function will terminate when the accumulated search length from the initial
    * current_lanelet exceeds max_longitudinal_offset_m + search_margin, so under normal assumptions
    * (i.e. the map is composed of finite elements of practically normal sized lanelets), it is
    * assured to terminate
-   * @param current_lanelet the start lanelet to begin recursive query
-   * @param combined_prev_lanelet initial entire route_lanelets plus the small consecutive lanelets
-   * around the goal during the query
-   * @param next_lane_length the accumulated total length from the start lanelet of the search to
-   * the lanelet of current goal query
+   * @param closest_lanelet_to_goal the route lanelet closest to the goal
+   * @param path_lanelets route lanelets
+   * @param goal_footprint footprint of the ego vehicle at the goal pose
    */
   [[nodiscard]] bool check_goal_footprint_inside_lanes(
-    const lanelet::ConstLanelet & current_lanelet, const lanelet::ConstLanelets & path_lanelets,
+    const lanelet::ConstLanelet & closest_lanelet_to_goal,
+    const lanelet::ConstLanelets & path_lanelets,
     const universe_utils::Polygon2d & goal_footprint) const;
 
   /**
