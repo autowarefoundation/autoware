@@ -124,7 +124,7 @@ public:
     const std::array<uint8_t, 16> & uuid) const;
 
 private:
-  size_t nearest(const Ogre::Vector3 & point);
+  size_t nearest(const Ogre::Vector3 & point) const;
   InteractiveObject * target_;
   std::vector<std::unique_ptr<InteractiveObject>> objects_;
 };

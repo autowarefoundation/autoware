@@ -221,7 +221,7 @@ boost::optional<tf2::Transform> InteractiveObjectCollection::transform(
   return {};
 }
 
-size_t InteractiveObjectCollection::nearest(const Ogre::Vector3 & point)
+size_t InteractiveObjectCollection::nearest(const Ogre::Vector3 & point) const
 {
   const size_t npos = objects_.size();
   if (objects_.empty()) {
