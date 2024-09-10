@@ -211,7 +211,7 @@ void PoseHistoryFootprint::update_footprint()
 
   const float offset_from_baselink = property_offset_->getFloat();
 
-  for (auto & point_idx : history_) {
+  for (const auto & point_idx : history_) {
     const auto & pose = point_idx->pose;
     /*
      * Footprint
