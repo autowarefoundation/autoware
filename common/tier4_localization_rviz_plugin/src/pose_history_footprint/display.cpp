@@ -34,6 +34,8 @@
 
 namespace rviz_plugins
 {
+using autoware::vehicle_info_utils::VehicleInfoUtils;
+
 PoseHistoryFootprint::PoseHistoryFootprint() : last_stamp_(0, 0, RCL_ROS_TIME)
 {
   property_buffer_size_ = new rviz_common::properties::IntProperty("Buffer Size", 100, "", this);
@@ -68,7 +70,7 @@ PoseHistoryFootprint::PoseHistoryFootprint() : last_stamp_(0, 0, RCL_ROS_TIME)
   property_rear_overhang_->setMin(0.0);
   property_interval_->setMin(0.0);
 
-  updateVehicleInfo();
+  update_vehicle_info();
 }
 
 PoseHistoryFootprint::~PoseHistoryFootprint()
@@ -78,7 +80,7 @@ PoseHistoryFootprint::~PoseHistoryFootprint()
   }
 }
 
-void PoseHistoryFootprint::updateVehicleInfo()
+void PoseHistoryFootprint::update_vehicle_info()
 {
   if (vehicle_info_) {
     vehicle_footprint_info_ = std::make_shared<VehicleFootprintInfo>(
@@ -93,7 +95,7 @@ void PoseHistoryFootprint::updateVehicleInfo()
   }
 }
 
-void PoseHistoryFootprint::updateVisualization()
+void PoseHistoryFootprint::update_visualization()
 {
   if (last_msg_ptr_) {
     processMessage(last_msg_ptr_);
@@ -141,13 +143,13 @@ void PoseHistoryFootprint::processMessage(
     return;
   }
 
-  updateHistory(message);
-  updateFootprint();
+  update_history(message);
+  update_footprint();
 
   last_msg_ptr_ = message;
 }
 
-void PoseHistoryFootprint::updateHistory(
+void PoseHistoryFootprint::update_history(
   const geometry_msgs::msg::PoseStamped::ConstSharedPtr message)
 {
   if (history_.empty()) {
@@ -166,14 +168,14 @@ void PoseHistoryFootprint::updateHistory(
   }
 }
 
-void PoseHistoryFootprint::updateFootprint()
+void PoseHistoryFootprint::update_footprint()
 {
   // This doesn't work in the constructor.
   if (!vehicle_info_) {
     try {
       vehicle_info_ = std::make_shared<VehicleInfo>(
         VehicleInfoUtils(*rviz_ros_node_.lock()->get_raw_node()).getVehicleInfo());
-      updateVehicleInfo();
+      update_vehicle_info();
     } catch (const std::exception & e) {
       RCLCPP_WARN_THROTTLE(
         rviz_ros_node_.lock()->get_raw_node()->get_logger(),
@@ -210,8 +212,8 @@ void PoseHistoryFootprint::updateFootprint()
 
     const float offset_from_baselink = property_offset_->getFloat();
 
-    for (size_t point_idx = 0; point_idx < history_.size(); ++point_idx) {
-      const auto & pose = history_.at(point_idx)->pose;
+    for (auto & point_idx : history_) {
+      const auto & pose = point_idx->pose;
       /*
        * Footprint
        */
@@ -223,8 +225,8 @@ void PoseHistoryFootprint::updateFootprint()
         const auto info = vehicle_footprint_info_;
         const float top = info->length - info->rear_overhang - offset_from_baselink;
         const float bottom = -info->rear_overhang + offset_from_baselink;
-        const float left = -info->width / 2.0;
-        const float right = info->width / 2.0;
+        const auto left = static_cast<float>(-info->width / 2.0);
+        const auto right = static_cast<float>(info->width / 2.0);
 
         const std::array<float, 4> lon_offset_vec{top, top, bottom, bottom};
         const std::array<float, 4> lat_offset_vec{left, right, right, left};
@@ -232,13 +234,16 @@ void PoseHistoryFootprint::updateFootprint()
         for (int f_idx = 0; f_idx < 4; ++f_idx) {
           const auto & o = pose.orientation;
           const auto & p = pose.position;
-          const Eigen::Quaternionf quat(o.w, o.x, o.y, o.z);
+          const Eigen::Quaternionf quat(
+            static_cast<float>(o.w), static_cast<float>(o.x), static_cast<float>(o.y),
+            static_cast<float>(o.z));
           {
             const Eigen::Vector3f offset_vec{
               lon_offset_vec.at(f_idx), lat_offset_vec.at(f_idx), 0.0};
             const auto offset_to_edge = quat * offset_vec;
             trajectory_footprint_manual_object_->position(
-              p.x + offset_to_edge.x(), p.y + offset_to_edge.y(), p.z);
+              static_cast<float>(p.x) + offset_to_edge.x(),
+              static_cast<float>(p.y) + offset_to_edge.y(), static_cast<float>(p.z));
             trajectory_footprint_manual_object_->colour(color);
           }
           {
@@ -246,7 +251,8 @@ void PoseHistoryFootprint::updateFootprint()
               lon_offset_vec.at((f_idx + 1) % 4), lat_offset_vec.at((f_idx + 1) % 4), 0.0};
             const auto offset_to_edge = quat * offset_vec;
             trajectory_footprint_manual_object_->position(
-              p.x + offset_to_edge.x(), p.y + offset_to_edge.y(), p.z);
+              static_cast<float>(p.x) + offset_to_edge.x(),
+              static_cast<float>(p.y) + offset_to_edge.y(), static_cast<float>(p.z));
             trajectory_footprint_manual_object_->colour(color);
           }
         }

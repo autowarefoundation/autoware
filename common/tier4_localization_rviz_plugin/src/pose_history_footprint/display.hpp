@@ -40,7 +40,6 @@ namespace rviz_plugins
 {
 
 using autoware::vehicle_info_utils::VehicleInfo;
-using autoware::vehicle_info_utils::VehicleInfoUtils;
 
 class PoseHistoryFootprint
 : public rviz_common::MessageFilterDisplay<geometry_msgs::msg::PoseStamped>
@@ -59,17 +58,18 @@ protected:
   void onInitialize() override;
   void onEnable() override;
   void onDisable() override;
-  void updateFootprint();
+  void update_footprint();
 
 private Q_SLOTS:
-  void updateVisualization();
-  void updateVehicleInfo();
+  void update_visualization();
+  void update_vehicle_info();
 
-private:
+private:  // NOLINT : suppress redundancy warnings
+          //          followings cannot be declared with the Q_SLOTS macro
   void subscribe() override;
   void unsubscribe() override;
   void processMessage(const geometry_msgs::msg::PoseStamped::ConstSharedPtr message) override;
-  void updateHistory(const geometry_msgs::msg::PoseStamped::ConstSharedPtr message);
+  void update_history(const geometry_msgs::msg::PoseStamped::ConstSharedPtr message);
 
   std::string target_frame_;
   std::deque<geometry_msgs::msg::PoseStamped::ConstSharedPtr> history_;
@@ -79,7 +79,7 @@ private:
   rviz_common::properties::IntProperty * property_buffer_size_;
 
   // trajectory footprint
-  Ogre::ManualObject * trajectory_footprint_manual_object_;
+  Ogre::ManualObject * trajectory_footprint_manual_object_{};
   rviz_common::properties::BoolProperty * property_trajectory_footprint_view_;
   rviz_common::properties::ColorProperty * property_trajectory_footprint_color_;
   rviz_common::properties::FloatProperty * property_trajectory_footprint_alpha_;

@@ -63,15 +63,16 @@ protected:
   void update(float wall_dt, float ros_dt) override;
 
 private Q_SLOTS:
-  void updateShapeType();
+  void update_shape_type();
 
-private:
+private:  // NOLINT : suppress redundancy warnings
+          //          followings cannot be declared with the Q_SLOTS macro
   void subscribe() override;
   void unsubscribe() override;
   void processMessage(
     const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr message) override;
-  void updateHistory();
-  void updateShapes();
+  void update_history();
+  void update_shapes();
 
   std::string target_frame_;
   std::deque<geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr> history_;
@@ -80,19 +81,19 @@ private:
   std::vector<std::unique_ptr<rviz_rendering::Arrow>> arrows_;
   rclcpp::Time last_stamp_;
 
-  rviz_common::properties::BoolProperty * property_line_view_;
+  rviz_common::properties::BoolProperty * property_line_view_{};
   rviz_common::properties::FloatProperty * property_line_width_;
   rviz_common::properties::FloatProperty * property_line_alpha_;
   rviz_common::properties::ColorProperty * property_line_color_;
   rviz_common::properties::IntProperty * property_buffer_size_;
 
   rviz_common::properties::BoolProperty * property_sphere_view_;
-  rviz_common::properties::FloatProperty * property_sphere_width_;
+  rviz_common::properties::FloatProperty * property_sphere_width_{};
   rviz_common::properties::FloatProperty * property_sphere_alpha_;
   rviz_common::properties::ColorProperty * property_sphere_color_;
   rviz_common::properties::FloatProperty * property_sphere_scale_;
 
-  rviz_common::properties::BoolProperty * property_arrow_view_;
+  rviz_common::properties::BoolProperty * property_arrow_view_{};
   rviz_common::properties::FloatProperty * property_arrow_shaft_length_;
   rviz_common::properties::FloatProperty * property_arrow_shaft_diameter_;
   rviz_common::properties::FloatProperty * property_arrow_head_length_;
