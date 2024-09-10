@@ -205,61 +205,58 @@ void PoseHistoryFootprint::update_footprint()
   material->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
   material->setDepthWriteEnabled(false);
 
-  if (!history_.empty()) {
-    trajectory_footprint_manual_object_->estimateVertexCount(history_.size() * 4 * 2);
-    trajectory_footprint_manual_object_->begin(
-      "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
+  trajectory_footprint_manual_object_->estimateVertexCount(history_.size() * 4 * 2);
+  trajectory_footprint_manual_object_->begin(
+    "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
 
-    const float offset_from_baselink = property_offset_->getFloat();
+  const float offset_from_baselink = property_offset_->getFloat();
 
-    for (auto & point_idx : history_) {
-      const auto & pose = point_idx->pose;
-      /*
-       * Footprint
-       */
-      if (property_trajectory_footprint_view_->getBool()) {
-        Ogre::ColourValue color;
-        color = rviz_common::properties::qtToOgre(property_trajectory_footprint_color_->getColor());
-        color.a = property_trajectory_footprint_alpha_->getFloat();
+  for (auto & point_idx : history_) {
+    const auto & pose = point_idx->pose;
+    /*
+     * Footprint
+     */
+    if (property_trajectory_footprint_view_->getBool()) {
+      Ogre::ColourValue color;
+      color = rviz_common::properties::qtToOgre(property_trajectory_footprint_color_->getColor());
+      color.a = property_trajectory_footprint_alpha_->getFloat();
 
-        const auto info = vehicle_footprint_info_;
-        const float top = info->length - info->rear_overhang - offset_from_baselink;
-        const float bottom = -info->rear_overhang + offset_from_baselink;
-        const auto left = static_cast<float>(-info->width / 2.0);
-        const auto right = static_cast<float>(info->width / 2.0);
+      const auto info = vehicle_footprint_info_;
+      const float top = info->length - info->rear_overhang - offset_from_baselink;
+      const float bottom = -info->rear_overhang + offset_from_baselink;
+      const auto left = static_cast<float>(-info->width / 2.0);
+      const auto right = static_cast<float>(info->width / 2.0);
 
-        const std::array<float, 4> lon_offset_vec{top, top, bottom, bottom};
-        const std::array<float, 4> lat_offset_vec{left, right, right, left};
+      const std::array<float, 4> lon_offset_vec{top, top, bottom, bottom};
+      const std::array<float, 4> lat_offset_vec{left, right, right, left};
 
-        for (int f_idx = 0; f_idx < 4; ++f_idx) {
-          const auto & o = pose.orientation;
-          const auto & p = pose.position;
-          const Eigen::Quaternionf quat(
-            static_cast<float>(o.w), static_cast<float>(o.x), static_cast<float>(o.y),
-            static_cast<float>(o.z));
-          {
-            const Eigen::Vector3f offset_vec{
-              lon_offset_vec.at(f_idx), lat_offset_vec.at(f_idx), 0.0};
-            const auto offset_to_edge = quat * offset_vec;
-            trajectory_footprint_manual_object_->position(
-              static_cast<float>(p.x) + offset_to_edge.x(),
-              static_cast<float>(p.y) + offset_to_edge.y(), static_cast<float>(p.z));
-            trajectory_footprint_manual_object_->colour(color);
-          }
-          {
-            const Eigen::Vector3f offset_vec{
-              lon_offset_vec.at((f_idx + 1) % 4), lat_offset_vec.at((f_idx + 1) % 4), 0.0};
-            const auto offset_to_edge = quat * offset_vec;
-            trajectory_footprint_manual_object_->position(
-              static_cast<float>(p.x) + offset_to_edge.x(),
-              static_cast<float>(p.y) + offset_to_edge.y(), static_cast<float>(p.z));
-            trajectory_footprint_manual_object_->colour(color);
-          }
+      for (int f_idx = 0; f_idx < 4; ++f_idx) {
+        const auto & o = pose.orientation;
+        const auto & p = pose.position;
+        const Eigen::Quaternionf quat(
+          static_cast<float>(o.w), static_cast<float>(o.x), static_cast<float>(o.y),
+          static_cast<float>(o.z));
+        {
+          const Eigen::Vector3f offset_vec{lon_offset_vec.at(f_idx), lat_offset_vec.at(f_idx), 0.0};
+          const auto offset_to_edge = quat * offset_vec;
+          trajectory_footprint_manual_object_->position(
+            static_cast<float>(p.x) + offset_to_edge.x(),
+            static_cast<float>(p.y) + offset_to_edge.y(), static_cast<float>(p.z));
+          trajectory_footprint_manual_object_->colour(color);
+        }
+        {
+          const Eigen::Vector3f offset_vec{
+            lon_offset_vec.at((f_idx + 1) % 4), lat_offset_vec.at((f_idx + 1) % 4), 0.0};
+          const auto offset_to_edge = quat * offset_vec;
+          trajectory_footprint_manual_object_->position(
+            static_cast<float>(p.x) + offset_to_edge.x(),
+            static_cast<float>(p.y) + offset_to_edge.y(), static_cast<float>(p.z));
+          trajectory_footprint_manual_object_->colour(color);
         }
       }
     }
-    trajectory_footprint_manual_object_->end();
   }
+  trajectory_footprint_manual_object_->end();
 }
 
 }  // namespace rviz_plugins
