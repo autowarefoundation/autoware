@@ -65,6 +65,17 @@ This stage installs the dependency packages based on `/rosdep-universe-localizat
 
 This stage is a Autoware Universe Localization/Mapping runtime container. It only includes the dependencies given by `/rosdep-universe-localization-mapping-exec-depend-packages.txt` and the binaries built in the `universe-localization-mapping-devel` stage.
 
+### `universe-planning-control-devel`
+
+This stage installs the dependency packages based on `/rosdep-universe-planning-control-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
+
+- `universe/autoware.universe/control`
+- `universe/autoware.universe/planning`
+
+### `universe-planning-control`
+
+This stage is a Autoware Universe Planning/Control runtime container. It only includes the dependencies given by `/rosdep-universe-planning-control-exec-depend-packages.txt` and the binaries built in the `universe-planning-control-devel` stage.
+
 ### `universe-devel`
 
 This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and build the remaining packages of `autoware.repos`:
@@ -73,10 +84,8 @@ This stage installs the dependency packages based on `/rosdep-universe-depend-pa
 - `param`
 - `sensor_component`
 - `sensor_kit`
-- `universe/autoware.universe/control`
 - `universe/autoware.universe/evaluator`
 - `universe/autoware.universe/launch`
-- `universe/autoware.universe/planning`
 - `universe/autoware.universe/simulator`
 - `universe/autoware.universe/system`
 - `universe/autoware.universe/tools`
