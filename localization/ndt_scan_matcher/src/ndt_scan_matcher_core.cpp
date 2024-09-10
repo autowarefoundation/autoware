@@ -416,7 +416,10 @@ bool NDTScanMatcher::callback_sensor_points_main(
     "is_succeed_interpolate_initial_pose", is_succeed_interpolate_initial_pose);
   if (!is_succeed_interpolate_initial_pose) {
     std::stringstream message;
-    message << "Couldn't interpolate pose. Please check the initial pose topic";
+    message << "Couldn't interpolate pose. Please verify that "
+               "(1) the initial pose topic (primarily come from the EKF) is being published, and "
+               "(2) the timestamps of the sensor PCD messages and pose messages are synchronized "
+               "correctly.";
     diagnostics_scan_points_->update_level_and_message(
       diagnostic_msgs::msg::DiagnosticStatus::WARN, message.str());
     return false;
