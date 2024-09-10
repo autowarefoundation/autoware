@@ -6,6 +6,8 @@
   <description>ROS 2 node for evaluating control</description>
   <maintainer email="daniel.sanchez@tier4.jp">Daniel SANCHEZ</maintainer>
   <maintainer email="takayuki.murooka@tier4.jp">takayuki MUROOKA</maintainer>
+  <maintainer email="kosuke.takeuchi@tier4.jp">kosuke TAKEUCHI</maintainer>
+  <maintainer email="temkei.kem@tier4.jp">Temkei Kem</maintainer>
   <license>Apache License 2.0</license>
 
   <author email="daniel.sanchez@tier4.jp">Daniel SANCHEZ</author>

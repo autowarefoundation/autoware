@@ -61,7 +61,7 @@ control/autoware_vehicle_cmd_gate/** takamasa.horibe@tier4.jp tomoya.kimura@tier
 control/control_performance_analysis/** berkay@leodrive.ai fumiya.watanabe@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 control/obstacle_collision_checker/** fumiya.watanabe@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 control/predicted_path_checker/** berkay@leodrive.ai
-evaluator/autoware_control_evaluator/** daniel.sanchez@tier4.jp takayuki.murooka@tier4.jp
+evaluator/autoware_control_evaluator/** daniel.sanchez@tier4.jp takayuki.murooka@tier4.jp kosuke.takeuchi@tier4.jp
 evaluator/autoware_evaluator_utils/** daniel.sanchez@tier4.jp takayuki.murooka@tier4.jp
 evaluator/autoware_planning_evaluator/** kyoichi.sugahara@tier4.jp maxime.clement@tier4.jp
 evaluator/diagnostic_converter/** kyoichi.sugahara@tier4.jp maxime.clement@tier4.jp takamasa.horibe@tier4.jp
