@@ -154,6 +154,7 @@ void BirdEyeViewTool::activate()
   setFallbackViewControllerProperty();
 }
 
+// cppcheck-suppress unusedFunction
 void BirdEyeViewTool::deactivate()
 {
 }
