@@ -699,43 +699,46 @@ void AutowareStatePanel::onMRMState(const MRMState::ConstSharedPtr msg)
 
   // behavior
   {
-    IconState state;
-    QColor bgColor;
+    IconState behavior_state;
+    QColor behavior_bgColor;
     QString mrm_behavior = "MRM Behavior | Unknown";
 
     switch (msg->behavior) {
       case MRMState::NONE:
-        state = Crash;
-        bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
+        behavior_state = Crash;
+        behavior_bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
         mrm_behavior = "MRM Behavior | Inactive";
         break;
 
       case MRMState::PULL_OVER:
-        state = Crash;
-        bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.success.c_str());
+        behavior_state = Crash;
+        behavior_bgColor =
+          QColor(autoware::state_rviz_plugin::colors::default_colors.success.c_str());
         mrm_behavior = "MRM Behavior | Pull Over";
         break;
 
       case MRMState::COMFORTABLE_STOP:
-        state = Crash;
-        bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.warning.c_str());
+        behavior_state = Crash;
+        behavior_bgColor =
+          QColor(autoware::state_rviz_plugin::colors::default_colors.warning.c_str());
         mrm_behavior = "MRM Behavior | Comfortable Stop";
         break;
 
       case MRMState::EMERGENCY_STOP:
-        state = Crash;
-        bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.danger.c_str());
+        behavior_state = Crash;
+        behavior_bgColor =
+          QColor(autoware::state_rviz_plugin::colors::default_colors.danger.c_str());
         mrm_behavior = "MRM Behavior | Emergency Stop";
         break;
 
       default:
-        state = Crash;
-        bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
+        behavior_state = Crash;
+        behavior_bgColor = QColor(autoware::state_rviz_plugin::colors::default_colors.info.c_str());
         mrm_behavior = "MRM Behavior | Unknown";
         break;
     }
 
-    mrm_behavior_icon->updateStyle(state, bgColor);
+    mrm_behavior_icon->updateStyle(behavior_state, behavior_bgColor);
     mrm_behavior_label_ptr_->setText(mrm_behavior);
   }
 }
