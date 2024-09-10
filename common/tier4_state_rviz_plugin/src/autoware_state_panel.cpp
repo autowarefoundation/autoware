@@ -171,7 +171,7 @@ void AutowareStatePanel::onInitialize()
       return;
     }
 
-    QPushButton * button = qobject_cast<QPushButton *>(abstractButton);
+    const QPushButton * button = qobject_cast<QPushButton *>(abstractButton);
     if (button) {
       // Call the corresponding function for each button
       if (button == auto_button_ptr_) {
