@@ -1,4 +1,4 @@
-<library path="tier4_perception_rviz_plugin">
+<library path="tier4_dummy_object_rviz_plugin">
   <class name="rviz_plugins/PedestrianInitialPoseTool"
          type="rviz_plugins::PedestrianInitialPoseTool"
          base_class_type="rviz_common::Tool">

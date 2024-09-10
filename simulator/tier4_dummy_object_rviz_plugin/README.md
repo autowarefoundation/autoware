@@ -1,4 +1,4 @@
-# tier4_perception_rviz_plugin
+# tier4_dummy_object_rviz_plugin
 
 ## Purpose
 
@@ -91,7 +91,7 @@ Using a planning simulator
 
 1. Start rviz and select + on the tool tab.
    ![select_add](./images/select_add.png)
-2. Select one of the following: tier4_perception_rviz_plugin and press OK.
+2. Select one of the following: tier4_dummy_object_rviz_plugin and press OK.
    ![select_plugin](./images/select_plugin.png)
 3. Select the new item in the tool tab (2D Dummy Car in the example) and click on it in rviz.
    ![select_dummy_car](./images/select_dummy_car.png)

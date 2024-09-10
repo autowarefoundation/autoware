@@ -41,7 +41,6 @@ nav:
     - 'tier4_camera_view_rviz_plugin': common/tier4_camera_view_rviz_plugin
     - 'tier4_datetime_rviz_plugin': common/tier4_datetime_rviz_plugin
     - 'tier4_localization_rviz_plugin': common/tier4_localization_rviz_plugin
-    - 'tier4_perception_rviz_plugin': common/tier4_perception_rviz_plugin
     - 'tier4_planning_rviz_plugin': common/tier4_planning_rviz_plugin
     - 'tier4_state_rviz_plugin': common/tier4_state_rviz_plugin
     - 'tier4_system_rviz_plugin': common/tier4_system_rviz_plugin

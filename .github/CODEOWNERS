@@ -35,7 +35,6 @@ common/tier4_api_utils/** isamu.takagi@tier4.jp
 common/tier4_camera_view_rviz_plugin/** makoto.ybauta@tier4.jp uken.ryu@tier4.jp
 common/tier4_datetime_rviz_plugin/** isamu.takagi@tier4.jp
 common/tier4_localization_rviz_plugin/** isamu.takagi@tier4.jp takamasa.horibe@tier4.jp yamato.ando@tier4.jp
-common/tier4_perception_rviz_plugin/** yukihiro.saito@tier4.jp
 common/tier4_planning_rviz_plugin/** takayuki.murooka@tier4.jp yukihiro.saito@tier4.jp
 common/tier4_state_rviz_plugin/** hiroki.ota@tier4.jp isamu.takagi@tier4.jp khalil@leodrive.ai
 common/tier4_system_rviz_plugin/** koji.minoda@tier4.jp
@@ -217,6 +216,7 @@ simulator/dummy_perception_publisher/** yukihiro.saito@tier4.jp
 simulator/fault_injection/** keisuke.shima@tier4.jp
 simulator/learning_based_vehicle_model/** maxime.clement@tier4.jp nagy.tomas@tier4.jp
 simulator/simple_planning_simulator/** mamoru.sobue@tier4.jp maxime.clement@tier4.jp takamasa.horibe@tier4.jp temkei.kem@tier4.jp tomoya.kimura@tier4.jp zulfaqar.azmi@tier4.jp
+simulator/tier4_dummy_object_rviz_plugin/** yukihiro.saito@tier4.jp
 simulator/vehicle_door_simulator/** isamu.takagi@tier4.jp
 system/autoware_component_monitor/** memin@leodrive.ai
 system/autoware_default_adapi/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp yukihiro.saito@tier4.jp
