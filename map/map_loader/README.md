@@ -22,7 +22,7 @@ NOTE: **We strongly recommend to use divided maps when using large pointcloud ma
 
 You may provide either a single .pcd file or multiple .pcd files. If you are using multiple PCD data, it MUST obey the following rules:
 
-1. **The pointcloud map should be projected on the same coordinate defined in `map_projection_loader`**, in order to be consistent with the lanelet2 map and other packages that converts between local and geodetic coordinates. For more information, please refer to [the readme of `map_projection_loader`](https://github.com/autowarefoundation/autoware.universe/tree/main/map/map_projection_loader/README.md).
+1. **The pointcloud map should be projected on the same coordinate defined in `map_projection_loader`**, in order to be consistent with the lanelet2 map and other packages that converts between local and geodetic coordinates. For more information, please refer to [the readme of `map_projection_loader`](https://github.com/autowarefoundation/autoware.universe/tree/main/map/autoware_map_projection_loader/README.md).
 2. **It must be divided by straight lines parallel to the x-axis and y-axis**. The system does not support division by diagonal lines or curved lines.
 3. **The division size along each axis should be equal.**
 4. **The division size should be about 20m x 20m.** Particularly, care should be taken as using too large division size (for example, more than 100m) may have adverse effects on dynamic map loading features in [ndt_scan_matcher](https://github.com/autowarefoundation/autoware.universe/tree/main/localization/ndt_scan_matcher) and [autoware_compare_map_segmentation](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/autoware_compare_map_segmentation).
