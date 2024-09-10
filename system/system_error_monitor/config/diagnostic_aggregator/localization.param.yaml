@@ -27,7 +27,7 @@
             localization_error_ellipse:
               type: diagnostic_aggregator/GenericAnalyzer
               path: localization_error_ellipse
-              contains: ["localization: localization_error_monitor"]
+              contains: ["localization_error_monitor: ellipse_error_status"]
               timeout: 1.0
 
             localization_stability:

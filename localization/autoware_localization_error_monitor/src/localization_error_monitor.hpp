@@ -16,12 +16,12 @@
 #define LOCALIZATION_ERROR_MONITOR_HPP_
 
 #include "localization_util/covariance_ellipse.hpp"
+#include "localization_util/diagnostics_module.hpp"
 
 #include <Eigen/Dense>
 #include <autoware/universe_utils/ros/logger_level_configure.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
@@ -34,11 +34,12 @@ class LocalizationErrorMonitor : public rclcpp::Node
 private:
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr ellipse_marker_pub_;
-  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diag_pub_;
 
   rclcpp::TimerBase::SharedPtr timer_;
 
   std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
+
+  std::unique_ptr<DiagnosticsModule> diagnostics_error_monitor_;
 
   double scale_;
   double error_ellipse_size_;

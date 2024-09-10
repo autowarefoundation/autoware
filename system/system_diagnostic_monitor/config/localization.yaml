@@ -34,8 +34,8 @@ units:
 
   - path: /autoware/localization/accuracy
     type: diag
-    node: localization
-    name: localization_error_monitor
+    node: localization_error_monitor
+    name: ellipse_error_status
 
   - path: /autoware/localization/sensor_fusion_status
     type: diag

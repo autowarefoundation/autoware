@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "diagnostics.hpp"
+#include "diagnostics_helper.hpp"
 
 #include <gtest/gtest.h>
 
@@ -80,66 +80,4 @@ TEST(TestLocalizationErrorMonitorDiagnostics, CheckLocalizationAccuracyLateralDi
   stat = autoware::localization_error_monitor::check_localization_accuracy_lateral_direction(
     ellipse_size, warn_ellipse_size, error_ellipse_size);
   EXPECT_EQ(stat.level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
-}
-
-TEST(TestLocalizationErrorMonitorDiagnostics, MergeDiagnosticStatus)
-{
-  diagnostic_msgs::msg::DiagnosticStatus merged_stat;
-  std::vector<diagnostic_msgs::msg::DiagnosticStatus> stat_array(2);
-
-  stat_array.at(0).level = diagnostic_msgs::msg::DiagnosticStatus::OK;
-  stat_array.at(0).message = "OK";
-  stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::OK;
-  stat_array.at(1).message = "OK";
-  merged_stat = autoware::localization_error_monitor::merge_diagnostic_status(stat_array);
-  EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::OK);
-  EXPECT_EQ(merged_stat.message, "OK");
-
-  stat_array.at(0).level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
-  stat_array.at(0).message = "WARN0";
-  stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::OK;
-  stat_array.at(1).message = "OK";
-  merged_stat = autoware::localization_error_monitor::merge_diagnostic_status(stat_array);
-  EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
-  EXPECT_EQ(merged_stat.message, "WARN0");
-
-  stat_array.at(0).level = diagnostic_msgs::msg::DiagnosticStatus::OK;
-  stat_array.at(0).message = "OK";
-  stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
-  stat_array.at(1).message = "WARN1";
-  merged_stat = autoware::localization_error_monitor::merge_diagnostic_status(stat_array);
-  EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
-  EXPECT_EQ(merged_stat.message, "WARN1");
-
-  stat_array.at(0).level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
-  stat_array.at(0).message = "WARN0";
-  stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
-  stat_array.at(1).message = "WARN1";
-  merged_stat = autoware::localization_error_monitor::merge_diagnostic_status(stat_array);
-  EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
-  EXPECT_EQ(merged_stat.message, "WARN0; WARN1");
-
-  stat_array.at(0).level = diagnostic_msgs::msg::DiagnosticStatus::OK;
-  stat_array.at(0).message = "OK";
-  stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
-  stat_array.at(1).message = "ERROR1";
-  merged_stat = autoware::localization_error_monitor::merge_diagnostic_status(stat_array);
-  EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
-  EXPECT_EQ(merged_stat.message, "ERROR1");
-
-  stat_array.at(0).level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
-  stat_array.at(0).message = "WARN0";
-  stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
-  stat_array.at(1).message = "ERROR1";
-  merged_stat = autoware::localization_error_monitor::merge_diagnostic_status(stat_array);
-  EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
-  EXPECT_EQ(merged_stat.message, "WARN0; ERROR1");
-
-  stat_array.at(0).level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
-  stat_array.at(0).message = "ERROR0";
-  stat_array.at(1).level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
-  stat_array.at(1).message = "ERROR1";
-  merged_stat = autoware::localization_error_monitor::merge_diagnostic_status(stat_array);
-  EXPECT_EQ(merged_stat.level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
-  EXPECT_EQ(merged_stat.message, "ERROR0; ERROR1");
 }

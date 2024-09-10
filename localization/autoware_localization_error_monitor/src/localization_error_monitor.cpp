@@ -14,7 +14,7 @@
 
 #include "localization_error_monitor.hpp"
 
-#include "diagnostics.hpp"
+#include "diagnostics_helper.hpp"
 
 #include <Eigen/Dense>
 
@@ -56,36 +56,38 @@ LocalizationErrorMonitor::LocalizationErrorMonitor(const rclcpp::NodeOptions & o
   ellipse_marker_pub_ =
     this->create_publisher<visualization_msgs::msg::Marker>("debug/ellipse_marker", durable_qos);
 
-  diag_pub_ = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
-
   logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
+
+  diagnostics_error_monitor_ = std::make_unique<DiagnosticsModule>(this, "ellipse_error_status");
 }
 
 void LocalizationErrorMonitor::on_odom(nav_msgs::msg::Odometry::ConstSharedPtr input_msg)
 {
+  diagnostics_error_monitor_->clear();
+
   ellipse_ = autoware::localization_util::calculate_xy_ellipse(input_msg->pose, scale_);
 
   const auto ellipse_marker = autoware::localization_util::create_ellipse_marker(
     ellipse_, input_msg->header, input_msg->pose);
   ellipse_marker_pub_->publish(ellipse_marker);
 
-  // diagnostics
-  std::vector<diagnostic_msgs::msg::DiagnosticStatus> diag_status_array;
-  diag_status_array.push_back(
-    check_localization_accuracy(ellipse_.long_radius, warn_ellipse_size_, error_ellipse_size_));
-  diag_status_array.push_back(check_localization_accuracy_lateral_direction(
+  // update localization accuracy diagnostics
+  const auto accuracy_status =
+    check_localization_accuracy(ellipse_.long_radius, warn_ellipse_size_, error_ellipse_size_);
+  diagnostics_error_monitor_->add_key_value("localization_error_ellipse", ellipse_.long_radius);
+  diagnostics_error_monitor_->update_level_and_message(
+    accuracy_status.level, accuracy_status.message);
+
+  // update lateral direction error diagnostics
+  const auto lateral_direction_status = check_localization_accuracy_lateral_direction(
     ellipse_.size_lateral_direction, warn_ellipse_size_lateral_direction_,
-    error_ellipse_size_lateral_direction_));
+    error_ellipse_size_lateral_direction_);
+  diagnostics_error_monitor_->add_key_value(
+    "localization_error_ellipse_lateral_direction", ellipse_.size_lateral_direction);
+  diagnostics_error_monitor_->update_level_and_message(
+    lateral_direction_status.level, lateral_direction_status.message);
 
-  diagnostic_msgs::msg::DiagnosticStatus diag_merged_status;
-  diag_merged_status = merge_diagnostic_status(diag_status_array);
-  diag_merged_status.name = "localization: " + std::string(this->get_name());
-  diag_merged_status.hardware_id = this->get_name();
-
-  diagnostic_msgs::msg::DiagnosticArray diag_msg;
-  diag_msg.header.stamp = input_msg->header.stamp;
-  diag_msg.status.push_back(diag_merged_status);
-  diag_pub_->publish(diag_msg);
+  diagnostics_error_monitor_->publish(this->now());
 }
 }  // namespace autoware::localization_error_monitor
 
