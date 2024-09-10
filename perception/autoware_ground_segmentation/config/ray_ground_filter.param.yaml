@@ -12,3 +12,6 @@
       min_height_threshold: 0.15
       concentric_divider_distance: 0.0
       reclass_distance_threshold: 0.1
+
+      # debug parameters
+      publish_processing_time_detail: false

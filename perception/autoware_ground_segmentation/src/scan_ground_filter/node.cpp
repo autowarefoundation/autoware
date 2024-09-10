@@ -30,6 +30,7 @@ using autoware::universe_utils::calcDistance3d;
 using autoware::universe_utils::deg2rad;
 using autoware::universe_utils::normalizeDegree;
 using autoware::universe_utils::normalizeRadian;
+using autoware::universe_utils::ScopedTimeTrack;
 using autoware::vehicle_info_utils::VehicleInfoUtils;
 
 ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions & options)
@@ -85,6 +86,15 @@ ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions &
     debug_publisher_ptr_ = std::make_unique<DebugPublisher>(this, "scan_ground_filter");
     stop_watch_ptr_->tic("cyclic_time");
     stop_watch_ptr_->tic("processing_time");
+
+    bool use_time_keeper = declare_parameter<bool>("publish_processing_time_detail");
+    if (use_time_keeper) {
+      detailed_processing_time_publisher_ =
+        this->create_publisher<autoware::universe_utils::ProcessingTimeDetail>(
+          "~/debug/processing_time_detail_ms", 1);
+      auto time_keeper = autoware::universe_utils::TimeKeeper(detailed_processing_time_publisher_);
+      time_keeper_ = std::make_shared<autoware::universe_utils::TimeKeeper>(time_keeper);
+    }
   }
 }
 
@@ -114,6 +124,9 @@ inline void ScanGroundFilterComponent::get_point_from_global_offset(
 void ScanGroundFilterComponent::convertPointcloudGridScan(
   const PointCloud2ConstPtr & in_cloud, std::vector<PointCloudVector> & out_radial_ordered_points)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   out_radial_ordered_points.resize(radial_dividers_num_);
   PointData current_point;
 
@@ -128,46 +141,59 @@ void ScanGroundFilterComponent::convertPointcloudGridScan(
   const size_t in_cloud_data_size = in_cloud->data.size();
   const size_t in_cloud_point_step = in_cloud->point_step;
 
-  size_t point_index = 0;
-  pcl::PointXYZ input_point;
-  for (size_t global_offset = 0; global_offset + in_cloud_point_step <= in_cloud_data_size;
-       global_offset += in_cloud_point_step) {
-    get_point_from_global_offset(in_cloud, input_point, global_offset);
+  {  // grouping pointcloud by its horizontal angle
+    std::unique_ptr<ScopedTimeTrack> inner_st_ptr;
+    if (time_keeper_)
+      inner_st_ptr = std::make_unique<ScopedTimeTrack>("horizontal_angle_grouping", *time_keeper_);
 
-    auto x{input_point.x - x_shift};  // base on front wheel center
-    auto radius{static_cast<float>(std::hypot(x, input_point.y))};
-    auto theta{normalizeRadian(std::atan2(x, input_point.y), 0.0)};
+    size_t point_index = 0;
+    pcl::PointXYZ input_point;
+    for (size_t global_offset = 0; global_offset + in_cloud_point_step <= in_cloud_data_size;
+         global_offset += in_cloud_point_step) {
+      get_point_from_global_offset(in_cloud, input_point, global_offset);
 
-    // divide by vertical angle
-    auto radial_div{static_cast<size_t>(std::floor(theta * inv_radial_divider_angle_rad))};
-    uint16_t grid_id = 0;
-    if (radius <= grid_mode_switch_radius_) {
-      grid_id = static_cast<uint16_t>(radius * inv_grid_size_m);
-    } else {
-      auto gamma{normalizeRadian(std::atan2(radius, virtual_lidar_z_), 0.0f)};
-      grid_id = grid_id_offset + gamma * inv_grid_size_rad;
+      auto x{input_point.x - x_shift};  // base on front wheel center
+      auto radius{static_cast<float>(std::hypot(x, input_point.y))};
+      auto theta{normalizeRadian(std::atan2(x, input_point.y), 0.0)};
+
+      // divide by vertical angle
+      auto radial_div{static_cast<size_t>(std::floor(theta * inv_radial_divider_angle_rad))};
+      uint16_t grid_id = 0;
+      if (radius <= grid_mode_switch_radius_) {
+        grid_id = static_cast<uint16_t>(radius * inv_grid_size_m);
+      } else {
+        auto gamma{normalizeRadian(std::atan2(radius, virtual_lidar_z_), 0.0f)};
+        grid_id = grid_id_offset + gamma * inv_grid_size_rad;
+      }
+      current_point.grid_id = grid_id;
+      current_point.radius = radius;
+      current_point.point_state = PointLabel::INIT;
+      current_point.orig_index = point_index;
+
+      // radial divisions
+      out_radial_ordered_points[radial_div].emplace_back(current_point);
+      ++point_index;
     }
-    current_point.grid_id = grid_id;
-    current_point.radius = radius;
-    current_point.point_state = PointLabel::INIT;
-    current_point.orig_index = point_index;
-
-    // radial divisions
-    out_radial_ordered_points[radial_div].emplace_back(current_point);
-    ++point_index;
   }
 
-  // sort by distance
-  for (size_t i = 0; i < radial_dividers_num_; ++i) {
-    std::sort(
-      out_radial_ordered_points[i].begin(), out_radial_ordered_points[i].end(),
-      [](const PointData & a, const PointData & b) { return a.radius < b.radius; });
+  {  // sorting pointcloud by distance, on each horizontal angle group
+    std::unique_ptr<ScopedTimeTrack> inner_st_ptr;
+    if (time_keeper_) inner_st_ptr = std::make_unique<ScopedTimeTrack>("sort", *time_keeper_);
+
+    for (size_t i = 0; i < radial_dividers_num_; ++i) {
+      std::sort(
+        out_radial_ordered_points[i].begin(), out_radial_ordered_points[i].end(),
+        [](const PointData & a, const PointData & b) { return a.radius < b.radius; });
+    }
   }
 }
 
 void ScanGroundFilterComponent::convertPointcloud(
   const PointCloud2ConstPtr & in_cloud, std::vector<PointCloudVector> & out_radial_ordered_points)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   out_radial_ordered_points.resize(radial_dividers_num_);
   PointData current_point;
 
@@ -176,30 +202,41 @@ void ScanGroundFilterComponent::convertPointcloud(
   const size_t in_cloud_data_size = in_cloud->data.size();
   const size_t in_cloud_point_step = in_cloud->point_step;
 
-  size_t point_index = 0;
-  pcl::PointXYZ input_point;
-  for (size_t global_offset = 0; global_offset + in_cloud_point_step <= in_cloud_data_size;
-       global_offset += in_cloud_point_step) {
-    // Point
-    get_point_from_global_offset(in_cloud, input_point, global_offset);
+  {  // grouping pointcloud by its horizontal angle
+    std::unique_ptr<ScopedTimeTrack> inner_st_ptr;
+    if (time_keeper_)
+      inner_st_ptr = std::make_unique<ScopedTimeTrack>("horizontal_angle_grouping", *time_keeper_);
 
-    auto radius{static_cast<float>(std::hypot(input_point.x, input_point.y))};
-    auto theta{normalizeRadian(std::atan2(input_point.x, input_point.y), 0.0)};
-    auto radial_div{static_cast<size_t>(std::floor(theta * inv_radial_divider_angle_rad))};
+    size_t point_index = 0;
+    pcl::PointXYZ input_point;
+    for (size_t global_offset = 0; global_offset + in_cloud_point_step <= in_cloud_data_size;
+         global_offset += in_cloud_point_step) {
+      // Point
+      get_point_from_global_offset(in_cloud, input_point, global_offset);
 
-    current_point.radius = radius;
-    current_point.point_state = PointLabel::INIT;
-    current_point.orig_index = point_index;
+      auto radius{static_cast<float>(std::hypot(input_point.x, input_point.y))};
+      auto theta{normalizeRadian(std::atan2(input_point.x, input_point.y), 0.0)};
+      auto radial_div{static_cast<size_t>(std::floor(theta * inv_radial_divider_angle_rad))};
 
-    // radial divisions
-    out_radial_ordered_points[radial_div].emplace_back(current_point);
-    ++point_index;
+      current_point.radius = radius;
+      current_point.point_state = PointLabel::INIT;
+      current_point.orig_index = point_index;
+
+      // radial divisions
+      out_radial_ordered_points[radial_div].emplace_back(current_point);
+      ++point_index;
+    }
   }
-  // sort by distance
-  for (size_t i = 0; i < radial_dividers_num_; ++i) {
-    std::sort(
-      out_radial_ordered_points[i].begin(), out_radial_ordered_points[i].end(),
-      [](const PointData & a, const PointData & b) { return a.radius < b.radius; });
+
+  {  // sorting pointcloud by distance, on each horizontal angle group
+    std::unique_ptr<ScopedTimeTrack> inner_st_ptr;
+    if (time_keeper_) inner_st_ptr = std::make_unique<ScopedTimeTrack>("sort", *time_keeper_);
+
+    for (size_t i = 0; i < radial_dividers_num_; ++i) {
+      std::sort(
+        out_radial_ordered_points[i].begin(), out_radial_ordered_points[i].end(),
+        [](const PointData & a, const PointData & b) { return a.radius < b.radius; });
+    }
   }
 }
 
@@ -336,6 +373,9 @@ void ScanGroundFilterComponent::classifyPointCloudGridScan(
   const PointCloud2ConstPtr & in_cloud, std::vector<PointCloudVector> & in_radial_ordered_clouds,
   pcl::PointIndices & out_no_ground_indices)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   out_no_ground_indices.indices.clear();
   for (size_t i = 0; i < in_radial_ordered_clouds.size(); ++i) {
     PointsCentroid ground_cluster;
@@ -456,6 +496,9 @@ void ScanGroundFilterComponent::classifyPointCloud(
   const PointCloud2ConstPtr & in_cloud, std::vector<PointCloudVector> & in_radial_ordered_clouds,
   pcl::PointIndices & out_no_ground_indices)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   out_no_ground_indices.indices.clear();
 
   const pcl::PointXYZ init_ground_point(0, 0, 0);
@@ -470,6 +513,7 @@ void ScanGroundFilterComponent::classifyPointCloud(
     PointsCentroid ground_cluster, non_ground_cluster;
     PointLabel prev_point_label = PointLabel::INIT;
     pcl::PointXYZ prev_gnd_point(0, 0, 0), p_orig_point, prev_p_orig_point;
+
     // loop through each point in the radial div
     for (size_t j = 0; j < in_radial_ordered_clouds[i].size(); ++j) {
       float points_distance = 0.0f;
@@ -569,6 +613,9 @@ void ScanGroundFilterComponent::extractObjectPoints(
   const PointCloud2ConstPtr & in_cloud_ptr, const pcl::PointIndices & in_indices,
   PointCloud2 & out_object_cloud)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   size_t output_data_size = 0;
 
   for (const auto & i : in_indices.indices) {
@@ -584,6 +631,9 @@ void ScanGroundFilterComponent::faster_filter(
   PointCloud2 & output,
   [[maybe_unused]] const autoware::pointcloud_preprocessor::TransformInfo & transform_info)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   std::scoped_lock lock(mutex_);
   stop_watch_ptr_->toc("processing_time", true);
 

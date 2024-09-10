@@ -19,3 +19,6 @@
         radial_divider_angle_deg: 1.0
         use_recheck_ground_cluster: true
         use_lowest_point: true
+
+        # debug parameters
+        publish_processing_time_detail: false

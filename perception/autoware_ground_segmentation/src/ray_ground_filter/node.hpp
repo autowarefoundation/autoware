@@ -45,6 +45,8 @@
 #ifndef RAY_GROUND_FILTER__NODE_HPP_
 #define RAY_GROUND_FILTER__NODE_HPP_
 
+#include "autoware/universe_utils/system/time_keeper.hpp"
+
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <pcl/filters/extract_indices.h>
@@ -72,6 +74,7 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -139,6 +142,11 @@ private:
   const size_t color_num_ = 10;                          // different number of color to generate
   pcl::PointCloud<PointType_>::Ptr previous_cloud_ptr_;  // holds the previous groundless result of
                                                          // ground classification
+
+  // time keeper related
+  rclcpp::Publisher<autoware::universe_utils::ProcessingTimeDetail>::SharedPtr
+    detailed_processing_time_publisher_;
+  std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_;
 
   /*!
    * Output transformed PointCloud from in_cloud_ptr->header.frame_id to in_target_frame

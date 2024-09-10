@@ -21,6 +21,7 @@
 
   <depend>ament_index_cpp</depend>
   <depend>autoware_pointcloud_preprocessor</depend>
+  <depend>autoware_universe_utils</depend>
   <depend>autoware_vehicle_info_utils</depend>
   <depend>libopencv-dev</depend>
   <depend>pcl_conversions</depend>

@@ -16,6 +16,7 @@
 #define RANSAC_GROUND_FILTER__NODE_HPP_
 
 #include "autoware/pointcloud_preprocessor/filter.hpp"
+#include "autoware/universe_utils/system/time_keeper.hpp"
 
 #include <autoware/universe_utils/ros/managed_transform_buffer.hpp>
 
@@ -84,6 +85,11 @@ private:
   bool is_initialized_debug_message_ = false;
   Eigen::Vector3d unit_vec_ = Eigen::Vector3d::UnitZ();
   std::unique_ptr<autoware::universe_utils::ManagedTransformBuffer> managed_tf_buffer_{nullptr};
+
+  // time keeper related
+  rclcpp::Publisher<autoware::universe_utils::ProcessingTimeDetail>::SharedPtr
+    detailed_processing_time_publisher_;
+  std::shared_ptr<autoware::universe_utils::TimeKeeper> time_keeper_;
 
   /*!
    * Output transformed PointCloud from in_cloud_ptr->header.frame_id to in_target_frame

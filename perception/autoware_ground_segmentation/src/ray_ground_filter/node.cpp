@@ -31,12 +31,14 @@
 
 #include "node.hpp"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace autoware::ground_segmentation
 {
 using autoware::pointcloud_preprocessor::get_param;
+using autoware::universe_utils::ScopedTimeTrack;
 
 RayGroundFilterComponent::RayGroundFilterComponent(const rclcpp::NodeOptions & options)
 : Filter("RayGroundFilter", options)
@@ -69,6 +71,15 @@ RayGroundFilterComponent::RayGroundFilterComponent(const rclcpp::NodeOptions & o
   using std::placeholders::_1;
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&RayGroundFilterComponent::paramCallback, this, _1));
+
+  bool use_time_keeper = declare_parameter<bool>("publish_processing_time_detail");
+  if (use_time_keeper) {
+    detailed_processing_time_publisher_ =
+      this->create_publisher<autoware::universe_utils::ProcessingTimeDetail>(
+        "~/debug/processing_time_detail_ms", 1);
+    auto time_keeper = autoware::universe_utils::TimeKeeper(detailed_processing_time_publisher_);
+    time_keeper_ = std::make_shared<autoware::universe_utils::TimeKeeper>(time_keeper);
+  }
 }
 
 void RayGroundFilterComponent::ConvertXYZIToRTZColor(
@@ -76,6 +87,9 @@ void RayGroundFilterComponent::ConvertXYZIToRTZColor(
   std::vector<pcl::PointIndices> & out_radial_divided_indices,
   std::vector<PointCloudXYZRTColor> & out_radial_ordered_clouds)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   out_organized_points.resize(in_cloud->points.size());
   out_radial_divided_indices.clear();
   out_radial_divided_indices.resize(radial_dividers_num_);
@@ -153,6 +167,9 @@ void RayGroundFilterComponent::ClassifyPointCloud(
   std::vector<PointCloudXYZRTColor> & in_radial_ordered_clouds,
   pcl::PointIndices & out_ground_indices, pcl::PointIndices & out_no_ground_indices)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   out_ground_indices.indices.clear();
   out_no_ground_indices.indices.clear();
 #pragma omp for
@@ -275,6 +292,9 @@ void RayGroundFilterComponent::ExtractPointsIndices(
   const PointCloud2::ConstSharedPtr in_cloud_ptr, const pcl::PointIndices & in_indices,
   PointCloud2::SharedPtr ground_cloud_msg_ptr, PointCloud2::SharedPtr no_ground_cloud_msg_ptr)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   initializePointCloud2(in_cloud_ptr, ground_cloud_msg_ptr);
   initializePointCloud2(in_cloud_ptr, no_ground_cloud_msg_ptr);
   int point_step = in_cloud_ptr->point_step;
@@ -312,6 +332,9 @@ void RayGroundFilterComponent::filter(
   const PointCloud2::ConstSharedPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
+  std::unique_ptr<ScopedTimeTrack> st_ptr;
+  if (time_keeper_) st_ptr = std::make_unique<ScopedTimeTrack>(__func__, *time_keeper_);
+
   std::scoped_lock lock(mutex_);
 
   pcl::PointCloud<PointType_>::Ptr current_sensor_cloud_ptr(new pcl::PointCloud<PointType_>);

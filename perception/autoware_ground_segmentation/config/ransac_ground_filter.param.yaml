@@ -12,3 +12,6 @@
     voxel_size_z: 0.04
     height_threshold: 0.01
     debug: false
+
+    # debug parameters
+    publish_processing_time_detail: false
