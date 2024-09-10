@@ -52,6 +52,17 @@
 namespace tier4_camera_view_rviz_plugin
 {
 BirdEyeViewTool::BirdEyeViewTool()
+: m_sceneNode(nullptr),
+  m_fly_mode(false),
+  m_left_hand_mode(false),
+  m_removed_select(false),
+  m_pos_offset(0.0),
+  m_boost(0.0),
+  step_length_property_(nullptr),
+  boost_property_(nullptr),
+  fly_property_(nullptr),
+  left_hand_property_(nullptr),
+  fallback_view_controller_property_(nullptr)
 {
   shortcut_key_ = 'r';
 }
