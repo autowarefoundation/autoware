@@ -52,8 +52,8 @@ struct PointCloudWithTransform
 {
   cuda::unique_ptr<float[]> points_d{nullptr};
   std_msgs::msg::Header header;
-  size_t num_points{0};
-  size_t point_step{0};
+  std::size_t num_points{0};
+  std::size_t point_step{0};
   Eigen::Affine3f affine_past2world;
 };
 

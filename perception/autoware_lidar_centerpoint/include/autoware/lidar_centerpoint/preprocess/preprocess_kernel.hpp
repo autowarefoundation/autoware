@@ -21,14 +21,14 @@
 namespace autoware::lidar_centerpoint
 {
 cudaError_t generateSweepPoints_launch(
-  const float * input_points, size_t points_size, int input_point_step, float time_lag,
+  const float * input_points, std::size_t points_size, int input_point_step, float time_lag,
   const float * transform, int num_features, float * output_points, cudaStream_t stream);
 
 cudaError_t generateVoxels_random_launch(
-  const float * points, size_t points_size, float min_x_range, float max_x_range, float min_y_range,
-  float max_y_range, float min_z_range, float max_z_range, float pillar_x_size, float pillar_y_size,
-  float pillar_z_size, int grid_y_size, int grid_x_size, unsigned int * mask, float * voxels,
-  cudaStream_t stream);
+  const float * points, std::size_t points_size, float min_x_range, float max_x_range,
+  float min_y_range, float max_y_range, float min_z_range, float max_z_range, float pillar_x_size,
+  float pillar_y_size, float pillar_z_size, int grid_y_size, int grid_x_size, unsigned int * mask,
+  float * voxels, cudaStream_t stream);
 
 cudaError_t generateBaseFeatures_launch(
   unsigned int * mask, float * voxels, int grid_y_size, int grid_x_size, int max_voxel_size,

@@ -45,7 +45,7 @@ namespace autoware::lidar_centerpoint
 {
 
 __global__ void generateSweepPoints_kernel(
-  const float * input_points, size_t points_size, int input_point_step, float time_lag,
+  const float * input_points, std::size_t points_size, int input_point_step, float time_lag,
   const float * transform_array, int num_features, float * output_points)
 {
   int point_idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -69,7 +69,7 @@ __global__ void generateSweepPoints_kernel(
 }
 
 cudaError_t generateSweepPoints_launch(
-  const float * input_points, size_t points_size, int input_point_step, float time_lag,
+  const float * input_points, std::size_t points_size, int input_point_step, float time_lag,
   const float * transform_array, int num_features, float * output_points, cudaStream_t stream)
 {
   auto transform_d = cuda::make_unique<float[]>(16);
@@ -89,9 +89,10 @@ cudaError_t generateSweepPoints_launch(
 }
 
 __global__ void generateVoxels_random_kernel(
-  const float * points, size_t points_size, float min_x_range, float max_x_range, float min_y_range,
-  float max_y_range, float min_z_range, float max_z_range, float pillar_x_size, float pillar_y_size,
-  float pillar_z_size, int grid_y_size, int grid_x_size, unsigned int * mask, float * voxels)
+  const float * points, std::size_t points_size, float min_x_range, float max_x_range,
+  float min_y_range, float max_y_range, float min_z_range, float max_z_range, float pillar_x_size,
+  float pillar_y_size, float pillar_z_size, int grid_y_size, int grid_x_size, unsigned int * mask,
+  float * voxels)
 {
   int point_idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (point_idx >= points_size) return;
@@ -118,10 +119,10 @@ __global__ void generateVoxels_random_kernel(
 }
 
 cudaError_t generateVoxels_random_launch(
-  const float * points, size_t points_size, float min_x_range, float max_x_range, float min_y_range,
-  float max_y_range, float min_z_range, float max_z_range, float pillar_x_size, float pillar_y_size,
-  float pillar_z_size, int grid_y_size, int grid_x_size, unsigned int * mask, float * voxels,
-  cudaStream_t stream)
+  const float * points, std::size_t points_size, float min_x_range, float max_x_range,
+  float min_y_range, float max_y_range, float min_z_range, float max_z_range, float pillar_x_size,
+  float pillar_y_size, float pillar_z_size, int grid_y_size, int grid_x_size, unsigned int * mask,
+  float * voxels, cudaStream_t stream)
 {
   dim3 blocks((points_size + 256 - 1) / 256);
   dim3 threads(256);

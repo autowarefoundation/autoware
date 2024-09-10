@@ -80,7 +80,7 @@ bool TensorRTWrapper::createContext()
 
 bool TensorRTWrapper::parseONNX(
   const std::string & onnx_path, const std::string & engine_path, const std::string & precision,
-  const size_t workspace_size)
+  const std::size_t workspace_size)
 {
   auto builder =
     tensorrt_common::TrtUniquePtr<nvinfer1::IBuilder>(nvinfer1::createInferBuilder(logger_));
