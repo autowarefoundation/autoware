@@ -92,7 +92,7 @@ cuda::unique_ptr<T> make_unique()
 constexpr std::size_t CUDA_ALIGN = 256;
 
 template <typename T>
-inline std::size_t get_size_aligned(size_t num_elem)
+inline std::size_t get_size_aligned(std::size_t num_elem)
 {
   std::size_t size = num_elem * sizeof(T);
   std::size_t extra_align = 0;
@@ -103,7 +103,7 @@ inline std::size_t get_size_aligned(size_t num_elem)
 }
 
 template <typename T>
-inline T * get_next_ptr(size_t num_elem, void *& workspace, std::size_t & workspace_size)
+inline T * get_next_ptr(std::size_t num_elem, void *& workspace, std::size_t & workspace_size)
 {
   std::size_t size = get_size_aligned<T>(num_elem);
   if (size > workspace_size) {

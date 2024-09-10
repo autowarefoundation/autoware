@@ -102,9 +102,11 @@ protected:
   cuda::unique_ptr<float[]> head_out_rot_d_{nullptr};
   cuda::unique_ptr<float[]> head_out_vel_d_{nullptr};
   cuda::unique_ptr<float[]> points_d_{nullptr};
+  cuda::unique_ptr<float[]> points_aux_d_{nullptr};
   cuda::unique_ptr<float[]> voxels_buffer_d_{nullptr};
   cuda::unique_ptr<unsigned int[]> mask_d_{nullptr};
   cuda::unique_ptr<unsigned int[]> num_voxels_d_{nullptr};
+  cuda::unique_ptr<unsigned int[]> shuffle_indices_d_{nullptr};
 };
 
 }  // namespace autoware::lidar_centerpoint

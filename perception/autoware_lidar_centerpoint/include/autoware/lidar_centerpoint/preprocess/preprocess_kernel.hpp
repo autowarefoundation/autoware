@@ -24,6 +24,11 @@ cudaError_t generateSweepPoints_launch(
   const float * input_points, std::size_t points_size, int input_point_step, float time_lag,
   const float * transform, int num_features, float * output_points, cudaStream_t stream);
 
+cudaError_t shufflePoints_launch(
+  const float * points, const unsigned int * indices, float * shuffled_points,
+  const std::size_t points_size, const std::size_t max_size, const std::size_t offset,
+  cudaStream_t stream);
+
 cudaError_t generateVoxels_random_launch(
   const float * points, std::size_t points_size, float min_x_range, float max_x_range,
   float min_y_range, float max_y_range, float min_z_range, float max_z_range, float pillar_x_size,
