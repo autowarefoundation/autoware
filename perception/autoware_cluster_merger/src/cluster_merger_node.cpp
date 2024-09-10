@@ -37,7 +37,7 @@ ClusterMergerNode::ClusterMergerNode(const rclcpp::NodeOptions & node_options)
   sync_.registerCallback(std::bind(&ClusterMergerNode::objectsCallback, this, _1, _2));
 
   // Publisher
-  pub_objects_ = create_publisher<DetectedObjectsWithFeature>("~/output/clusters", rclcpp::QoS{1});
+  pub_objects_ = create_publisher<DetectedObjectsWithFeature>("output/clusters", rclcpp::QoS{1});
 }
 
 void ClusterMergerNode::objectsCallback(

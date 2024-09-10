@@ -47,7 +47,6 @@ private:
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
 
-  rclcpp::Subscription<DetectedObjectsWithFeature>::SharedPtr sub_objects_{};
   message_filters::Subscriber<DetectedObjectsWithFeature> objects0_sub_;
   message_filters::Subscriber<DetectedObjectsWithFeature> objects1_sub_;
   typedef message_filters::sync_policies::ApproximateTime<
@@ -57,9 +56,6 @@ private:
   Sync sync_;
 
   std::string output_frame_id_;
-
-  std::vector<rclcpp::Subscription<DetectedObjectsWithFeature>::SharedPtr> sub_objects_array{};
-  std::shared_ptr<autoware::universe_utils::TransformListener> transform_listener_;
 
   void objectsCallback(
     const DetectedObjectsWithFeature::ConstSharedPtr & input_objects0_msg,
