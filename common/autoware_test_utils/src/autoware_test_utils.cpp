@@ -267,6 +267,7 @@ LaneletRoute makeBehaviorNormalRoute()
   return route;
 }
 
+// cppcheck-suppress unusedFunction
 void spinSomeNodes(
   rclcpp::Node::SharedPtr test_node, rclcpp::Node::SharedPtr target_node, const int repeat_count)
 {
