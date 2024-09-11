@@ -499,7 +499,8 @@ RUN case "$TARGETPLATFORM" in \
          *)              echo "Unknown architecture: $TARGETPLATFORM" && exit 1 ;; \
     esac && \
     echo "Architecture directory: $ARCH_LIB_DIR" && \
-    echo "ARCH_LIB_DIR=$ARCH_LIB_DIR" >> /etc/environment
+    export ARCH_LIB_DIR=$ARCH_LIB_DIR && \
+    echo "export ARCH_LIB_DIR=$ARCH_LIB_DIR" >> /etc/bash.bashrc
 
 # Set up runtime environment and artifacts
 COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
