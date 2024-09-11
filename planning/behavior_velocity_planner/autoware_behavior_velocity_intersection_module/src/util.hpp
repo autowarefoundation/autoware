@@ -76,24 +76,8 @@ bool isOverTargetIndex(
   const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
   const geometry_msgs::msg::Pose & current_pose, const size_t target_idx);
 
-/**
- * @brief check if ego is before the target_idx. If the index is same, compare the exact pose
- * @param[in] path path
- * @param[in] closest_idx ego's closest index on the path
- * @param[in] current_pose ego's exact pose
- * @return true if ego is over the target_idx
- */
-bool isBeforeTargetIndex(
-  const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
-  const geometry_msgs::msg::Pose & current_pose, const size_t target_idx);
-
 std::optional<autoware::universe_utils::Polygon2d> getIntersectionArea(
   lanelet::ConstLanelet assigned_lane, lanelet::LaneletMapConstPtr lanelet_map_ptr);
-
-/**
- * @brief check if the given lane has related traffic light
- */
-bool hasAssociatedTrafficLight(lanelet::ConstLanelet lane);
 
 /**
  * @brief interpolate PathWithLaneId

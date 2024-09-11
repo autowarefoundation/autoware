@@ -336,17 +336,6 @@ bool isOverTargetIndex(
   return static_cast<bool>(closest_idx > target_idx);
 }
 
-bool isBeforeTargetIndex(
-  const tier4_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx,
-  const geometry_msgs::msg::Pose & current_pose, const size_t target_idx)
-{
-  if (closest_idx == target_idx) {
-    const geometry_msgs::msg::Pose target_pose = path.points.at(target_idx).point.pose;
-    return planning_utils::isAheadOf(target_pose, current_pose);
-  }
-  return static_cast<bool>(target_idx > closest_idx);
-}
-
 std::optional<autoware::universe_utils::Polygon2d> getIntersectionArea(
   lanelet::ConstLanelet assigned_lane, lanelet::LaneletMapConstPtr lanelet_map_ptr)
 {
@@ -358,16 +347,6 @@ std::optional<autoware::universe_utils::Polygon2d> getIntersectionArea(
   Polygon2d poly{};
   for (const auto & p : poly_3d) poly.outer().emplace_back(p.x(), p.y());
   return std::make_optional(poly);
-}
-
-bool hasAssociatedTrafficLight(lanelet::ConstLanelet lane)
-{
-  std::optional<int> tl_id = std::nullopt;
-  for (auto && tl_reg_elem : lane.regulatoryElementsAs<lanelet::TrafficLight>()) {
-    tl_id = tl_reg_elem->id();
-    break;
-  }
-  return tl_id.has_value();
 }
 
 std::optional<InterpolatedPathInfo> generateInterpolatedPath(

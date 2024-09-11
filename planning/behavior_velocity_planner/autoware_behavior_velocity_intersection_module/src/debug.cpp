@@ -159,25 +159,6 @@ visualization_msgs::msg::MarkerArray createLineMarkerArray(
   return msg;
 }
 
-[[maybe_unused]] visualization_msgs::msg::Marker createPointMarkerArray(
-  const geometry_msgs::msg::Point & point, const std::string & ns, const int64_t id, const double r,
-  const double g, const double b)
-{
-  visualization_msgs::msg::Marker marker_point{};
-  marker_point.header.frame_id = "map";
-  marker_point.ns = ns + "_point";
-  marker_point.id = id;
-  marker_point.lifetime = rclcpp::Duration::from_seconds(0.3);
-  marker_point.type = visualization_msgs::msg::Marker::SPHERE;
-  marker_point.action = visualization_msgs::msg::Marker::ADD;
-  marker_point.scale = createMarkerScale(2.0, 2.0, 2.0);
-  marker_point.color = createMarkerColor(r, g, b, 0.999);
-
-  marker_point.pose.position = point;
-
-  return marker_point;
-}
-
 constexpr std::tuple<float, float, float> white()
 {
   constexpr uint64_t code = 0xfdfdfd;
