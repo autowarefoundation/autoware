@@ -18,9 +18,10 @@
   ansible.builtin.file:
     path: "{{ qt5ct_config_dir }}"
     state: directory
+    mode: "0755"
 
 - name: Print the role_path
-  debug:
+  ansible.builtin.debug:
     msg: "The role_path is: {{ role_path }}"
 
 - name: Assign a string to a variable
@@ -32,10 +33,13 @@
     path: "{{ icons_path }}"
     state: absent
 
-# The autoware.qss file will refer to these icons
+# Replace rsync with synchronize which is an ansible wrapper for rsync
 - name: Copy autoware-rviz-icons to the qt5ct config directory
-  ansible.builtin.command:
-    cmd: rsync -avz {{ role_path }}/files/autoware-rviz-icons/ {{ icons_path }}/
+  ansible.builtin.synchronize:
+    src: "{{ role_path }}/files/autoware-rviz-icons/"
+    dest: "{{ icons_path }}/"
+    mode: push
+  changed_when: false
 
 - name: Fix the paths in the qss file
   ansible.builtin.replace:
@@ -47,14 +51,15 @@
   ansible.builtin.file:
     path: "{{ qt5ct_config_dir }}/qss"
     state: directory
+    mode: "0755"
 
-# The qt5ct.conf file will refer to the autoware.qss file
 - name: Copy autoware.qss to the qt5ct qss directory
   ansible.builtin.copy:
     src: "{{ role_path }}/files/autoware.qss"
     dest: "{{ qt5ct_config_dir }}/qss/autoware.qss"
     force: true
     backup: true
+    mode: "0644"
 
 - name: Fix the paths in the config file
   ansible.builtin.replace:
@@ -68,3 +73,4 @@
     dest: "{{ ansible_env.HOME }}/.config/qt5ct/qt5ct.conf"
     force: true
     backup: true
+    mode: "0644"
