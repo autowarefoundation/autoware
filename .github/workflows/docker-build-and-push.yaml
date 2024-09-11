@@ -66,6 +66,7 @@ jobs:
           (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/docker-build-multi-platform
         with:
+          common-runner-arm64-01-ip: ${{ secrets.COMMON_RUNNER_ARM64_01_IP }}
           name: ${{ matrix.name }}
           platform: linux/amd64,linux/arm64
           bake-target: autoware
