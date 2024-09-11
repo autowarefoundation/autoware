@@ -78,6 +78,7 @@ void DeleteAllObjectsTool::updateTopic()
   clock_ = raw_node->get_clock();
 }
 
+// cppcheck-suppress unusedFunction
 void DeleteAllObjectsTool::onPoseSet(
   [[maybe_unused]] double x, [[maybe_unused]] double y, [[maybe_unused]] double theta)
 {
