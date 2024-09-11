@@ -64,4 +64,4 @@
       when: prompt_download_artifacts == 'y'
 
     # Qt5ct setup
-    - role: qt5ct_setup
+    - role: autoware.dev_env.qt5ct_setup
