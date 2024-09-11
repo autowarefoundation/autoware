@@ -110,7 +110,7 @@ QDoubleSpinBox {
   background-color: #0f1417;
   height: 32px;
   border-bottom: 2px solid rgba(255, 255, 255, 255);
-  
+
 }
 
 QAbstractSpinBox {
