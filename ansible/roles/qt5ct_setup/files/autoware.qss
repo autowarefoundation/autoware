@@ -5,14 +5,9 @@
 
 * {
   color: #ffffff;
-
   font-family: Roboto, sans-serif;
-
   font-size: 13px;
-
   line-height: 13px;
-
-  /* selection-background-color: #84c2e6; */
   selection-color: #0f1417;
 }
 
@@ -29,15 +24,11 @@ QWidget {
 QGroupBox,
 QFrame {
   background-color: #0f1417;
-  /* border: 2px solid #0f1417; */
-  /* border-radius: 4px; */
 }
 
 QGroupBox.fill_background,
 QFrame.fill_background {
   background-color: #0f1417;
-  /* border: 2px solid #232629; */
-  /* border-radius: 4px; */
 }
 
 QSplitter {
@@ -75,22 +66,19 @@ QLineEdit {
   color: #ffffff;
   padding-left: 16px;
   border-radius: 0px;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  height: 32px;
+  height: 24px;
   background-color: #0f1417;
 }
 
 QListView {
   color: #ffffff;
-  height: 32px;
+  height: 24px;
   background-color: #1b2023;
   selection-background-color: #303538;
   selection-color: #ffffff;
 }
 
 QPlainTextEdit {
-  /* border-radius: 4px; */
   padding: 8px 0px;
   background-color: #0f1417;
   border: 2px solid #0f1417;
@@ -98,16 +86,15 @@ QPlainTextEdit {
 
 QTextEdit {
   padding: 8px 0px;
-  /* border-radius: 4px; */
   background-color: #0f1417;
 }
 
 QSpinBox,
 QDoubleSpinBox {
   color: #ffffff;
-  background-color: #0f1417;
-  height: 32px;
-  border-bottom: 2px solid rgba(255, 255, 255, 255);
+  background-color: #292d30;
+  height: 24px;
+  border-bottom: 1px solid #DFE3E7;
   selection-background-color: #84c2e6;
 }
 
@@ -127,9 +114,7 @@ QLineEdit:disabled {
   border-width: 0 0 2px 0;
   padding: 0px 16px;
   border-radius: 0px;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  height: 32px;
+  height: 24px;
 }
 
 /*  ------------------------------------------------------------------------  */
@@ -138,10 +123,9 @@ QLineEdit:disabled {
 QDateEdit,
 QComboBox {
   color: #ffffff;
-  height: 32px;
-  background-color: #0f1417;
-  border: 2px solid #ffffff;
-  border-width: 0 0 2px 0;
+  height: 24px;
+  background-color: #292d30;
+  border-bottom: 1px solid #DFE3E7;
 }
 
 QDateEdit:disabled,
@@ -159,26 +143,22 @@ QComboBox::drop-down {
 QDateEdit::down-arrow,
 QComboBox::down-arrow {
   image: url("/icons_path/active/downarrow.svg");
-  /* margin-right: 12px; */
 }
 
 QDateEdit::down-arrow:focus,
 QComboBox::down-arrow:focus {
   image: url("/icons_path/primary/downarrow.svg");
-  /* margin-right: 12px; */
 }
 
 QDateEdit::down-arrow:disabled,
 QComboBox::down-arrow:disabled {
   image: url("/icons_path/disabled/downarrow.svg");
-  /* margin-right: 12px; */
 }
 
 QDateEdit QAbstractItemView,
 QComboBox QAbstractItemView {
   background-color: #0f1417;
-  border: 2px solid #232629;
-  /* border-radius: 8px; */
+  padding: 4px;
 }
 
 QDateEdit[frame="false"],
@@ -204,7 +184,6 @@ QSpinBox::up-button {
   width: 20px;
   image: url("/icons_path/active/uparrow.svg");
   border-width: 0px;
-  /* margin-right: 5px; */
   margin-top: 5px;
 }
 
@@ -229,7 +208,6 @@ QSpinBox::down-button {
   image: url("/icons_path/active/downarrow.svg");
   border-width: 0px;
   border-top-width: 0;
-  /* margin-right: 5px; */
   margin-bottom: 5px;
 }
 
@@ -348,35 +326,38 @@ QTabBar::tab:right {
 
 QTabBar::tab:top:selected,
 QTabBar::tab:top:hover {
-  /* color: #84c2e6; */
   border-bottom: 2px solid #8bd0f0;
 }
 
 QTabBar::tab:bottom:selected,
 QTabBar::tab:bottom:hover {
-  /* color: #84c2e6; */
   border-top: 2px solid #8bd0f0;
 }
 
 QTabBar::tab:right:selected,
 QTabBar::tab:right:hover {
-  /* color: #84c2e6; */
   border-left: 2px solid #8bd0f0;
 }
 
 QTabBar::tab:left:selected,
 QTabBar::tab:left:hover {
-  /* color: #84c2e6; */
   border-right: 2px solid #8bd0f0;
 }
 
 QTabBar::tab:hover {
-  color: #84c2e6;
+  color: #fff;
   background-color: #303538;
 }
 
 QTabBar::tab:selected {
-  color: #84c2e6;
+  color: #fff;
+  background-color: #292d30;
+}
+
+/* pressed state */
+QTabBar::tab:pressed {
+  color: #fff;
+  background-color: #383b3f;
 }
 
 QTabBar QToolButton:hover,
@@ -419,9 +400,7 @@ QTabBar::close-button:hover {
 QGroupBox {
   padding: 16px;
   padding-top: 36px;
-  /* line-height: ; */
   text-transform: capitalize;
-  /* font-size: ; */
 }
 
 QGroupBox::title {
@@ -514,11 +493,9 @@ QMenu::item:disabled {
 }
 
 QMenu::separator {
-  height: 2px;
+  height: 1px;
   margin: 2px;
-  background-color: #84c2e6;
-  /* margin-left: 2px; */
-  /* margin-right: 2px; */
+  background-color:#40484C;
 }
 
 QMenu::right-arrow {
@@ -726,8 +703,6 @@ QSlider:horizontal {
 }
 
 QSlider:vertical {
-  /* max-height: 0px;
-  max-width: 0px; */
 }
 
 QSlider::groove:horizontal {
@@ -744,14 +719,12 @@ QSlider::groove:vertical {
 }
 
 QSlider::handle:horizontal {
-  /* image: url("/icons_path/primary/slider.svg); "*/
   width: 22px;
   height: 18px;
   margin: -9px -9px;
 }
 
 QSlider::handle:vertical {
-  /* image: url("/icons_path/primary/slider.svg); "*/
   background: #84c2e6;
   width: 9px;
   height: 9px;
@@ -882,7 +855,7 @@ QListView::item {
   padding: 2px;
   min-height: 12px;
   color: #ffffff;
-  border-color: transparent; /* Fix #34 */
+  border-color: transparent;
 }
 
 QListView::item {
@@ -939,6 +912,7 @@ QTreeView::branch:open:has-children:has-siblings {
   margin-left: -8px;
 }
 
+/* Commented in case decided to show the branch icons */
 /*
 QTreeView::branch:has-siblings:!adjoins-item {
   border-image: url("/icons_path/disabled/vline.svg");
@@ -976,7 +950,6 @@ QHeaderView::section {
   text-transform: capitalize;
   background-color: #0f1417;
   padding: 4px 6px;
-  /* height: 36px; */
   border-radius: 0px;
   border-right: 1px solid;
   border-bottom: 1px solid;
@@ -1100,15 +1073,15 @@ QMenuBar QToolButton {
 /*  ------------------------------------------------------------------------  */
 /*  Focus  */
 
-/* QDateTimeEdit:focus,
+QDateTimeEdit:focus,
 QSpinBox:focus,
 QDoubleSpinBox:focus,
-QLineEdit:focus,
 QComboBox:focus {
   color: #fff;
-  border: 2px solid #8bd0f0;
-  border-width: 0 0 2px 0;
-} */
+  border-bottom: 2px solid #8bd0f0;
+  background-color: #303538;
+}
+
 
 QDateTimeEdit::up-button:focus,
 QDoubleSpinBox::up-button:focus,
@@ -1125,7 +1098,7 @@ QSpinBox::down-button:focus {
 /* Special cases from rviz source code */
 
 QToolButton[toolTip="Add a new tool"] {
-  qproperty-iconSize: 16px 16px; /* Adjust size as needed */
+  qproperty-iconSize: 16px 16px; 
   qproperty-icon: url("/icons_path/primary/add.svg");
   background: #171c1f;
   border: 0px;
@@ -1145,7 +1118,7 @@ QToolButton[toolTip="Add a new tool"]:pressed {
 }
 
 QToolButton[toolTip="Remove a tool from the toolbar"] {
-  qproperty-iconSize: 16px 16px; /* Adjust size as needed */
+  qproperty-iconSize: 16px 16px; 
   qproperty-icon: url("/icons_path/primary/minus.svg");
   background: #171c1f;
   border: 0px;
@@ -1236,7 +1209,7 @@ QGroupBox[title="Create visualization"] QTabBar::tab {
 }
 
 QGroupBox[title="Create visualization"] QTabBar::tab:selected {
-  /* background-color: #2B3033; */
+  background-color: #383b3f;
   border-bottom: 2px solid #8bd0f0;
 }
 
@@ -1245,14 +1218,25 @@ QGroupBox[title="Create visualization"] QTabBar::tab:!selected {
   border-bottom: 2px solid #1b2023;
 }
 
+QGroupBox[title="Create visualization"] QTabBar::tab:hover {
+  color: #fff;
+  background-color: #292d30;
+  border-bottom: 2px solid #8bd0f0;
+}
+
+QGroupBox[title="Create visualization"] QTabBar::tab:pressed {
+  color: #fff;
+  background-color: #383b3f;
+  border-bottom: 2px solid #8bd0f0;
+}
+
 QGroupBox[title="Create visualization"] QFrame {
-  background-color: #1b2023; /* Match background color */
-  border: none; /* Remove any border */
+  background-color: #1b2023; 
+  border: none; 
   margin: 0px;
   padding: 0px;
 }
 
-/* text inside qcombobox shouldn't have a padding */
 QComboBox {
   padding: 2px;
   margin: 0px;
@@ -1263,6 +1247,7 @@ QLineEdit {
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   selection-background-color: #84c2e6;
+
 }
 
 QLineEdit > QPushButton {
@@ -1300,6 +1285,7 @@ QComboBox {
   selection-background-color: #303538;
   selection-color: #fff;
 }
+
 
 QGroupBox[title="Create visualization"] QCheckBox::indicator:enabled:checked,
 QGroupBox[title="Create visualization"] QCheckBox::indicator:enabled:checked:selected,
@@ -1387,12 +1373,21 @@ QTreeView::indicator {
   height: 20px;
 }
 
+
 QTreeView::item:disabled {
   color: #888888;
 }
+
 
 QTreeView QComboBox,
 QTreeView QSpinBox,
 QTreeView QDoubleSpinBox {
   border: 0px;
 }
+
+QTreeView QComboBox:focus,
+QTreeView QSpinBox:focus,
+QTreeView QDoubleSpinBox:focus {
+  border: 0px;
+}
+
