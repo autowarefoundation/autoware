@@ -5,9 +5,6 @@ inputs:
   name:
     description: ""
     required: true
-  platform:
-    description: ""
-    required: true
   bake-target:
     description: ""
     required: true
@@ -36,37 +33,55 @@ runs:
         mkdir src
         vcs import src < autoware.repos
       shell: bash
+    
+    - name: Set up SSH
+      uses: MrSquaare/ssh-setup-action@v3.1.0
+      with:
+        host: graviton-runner
+        private-key: ${{ secrets.GRAVITON_RUNNER_SSH_KEY }}
+        private-key-name: aws_graviton-runner
 
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        platforms: linux/amd64
+        driver: docker-container
+        append: |
+          - endpoint: ssh://ubuntu@graviton-runner
+            platforms: linux/arm64
+            driver: docker-container
 
     - name: Restore ccache
       uses: actions/cache/restore@v4
       with:
         path: |
-          root-ccache
-        key: ccache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
+          root-ccache-amd64
+          root-ccache-arm64
+        key: ccache-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
-          ccache-${{ inputs.platform }}-${{ inputs.name }}-
-          ccache-${{ inputs.platform }}-
+          ccache-${{ inputs.name }}-
+          ccache-
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
       with:
         path: |
-          var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/package.xml') }}
+          var-cache-apt-amd64
+          var-cache-apt-arm64
+        key: apt-get-${{ inputs.name }}-${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
-          apt-get-${{ inputs.platform }}-${{ inputs.name }}-
-          apt-get-${{ inputs.platform }}-
+          apt-get-${{ inputs.name }}-
+          apt-get-
 
     - name: Inject cache into docker
       uses: reproducible-containers/buildkit-cache-dance@v3.1.2
       with:
         cache-map: |
           {
-            "root-ccache": "/root/.ccache",
-            "var-cache-apt": "/var/cache/apt"
+            "root-ccache-amd64": "/root/.ccache",
+            "root-ccache-arm64": "/root/.ccache",
+            "var-cache-apt-amd64": "/var/cache/apt",
+            "var-cache-apt-arm64": "/var/cache/apt"
           }
         skip-extraction: true
 

@@ -489,9 +489,18 @@ CMD ["/bin/bash"]
 FROM base AS universe
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
-ARG LIB_DIR
+ARG TARGETPLATFORM
 ARG SETUP_ARGS
 
+# Set up architecture-specific directory
+RUN case "$TARGETPLATFORM" in \
+         "linux/amd64")  ARCH_LIB_DIR="/usr/lib/x86_64-linux-gnu" ;; \
+         "linux/arm64")  ARCH_LIB_DIR="/usr/lib/aarch64-linux-gnu" ;; \
+         *)              echo "Unknown architecture: $TARGETPLATFORM" && exit 1 ;; \
+    esac && \
+    echo "Architecture directory: $ARCH_LIB_DIR" && \
+    echo "ARCH_LIB_DIR=$ARCH_LIB_DIR" >> /etc/environment
+    
 # Set up runtime environment and artifacts
 COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
 # hadolint ignore=SC2002
@@ -502,7 +511,7 @@ RUN --mount=type=ssh \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
+  && find $ARCH_LIB_DIR -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
   && find / -name "*.h" -type f -delete \
   && find / -name "*.hpp" -type f -delete \

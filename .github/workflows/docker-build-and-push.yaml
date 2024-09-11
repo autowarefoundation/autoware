@@ -22,15 +22,11 @@ jobs:
           - cuda
         include:
           - name: no-cuda
-            platform: amd64
             base_image_env: base_image
-            lib_dir: x86_64
             setup-args: --no-nvidia
             additional-tag-suffix: ""
           - name: cuda
-            platform: amd64
             base_image_env: base_image
-            lib_dir: x86_64
             additional-tag-suffix: -cuda
     steps:
       - name: Check out repository
@@ -61,21 +57,19 @@ jobs:
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
-        uses: ./.github/actions/docker-build-and-push
+        uses: ./.github/actions/docker-build-multi-platform
         with:
           name: ${{ matrix.name }}
-          platform: ${{ matrix.platform }}
+          platform: linux/amd64,linux/arm64
           bake-target: autoware
           build-args: |
-            *.platform=linux/${{ matrix.platform }}
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
-            *.args.LIB_DIR=${{ matrix.lib_dir }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }},mode=max
-          tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ matrix.platform }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ github.ref_name }},mode=max
+          tag-suffix: ${{ matrix.additional-tag-suffix }}
           tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
 
       - name: Show disk space
