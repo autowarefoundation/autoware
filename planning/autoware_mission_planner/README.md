@@ -19,17 +19,18 @@ It distributes route requests and planning results according to current MRM oper
 
 ### Parameters
 
-| Name                         | Type   | Description                                                                                                      |
-| ---------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
-| `map_frame`                  | string | The frame name for map                                                                                           |
-| `arrival_check_angle_deg`    | double | Angle threshold for goal check                                                                                   |
-| `arrival_check_distance`     | double | Distance threshold for goal check                                                                                |
-| `arrival_check_duration`     | double | Duration threshold for goal check                                                                                |
-| `goal_angle_threshold`       | double | Max goal pose angle for goal approve                                                                             |
-| `enable_correct_goal_pose`   | bool   | Enabling correction of goal pose according to the closest lanelet orientation                                    |
-| `reroute_time_threshold`     | double | If the time to the rerouting point at the current velocity is greater than this threshold, rerouting is possible |
-| `minimum_reroute_length`     | double | Minimum Length for publishing a new route                                                                        |
-| `consider_no_drivable_lanes` | bool   | This flag is for considering no_drivable_lanes in planning or not.                                               |
+| Name                               | Type   | Description                                                                                                                |
+| ---------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `map_frame`                        | string | The frame name for map                                                                                                     |
+| `arrival_check_angle_deg`          | double | Angle threshold for goal check                                                                                             |
+| `arrival_check_distance`           | double | Distance threshold for goal check                                                                                          |
+| `arrival_check_duration`           | double | Duration threshold for goal check                                                                                          |
+| `goal_angle_threshold`             | double | Max goal pose angle for goal approve                                                                                       |
+| `enable_correct_goal_pose`         | bool   | Enabling correction of goal pose according to the closest lanelet orientation                                              |
+| `reroute_time_threshold`           | double | If the time to the rerouting point at the current velocity is greater than this threshold, rerouting is possible           |
+| `minimum_reroute_length`           | double | Minimum Length for publishing a new route                                                                                  |
+| `consider_no_drivable_lanes`       | bool   | This flag is for considering no_drivable_lanes in planning or not.                                                         |
+| `allow_reroute_in_autonomous_mode` | bool   | This is a flag to allow reroute in autonomous driving mode. If false, reroute fails. If true, only safe reroute is allowed |
 
 ### Services
 

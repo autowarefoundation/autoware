@@ -135,6 +135,9 @@ private:
 
   double reroute_time_threshold_;
   double minimum_reroute_length_;
+  // flag to allow reroute in autonomous driving mode.
+  // if false, reroute fails. if true, only safe reroute is allowed.
+  bool allow_reroute_in_autonomous_mode_;
   bool check_reroute_safety(const LaneletRoute & original_route, const LaneletRoute & target_route);
 
   std::unique_ptr<autoware::universe_utils::LoggerLevelConfigure> logger_configure_;
