@@ -512,7 +512,7 @@ RUN --mount=type=ssh \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find $ARCH_LIB_DIR -name "*.a" -type f -delete \
+  && find ${ARCH_LIB_DIR} -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
   && find / -name "*.h" -type f -delete \
   && find / -name "*.hpp" -type f -delete \
