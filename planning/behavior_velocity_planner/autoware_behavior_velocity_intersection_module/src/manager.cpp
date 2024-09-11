@@ -327,7 +327,6 @@ void IntersectionModuleManager::launchNewModules(
       continue;
     }
 
-    const std::string location = ll.attributeOr("location", "else");
     const auto associative_ids =
       planning_utils::getAssociativeIntersectionLanelets(ll, lanelet_map, routing_graph);
     bool has_traffic_light = false;
