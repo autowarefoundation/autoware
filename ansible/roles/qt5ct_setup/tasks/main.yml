@@ -1,4 +1,3 @@
----
 - name: Install qt5ct
   ansible.builtin.apt:
     name: qt5ct
@@ -36,12 +35,12 @@
 # The autoware.qss file will refer to these icons
 - name: Copy autoware-rviz-icons to the qt5ct config directory
   ansible.builtin.command:
-    cmd: "rsync -avz {{ role_path }}/files/autoware-rviz-icons/ {{ icons_path }}/"
+    cmd: rsync -avz {{ role_path }}/files/autoware-rviz-icons/ {{ icons_path }}/
 
 - name: Fix the paths in the qss file
   ansible.builtin.replace:
     path: "{{ role_path }}/files/autoware.qss"
-    regexp: "/icons_path/"
+    regexp: /icons_path/
     replace: "{{ icons_path }}/"
 
 - name: Ensure qt5ct_config_dir/qss exists
@@ -54,18 +53,18 @@
   ansible.builtin.copy:
     src: "{{ role_path }}/files/autoware.qss"
     dest: "{{ qt5ct_config_dir }}/qss/autoware.qss"
-    force: yes
-    backup: yes
+    force: true
+    backup: true
 
 - name: Fix the paths in the config file
   ansible.builtin.replace:
     path: "{{ role_path }}/files/qt5ct.conf"
-    regexp: "autoware_stylesheet_path"
+    regexp: autoware_stylesheet_path
     replace: "{{ qt5ct_config_dir }}/qss/autoware.qss"
 
 - name: Copy qt5ct.conf to the config directory
   ansible.builtin.copy:
     src: "{{ role_path }}/files/qt5ct.conf"
     dest: "{{ ansible_env.HOME }}/.config/qt5ct/qt5ct.conf"
-    force: yes
-    backup: yes
+    force: true
+    backup: true
