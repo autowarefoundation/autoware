@@ -1,5 +1,5 @@
 {
-  "name": "autoware:universe-cuda",
+  "name": "autoware:universe-devel-cuda",
   "build": {
     "dockerfile": "../Dockerfile",
     "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware:universe-devel-cuda" }
