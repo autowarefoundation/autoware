@@ -17,6 +17,9 @@ inputs:
   tag-suffix:
     description: ""
     required: false
+  common-runner-arm64-01-ip:
+    description: ""
+    required: true
 
 runs:
   using: composite
@@ -40,7 +43,7 @@ runs:
         platforms: linux/amd64
         driver: docker-container
         append: |
-          - endpoint: ssh://ubuntu@${{ secrets.COMMON_RUNNER_ARM64_01_IP }}
+          - endpoint: ssh://ubuntu@${{ inputs.common-runner-arm64-01-ip }}
             platforms: linux/arm64
             driver: docker-container
 
