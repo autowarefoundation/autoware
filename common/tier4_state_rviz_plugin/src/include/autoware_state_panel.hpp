@@ -223,17 +223,6 @@ protected:
     label->setText(text);
     label->setStyleSheet(style_sheet);
   }
-  static void updateCustomLabel(
-    CustomLabel * label, QString text, QColor bg_color, QColor text_color)
-  {
-    label->updateStyle(text, bg_color, text_color);
-  }
-
-  static void updateButton(QPushButton * button, QString text, QString style_sheet)
-  {
-    button->setText(text);
-    button->setStyleSheet(style_sheet);
-  }
 
   static void activateButton(QAbstractButton * button)
   {
