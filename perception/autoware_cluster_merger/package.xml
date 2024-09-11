@@ -12,6 +12,7 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <depend>autoware_test_utils</depend>
   <depend>autoware_universe_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>message_filters</depend>
