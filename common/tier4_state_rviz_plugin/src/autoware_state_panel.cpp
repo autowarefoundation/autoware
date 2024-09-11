@@ -24,11 +24,6 @@
 #include <memory>
 #include <string>
 
-inline std::string Bool2String(const bool var)
-{
-  return var ? "True" : "False";
-}
-
 namespace rviz_plugins
 {
 AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(parent)
