@@ -500,7 +500,7 @@ RUN case "$TARGETPLATFORM" in \
     esac && \
     echo "Architecture directory: $ARCH_LIB_DIR" && \
     echo "ARCH_LIB_DIR=$ARCH_LIB_DIR" >> /etc/environment
-    
+
 # Set up runtime environment and artifacts
 COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
 # hadolint ignore=SC2002

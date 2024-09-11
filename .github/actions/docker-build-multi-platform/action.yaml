@@ -33,7 +33,7 @@ runs:
         mkdir src
         vcs import src < autoware.repos
       shell: bash
-    
+
     - name: Set up SSH
       uses: MrSquaare/ssh-setup-action@v3.1.0
       with:
