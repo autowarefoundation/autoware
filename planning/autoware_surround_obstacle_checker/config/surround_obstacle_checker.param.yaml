@@ -9,7 +9,7 @@
       surround_check_side_distance: 0.5
       surround_check_back_distance: 0.5
     unknown:
-      enable_check: true
+      enable_check: false
       surround_check_front_distance: 0.5
       surround_check_side_distance: 0.5
       surround_check_back_distance: 0.5
@@ -17,22 +17,22 @@
       enable_check: true
       surround_check_front_distance: 0.5
       surround_check_side_distance: 0.0
-      surround_check_back_distance: 0.5
+      surround_check_back_distance: 0.0
     truck:
       enable_check: true
       surround_check_front_distance: 0.5
       surround_check_side_distance: 0.0
-      surround_check_back_distance: 0.5
+      surround_check_back_distance: 0.0
     bus:
       enable_check: true
       surround_check_front_distance: 0.5
       surround_check_side_distance: 0.0
-      surround_check_back_distance: 0.5
+      surround_check_back_distance: 0.0
     trailer:
       enable_check: true
       surround_check_front_distance: 0.5
       surround_check_side_distance: 0.0
-      surround_check_back_distance: 0.5
+      surround_check_back_distance: 0.0
     motorcycle:
       enable_check: true
       surround_check_front_distance: 0.5
@@ -49,9 +49,9 @@
       surround_check_side_distance: 0.5
       surround_check_back_distance: 0.5
 
-    surround_check_hysteresis_distance: 0.3
+    surround_check_hysteresis_distance: 0.1
 
-    state_clear_time: 2.0
+    state_clear_time: 0.2
 
     # ego stop state
     stop_state_ego_speed: 0.1 #[m/s]

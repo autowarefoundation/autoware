@@ -16,16 +16,6 @@
           "description": "max velocity [m/s]",
           "default": "20.0"
         },
-        "ego_nearest_dist_threshold": {
-          "type": "number",
-          "description": "[m]",
-          "default": "3.0"
-        },
-        "ego_nearest_yaw_threshold": {
-          "type": "number",
-          "description": "[rad] = 60 [deg]",
-          "default": "1.046"
-        },
         "enable_slow_down": {
           "type": "boolean",
           "description": "whether to use slow down planner [-]",
@@ -288,8 +278,6 @@
       "required": [
         "chattering_threshold",
         "max_velocity",
-        "ego_nearest_dist_threshold",
-        "ego_nearest_yaw_threshold",
         "enable_slow_down",
         "enable_z_axis_obstacle_filtering",
         "z_axis_filtering_buffer",

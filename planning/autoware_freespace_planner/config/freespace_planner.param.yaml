@@ -9,7 +9,7 @@
     th_stopped_velocity_mps: 0.01
     th_course_out_distance_m: 1.0
     th_obstacle_time_sec: 1.0
-    vehicle_shape_margin_m: 1.0
+    vehicle_shape_margin_m: 0.5
     replan_when_obstacle_found: true
     replan_when_course_out: true
 
@@ -19,13 +19,13 @@
     max_turning_ratio: 0.5 # ratio of actual turning limit of vehicle
     turning_steps: 1
     # search configs
-    theta_size: 144
+    theta_size: 120
     angle_goal_range: 6.0
     lateral_goal_range: 0.5
     longitudinal_goal_range: 1.0
     curve_weight: 0.5
-    reverse_weight: 1.0
-    direction_change_weight: 1.5
+    reverse_weight: 0.7
+    direction_change_weight: 2.0
     # costmap configs
     obstacle_threshold: 100
 
@@ -36,10 +36,10 @@
       use_back: true
       adapt_expansion_distance: true
       expansion_distance: 0.5
-      near_goal_distance: 4.0
-      distance_heuristic_weight: 1.5
+      near_goal_distance: 3.0
+      distance_heuristic_weight: 2.0
       smoothness_weight: 0.5
-      obstacle_distance_weight: 1.5
+      obstacle_distance_weight: 1.75
       goal_lat_distance_weight: 5.0
 
     # -- RRT* search Configurations --

@@ -4,9 +4,9 @@
     max_vel: 11.1           # max velocity limit [m/s]
 
     normal:
-      min_acc: -0.5         # min deceleration [m/ss]
+      min_acc: -1.0         # min deceleration [m/ss]
       max_acc: 1.0          # max acceleration [m/ss]
-      min_jerk: -0.5        # min jerk [m/sss]
+      min_jerk: -1.0        # min jerk [m/sss]
       max_jerk: 1.0         # max jerk [m/sss]
 
     # constraints to be observed

@@ -2,8 +2,6 @@
   ros__parameters:
     chattering_threshold: 0.5                 # even if the obstacle disappears, the stop judgment continues for chattering_threshold [s]
     max_velocity: 20.0                        # max velocity [m/s]
-    ego_nearest_dist_threshold: 3.0           # [m]
-    ego_nearest_yaw_threshold: 1.046          # [rad] = 60 [deg]
     enable_slow_down: False                   # whether to use slow down planner [-]
     enable_z_axis_obstacle_filtering: True    # filter obstacles in z axis (height) [-]
     z_axis_filtering_buffer: 0.0              # additional buffer for z axis filtering [m]
@@ -18,8 +16,8 @@
       # params for stop position
       stop_position:
         max_longitudinal_margin: 5.0             # stop margin distance from obstacle on the path [m]
-        max_longitudinal_margin_behind_goal: 3.0 # stop margin distance from obstacle behind the goal on the path [m]
-        min_longitudinal_margin: 2.0             # stop margin distance when any other stop point is inserted in stop margin [m]
+        max_longitudinal_margin_behind_goal: 2.5 # stop margin distance from obstacle behind the goal on the path [m]
+        min_longitudinal_margin: 5.0             # stop margin distance when any other stop point is inserted in stop margin [m]
         hold_stop_margin_distance: 0.0           # the ego keeps stopping if the ego is in this margin [m]
 
       # params for detection area
@@ -36,7 +34,7 @@
       # params for slow down section
       slow_down_section:
         longitudinal_forward_margin: 5.0     # margin distance from slow down point to vehicle front [m]
-        longitudinal_backward_margin: 5.0    # margin distance from slow down point to vehicle rear [m]
+        longitudinal_backward_margin: 0.0    # margin distance from slow down point to vehicle rear [m]
         longitudinal_margin_span: -0.1       # fineness param for relaxing slow down margin (use this param if consider_constraints is True) [m/s]
         min_longitudinal_forward_margin: 1.0 # min margin for relaxing slow down margin (use this param if consider_constraints is True) [m/s]
 
@@ -55,7 +53,7 @@
 
       # params for deceleration constraints (use this param if consider_constraints is True)
       constraints:
-        jerk_min_slow_down: -0.3             # min slow down jerk constraint [m/sss]
+        jerk_min_slow_down: -0.6             # min slow down jerk constraint [m/sss]
         jerk_span: -0.01                     # fineness param for planning deceleration jerk [m/sss]
         jerk_start: -0.1                     # init jerk used for deceleration planning [m/sss]
 
