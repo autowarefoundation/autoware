@@ -22,7 +22,7 @@ jobs:
         uses: autowarefoundation/autoware-github-actions/create-prs-to-update-vcs-repositories@v1
         with:
           token: ${{ steps.generate-token.outputs.token }}
-          repo_name: autowarefoundation/autoware_dummy_repository
+          repo_name: autowarefoundation/autoware
           parent_dir: .
           base_branch: main
           new_branch_prefix: feat/update-
