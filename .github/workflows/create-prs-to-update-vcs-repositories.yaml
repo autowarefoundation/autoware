@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Generate GitHub App token
         id: generate-token
         uses: tibdex/github-app-token@v2
