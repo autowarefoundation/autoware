@@ -1,10 +1,18 @@
 ARG BASE_IMAGE
+ARG ROS_DISTRO
+ARG SETUP_ARGS
 
 # hadolint ignore=DL3006
 FROM $BASE_IMAGE AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-ARG SETUP_ARGS
+
+ARG TARGETPLATFORM
+RUN case "$TARGETPLATFORM" in \
+        "linux/amd64")  echo "/usr/lib/x86_64-linux-gnu" > /tmp/arch_lib_dir ;; \
+        "linux/arm64")  echo "/usr/lib/aarch64-linux-gnu" > /tmp/arch_lib_dir ;; \
+        *)              echo "Unknown architecture: $TARGETPLATFORM" && exit 1 ;; \
+    esac \
+    && echo "Architecture directory: $(cat /tmp/arch_lib_dir)"
 
 # Install apt packages and add GitHub to known hosts for private repositories
 RUN rm -f /etc/apt/apt.conf.d/docker-clean \
@@ -386,21 +394,20 @@ CMD ["/bin/bash"]
 
 FROM base AS universe-sensing-perception
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-ARG LIB_DIR
-ARG SETUP_ARGS
 
 # Set up runtime environment and artifacts
 COPY --from=rosdep-universe-sensing-perception-depend /rosdep-universe-sensing-perception-exec-depend-packages.txt /tmp/rosdep-universe-sensing-perception-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadkit \
+  ARCH_LIB_DIR=$(cat /tmp/arch_lib_dir) \
+  && echo "Architecture directory: $ARCH_LIB_DIR" \
+  && ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-universe-sensing-perception-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
+  && find $ARCH_LIB_DIR -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
   && find / -name "*.h" -type f -delete \
   && find / -name "*.hpp" -type f -delete \
@@ -420,21 +427,20 @@ CMD ["/bin/bash"]
 
 FROM base AS universe-localization-mapping
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-ARG LIB_DIR
-ARG SETUP_ARGS
 
 # Set up runtime environment and artifacts
 COPY --from=rosdep-universe-localization-mapping-depend /rosdep-universe-localization-mapping-exec-depend-packages.txt /tmp/rosdep-universe-localization-mapping-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers --runtime openadkit \
+  ARCH_LIB_DIR=$(cat /tmp/arch_lib_dir) \
+  && echo "Architecture directory: $ARCH_LIB_DIR" \
+  && ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-universe-localization-mapping-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
+  && find $ARCH_LIB_DIR -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
   && find / -name "*.h" -type f -delete \
   && find / -name "*.hpp" -type f -delete \
@@ -454,21 +460,20 @@ CMD ["/bin/bash"]
 
 FROM base AS universe-planning-control
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-ARG LIB_DIR
-ARG SETUP_ARGS
 
 # Set up runtime environment and artifacts
 COPY --from=rosdep-universe-planning-control-depend /rosdep-universe-planning-control-exec-depend-packages.txt /tmp/rosdep-universe-planning-control-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers --runtime openadkit \
+  ARCH_LIB_DIR=$(cat /tmp/arch_lib_dir) \
+  && echo "Architecture directory: $ARCH_LIB_DIR" \
+  && ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-universe-planning-control-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
+  && find $ARCH_LIB_DIR -name "*.a" -type f -delete \
   && find / -name "*.o" -type f -delete \
   && find / -name "*.h" -type f -delete \
   && find / -name "*.hpp" -type f -delete \
@@ -488,20 +493,13 @@ CMD ["/bin/bash"]
 
 FROM base AS universe
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-ARG TARGETPLATFORM
-ARG SETUP_ARGS
 
 # Set up runtime environment and artifacts
 COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  case "$TARGETPLATFORM" in \
-        "linux/amd64")  ARCH_LIB_DIR="/usr/lib/x86_64-linux-gnu" ;; \
-        "linux/arm64")  ARCH_LIB_DIR="/usr/lib/aarch64-linux-gnu" ;; \
-        *)              echo "Unknown architecture: $TARGETPLATFORM" && exit 1 ;; \
-  esac  \
+  ARCH_LIB_DIR=$(cat /tmp/arch_lib_dir) \
   && echo "Architecture directory: $ARCH_LIB_DIR" \
   && ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
