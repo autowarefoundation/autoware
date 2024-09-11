@@ -37,9 +37,9 @@ runs:
     - name: Set up SSH
       uses: MrSquaare/ssh-setup-action@v3.1.0
       with:
-        host: graviton-runner
-        private-key: ${{ secrets.GRAVITON_RUNNER_SSH_KEY }}
-        private-key-name: aws_graviton-runner
+        host: ${{ secrets.COMMON_RUNNER_ARM64_01_IP }}
+        private-key: ${{ secrets.COMMON_RUNNER_ARM64_01_PRIVATE_KEY }}
+        private-key-name: common-runner-ssh-key
 
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -47,7 +47,7 @@ runs:
         platforms: linux/amd64
         driver: docker-container
         append: |
-          - endpoint: ssh://ubuntu@graviton-runner
+          - endpoint: ssh://ubuntu@${{ secrets.COMMON_RUNNER_ARM64_01_IP }}
             platforms: linux/arm64
             driver: docker-container
 
