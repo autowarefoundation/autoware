@@ -26,11 +26,6 @@
 #include <memory>
 #include <string>
 
-inline std::string Bool2String(const bool var)
-{
-  return var ? "True" : "False";
-}
-
 namespace tier4_adapi_rviz_plugins
 {
 
