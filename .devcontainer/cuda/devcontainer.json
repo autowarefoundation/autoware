@@ -1,8 +1,8 @@
 {
-  "name": "Autoware-cuda",
+  "name": "autoware:universe-devel-cuda",
   "build": {
     "dockerfile": "../Dockerfile",
-    "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware:latest-devel-cuda" }
+    "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware:universe-devel-cuda" }
   },
   "remoteUser": "autoware",
   "hostRequirements": {
