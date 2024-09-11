@@ -486,27 +486,24 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-ARG ARCH_LIB_DIR
 FROM base AS universe
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG TARGETPLATFORM
 ARG SETUP_ARGS
 
-# Set up architecture-specific directory
-RUN case "$TARGETPLATFORM" in \
-         "linux/amd64")  ARCH_LIB_DIR="/usr/lib/x86_64-linux-gnu" ;; \
-         "linux/arm64")  ARCH_LIB_DIR="/usr/lib/aarch64-linux-gnu" ;; \
-         *)              echo "Unknown architecture: $TARGETPLATFORM" && exit 1 ;; \
-    esac && \
-    echo "Architecture directory: $ARCH_LIB_DIR"
-
 # Set up runtime environment and artifacts
 COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadkit \
+  case "$TARGETPLATFORM" in \
+        "linux/amd64")  ARCH_LIB_DIR="/usr/lib/x86_64-linux-gnu" ;; \
+        "linux/arm64")  ARCH_LIB_DIR="/usr/lib/aarch64-linux-gnu" ;; \
+        *)              echo "Unknown architecture: $TARGETPLATFORM" && exit 1 ;; \
+  esac  \
+  && echo "Architecture directory: $ARCH_LIB_DIR" \
+  && ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --download-artifacts --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
