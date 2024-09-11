@@ -486,6 +486,7 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
+ARG ARCH_LIB_DIR
 FROM base AS universe
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -498,9 +499,7 @@ RUN case "$TARGETPLATFORM" in \
          "linux/arm64")  ARCH_LIB_DIR="/usr/lib/aarch64-linux-gnu" ;; \
          *)              echo "Unknown architecture: $TARGETPLATFORM" && exit 1 ;; \
     esac && \
-    echo "Architecture directory: $ARCH_LIB_DIR" && \
-    export ARCH_LIB_DIR=$ARCH_LIB_DIR && \
-    echo "export ARCH_LIB_DIR=$ARCH_LIB_DIR" >> /etc/bash.bashrc
+    echo "Architecture directory: $ARCH_LIB_DIR"
 
 # Set up runtime environment and artifacts
 COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
