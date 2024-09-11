@@ -1,5 +1,5 @@
 {
-  "name": "autoware:universe",
+  "name": "autoware:universe-devel",
   "build": {
     "dockerfile": "../Dockerfile",
     "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware:universe-devel" }
