@@ -48,7 +48,7 @@ where,
 - `A.pcd`, `B.pcd`, etc, are the names of PCD files.
 - List such as `[1200, 2500]` are the values indicate that for this PCD file, x coordinates are between 1200 and 1220 (`x_resolution` + `x_coordinate`) and y coordinates are between 2500 and 2520 (`y_resolution` + `y_coordinate`).
 
-You may use [pointcloud_divider](https://github.com/MapIV/pointcloud_divider) from MAP IV for dividing pointcloud map as well as generating the compatible metadata.yaml.
+You may use [pointcloud_divider](https://github.com/autowarefoundation/autoware_tools/tree/main/map/autoware_pointcloud_divider) for dividing pointcloud map as well as generating the compatible metadata.yaml.
 
 #### Directory structure of these files
 
