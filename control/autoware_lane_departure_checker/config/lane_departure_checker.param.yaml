@@ -1,9 +1,9 @@
 /**:
   ros__parameters:
     # Enable feature
-    will_out_of_lane_checker: true
-    out_of_lane_checker: true
-    boundary_departure_checker: false
+    will_out_of_lane_checker: false
+    out_of_lane_checker: false
+    boundary_departure_checker: true
 
     # Node
     update_rate: 10.0
@@ -12,7 +12,7 @@
     include_left_lanes: false
     include_opposite_lanes: false
     include_conflicting_lanes: false
-    boundary_types_to_detect: [road_border]
+    boundary_types_to_detect: [curbstone]
 
 
     # Core

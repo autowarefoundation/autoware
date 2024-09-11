@@ -5,7 +5,7 @@
     #  the next trajectory is valid.)
     diag_error_count_threshold: 0
 
-    display_on_terminal: true # show error msg on terminal
+    display_on_terminal: false # show error msg on terminal
 
     thresholds:
       max_distance_deviation: 1.0

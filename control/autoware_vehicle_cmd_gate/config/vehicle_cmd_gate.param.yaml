@@ -2,7 +2,7 @@
   ros__parameters:
     update_rate: 10.0
     system_emergency_heartbeat_timeout: 0.5
-    use_emergency_handling: false
+    use_emergency_handling: true
     check_external_emergency_heartbeat: $(var check_external_emergency_heartbeat)
     enable_cmd_limit_filter: true
     filter_activated_count_threshold: 5
