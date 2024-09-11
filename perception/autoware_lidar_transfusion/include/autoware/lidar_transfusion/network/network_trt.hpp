@@ -63,7 +63,7 @@ public:
 private:
   bool parseONNX(
     const std::string & onnx_path, const std::string & engine_path, const std::string & precision,
-    size_t workspace_size = (1ULL << 30));
+    std::size_t workspace_size = (1ULL << 30));
   bool saveEngine(const std::string & engine_path);
   bool loadEngine(const std::string & engine_path);
   bool createContext();

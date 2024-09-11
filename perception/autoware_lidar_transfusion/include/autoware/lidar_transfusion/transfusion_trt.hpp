@@ -100,7 +100,9 @@ protected:
   unsigned int box_size_{0};
   unsigned int dir_cls_size_{0};
   cuda::unique_ptr<float[]> points_d_{nullptr};
+  cuda::unique_ptr<float[]> points_aux_d_{nullptr};
   cuda::unique_ptr<unsigned int> params_input_d_{nullptr};
+  cuda::unique_ptr<unsigned int[]> shuffle_indices_d_{nullptr};
   cuda::unique_ptr<float[]> voxel_features_d_{nullptr};
   cuda::unique_ptr<unsigned int[]> voxel_num_d_{nullptr};
   cuda::unique_ptr<unsigned int[]> voxel_idxs_d_{nullptr};

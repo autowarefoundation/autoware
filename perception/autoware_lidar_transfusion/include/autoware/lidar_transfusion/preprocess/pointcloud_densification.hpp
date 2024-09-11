@@ -53,7 +53,7 @@ struct PointCloudWithTransform
 {
   cuda::unique_ptr<uint8_t[]> data_d{nullptr};
   std_msgs::msg::Header header;
-  size_t num_points{0};
+  std::size_t num_points{0};
   Eigen::Affine3f affine_past2world;
 };
 
@@ -75,11 +75,11 @@ public:
   {
     return iter == pointcloud_cache_.end();
   }
-  size_t getIdx(std::list<PointCloudWithTransform>::iterator iter)
+  std::size_t getIdx(std::list<PointCloudWithTransform>::iterator iter)
   {
     return std::distance(pointcloud_cache_.begin(), iter);
   }
-  size_t getCacheSize()
+  std::size_t getCacheSize()
   {
     return std::distance(pointcloud_cache_.begin(), pointcloud_cache_.end());
   }

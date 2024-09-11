@@ -19,8 +19,12 @@
 
 #include <autoware/universe_utils/math/constants.hpp>
 
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -74,6 +78,22 @@ void TransfusionTRT::initPtr()
   voxel_num_d_ = cuda::make_unique<unsigned int[]>(voxel_num_size_);
   voxel_idxs_d_ = cuda::make_unique<unsigned int[]>(voxel_idxs_size_);
   points_d_ = cuda::make_unique<float[]>(config_.cloud_capacity_ * config_.num_point_feature_size_);
+  points_aux_d_ =
+    cuda::make_unique<float[]>(config_.cloud_capacity_ * config_.num_point_feature_size_);
+  shuffle_indices_d_ = cuda::make_unique<unsigned int[]>(config_.cloud_capacity_);
+
+  std::vector<unsigned int> indexes(config_.cloud_capacity_);
+  std::iota(indexes.begin(), indexes.end(), 0);
+
+  std::default_random_engine e(0);
+  std::shuffle(indexes.begin(), indexes.end(), e);
+
+  std::srand(std::time(nullptr));
+
+  CHECK_CUDA_ERROR(cudaMemcpyAsync(
+    shuffle_indices_d_.get(), indexes.data(), config_.cloud_capacity_ * sizeof(unsigned int),
+    cudaMemcpyHostToDevice, stream_));
+
   pre_ptr_ = std::make_unique<PreprocessCuda>(config_, stream_);
   post_ptr_ = std::make_unique<PostprocessCuda>(config_, stream_);
 }
@@ -125,15 +145,20 @@ bool TransfusionTRT::preprocess(
   cuda::clear_async(voxel_idxs_d_.get(), voxel_idxs_size_, stream_);
   cuda::clear_async(params_input_d_.get(), 1, stream_);
   cuda::clear_async(
-    points_d_.get(), config_.cloud_capacity_ * config_.num_point_feature_size_, stream_);
+    points_aux_d_.get(), config_.cloud_capacity_ * config_.num_point_feature_size_, stream_);
   CHECK_CUDA_ERROR(cudaStreamSynchronize(stream_));
 
-  const auto count = vg_ptr_->generateSweepPoints(msg, points_d_);
+  const auto count = vg_ptr_->generateSweepPoints(msg, points_aux_d_);
   RCLCPP_DEBUG_STREAM(rclcpp::get_logger("lidar_transfusion"), "Generated sweep points: " << count);
 
+  const std::size_t random_offset = std::rand() % config_.cloud_capacity_;
+  pre_ptr_->shufflePoints_launch(
+    points_aux_d_.get(), shuffle_indices_d_.get(), points_d_.get(), count, config_.cloud_capacity_,
+    random_offset);
+
   pre_ptr_->generateVoxels(
-    points_d_.get(), count, params_input_d_.get(), voxel_features_d_.get(), voxel_num_d_.get(),
-    voxel_idxs_d_.get());
+    points_d_.get(), config_.cloud_capacity_, params_input_d_.get(), voxel_features_d_.get(),
+    voxel_num_d_.get(), voxel_idxs_d_.get());
   unsigned int params_input;
   CHECK_CUDA_ERROR(cudaStreamSynchronize(stream_));
 

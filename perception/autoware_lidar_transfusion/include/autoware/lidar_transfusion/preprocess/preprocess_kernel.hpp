@@ -49,16 +49,20 @@ public:
     float * points, unsigned int points_size, unsigned int * pillar_num, float * voxel_features,
     unsigned int * voxel_num, unsigned int * voxel_idxs);
 
+  cudaError_t generateSweepPoints_launch(
+    const uint8_t * input_data, std::size_t points_size, int input_point_step, float time_lag,
+    const float * transform, float * output_points);
+
+  cudaError_t shufflePoints_launch(
+    const float * points, const unsigned int * indices, float * shuffled_points,
+    const std::size_t points_size, const std::size_t max_size, const std::size_t offset);
+
   cudaError_t generateVoxels_random_launch(
     float * points, unsigned int points_size, unsigned int * mask, float * voxels);
 
   cudaError_t generateBaseFeatures_launch(
     unsigned int * mask, float * voxels, unsigned int * pillar_num, float * voxel_features,
     unsigned int * voxel_num, unsigned int * voxel_idxs);
-
-  cudaError_t generateSweepPoints_launch(
-    const uint8_t * input_data, size_t points_size, int input_point_step, float time_lag,
-    const float * transform, float * output_points);
 
 private:
   TransfusionConfig config_;

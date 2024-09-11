@@ -47,6 +47,97 @@ PreprocessCuda::PreprocessCuda(const TransfusionConfig & config, cudaStream_t & 
   voxels_ = cuda::make_unique<float[]>(voxels_size_);
 }
 
+__global__ void generateSweepPoints_kernel(
+  const uint8_t * input_data, size_t points_size, int input_point_step, float time_lag,
+  const float * transform_array, int num_features, float * output_points)
+{
+  int point_idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (point_idx >= points_size) return;
+
+  union {
+    uint32_t raw{0};
+    float value;
+  } input_x, input_y, input_z;
+
+#pragma unroll
+  for (int i = 0; i < 4; i++) {  // 4 bytes for float32
+    input_x.raw |= input_data[point_idx * input_point_step + i] << i * 8;
+    input_y.raw |= input_data[point_idx * input_point_step + i + 4] << i * 8;
+    input_z.raw |= input_data[point_idx * input_point_step + i + 8] << i * 8;
+  }
+
+  float input_intensity = static_cast<float>(input_data[point_idx * input_point_step + 12]);
+
+  output_points[point_idx * num_features] =
+    transform_array[0] * input_x.value + transform_array[4] * input_y.value +
+    transform_array[8] * input_z.value + transform_array[12];
+  output_points[point_idx * num_features + 1] =
+    transform_array[1] * input_x.value + transform_array[5] * input_y.value +
+    transform_array[9] * input_z.value + transform_array[13];
+  output_points[point_idx * num_features + 2] =
+    transform_array[2] * input_x.value + transform_array[6] * input_y.value +
+    transform_array[10] * input_z.value + transform_array[14];
+  output_points[point_idx * num_features + 3] = input_intensity;
+  output_points[point_idx * num_features + 4] = time_lag;
+}
+
+cudaError_t PreprocessCuda::generateSweepPoints_launch(
+  const uint8_t * input_data, size_t points_size, int input_point_step, float time_lag,
+  const float * transform_array, float * output_points)
+{
+  dim3 blocks(divup(points_size, config_.threads_for_voxel_));
+  dim3 threads(config_.threads_for_voxel_);
+
+  generateSweepPoints_kernel<<<blocks, threads, 0, stream_>>>(
+    input_data, points_size, input_point_step, time_lag, transform_array,
+    config_.num_point_feature_size_, output_points);
+
+  cudaError_t err = cudaGetLastError();
+  return err;
+}
+
+__global__ void shufflePoints_kernel(
+  const float * points, const unsigned int * indices, float * shuffled_points,
+  const std::size_t points_size, const std::size_t max_size, const std::size_t offset)
+{
+  int point_idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (point_idx >= max_size) return;
+
+  int src_idx = indices[(point_idx + offset) % max_size];
+  int dst_idx = point_idx;
+
+  if (dst_idx >= points_size) {
+    shuffled_points[5 * dst_idx + 0] = INFINITY;
+    shuffled_points[5 * dst_idx + 1] = INFINITY;
+    shuffled_points[5 * dst_idx + 2] = INFINITY;
+    shuffled_points[5 * dst_idx + 3] = INFINITY;
+    shuffled_points[5 * dst_idx + 4] = INFINITY;
+  } else {
+    shuffled_points[5 * dst_idx + 0] = points[5 * src_idx + 0];
+    shuffled_points[5 * dst_idx + 1] = points[5 * src_idx + 1];
+    shuffled_points[5 * dst_idx + 2] = points[5 * src_idx + 2];
+    shuffled_points[5 * dst_idx + 3] = points[5 * src_idx + 3];
+    shuffled_points[5 * dst_idx + 4] = points[5 * src_idx + 4];
+  }
+}
+
+cudaError_t PreprocessCuda::shufflePoints_launch(
+  const float * points, const unsigned int * indices, float * shuffled_points,
+  const std::size_t points_size, const std::size_t max_size, const std::size_t offset)
+{
+  dim3 blocks(divup(points_size, config_.threads_for_voxel_));
+  dim3 threads(config_.threads_for_voxel_);
+
+  if (blocks.x == 0) {
+    return cudaGetLastError();
+  }
+
+  shufflePoints_kernel<<<blocks, threads, 0, stream_>>>(
+    points, indices, shuffled_points, points_size, max_size, offset);
+  cudaError_t err = cudaGetLastError();
+  return err;
+}
+
 void PreprocessCuda::generateVoxels(
   float * points, unsigned int points_size, unsigned int * pillar_num, float * voxel_features,
   unsigned int * voxel_num, unsigned int * voxel_idxs)
@@ -165,55 +256,6 @@ cudaError_t PreprocessCuda::generateBaseFeatures_launch(
   generateBaseFeatures_kernel<<<blocks, threads, 0, stream_>>>(
     mask, voxels, config_.grid_y_size_, config_.grid_x_size_, config_.points_per_voxel_,
     config_.max_voxels_, pillar_num, voxel_features, voxel_num, voxel_idxs);
-  cudaError_t err = cudaGetLastError();
-  return err;
-}
-
-__global__ void generateSweepPoints_kernel(
-  const uint8_t * input_data, size_t points_size, int input_point_step, float time_lag,
-  const float * transform_array, int num_features, float * output_points)
-{
-  int point_idx = blockIdx.x * blockDim.x + threadIdx.x;
-  if (point_idx >= points_size) return;
-
-  union {
-    uint32_t raw{0};
-    float value;
-  } input_x, input_y, input_z;
-
-#pragma unroll
-  for (int i = 0; i < 4; i++) {  // 4 bytes for float32
-    input_x.raw |= input_data[point_idx * input_point_step + i] << i * 8;
-    input_y.raw |= input_data[point_idx * input_point_step + i + 4] << i * 8;
-    input_z.raw |= input_data[point_idx * input_point_step + i + 8] << i * 8;
-  }
-
-  float input_intensity = static_cast<float>(input_data[point_idx * input_point_step + 12]);
-
-  output_points[point_idx * num_features] =
-    transform_array[0] * input_x.value + transform_array[4] * input_y.value +
-    transform_array[8] * input_z.value + transform_array[12];
-  output_points[point_idx * num_features + 1] =
-    transform_array[1] * input_x.value + transform_array[5] * input_y.value +
-    transform_array[9] * input_z.value + transform_array[13];
-  output_points[point_idx * num_features + 2] =
-    transform_array[2] * input_x.value + transform_array[6] * input_y.value +
-    transform_array[10] * input_z.value + transform_array[14];
-  output_points[point_idx * num_features + 3] = input_intensity;
-  output_points[point_idx * num_features + 4] = time_lag;
-}
-
-cudaError_t PreprocessCuda::generateSweepPoints_launch(
-  const uint8_t * input_data, size_t points_size, int input_point_step, float time_lag,
-  const float * transform_array, float * output_points)
-{
-  dim3 blocks(divup(points_size, config_.threads_for_voxel_));
-  dim3 threads(config_.threads_for_voxel_);
-
-  generateSweepPoints_kernel<<<blocks, threads, 0, stream_>>>(
-    input_data, points_size, input_point_step, time_lag, transform_array,
-    config_.num_point_feature_size_, output_points);
-
   cudaError_t err = cudaGetLastError();
   return err;
 }

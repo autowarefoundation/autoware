@@ -89,13 +89,13 @@ cuda::unique_ptr<T> make_unique()
   return cuda::unique_ptr<T>{p};
 }
 
-constexpr size_t CUDA_ALIGN = 256;
+constexpr std::size_t CUDA_ALIGN = 256;
 
 template <typename T>
-inline size_t get_size_aligned(size_t num_elem)
+inline std::size_t get_size_aligned(size_t num_elem)
 {
-  size_t size = num_elem * sizeof(T);
-  size_t extra_align = 0;
+  std::size_t size = num_elem * sizeof(T);
+  std::size_t extra_align = 0;
   if (size % CUDA_ALIGN != 0) {
     extra_align = CUDA_ALIGN - size % CUDA_ALIGN;
   }
@@ -103,9 +103,9 @@ inline size_t get_size_aligned(size_t num_elem)
 }
 
 template <typename T>
-inline T * get_next_ptr(size_t num_elem, void *& workspace, size_t & workspace_size)
+inline T * get_next_ptr(size_t num_elem, void *& workspace, std::size_t & workspace_size)
 {
-  size_t size = get_size_aligned<T>(num_elem);
+  std::size_t size = get_size_aligned<T>(num_elem);
   if (size > workspace_size) {
     throw ::std::runtime_error("Workspace is too small!");
   }
@@ -116,7 +116,7 @@ inline T * get_next_ptr(size_t num_elem, void *& workspace, size_t & workspace_s
 }
 
 template <typename T>
-void clear_async(T * ptr, size_t num_elem, cudaStream_t stream)
+void clear_async(T * ptr, std::size_t num_elem, cudaStream_t stream)
 {
   CHECK_CUDA_ERROR(::cudaMemsetAsync(ptr, 0, sizeof(T) * num_elem, stream));
 }
