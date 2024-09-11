@@ -1,0 +1,30 @@
+external_velocity_limit_selector:
+  max_vel:
+    type: double
+    description: Default max velocity [m/s]
+  normal:
+    min_acc:
+      type: double
+      description: Minimum deceleration [m/ss]
+    max_acc:
+      type: double
+      description: Maximum deceleration [m/ss]
+    min_jerk:
+      type: double
+      description: Minimum jerk [m/sss]
+    max_jerk:
+      type: double
+      description: Maximum jerk [m/sss]
+  limit:
+    min_acc:
+      type: double
+      description: Minimum acceleration to be observed [m/ss]
+    max_acc:
+      type: double
+      description: Maximum acceleration to be observed [m/ss]
+    min_jerk:
+      type: double
+      description: Minimum jerk to be observed [m/sss]
+    max_jerk:
+      type: double
+      description: Maximum jerk to be observed [m/sss]
