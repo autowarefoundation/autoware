@@ -35,11 +35,10 @@
 
 # Replace rsync with synchronize which is an ansible wrapper for rsync
 - name: Copy autoware-rviz-icons to the qt5ct config directory
-  ansible.builtin.synchronize:
+  ansible.posix.synchronize:
     src: "{{ role_path }}/files/autoware-rviz-icons/"
     dest: "{{ icons_path }}/"
     mode: push
-  changed_when: false
 
 - name: Fix the paths in the qss file
   ansible.builtin.replace:
