@@ -14,6 +14,8 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
   <depend>autoware_detected_object_validation</depend>
   <depend>autoware_lanelet2_extension</depend>
+  <depend>autoware_perception_msgs</depend>
+  <depend>autoware_point_types</depend>
   <depend>autoware_universe_utils</depend>
   <depend>message_filters</depend>
   <depend>nav_msgs</depend>
