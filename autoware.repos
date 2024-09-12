@@ -145,4 +145,4 @@ repositories:
   param/autoware_individual_params:
     type: git
     url: https://github.com/autowarefoundation/autoware_individual_params.git
-    version: main
+    version: v1.0
