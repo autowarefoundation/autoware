@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Pointcloud Accumulator Node",
+  "type": "object",
+  "definitions": {
+    "pointcloud_accumulator": {
+      "type": "object",
+      "properties": {
+        "accumulation_time_sec": {
+          "type": "number",
+          "description": "accumulation period [s]",
+          "default": "2.0",
+          "minimum": 0
+        },
+        "pointcloud_buffer_size": {
+          "type": "integer",
+          "description": "buffer size",
+          "default": "50",
+          "minimum": 0
+        }
+      },
+      "required": ["accumulation_time_sec", "pointcloud_buffer_size"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/pointcloud_accumulator"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

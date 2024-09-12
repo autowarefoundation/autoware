@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE__POINTCLOUD_PREPROCESSOR__POINTCLOUD_ACCUMULATOR__POINTCLOUD_ACCUMULATOR_NODELET_HPP_  // NOLINT
-#define AUTOWARE__POINTCLOUD_PREPROCESSOR__POINTCLOUD_ACCUMULATOR__POINTCLOUD_ACCUMULATOR_NODELET_HPP_  // NOLINT
+#ifndef AUTOWARE__POINTCLOUD_PREPROCESSOR__POINTCLOUD_ACCUMULATOR__POINTCLOUD_ACCUMULATOR_NODE_HPP_  // NOLINT
+#define AUTOWARE__POINTCLOUD_PREPROCESSOR__POINTCLOUD_ACCUMULATOR__POINTCLOUD_ACCUMULATOR_NODE_HPP_  // NOLINT
 
 #include "autoware/pointcloud_preprocessor/filter.hpp"
 
@@ -46,5 +46,5 @@ public:
 }  // namespace autoware::pointcloud_preprocessor
 
 // clang-format off
-#endif  // AUTOWARE__POINTCLOUD_PREPROCESSOR__POINTCLOUD_ACCUMULATOR__POINTCLOUD_ACCUMULATOR_NODELET_HPP_  // NOLINT
+#endif  // AUTOWARE__POINTCLOUD_PREPROCESSOR__POINTCLOUD_ACCUMULATOR__POINTCLOUD_ACCUMULATOR_NODE_HPP_  // NOLINT
 // clang-format on

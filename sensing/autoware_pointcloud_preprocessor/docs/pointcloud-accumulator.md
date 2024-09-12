@@ -24,10 +24,7 @@ The `pointcloud_accumulator` is a node that accumulates pointclouds for a given 
 
 ### Core Parameters
 
-| Name                     | Type   | Default Value | Description             |
-| ------------------------ | ------ | ------------- | ----------------------- |
-| `accumulation_time_sec`  | double | 2.0           | accumulation period [s] |
-| `pointcloud_buffer_size` | int    | 50            | buffer size             |
+{{ json_to_markdown("sensing/autoware_pointcloud_preprocessor/schema/pointcloud_accumulator_node.schema.json") }}
 
 ## Assumptions / Known limits
 

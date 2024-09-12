@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    accumulation_time_sec: 2.0
+    pointcloud_buffer_size: 50

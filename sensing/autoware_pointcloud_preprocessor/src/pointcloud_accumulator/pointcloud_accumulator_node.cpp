@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "autoware/pointcloud_preprocessor/pointcloud_accumulator/pointcloud_accumulator_nodelet.hpp"
+#include "autoware/pointcloud_preprocessor/pointcloud_accumulator/pointcloud_accumulator_node.hpp"
 
 #include <vector>
 
@@ -23,9 +23,9 @@ PointcloudAccumulatorComponent::PointcloudAccumulatorComponent(const rclcpp::Nod
 {
   // set initial parameters
   {
-    accumulation_time_sec_ = static_cast<double>(declare_parameter("accumulation_time_sec", 2.0));
+    accumulation_time_sec_ = declare_parameter<double>("accumulation_time_sec");
     pointcloud_buffer_.set_capacity(
-      static_cast<size_t>(declare_parameter("pointcloud_buffer_size", 50)));
+      static_cast<size_t>(declare_parameter<int64_t>("pointcloud_buffer_size")));
   }
 
   using std::placeholders::_1;

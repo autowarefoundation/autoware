@@ -77,7 +77,7 @@ ament_auto_add_library(pointcloud_preprocessor_filter SHARED
   src/passthrough_filter/passthrough_filter_node.cpp
   src/passthrough_filter/passthrough_filter_uint16_node.cpp
   src/passthrough_filter/passthrough_uint16.cpp
-  src/pointcloud_accumulator/pointcloud_accumulator_nodelet.cpp
+  src/pointcloud_accumulator/pointcloud_accumulator_node.cpp
   src/vector_map_filter/lanelet2_map_filter_node.cpp
   src/distortion_corrector/distortion_corrector.cpp
   src/distortion_corrector/distortion_corrector_node.cpp
