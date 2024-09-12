@@ -301,8 +301,24 @@ bool StartPlannerModule::receivedNewRoute() const
 
 bool StartPlannerModule::requiresDynamicObjectsCollisionDetection() const
 {
-  return parameters_->safety_check_params.enable_safety_check && status_.driving_forward &&
-         !isPreventingRearVehicleFromPassingThrough();
+  const auto & safety_params = parameters_->safety_check_params;
+  const auto & skip_rear_vehicle_check = parameters_->skip_rear_vehicle_check;
+
+  // Return false and do not perform collision detection if any of the following conditions are
+  // true:
+  // - Safety check is disabled.
+  // - The vehicle is not driving forward.
+  if (!safety_params.enable_safety_check || !status_.driving_forward) {
+    return false;
+  }
+
+  // Return true and always perform collision detection if the following condition is true:
+  // - Rear vehicle check is set to be skipped.
+  if (skip_rear_vehicle_check) {
+    return true;
+  }
+
+  return !isPreventingRearVehicleFromPassingThrough();
 }
 
 bool StartPlannerModule::noMovingObjectsAround() const

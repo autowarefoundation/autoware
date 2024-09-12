@@ -40,6 +40,7 @@ void StartPlannerModuleManager::init(rclcpp::Node * node)
     p.prepare_time_before_start = node->declare_parameter<double>(ns + "prepare_time_before_start");
     p.th_distance_to_middle_of_the_road =
       node->declare_parameter<double>(ns + "th_distance_to_middle_of_the_road");
+    p.skip_rear_vehicle_check = node->declare_parameter<bool>(ns + "skip_rear_vehicle_check");
     p.extra_width_margin_for_rear_obstacle =
       node->declare_parameter<double>(ns + "extra_width_margin_for_rear_obstacle");
     p.collision_check_margins =
@@ -357,6 +358,7 @@ void StartPlannerModuleManager::updateModuleParams(
     updateParam<double>(parameters, ns + "prepare_time_before_start", p->prepare_time_before_start);
     updateParam<double>(
       parameters, ns + "th_distance_to_middle_of_the_road", p->th_distance_to_middle_of_the_road);
+    updateParam<bool>(parameters, ns + "skip_rear_vehicle_check", p->skip_rear_vehicle_check);
     updateParam<double>(
       parameters, ns + "extra_width_margin_for_rear_obstacle",
       p->extra_width_margin_for_rear_obstacle);

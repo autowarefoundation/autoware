@@ -102,6 +102,7 @@ struct StartPlannerParameters
   double th_stopped_time{0.0};
   double prepare_time_before_start{0.0};
   double th_distance_to_middle_of_the_road{0.0};
+  bool skip_rear_vehicle_check{false};
   double extra_width_margin_for_rear_obstacle{0.0};
   std::vector<double> collision_check_margins{};
   double collision_check_margin_from_front_object{0.0};
