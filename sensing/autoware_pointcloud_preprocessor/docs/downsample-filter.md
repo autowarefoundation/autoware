@@ -44,9 +44,7 @@ These implementations inherit `autoware::pointcloud_preprocessor::Filter` class,
 
 ### Random Downsample Filter
 
-| Name         | Type | Default Value | Description                     |
-| ------------ | ---- | ------------- | ------------------------------- |
-| `sample_num` | int  | 1500          | number of indices to be sampled |
+{{ json_to_markdown("sensing/autoware_pointcloud_preprocessor/schema/random_downsample_filter_node.schema.json") }}
 
 ### Voxel Grid Downsample Filter
 

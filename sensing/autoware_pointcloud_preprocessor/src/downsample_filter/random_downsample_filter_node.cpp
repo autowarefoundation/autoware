@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2024 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@
  *
  */
 
-#include "autoware/pointcloud_preprocessor/downsample_filter/random_downsample_filter_nodelet.hpp"
+#include "autoware/pointcloud_preprocessor/downsample_filter/random_downsample_filter_node.hpp"
 
 #include <vector>
 
@@ -58,7 +58,7 @@ RandomDownsampleFilterComponent::RandomDownsampleFilterComponent(
 {
   // set initial parameters
   {
-    sample_num_ = static_cast<size_t>(declare_parameter("sample_num", 1500));
+    sample_num_ = static_cast<size_t>(declare_parameter<int64_t>("sample_num"));
   }
 
   using std::placeholders::_1;

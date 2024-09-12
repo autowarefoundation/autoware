@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Random Downsample Filter Node",
+  "type": "object",
+  "definitions": {
+    "random_downsample_filter": {
+      "type": "object",
+      "properties": {
+        "sample_num": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "number of indices to be sampled",
+          "default": "1500"
+        }
+      },
+      "required": ["sample_num"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/random_downsample_filter"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
