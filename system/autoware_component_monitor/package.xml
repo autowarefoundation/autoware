@@ -5,6 +5,8 @@
   <version>0.0.0</version>
   <description>A ROS 2 package to monitor system usage of component containers.</description>
   <maintainer email="memin@leodrive.ai">Mehmet Emin Başoğlu</maintainer>
+  <maintainer email="baris@leodrive.ai">Barış Zeren</maintainer>
+  <maintainer email="yavuz@leodrive.ai">Yavuz Köseoğlu</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
