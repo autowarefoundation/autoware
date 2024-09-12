@@ -252,7 +252,8 @@ void InteractiveObjectTool::onInitialize()
 void InteractiveObjectTool::updateTopic()
 {
   rclcpp::Node::SharedPtr raw_node = context_->getRosNodeAbstraction().lock()->get_raw_node();
-  dummy_object_info_pub_ = raw_node->create_publisher<Object>(topic_property_->getStdString(), 1);
+  dummy_object_info_pub_ =
+    raw_node->create_publisher<DummyObject>(topic_property_->getStdString(), 1);
   clock_ = raw_node->get_clock();
   move_tool_.initialize(context_);
   property_frame_->setFrameManager(context_->getFrameManager());
@@ -280,7 +281,7 @@ void InteractiveObjectTool::onPoseSet(double x, double y, double theta)
   output_msg.initial_state.accel_covariance.accel.linear.z = 0.0;
   output_msg.max_velocity = max_velocity_->getFloat();
   output_msg.min_velocity = min_velocity_->getFloat();
-  output_msg.action = Object::ADD;
+  output_msg.action = DummyObject::ADD;
 
   dummy_object_info_pub_->publish(output_msg);
 }
@@ -292,7 +293,7 @@ void InteractiveObjectTool::publishObjectMsg(
   output_msg.action = action;
   output_msg.id.uuid = uuid;
 
-  if (action == Object::DELETE) {
+  if (action == DummyObject::DELETE) {
     dummy_object_info_pub_->publish(output_msg);
     return;
   }
@@ -321,10 +322,10 @@ int InteractiveObjectTool::processMouseEvent(rviz_common::ViewportMouseEvent & e
     if (point) {
       if (event.shift()) {
         const auto uuid = objects_.create(point.value());
-        publishObjectMsg(uuid.get(), Object::ADD);
+        publishObjectMsg(uuid.get(), DummyObject::ADD);
       } else if (event.alt()) {
         const auto uuid = objects_.remove(point.value());
-        publishObjectMsg(uuid.get(), Object::DELETE);
+        publishObjectMsg(uuid.get(), DummyObject::DELETE);
       } else {
         objects_.select(point.value());
       }
@@ -334,7 +335,7 @@ int InteractiveObjectTool::processMouseEvent(rviz_common::ViewportMouseEvent & e
 
   if (event.rightUp()) {
     const auto uuid = objects_.reset();
-    publishObjectMsg(uuid.get(), Object::MODIFY);
+    publishObjectMsg(uuid.get(), DummyObject::MODIFY);
     return 0;
   }
 
@@ -342,7 +343,7 @@ int InteractiveObjectTool::processMouseEvent(rviz_common::ViewportMouseEvent & e
     const auto point = get_point_from_mouse(event);
     if (point) {
       const auto uuid = objects_.update(point.value());
-      publishObjectMsg(uuid.get(), Object::MODIFY);
+      publishObjectMsg(uuid.get(), DummyObject::MODIFY);
     }
     return 0;
   }

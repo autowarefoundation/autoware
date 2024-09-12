@@ -61,9 +61,8 @@
 #include <rviz_default_plugins/tools/pose/pose_tool.hpp>
 #endif
 
-#include <dummy_perception_publisher/msg/object.hpp>
-
 #include <geometry_msgs/msg/twist.hpp>
+#include <tier4_simulation_msgs/msg/dummy_object.hpp>
 
 #include <boost/optional.hpp>
 
@@ -84,7 +83,7 @@ namespace rviz_plugins
 
 using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::Shape;
-using dummy_perception_publisher::msg::Object;
+using tier4_simulation_msgs::msg::DummyObject;
 
 class InteractiveObject
 {
@@ -138,14 +137,14 @@ public:
   int processMouseEvent(rviz_common::ViewportMouseEvent & event) override;
   int processKeyEvent(QKeyEvent * event, rviz_common::RenderPanel * panel) override;
 
-  [[nodiscard]] virtual Object createObjectMsg() const = 0;
+  [[nodiscard]] virtual DummyObject createObjectMsg() const = 0;
 
 protected Q_SLOTS:
   virtual void updateTopic();
 
 protected:  // NOLINT for Qt
   rclcpp::Clock::SharedPtr clock_;
-  rclcpp::Publisher<Object>::SharedPtr dummy_object_info_pub_;
+  rclcpp::Publisher<DummyObject>::SharedPtr dummy_object_info_pub_;
 
   rviz_default_plugins::tools::MoveTool move_tool_;
 

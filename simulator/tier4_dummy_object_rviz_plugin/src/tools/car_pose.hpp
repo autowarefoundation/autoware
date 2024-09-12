@@ -55,14 +55,14 @@ namespace rviz_plugins
 
 using autoware_perception_msgs::msg::ObjectClassification;
 using autoware_perception_msgs::msg::Shape;
-using dummy_perception_publisher::msg::Object;
+using tier4_simulation_msgs::msg::DummyObject;
 
 class CarInitialPoseTool : public InteractiveObjectTool
 {
 public:
   CarInitialPoseTool();
   void onInitialize() override;
-  [[nodiscard]] Object createObjectMsg() const override;
+  [[nodiscard]] DummyObject createObjectMsg() const override;
 };
 
 class BusInitialPoseTool : public InteractiveObjectTool
@@ -70,7 +70,7 @@ class BusInitialPoseTool : public InteractiveObjectTool
 public:
   BusInitialPoseTool();
   void onInitialize() override;
-  [[nodiscard]] Object createObjectMsg() const override;
+  [[nodiscard]] DummyObject createObjectMsg() const override;
 };
 
 class BikeInitialPoseTool : public InteractiveObjectTool
@@ -78,7 +78,7 @@ class BikeInitialPoseTool : public InteractiveObjectTool
 public:
   BikeInitialPoseTool();
   void onInitialize() override;
-  [[nodiscard]] Object createObjectMsg() const override;
+  [[nodiscard]] DummyObject createObjectMsg() const override;
 
 private:
   rviz_common::properties::EnumProperty * label_;

@@ -37,7 +37,7 @@ using autoware_perception_msgs::msg::TrackedObject;
 using autoware_perception_msgs::msg::TrackedObjects;
 
 ObjectInfo::ObjectInfo(
-  const dummy_perception_publisher::msg::Object & object, const rclcpp::Time & current_time)
+  const tier4_simulation_msgs::msg::DummyObject & object, const rclcpp::Time & current_time)
 : length(object.shape.dimensions.x),
   width(object.shape.dimensions.y),
   height(object.shape.dimensions.z),
@@ -108,7 +108,7 @@ ObjectInfo::ObjectInfo(
 }
 
 TrackedObject ObjectInfo::toTrackedObject(
-  const dummy_perception_publisher::msg::Object & object) const
+  const tier4_simulation_msgs::msg::DummyObject & object) const
 {
   TrackedObject tracked_object;
   tracked_object.kinematics.pose_with_covariance = pose_covariance_;
@@ -164,7 +164,7 @@ DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
     this->create_publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>(
       "output/dynamic_object", qos);
   pointcloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("output/points_raw", qos);
-  object_sub_ = this->create_subscription<dummy_perception_publisher::msg::Object>(
+  object_sub_ = this->create_subscription<tier4_simulation_msgs::msg::DummyObject>(
     "input/object", 100,
     std::bind(&DummyPerceptionPublisherNode::objectCallback, this, std::placeholders::_1));
 
@@ -331,10 +331,10 @@ void DummyPerceptionPublisherNode::timerCallback()
 }
 
 void DummyPerceptionPublisherNode::objectCallback(
-  const dummy_perception_publisher::msg::Object::ConstSharedPtr msg)
+  const tier4_simulation_msgs::msg::DummyObject::ConstSharedPtr msg)
 {
   switch (msg->action) {
-    case dummy_perception_publisher::msg::Object::ADD: {
+    case tier4_simulation_msgs::msg::DummyObject::ADD: {
       tf2::Transform tf_input2map;
       tf2::Transform tf_input2object_origin;
       tf2::Transform tf_map2object_origin;
@@ -350,7 +350,7 @@ void DummyPerceptionPublisherNode::objectCallback(
       }
       tf2::fromMsg(msg->initial_state.pose_covariance.pose, tf_input2object_origin);
       tf_map2object_origin = tf_input2map.inverse() * tf_input2object_origin;
-      dummy_perception_publisher::msg::Object object;
+      tier4_simulation_msgs::msg::DummyObject object;
       object = *msg;
       tf2::toMsg(tf_map2object_origin, object.initial_state.pose_covariance.pose);
 
@@ -371,7 +371,7 @@ void DummyPerceptionPublisherNode::objectCallback(
       objects_.push_back(object);
       break;
     }
-    case dummy_perception_publisher::msg::Object::DELETE: {
+    case tier4_simulation_msgs::msg::DummyObject::DELETE: {
       for (size_t i = 0; i < objects_.size(); ++i) {
         if (objects_.at(i).id.uuid == msg->id.uuid) {
           objects_.erase(objects_.begin() + i);
@@ -380,7 +380,7 @@ void DummyPerceptionPublisherNode::objectCallback(
       }
       break;
     }
-    case dummy_perception_publisher::msg::Object::MODIFY: {
+    case tier4_simulation_msgs::msg::DummyObject::MODIFY: {
       for (size_t i = 0; i < objects_.size(); ++i) {
         if (objects_.at(i).id.uuid == msg->id.uuid) {
           tf2::Transform tf_input2map;
@@ -398,7 +398,7 @@ void DummyPerceptionPublisherNode::objectCallback(
           }
           tf2::fromMsg(msg->initial_state.pose_covariance.pose, tf_input2object_origin);
           tf_map2object_origin = tf_input2map.inverse() * tf_input2object_origin;
-          dummy_perception_publisher::msg::Object object;
+          tier4_simulation_msgs::msg::DummyObject object;
           objects_.at(i) = *msg;
           tf2::toMsg(tf_map2object_origin, objects_.at(i).initial_state.pose_covariance.pose);
           if (use_base_link_z_) {
@@ -420,7 +420,7 @@ void DummyPerceptionPublisherNode::objectCallback(
       }
       break;
     }
-    case dummy_perception_publisher::msg::Object::DELETEALL: {
+    case tier4_simulation_msgs::msg::DummyObject::DELETEALL: {
       objects_.clear();
       break;
     }

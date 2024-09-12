@@ -57,7 +57,7 @@
 #include <rviz_default_plugins/tools/pose/pose_tool.hpp>
 #endif
 
-#include <dummy_perception_publisher/msg/object.hpp>
+#include <tier4_simulation_msgs/msg/dummy_object.hpp>
 
 namespace rviz_plugins
 {
@@ -77,7 +77,7 @@ private Q_SLOTS:
 
 private:  // NOLINT for Qt
   rclcpp::Clock::SharedPtr clock_;
-  rclcpp::Publisher<dummy_perception_publisher::msg::Object>::SharedPtr dummy_object_info_pub_;
+  rclcpp::Publisher<tier4_simulation_msgs::msg::DummyObject>::SharedPtr dummy_object_info_pub_;
 
   rviz_common::properties::StringProperty * topic_property_;
 };

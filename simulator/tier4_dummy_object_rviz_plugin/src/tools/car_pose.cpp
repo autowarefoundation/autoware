@@ -112,9 +112,9 @@ void CarInitialPoseTool::onInitialize()
   updateTopic();
 }
 
-Object CarInitialPoseTool::createObjectMsg() const
+DummyObject CarInitialPoseTool::createObjectMsg() const
 {
-  Object object{};
+  DummyObject object{};
   std::string fixed_frame = context_->getFixedFrame().toStdString();
 
   // header
@@ -205,9 +205,9 @@ void BusInitialPoseTool::onInitialize()
   updateTopic();
 }
 
-Object BusInitialPoseTool::createObjectMsg() const
+DummyObject BusInitialPoseTool::createObjectMsg() const
 {
-  Object object{};
+  DummyObject object{};
   std::string fixed_frame = context_->getFixedFrame().toStdString();
 
   // header
@@ -302,9 +302,9 @@ void BikeInitialPoseTool::onInitialize()
   updateTopic();
 }
 
-Object BikeInitialPoseTool::createObjectMsg() const
+DummyObject BikeInitialPoseTool::createObjectMsg() const
 {
-  Object object{};
+  DummyObject object{};
   std::string fixed_frame = context_->getFixedFrame().toStdString();
 
   // header
