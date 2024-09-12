@@ -70,7 +70,7 @@ repositories:
   universe/external/rtklib_ros_bridge:
     type: git
     url: https://github.com/MapIV/rtklib_ros_bridge.git
-    version: ros2-v0.1.0
+    version: v1.0
   universe/external/llh_converter:
     type: git
     url: https://github.com/MapIV/llh_converter.git
