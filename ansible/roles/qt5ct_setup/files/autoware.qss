@@ -1098,7 +1098,7 @@ QSpinBox::down-button:focus {
 /* Special cases from rviz source code */
 
 QToolButton[toolTip="Add a new tool"] {
-  qproperty-iconSize: 16px 16px; 
+  qproperty-iconSize: 16px 16px;
   qproperty-icon: url("/icons_path/primary/add.svg");
   background: #171c1f;
   border: 0px;
@@ -1118,7 +1118,7 @@ QToolButton[toolTip="Add a new tool"]:pressed {
 }
 
 QToolButton[toolTip="Remove a tool from the toolbar"] {
-  qproperty-iconSize: 16px 16px; 
+  qproperty-iconSize: 16px 16px;
   qproperty-icon: url("/icons_path/primary/minus.svg");
   background: #171c1f;
   border: 0px;
@@ -1231,8 +1231,8 @@ QGroupBox[title="Create visualization"] QTabBar::tab:pressed {
 }
 
 QGroupBox[title="Create visualization"] QFrame {
-  background-color: #1b2023; 
-  border: none; 
+  background-color: #1b2023;
+  border: none;
   margin: 0px;
   padding: 0px;
 }
@@ -1390,4 +1390,3 @@ QTreeView QSpinBox:focus,
 QTreeView QDoubleSpinBox:focus {
   border: 0px;
 }
-
