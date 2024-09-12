@@ -87,7 +87,7 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
-    version: main
+    version: v1.0
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
