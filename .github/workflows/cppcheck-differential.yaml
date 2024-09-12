@@ -85,7 +85,7 @@ jobs:
 
       - name: Upload Cppcheck report
         if: ${{ steps.filter-paths-no-cpp-files.outputs.filtered-full-paths != '' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: cppcheck-report
           path: cppcheck-report.txt

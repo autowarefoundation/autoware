@@ -37,7 +37,7 @@ jobs:
         shell: bash
 
       - name: Upload Cppcheck report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: cppcheck-report
           path: cppcheck-report.xml
