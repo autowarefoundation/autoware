@@ -32,7 +32,7 @@ repositories:
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
-    version: main
+    version: v1.0
   # universe
   universe/autoware.universe:
     type: git
