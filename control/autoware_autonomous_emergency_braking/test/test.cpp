@@ -157,8 +157,9 @@ TEST_F(TestAEB, checkImuPathGeneration)
     }
   }
   PointCloud::Ptr points_belonging_to_cluster_hulls = pcl::make_shared<PointCloud>();
+  MarkerArray debug_markers;
   aeb_node_->getPointsBelongingToClusterHulls(
-    obstacle_points_ptr, points_belonging_to_cluster_hulls);
+    obstacle_points_ptr, points_belonging_to_cluster_hulls, debug_markers);
   std::vector<ObjectData> objects;
   aeb_node_->getClosestObjectsOnPath(
     imu_path, footprint, stamp, points_belonging_to_cluster_hulls, objects);

@@ -39,7 +39,6 @@
 #include <pcl/point_types.h>
 #include <pcl/registration/gicp.h>
 #include <pcl/segmentation/extract_clusters.h>
-#include <pcl/surface/convex_hull.h>
 #include <tf2/utils.h>
 
 #include <cmath>
@@ -411,7 +410,6 @@ void AEB::onCheckCollision(DiagnosticStatusWrapper & stat)
 bool AEB::checkCollision(MarkerArray & debug_markers)
 {
   autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
-  using colorTuple = std::tuple<double, double, double, double>;
 
   // step1. check data
   if (!fetchLatestData()) {
@@ -457,10 +455,9 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
 
     // Add debug markers
     if (publish_debug_markers_) {
-      const auto [color_r, color_g, color_b, color_a] = debug_colors;
       addMarker(
-        this->get_clock()->now(), path, ego_polys, objects, collision_data_keeper_.get(), color_r,
-        color_g, color_b, color_a, debug_ns, debug_markers);
+        this->get_clock()->now(), path, ego_polys, objects, collision_data_keeper_.get(),
+        debug_colors, debug_ns, debug_markers);
     }
     return objects;
   };
@@ -529,7 +526,8 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
   }
 
   PointCloud::Ptr points_belonging_to_cluster_hulls = pcl::make_shared<PointCloud>();
-  getPointsBelongingToClusterHulls(filtered_objects, points_belonging_to_cluster_hulls);
+  getPointsBelongingToClusterHulls(
+    filtered_objects, points_belonging_to_cluster_hulls, debug_markers);
 
   const auto has_collision_imu_path =
     [&](const PointCloud::Ptr points_belonging_to_cluster_hulls) -> bool {
@@ -770,7 +768,7 @@ void AEB::createObjectDataUsingPredictedObjects(
 
 void AEB::getPointsBelongingToClusterHulls(
   const PointCloud::Ptr obstacle_points_ptr,
-  const PointCloud::Ptr points_belonging_to_cluster_hulls)
+  const PointCloud::Ptr points_belonging_to_cluster_hulls, MarkerArray & debug_markers)
 {
   autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
   // eliminate noisy points by only considering points belonging to clusters of at least a certain
@@ -789,6 +787,7 @@ void AEB::getPointsBelongingToClusterHulls(
     ec.extract(cluster_idx);
     return cluster_idx;
   });
+  std::vector<Polygon2d> hull_polygons;
   for (const auto & indices : cluster_indices) {
     PointCloud::Ptr cluster(new PointCloud);
     bool cluster_surpasses_threshold_height{false};
@@ -807,9 +806,19 @@ void AEB::getPointsBelongingToClusterHulls(
     std::vector<pcl::Vertices> polygons;
     PointCloud::Ptr surface_hull(new PointCloud);
     hull.reconstruct(*surface_hull, polygons);
+    Polygon2d hull_polygon;
     for (const auto & p : *surface_hull) {
       points_belonging_to_cluster_hulls->push_back(p);
+      if (publish_debug_markers_) {
+        const auto geom_point = autoware::universe_utils::createPoint(p.x, p.y, p.z);
+        appendPointToPolygon(hull_polygon, geom_point);
+      }
     }
+    hull_polygons.push_back(hull_polygon);
+  }
+  if (publish_debug_markers_ && !hull_polygons.empty()) {
+    constexpr colorTuple debug_color = {255.0 / 256.0, 51.0 / 256.0, 255.0 / 256.0, 0.999};
+    addClusterHullMarkers(now(), hull_polygons, debug_color, "hulls", debug_markers);
   }
 }
 
@@ -887,23 +896,39 @@ void AEB::cropPointCloudWithEgoFootprintPath(
   path_polygon_hull_filter.setHullIndices(polygons);
   path_polygon_hull_filter.setHullCloud(surface_hull);
   path_polygon_hull_filter.filter(*filtered_objects);
-  filtered_objects->header.stamp = full_points_ptr->header.stamp;
+  filtered_objects->header = full_points_ptr->header;
+}
+
+void AEB::addClusterHullMarkers(
+  const rclcpp::Time & current_time, const std::vector<Polygon2d> & hulls,
+  const colorTuple & debug_colors, const std::string & ns, MarkerArray & debug_markers)
+{
+  autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+  const auto [color_r, color_g, color_b, color_a] = debug_colors;
+
+  auto hull_marker = autoware::universe_utils::createDefaultMarker(
+    "base_link", current_time, ns, 0, Marker::LINE_LIST,
+    autoware::universe_utils::createMarkerScale(0.03, 0.0, 0.0),
+    autoware::universe_utils::createMarkerColor(color_r, color_g, color_b, color_a));
+  utils::fillMarkerFromPolygon(hulls, hull_marker);
+  debug_markers.markers.push_back(hull_marker);
 }
 
 void AEB::addMarker(
   const rclcpp::Time & current_time, const Path & path, const std::vector<Polygon2d> & polygons,
   const std::vector<ObjectData> & objects, const std::optional<ObjectData> & closest_object,
-  const double color_r, const double color_g, const double color_b, const double color_a,
-  const std::string & ns, MarkerArray & debug_markers)
+  const colorTuple & debug_colors, const std::string & ns, MarkerArray & debug_markers)
 {
   autoware::universe_utils::ScopedTimeTrack st(__func__, *time_keeper_);
+  const auto [color_r, color_g, color_b, color_a] = debug_colors;
+
   auto path_marker = autoware::universe_utils::createDefaultMarker(
     "base_link", current_time, ns + "_path", 0L, Marker::LINE_STRIP,
     autoware::universe_utils::createMarkerScale(0.2, 0.2, 0.2),
     autoware::universe_utils::createMarkerColor(color_r, color_g, color_b, color_a));
-  path_marker.points.resize(path.size());
-  for (size_t i = 0; i < path.size(); ++i) {
-    path_marker.points.at(i) = path.at(i).position;
+  path_marker.points.reserve(path.size());
+  for (const auto & p : path) {
+    path_marker.points.push_back(p.position);
   }
   debug_markers.markers.push_back(path_marker);
 
@@ -911,18 +936,7 @@ void AEB::addMarker(
     "base_link", current_time, ns + "_polygon", 0, Marker::LINE_LIST,
     autoware::universe_utils::createMarkerScale(0.03, 0.0, 0.0),
     autoware::universe_utils::createMarkerColor(color_r, color_g, color_b, color_a));
-  for (const auto & poly : polygons) {
-    for (size_t dp_idx = 0; dp_idx < poly.outer().size(); ++dp_idx) {
-      const auto & boost_cp = poly.outer().at(dp_idx);
-      const auto & boost_np = poly.outer().at((dp_idx + 1) % poly.outer().size());
-      const auto curr_point =
-        autoware::universe_utils::createPoint(boost_cp.x(), boost_cp.y(), 0.0);
-      const auto next_point =
-        autoware::universe_utils::createPoint(boost_np.x(), boost_np.y(), 0.0);
-      polygon_marker.points.push_back(curr_point);
-      polygon_marker.points.push_back(next_point);
-    }
-  }
+  utils::fillMarkerFromPolygon(polygons, polygon_marker);
   debug_markers.markers.push_back(polygon_marker);
 
   auto object_data_marker = autoware::universe_utils::createDefaultMarker(

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <autoware/autonomous_emergency_braking/utils.hpp>
+#include <autoware/universe_utils/geometry/geometry.hpp>
 
 #include <optional>
 
@@ -167,4 +168,22 @@ std::optional<geometry_msgs::msg::TransformStamped> getTransform(
   }
   return std::make_optional(tf_current_pose);
 }
+
+void fillMarkerFromPolygon(
+  const std::vector<Polygon2d> & polygons, visualization_msgs::msg::Marker & polygon_marker)
+{
+  for (const auto & poly : polygons) {
+    for (size_t dp_idx = 0; dp_idx < poly.outer().size(); ++dp_idx) {
+      const auto & boost_cp = poly.outer().at(dp_idx);
+      const auto & boost_np = poly.outer().at((dp_idx + 1) % poly.outer().size());
+      const auto curr_point =
+        autoware::universe_utils::createPoint(boost_cp.x(), boost_cp.y(), 0.0);
+      const auto next_point =
+        autoware::universe_utils::createPoint(boost_np.x(), boost_np.y(), 0.0);
+      polygon_marker.points.push_back(curr_point);
+      polygon_marker.points.push_back(next_point);
+    }
+  }
+}
+
 }  // namespace autoware::motion::control::autonomous_emergency_braking::utils
