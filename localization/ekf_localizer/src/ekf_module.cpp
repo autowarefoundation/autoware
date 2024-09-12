@@ -40,7 +40,8 @@ EKFModule::EKFModule(std::shared_ptr<Warning> warning, const HyperParameters & p
 : warning_(std::move(warning)),
   dim_x_(6),  // x, y, yaw, yaw_bias, vx, wz
   accumulated_delay_times_(params.extend_state_step, 1.0E15),
-  params_(params)
+  params_(params),
+  last_angular_velocity_(0.0, 0.0, 0.0)
 {
   Eigen::MatrixXd x = Eigen::MatrixXd::Zero(dim_x_, 1);
   Eigen::MatrixXd p = Eigen::MatrixXd::Identity(dim_x_, dim_x_) * 1.0E15;  // for x & y
@@ -52,6 +53,9 @@ EKFModule::EKFModule(std::shared_ptr<Warning> warning, const HyperParameters & p
   p(IDX::WZ, IDX::WZ) = 50.0;    // for wz
 
   kalman_filter_.init(x, p, static_cast<int>(params_.extend_state_step));
+  z_filter_.set_proc_var(params_.z_filter_proc_dev * params_.z_filter_proc_dev);
+  roll_filter_.set_proc_var(params_.roll_filter_proc_dev * params_.roll_filter_proc_dev);
+  pitch_filter_.set_proc_var(params_.pitch_filter_proc_dev * params_.pitch_filter_proc_dev);
 }
 
 void EKFModule::initialize(
@@ -80,12 +84,27 @@ void EKFModule::initialize(
   p(IDX::WZ, IDX::WZ) = 0.01;
 
   kalman_filter_.init(x, p, static_cast<int>(params_.extend_state_step));
+
+  const double z = initial_pose.pose.pose.position.z;
+
+  const auto rpy = autoware::universe_utils::getRPY(initial_pose.pose.pose.orientation);
+
+  const double z_var = initial_pose.pose.covariance[COV_IDX::Z_Z];
+  const double roll_var = initial_pose.pose.covariance[COV_IDX::ROLL_ROLL];
+  const double pitch_var = initial_pose.pose.covariance[COV_IDX::PITCH_PITCH];
+
+  z_filter_.init(z, z_var);
+  roll_filter_.init(rpy.x, roll_var);
+  pitch_filter_.init(rpy.y, pitch_var);
 }
 
 geometry_msgs::msg::PoseStamped EKFModule::get_current_pose(
-  const rclcpp::Time & current_time, const double z, const double roll, const double pitch,
-  bool get_biased_yaw) const
+  const rclcpp::Time & current_time, bool get_biased_yaw) const
 {
+  const double z = z_filter_.get_x();
+  const double roll = roll_filter_.get_x();
+  const double pitch = pitch_filter_.get_x();
+
   const double x = kalman_filter_.getXelement(IDX::X);
   const double y = kalman_filter_.getXelement(IDX::Y);
   /*
@@ -127,7 +146,15 @@ geometry_msgs::msg::TwistStamped EKFModule::get_current_twist(
 
 std::array<double, 36> EKFModule::get_current_pose_covariance() const
 {
-  return ekf_covariance_to_pose_message_covariance(kalman_filter_.getLatestP());
+  std::array<double, 36> cov =
+    ekf_covariance_to_pose_message_covariance(kalman_filter_.getLatestP());
+
+  using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  cov[COV_IDX::Z_Z] = z_filter_.get_var();
+  cov[COV_IDX::ROLL_ROLL] = roll_filter_.get_var();
+  cov[COV_IDX::PITCH_PITCH] = pitch_filter_.get_var();
+
+  return cov;
 }
 
 std::array<double, 36> EKFModule::get_current_twist_covariance() const
@@ -195,6 +222,7 @@ void EKFModule::predict_with_delay(const double dt)
   const Matrix6d a = create_state_transition_matrix(x_curr, dt);
   const Matrix6d q = process_noise_covariance(proc_cov_yaw_d, proc_cov_vx_d, proc_cov_wz_d);
   kalman_filter_.predictWithDelay(x_next, a, q);
+  ekf_dt_ = dt;
 }
 
 bool EKFModule::measurement_update_pose(
@@ -277,6 +305,12 @@ bool EKFModule::measurement_update_pose(
 
   kalman_filter_.updateWithDelay(y, c, r, static_cast<int>(delay_step));
 
+  // Update Simple 1D filter with considering change of roll, pitch and height (position z)
+  // values due to measurement pose delay
+  auto pose_with_rph_delay_compensation =
+    compensate_rph_with_delay(pose, last_angular_velocity_, delay_time);
+  update_simple_1d_filters(pose_with_rph_delay_compensation, params_.pose_smoothing_steps);
+
   // debug
   const Eigen::MatrixXd x_result = kalman_filter_.getLatestX();
   DEBUG_PRINT_MAT(x_result.transpose());
@@ -327,6 +361,8 @@ bool EKFModule::measurement_update_twist(
   if (twist.header.frame_id != "base_link") {
     warning_->warn_throttle("twist frame_id must be base_link", 2000);
   }
+
+  last_angular_velocity_ = tf2::Vector3(0.0, 0.0, 0.0);
 
   const Eigen::MatrixXd x_curr = kalman_filter_.getLatestX();
   DEBUG_PRINT_MAT(x_curr.transpose());
@@ -388,12 +424,33 @@ bool EKFModule::measurement_update_twist(
 
   kalman_filter_.updateWithDelay(y, c, r, static_cast<int>(delay_step));
 
+  last_angular_velocity_ = tf2::Vector3(
+    twist.twist.twist.angular.x, twist.twist.twist.angular.y, twist.twist.twist.angular.z);
+
   // debug
   const Eigen::MatrixXd x_result = kalman_filter_.getLatestX();
   DEBUG_PRINT_MAT(x_result.transpose());
   DEBUG_PRINT_MAT((x_result - x_curr).transpose());
 
   return true;
+}
+
+void EKFModule::update_simple_1d_filters(
+  const geometry_msgs::msg::PoseWithCovarianceStamped & pose, const size_t smoothing_step)
+{
+  double z = pose.pose.pose.position.z;
+
+  const auto rpy = autoware::universe_utils::getRPY(pose.pose.pose.orientation);
+
+  using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  double z_var = pose.pose.covariance[COV_IDX::Z_Z] * static_cast<double>(smoothing_step);
+  double roll_var = pose.pose.covariance[COV_IDX::ROLL_ROLL] * static_cast<double>(smoothing_step);
+  double pitch_var =
+    pose.pose.covariance[COV_IDX::PITCH_PITCH] * static_cast<double>(smoothing_step);
+
+  z_filter_.update(z, z_var, ekf_dt_);
+  roll_filter_.update(rpy.x, roll_var, ekf_dt_);
+  pitch_filter_.update(rpy.y, pitch_var, ekf_dt_);
 }
 
 }  // namespace autoware::ekf_localizer

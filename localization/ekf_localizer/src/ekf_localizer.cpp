@@ -52,8 +52,7 @@ EKFLocalizer::EKFLocalizer(const rclcpp::NodeOptions & node_options)
   params_(this),
   ekf_dt_(params_.ekf_dt),
   pose_queue_(params_.pose_smoothing_steps),
-  twist_queue_(params_.twist_smoothing_steps),
-  last_angular_velocity_(0.0, 0.0, 0.0)
+  twist_queue_(params_.twist_smoothing_steps)
 {
   is_activated_ = false;
 
@@ -99,10 +98,6 @@ EKFLocalizer::EKFLocalizer(const rclcpp::NodeOptions & node_options)
 
   ekf_module_ = std::make_unique<EKFModule>(warning_, params_);
   logger_configure_ = std::make_unique<autoware::universe_utils::LoggerLevelConfigure>(this);
-
-  z_filter_.set_proc_var(params_.z_filter_proc_dev * params_.z_filter_proc_dev);
-  roll_filter_.set_proc_var(params_.roll_filter_proc_dev * params_.roll_filter_proc_dev);
-  pitch_filter_.set_proc_var(params_.pitch_filter_proc_dev * params_.pitch_filter_proc_dev);
 }
 
 /*
@@ -182,14 +177,6 @@ void EKFLocalizer::timer_callback()
       bool is_updated = ekf_module_->measurement_update_pose(*pose, current_time, pose_diag_info_);
       if (is_updated) {
         pose_is_updated = true;
-
-        // Update Simple 1D filter with considering change of roll, pitch and height (position z)
-        // values due to measurement pose delay
-        const double delay_time =
-          (current_time - pose->header.stamp).seconds() + params_.pose_additional_delay;
-        auto pose_with_rph_delay_compensation =
-          ekf_module_->compensate_rph_with_delay(*pose, last_angular_velocity_, delay_time);
-        update_simple_1d_filters(pose_with_rph_delay_compensation, params_.pose_smoothing_steps);
       }
     }
     DEBUG_INFO(
@@ -220,10 +207,6 @@ void EKFLocalizer::timer_callback()
         ekf_module_->measurement_update_twist(*twist, current_time, twist_diag_info_);
       if (is_updated) {
         twist_is_updated = true;
-        last_angular_velocity_ = tf2::Vector3(
-          twist->twist.twist.angular.x, twist->twist.twist.angular.y, twist->twist.twist.angular.z);
-      } else {
-        last_angular_velocity_ = tf2::Vector3(0.0, 0.0, 0.0);
       }
     }
     DEBUG_INFO(
@@ -232,13 +215,10 @@ void EKFLocalizer::timer_callback()
   }
   twist_diag_info_.no_update_count = twist_is_updated ? 0 : (twist_diag_info_.no_update_count + 1);
 
-  const double z = z_filter_.get_x();
-  const double roll = roll_filter_.get_x();
-  const double pitch = pitch_filter_.get_x();
   const geometry_msgs::msg::PoseStamped current_ekf_pose =
-    ekf_module_->get_current_pose(current_time, z, roll, pitch, false);
+    ekf_module_->get_current_pose(current_time, false);
   const geometry_msgs::msg::PoseStamped current_biased_ekf_pose =
-    ekf_module_->get_current_pose(current_time, z, roll, pitch, true);
+    ekf_module_->get_current_pose(current_time, true);
   const geometry_msgs::msg::TwistStamped current_ekf_twist =
     ekf_module_->get_current_twist(current_time);
 
@@ -260,15 +240,11 @@ void EKFLocalizer::timer_tf_callback()
     return;
   }
 
-  const double z = z_filter_.get_x();
-  const double roll = roll_filter_.get_x();
-  const double pitch = pitch_filter_.get_x();
-
   const rclcpp::Time current_time = this->now();
 
   geometry_msgs::msg::TransformStamped transform_stamped;
   transform_stamped = autoware::universe_utils::pose2transform(
-    ekf_module_->get_current_pose(current_time, z, roll, pitch, false), "base_link");
+    ekf_module_->get_current_pose(current_time, false), "base_link");
   transform_stamped.header.stamp = current_time;
   tf_br_->sendTransform(transform_stamped);
 }
@@ -305,7 +281,6 @@ void EKFLocalizer::callback_initial_pose(
       params_.pose_frame_id.c_str(), msg->header.frame_id.c_str());
   }
   ekf_module_->initialize(*msg, transform);
-  init_simple_1d_filters(*msg);
 }
 
 /*
@@ -357,12 +332,6 @@ void EKFLocalizer::publish_estimate_result(
   pose_cov.header.frame_id = current_ekf_pose.header.frame_id;
   pose_cov.pose.pose = current_ekf_pose.pose;
   pose_cov.pose.covariance = ekf_module_->get_current_pose_covariance();
-
-  using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
-  pose_cov.pose.covariance[COV_IDX::Z_Z] = z_filter_.get_var();
-  pose_cov.pose.covariance[COV_IDX::ROLL_ROLL] = roll_filter_.get_var();
-  pose_cov.pose.covariance[COV_IDX::PITCH_PITCH] = pitch_filter_.get_var();
-
   pub_pose_cov_->publish(pose_cov);
 
   geometry_msgs::msg::PoseWithCovarianceStamped biased_pose_cov = pose_cov;
@@ -467,41 +436,6 @@ void EKFLocalizer::publish_callback_return_diagnostics(
   diag_msg.header.stamp = current_time;
   diag_msg.status.push_back(diag_status);
   pub_diag_->publish(diag_msg);
-}
-
-void EKFLocalizer::update_simple_1d_filters(
-  const geometry_msgs::msg::PoseWithCovarianceStamped & pose, const size_t smoothing_step)
-{
-  double z = pose.pose.pose.position.z;
-
-  const auto rpy = autoware::universe_utils::getRPY(pose.pose.pose.orientation);
-
-  using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
-  double z_var = pose.pose.covariance[COV_IDX::Z_Z] * static_cast<double>(smoothing_step);
-  double roll_var = pose.pose.covariance[COV_IDX::ROLL_ROLL] * static_cast<double>(smoothing_step);
-  double pitch_var =
-    pose.pose.covariance[COV_IDX::PITCH_PITCH] * static_cast<double>(smoothing_step);
-
-  z_filter_.update(z, z_var, ekf_dt_);
-  roll_filter_.update(rpy.x, roll_var, ekf_dt_);
-  pitch_filter_.update(rpy.y, pitch_var, ekf_dt_);
-}
-
-void EKFLocalizer::init_simple_1d_filters(
-  const geometry_msgs::msg::PoseWithCovarianceStamped & pose)
-{
-  double z = pose.pose.pose.position.z;
-
-  const auto rpy = autoware::universe_utils::getRPY(pose.pose.pose.orientation);
-
-  using COV_IDX = autoware::universe_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
-  double z_var = pose.pose.covariance[COV_IDX::Z_Z];
-  double roll_var = pose.pose.covariance[COV_IDX::ROLL_ROLL];
-  double pitch_var = pose.pose.covariance[COV_IDX::PITCH_PITCH];
-
-  z_filter_.init(z, z_var);
-  roll_filter_.init(rpy.x, roll_var);
-  pitch_filter_.init(rpy.y, pitch_var);
 }
 
 /**
