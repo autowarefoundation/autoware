@@ -47,12 +47,18 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
   // param for stop position
   cp.stop_distance_from_crosswalk =
     getOrDeclareParameter<double>(node, ns + ".stop_position.stop_distance_from_crosswalk");
-  cp.stop_distance_from_object =
-    getOrDeclareParameter<double>(node, ns + ".stop_position.stop_distance_from_object");
+  cp.stop_distance_from_object_preferred =
+    getOrDeclareParameter<double>(node, ns + ".stop_position.stop_distance_from_object_preferred");
+  cp.stop_distance_from_object_limit =
+    getOrDeclareParameter<double>(node, ns + ".stop_position.stop_distance_from_object_limit");
   cp.far_object_threshold =
     getOrDeclareParameter<double>(node, ns + ".stop_position.far_object_threshold");
   cp.stop_position_threshold =
     getOrDeclareParameter<double>(node, ns + ".stop_position.stop_position_threshold");
+  cp.min_acc_preferred =
+    getOrDeclareParameter<double>(node, ns + ".stop_position.min_acc_preferred");
+  cp.min_jerk_preferred =
+    getOrDeclareParameter<double>(node, ns + ".stop_position.min_jerk_preferred");
 
   // param for restart suppression
   cp.min_dist_to_stop_for_restart_suppression =
@@ -98,14 +104,12 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<double>(node, ns + ".pass_judge.ego_pass_later_additional_margin");
   cp.ego_min_assumed_speed =
     getOrDeclareParameter<double>(node, ns + ".pass_judge.ego_min_assumed_speed");
-  cp.max_offset_to_crosswalk_for_yield = getOrDeclareParameter<double>(
-    node, ns + ".pass_judge.no_stop_decision.max_offset_to_crosswalk_for_yield");
   cp.min_acc_for_no_stop_decision =
     getOrDeclareParameter<double>(node, ns + ".pass_judge.no_stop_decision.min_acc");
-  cp.max_jerk_for_no_stop_decision =
-    getOrDeclareParameter<double>(node, ns + ".pass_judge.no_stop_decision.max_jerk");
   cp.min_jerk_for_no_stop_decision =
     getOrDeclareParameter<double>(node, ns + ".pass_judge.no_stop_decision.min_jerk");
+  cp.overrun_threshold_length_for_no_stop_decision = getOrDeclareParameter<double>(
+    node, ns + ".pass_judge.no_stop_decision.overrun_threshold_length");
   cp.stop_object_velocity =
     getOrDeclareParameter<double>(node, ns + ".pass_judge.stop_object_velocity_threshold");
   cp.min_object_velocity =

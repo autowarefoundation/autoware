@@ -316,15 +316,9 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
   const PathWithLaneId & ego_path, const PathWithLaneId & sparse_resample_path,
   const geometry_msgs::msg::Point & first_path_point_on_crosswalk,
   const geometry_msgs::msg::Point & last_path_point_on_crosswalk,
-  const std::optional<geometry_msgs::msg::Pose> & default_stop_pose)
+  const std::optional<geometry_msgs::msg::Pose> & default_stop_pose_opt)
 {
   const auto & ego_pos = planner_data_->current_odometry->pose.position;
-  const double ego_vel = planner_data_->current_velocity->twist.linear.x;
-  const double ego_acc = planner_data_->current_acceleration->accel.accel.linear.x;
-
-  const auto base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
-  const auto dist_ego_to_stop =
-    calcSignedArcLength(ego_path.points, ego_pos, default_stop_pose->position);
 
   // Calculate attention range for crosswalk
   const auto crosswalk_attention_range = getAttentionRange(
@@ -334,28 +328,20 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
   const auto attention_area = getAttentionArea(sparse_resample_path, crosswalk_attention_range);
 
   // Update object state
+  // This exceptional handling should be done in update(), but is compromised by history
+  const double dist_default_stop =
+    default_stop_pose_opt.has_value()
+      ? calcSignedArcLength(ego_path.points, ego_pos, default_stop_pose_opt->position)
+      : std::numeric_limits<double>::max();
   updateObjectState(
-    dist_ego_to_stop, sparse_resample_path, crosswalk_attention_range, attention_area);
-
-  // Check if ego moves forward enough to ignore yield.
-  const auto & p = planner_param_;
-  const double dist_ego2crosswalk =
-    calcSignedArcLength(ego_path.points, ego_pos, first_path_point_on_crosswalk);
-  const auto braking_distance_opt = autoware::motion_utils::calcDecelDistWithJerkAndAccConstraints(
-    ego_vel, 0.0, ego_acc, p.min_acc_for_no_stop_decision, p.max_jerk_for_no_stop_decision,
-    p.min_jerk_for_no_stop_decision);
-  const double braking_distance = braking_distance_opt ? *braking_distance_opt : 0.0;
-  if (
-    dist_ego2crosswalk - base_link2front - braking_distance < p.max_offset_to_crosswalk_for_yield) {
-    return {};
-  }
+    dist_default_stop, sparse_resample_path, crosswalk_attention_range, attention_area);
 
   // Check pedestrian for stop
   // NOTE: first stop point and its minimum distance from ego to stop
   auto isVehicleType = [](const uint8_t label) {
     return label == ObjectClassification::MOTORCYCLE || label == ObjectClassification::BICYCLE;
   };
-  std::optional<std::pair<geometry_msgs::msg::Point, double>> nearest_stop_info;
+  std::optional<double> dist_nearest_cp;
   std::vector<geometry_msgs::msg::Point> stop_factor_points;
   const std::optional<double> ego_crosswalk_passage_direction =
     findEgoPassageDirectionAlongPath(sparse_resample_path);
@@ -381,39 +367,126 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
       stop_factor_points.push_back(object.position);
 
       const auto dist_ego2cp =
-        calcSignedArcLength(sparse_resample_path.points, ego_pos, collision_point.collision_point) -
-        planner_param_.stop_distance_from_object;
-      if (!nearest_stop_info || dist_ego2cp - base_link2front < nearest_stop_info->second) {
-        nearest_stop_info =
-          std::make_pair(collision_point.collision_point, dist_ego2cp - base_link2front);
+        calcSignedArcLength(sparse_resample_path.points, ego_pos, collision_point.collision_point);
+      if (!dist_nearest_cp || dist_ego2cp < dist_nearest_cp) {
+        dist_nearest_cp = dist_ego2cp;
       }
     }
   }
-
-  // Check if stop is required
-  if (!nearest_stop_info) {
+  if (!dist_nearest_cp) {
     return {};
   }
 
-  // Check if the ego should stop at the stop line or the other points.
-  const bool stop_at_stop_line =
-    dist_ego_to_stop < nearest_stop_info->second &&
-    nearest_stop_info->second < dist_ego_to_stop + planner_param_.far_object_threshold;
-
-  if (stop_at_stop_line) {
-    // Stop at the stop line
-    if (default_stop_pose) {
-      return createStopFactor(*default_stop_pose, stop_factor_points);
-    }
-  } else {
-    const auto stop_pose = calcLongitudinalOffsetPose(
-      ego_path.points, nearest_stop_info->first,
-      -base_link2front - planner_param_.stop_distance_from_object);
-    if (stop_pose) {
-      return createStopFactor(*stop_pose, stop_factor_points);
-    }
+  const auto decided_stop_pose_opt =
+    calcStopPose(ego_path, dist_nearest_cp.value(), default_stop_pose_opt);
+  if (!decided_stop_pose_opt.has_value()) {
+    return {};
   }
-  return {};
+  return createStopFactor(decided_stop_pose_opt.value(), stop_factor_points);
+}
+
+std::optional<geometry_msgs::msg::Pose> CrosswalkModule::calcStopPose(
+  const PathWithLaneId & ego_path, double dist_nearest_cp,
+  const std::optional<geometry_msgs::msg::Pose> & default_stop_pose_opt)
+{
+  struct StopCandidate
+  {
+    geometry_msgs::msg::Pose pose;
+    double dist;
+  };
+
+  const auto & p = planner_param_;
+  const auto base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
+  const auto & ego_pos = planner_data_->current_odometry->pose.position;
+  const double ego_vel_non_negative =
+    std::max(0.0, planner_data_->current_velocity->twist.linear.x);
+  const double ego_acc = planner_data_->current_acceleration->accel.accel.linear.x;
+
+  const auto default_stop_opt = [&]() -> std::optional<StopCandidate> {
+    if (!default_stop_pose_opt.has_value()) return std::nullopt;
+    return StopCandidate{
+      default_stop_pose_opt.value(),
+      calcSignedArcLength(ego_path.points, ego_pos, default_stop_pose_opt->position)};
+  }();
+
+  const auto ped_stop_pref_opt = [&]() -> std::optional<StopCandidate> {
+    const double dist =
+      dist_nearest_cp - base_link2front - planner_param_.stop_distance_from_object_preferred;
+    const auto pose_opt = calcLongitudinalOffsetPose(ego_path.points, ego_pos, dist);
+    if (!pose_opt.has_value()) return std::nullopt;
+    return StopCandidate{pose_opt.value(), dist};
+  }();
+
+  const auto without_acc_pref_stop_opt = [&]() -> std::optional<StopCandidate> {
+    if (!ped_stop_pref_opt.has_value()) {
+      RCLCPP_INFO(logger_, "Failure to calculate pref_stop.");
+      return std::nullopt;
+    } else if (
+      default_stop_opt.has_value() && ped_stop_pref_opt->dist > default_stop_opt->dist &&
+      ped_stop_pref_opt->dist < default_stop_opt->dist + planner_param_.far_object_threshold) {
+      return default_stop_opt;
+    } else {
+      return ped_stop_pref_opt;
+    }
+  }();
+
+  const auto ped_stop_limit = [&]() -> std::optional<StopCandidate> {
+    const double dist =
+      dist_nearest_cp - base_link2front - planner_param_.stop_distance_from_object_limit;
+    const auto pose_opt = calcLongitudinalOffsetPose(ego_path.points, ego_pos, dist);
+    if (!pose_opt.has_value()) return std::nullopt;
+    return StopCandidate{pose_opt.value(), dist};
+  }();
+  if (!ped_stop_limit.has_value()) {
+    RCLCPP_WARN(
+      logger_,
+      "Stop is canceled. "
+      "Failure to calculate stop_pose against the nearest pedestrian with a limit margin.");
+    return std::nullopt;
+  }
+
+  const auto weak_brk_stop = [&]() -> std::optional<StopCandidate> {
+    const auto dist_opt = autoware::motion_utils::calcDecelDistWithJerkAndAccConstraints(
+      ego_vel_non_negative, 0.0, ego_acc, p.min_acc_preferred, 10.0, p.min_jerk_preferred);
+    if (!dist_opt.has_value()) return std::nullopt;
+    const auto pose_opt = calcLongitudinalOffsetPose(ego_path.points, ego_pos, dist_opt.value());
+    if (!pose_opt.has_value()) return std::nullopt;
+    return StopCandidate{pose_opt.value(), dist_opt.value()};
+  }();
+  if (!weak_brk_stop.has_value()) {
+    RCLCPP_ERROR(logger_, "Failure to calculate braking distance. Stop will be canceled.");
+    return std::nullopt;
+  }
+
+  const auto selected_stop = [&]() {
+    if (
+      without_acc_pref_stop_opt.has_value() &&
+      weak_brk_stop->dist < without_acc_pref_stop_opt->dist) {
+      return without_acc_pref_stop_opt.value();
+    } else if (weak_brk_stop->dist < ped_stop_limit->dist) {
+      return weak_brk_stop.value();
+    } else {
+      return ped_stop_limit.value();
+    }
+  }();
+
+  const double strong_brk_dist = [&]() {
+    const auto strong_brk_dist_opt = autoware::motion_utils::calcDecelDistWithJerkAndAccConstraints(
+      ego_vel_non_negative, 0.0, ego_acc, p.min_acc_for_no_stop_decision, 10.0,
+      p.min_jerk_for_no_stop_decision);
+    return strong_brk_dist_opt ? strong_brk_dist_opt.value() : 0.0;
+  }();
+  if (selected_stop.dist < strong_brk_dist - p.overrun_threshold_length_for_no_stop_decision) {
+    RCLCPP_INFO(
+      logger_,
+      "Abandon to stop. "
+      "Can not stop against the nearest pedestrian with a specified deceleration. "
+      "dist to stop: %f, braking distance: %f",
+      selected_stop.dist, strong_brk_dist);
+    return std::nullopt;
+  }
+
+  return std::make_optional(selected_stop.pose);
 }
 
 std::pair<double, double> CrosswalkModule::getAttentionRange(

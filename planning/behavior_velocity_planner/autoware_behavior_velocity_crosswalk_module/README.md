@@ -12,7 +12,6 @@ This module judges whether the ego should stop in front of the crosswalk in orde
 
 ```plantuml
 @startuml
-skinparam monochrome true
 
 title modifyPathVelocity
 start
@@ -38,8 +37,36 @@ group apply stop
     :planStop;
   endif
 end group
-
 stop
+@enduml
+```
+
+```plantuml
+@startuml
+
+title checkStopForCrosswalkUsers
+start
+group calculate the candidate stop
+  :pick the closest stop point against the pedestrians and stop point on map as the preferred stop;
+  if (the weak brake distance is closer than the preferred stop?) then (yes)
+    :plan to stop at the preferred stop;
+  else (no)
+    if (the weak brake distance is closer than the limit stop position against the nearest pedestrian?) then (yes)
+      :plan to stop by the weak brake distance;
+    else (no)
+      :plan to stop at the limit stop position against the nearest pedestrian;
+    endif
+  endif
+end group
+group check if the candidate stop pose is acceptable for braking distance
+  if (the stop pose candidate is closer than the acceptable stop dist?) then (yes)
+    :abort to stop.;
+  else (no)
+    :plan to stop at the candidate stop pose;
+  endif
+end group
+stop
+
 @enduml
 ```
 
