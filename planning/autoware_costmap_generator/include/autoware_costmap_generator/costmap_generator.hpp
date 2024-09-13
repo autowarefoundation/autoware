@@ -47,6 +47,7 @@
 
 #include "autoware_costmap_generator/objects_to_costmap.hpp"
 #include "autoware_costmap_generator/points_to_costmap.hpp"
+#include "costmap_generator_node_parameters.hpp"
 
 #include <autoware_lanelet2_extension/utility/message_conversion.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
@@ -80,35 +81,12 @@ public:
   explicit CostmapGenerator(const rclcpp::NodeOptions & node_options);
 
 private:
-  bool use_objects_;
-  bool use_points_;
-  bool use_wayarea_;
-  bool use_parkinglot_;
+  std::shared_ptr<::costmap_generator_node::ParamListener> param_listener_;
+  std::shared_ptr<::costmap_generator_node::Params> param_;
 
   lanelet::LaneletMapPtr lanelet_map_;
   autoware_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_;
   sensor_msgs::msg::PointCloud2::ConstSharedPtr points_;
-
-  std::string costmap_frame_;
-  std::string vehicle_frame_;
-  std::string map_frame_;
-
-  double update_rate_;
-  bool activate_by_scenario_;
-
-  double grid_min_value_;
-  double grid_max_value_;
-  double grid_resolution_;
-  double grid_length_x_;
-  double grid_length_y_;
-  double grid_position_x_;
-  double grid_position_y_;
-
-  double maximum_lidar_height_thres_;
-  double minimum_lidar_height_thres_;
-
-  double expand_polygon_size_;
-  int size_of_expansion_kernel_;
 
   grid_map::GridMap costmap_;
 

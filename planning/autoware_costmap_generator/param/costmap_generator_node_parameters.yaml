@@ -1,0 +1,61 @@
+costmap_generator_node:
+  update_rate:
+    type: double
+    description: Timer's update rate
+  activate_by_scenario:
+    type: bool
+    description: If true, activate by scenario = parking. Otherwise, activate if vehicle is inside parking lot.
+  use_objects:
+    type: bool
+    description: Whether using ~input/objects or not
+  use_points:
+    type: bool
+    description: Whether using ~input/points_no_ground or not
+  use_wayarea:
+    type: bool
+    description: Whether using wayarea from ~input/vector_map or not
+  use_parkinglot:
+    type: bool
+    description: Whether using parkinglot from ~input/vector_map or not
+  costmap_frame:
+    type: string
+    description: Created costmap's coordinate
+  vehicle_frame:
+    type: string
+    description: Vehicle's coordinate
+  map_frame:
+    type: string
+    description: Map's coordinate
+  grid_min_value:
+    type: double
+    description: Minimum cost for gridmap
+  grid_max_value:
+    type: double
+    description: Maximum cost for gridmap
+  grid_resolution:
+    type: double
+    description: Resolution for gridmap
+  grid_length_x:
+    type: double
+    description: Size of gridmap for x direction
+  grid_length_y:
+    type: double
+    description: Size of gridmap for y direction
+  grid_position_x:
+    type: double
+    description: Offset from coordinate in x direction
+  grid_position_y:
+    type: double
+    description: Offset from coordinate in y direction
+  maximum_lidar_height_thres:
+    type: double
+    description: Maximum height threshold for pointcloud data
+  minimum_lidar_height_thres:
+    type: double
+    description: Minimum height threshold for pointcloud data
+  expand_polygon_size:
+    type: double
+    description: Expand object's rectangle with this value
+  size_of_expansion_kernel:
+    type: int
+    description: Kernel size for blurring effect on object's costmap

@@ -32,12 +32,20 @@ if(${PCL_VERSION} GREATER_EQUAL 1.12.1)
   )
 endif()
 
+generate_parameter_library(costmap_generator_node_parameters
+  param/costmap_generator_node_parameters.yaml
+)
+
 ament_auto_add_library(costmap_generator_node SHARED
   nodes/autoware_costmap_generator/costmap_generator_node.cpp
 )
 target_link_libraries(costmap_generator_node
   ${PCL_LIBRARIES}
   costmap_generator_lib
+  costmap_generator_node_parameters
+)
+target_compile_options(costmap_generator_node PUBLIC
+  -Wno-error=deprecated-declarations
 )
 
 rclcpp_components_register_node(costmap_generator_node

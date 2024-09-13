@@ -18,6 +18,7 @@
   <depend>autoware_lanelet2_extension</depend>
   <depend>autoware_map_msgs</depend>
   <depend>autoware_perception_msgs</depend>
+  <depend>generate_parameter_library</depend>
   <depend>grid_map_ros</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_conversions</depend>

@@ -160,27 +160,9 @@ namespace autoware::costmap_generator
 CostmapGenerator::CostmapGenerator(const rclcpp::NodeOptions & node_options)
 : Node("costmap_generator", node_options), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
 {
-  // Parameters
-  costmap_frame_ = declare_parameter<std::string>("costmap_frame");
-  vehicle_frame_ = declare_parameter<std::string>("vehicle_frame");
-  map_frame_ = declare_parameter<std::string>("map_frame");
-  update_rate_ = declare_parameter<double>("update_rate");
-  activate_by_scenario_ = declare_parameter<bool>("activate_by_scenario");
-  grid_min_value_ = declare_parameter<double>("grid_min_value");
-  grid_max_value_ = declare_parameter<double>("grid_max_value");
-  grid_resolution_ = declare_parameter<double>("grid_resolution");
-  grid_length_x_ = declare_parameter<double>("grid_length_x");
-  grid_length_y_ = declare_parameter<double>("grid_length_y");
-  grid_position_x_ = declare_parameter<double>("grid_position_x");
-  grid_position_y_ = declare_parameter<double>("grid_position_y");
-  maximum_lidar_height_thres_ = declare_parameter<double>("maximum_lidar_height_thres");
-  minimum_lidar_height_thres_ = declare_parameter<double>("minimum_lidar_height_thres");
-  use_objects_ = declare_parameter<bool>("use_objects");
-  use_points_ = declare_parameter<bool>("use_points");
-  use_wayarea_ = declare_parameter<bool>("use_wayarea");
-  use_parkinglot_ = declare_parameter<bool>("use_parkinglot");
-  expand_polygon_size_ = declare_parameter<double>("expand_polygon_size");
-  size_of_expansion_kernel_ = declare_parameter<int64_t>("size_of_expansion_kernel");
+  param_listener_ = std::make_shared<::costmap_generator_node::ParamListener>(
+    this->get_node_parameters_interface());
+  param_ = std::make_shared<::costmap_generator_node::Params>(param_listener_->get_params());
 
   // Wait for first tf
   // We want to do this before creating subscriptions
@@ -213,7 +195,7 @@ CostmapGenerator::CostmapGenerator(const rclcpp::NodeOptions & node_options)
     this->create_publisher<nav_msgs::msg::OccupancyGrid>("~/output/occupancy_grid", 1);
 
   // Timer
-  const auto period_ns = rclcpp::Rate(update_rate_).period();
+  const auto period_ns = rclcpp::Rate(param_->update_rate).period();
   timer_ =
     rclcpp::create_timer(this, get_clock(), period_ns, std::bind(&CostmapGenerator::onTimer, this));
 
@@ -268,11 +250,11 @@ void CostmapGenerator::onLaneletMapBin(
   lanelet_map_ = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map_);
 
-  if (use_wayarea_) {
+  if (param_->use_wayarea) {
     loadRoadAreasFromLaneletMap(lanelet_map_, &primitives_points_);
   }
 
-  if (use_parkinglot_) {
+  if (param_->use_parkinglot) {
     loadParkingAreasFromLaneletMap(lanelet_map_, &primitives_points_);
   }
 }
@@ -303,7 +285,8 @@ void CostmapGenerator::onTimer()
   geometry_msgs::msg::TransformStamped tf;
   try {
     tf = tf_buffer_.lookupTransform(
-      costmap_frame_, vehicle_frame_, rclcpp::Time(0), rclcpp::Duration::from_seconds(1.0));
+      param_->costmap_frame, param_->vehicle_frame, rclcpp::Time(0),
+      rclcpp::Duration::from_seconds(1.0));
   } catch (tf2::TransformException & ex) {
     RCLCPP_ERROR(this->get_logger(), "%s", ex.what());
     return;
@@ -315,15 +298,15 @@ void CostmapGenerator::onTimer()
   p.y() = tf.transform.translation.y;
   costmap_.setPosition(p);
 
-  if ((use_wayarea_ || use_parkinglot_) && lanelet_map_) {
+  if ((param_->use_wayarea || param_->use_parkinglot) && lanelet_map_) {
     costmap_[LayerName::primitives] = generatePrimitivesCostmap();
   }
 
-  if (use_objects_ && objects_) {
+  if (param_->use_objects && objects_) {
     costmap_[LayerName::objects] = generateObjectsCostmap(objects_);
   }
 
-  if (use_points_ && points_) {
+  if (param_->use_points && points_) {
     costmap_[LayerName::points] = generatePointsCostmap(points_);
   }
 
@@ -338,7 +321,7 @@ bool CostmapGenerator::isActive()
     return false;
   }
 
-  if (activate_by_scenario_) {
+  if (param_->activate_by_scenario) {
     if (scenario_) {
       const auto & s = scenario_->activating_scenarios;
       if (
@@ -357,15 +340,15 @@ bool CostmapGenerator::isActive()
 
 void CostmapGenerator::initGridmap()
 {
-  costmap_.setFrameId(costmap_frame_);
+  costmap_.setFrameId(param_->costmap_frame);
   costmap_.setGeometry(
-    grid_map::Length(grid_length_x_, grid_length_y_), grid_resolution_,
-    grid_map::Position(grid_position_x_, grid_position_y_));
+    grid_map::Length(param_->grid_length_x, param_->grid_length_y), param_->grid_resolution,
+    grid_map::Position(param_->grid_position_x, param_->grid_position_y));
 
-  costmap_.add(LayerName::points, grid_min_value_);
-  costmap_.add(LayerName::objects, grid_min_value_);
-  costmap_.add(LayerName::primitives, grid_min_value_);
-  costmap_.add(LayerName::combined, grid_min_value_);
+  costmap_.add(LayerName::points, param_->grid_min_value);
+  costmap_.add(LayerName::objects, param_->grid_min_value);
+  costmap_.add(LayerName::primitives, param_->grid_min_value);
+  costmap_.add(LayerName::combined, param_->grid_min_value);
 }
 
 grid_map::Matrix CostmapGenerator::generatePointsCostmap(
@@ -373,8 +356,8 @@ grid_map::Matrix CostmapGenerator::generatePointsCostmap(
 {
   geometry_msgs::msg::TransformStamped points2costmap;
   try {
-    points2costmap =
-      tf_buffer_.lookupTransform(costmap_frame_, in_points->header.frame_id, tf2::TimePointZero);
+    points2costmap = tf_buffer_.lookupTransform(
+      param_->costmap_frame, in_points->header.frame_id, tf2::TimePointZero);
   } catch (const tf2::TransformException & ex) {
     RCLCPP_ERROR(rclcpp::get_logger("costmap_generator"), "%s", ex.what());
   }
@@ -382,8 +365,8 @@ grid_map::Matrix CostmapGenerator::generatePointsCostmap(
   const auto transformed_points = getTransformedPointCloud(*in_points, points2costmap.transform);
 
   grid_map::Matrix points_costmap = points2costmap_.makeCostmapFromPoints(
-    maximum_lidar_height_thres_, minimum_lidar_height_thres_, grid_min_value_, grid_max_value_,
-    costmap_, LayerName::points, transformed_points);
+    param_->maximum_lidar_height_thres, param_->minimum_lidar_height_thres, param_->grid_min_value,
+    param_->grid_max_value, costmap_, LayerName::points, transformed_points);
 
   return points_costmap;
 }
@@ -419,10 +402,10 @@ grid_map::Matrix CostmapGenerator::generateObjectsCostmap(
 {
   const auto object_frame = in_objects->header.frame_id;
   const auto transformed_objects =
-    transformObjects(tf_buffer_, in_objects, costmap_frame_, object_frame);
+    transformObjects(tf_buffer_, in_objects, param_->costmap_frame, object_frame);
 
   grid_map::Matrix objects_costmap = objects2costmap_.makeCostmapFromObjects(
-    costmap_, expand_polygon_size_, size_of_expansion_kernel_, transformed_objects);
+    costmap_, param_->expand_polygon_size, param_->size_of_expansion_kernel, transformed_objects);
 
   return objects_costmap;
 }
@@ -432,8 +415,9 @@ grid_map::Matrix CostmapGenerator::generatePrimitivesCostmap()
   grid_map::GridMap lanelet2_costmap = costmap_;
   if (!primitives_points_.empty()) {
     object_map::FillPolygonAreas(
-      lanelet2_costmap, primitives_points_, LayerName::primitives, grid_max_value_, grid_min_value_,
-      grid_min_value_, grid_max_value_, costmap_frame_, map_frame_, tf_buffer_);
+      lanelet2_costmap, primitives_points_, LayerName::primitives, param_->grid_max_value,
+      param_->grid_min_value, param_->grid_min_value, param_->grid_max_value, param_->costmap_frame,
+      param_->map_frame, tf_buffer_);
   }
   return lanelet2_costmap[LayerName::primitives];
 }
@@ -443,7 +427,7 @@ grid_map::Matrix CostmapGenerator::generateCombinedCostmap()
   // assuming combined_costmap is calculated by element wise max operation
   grid_map::GridMap combined_costmap = costmap_;
 
-  combined_costmap[LayerName::combined].setConstant(grid_min_value_);
+  combined_costmap[LayerName::combined].setConstant(param_->grid_min_value);
 
   combined_costmap[LayerName::combined] =
     combined_costmap[LayerName::combined].cwiseMax(combined_costmap[LayerName::points]);
@@ -461,13 +445,14 @@ void CostmapGenerator::publishCostmap(const grid_map::GridMap & costmap)
 {
   // Set header
   std_msgs::msg::Header header;
-  header.frame_id = costmap_frame_;
+  header.frame_id = param_->costmap_frame;
   header.stamp = this->now();
 
   // Publish OccupancyGrid
   nav_msgs::msg::OccupancyGrid out_occupancy_grid;
   grid_map::GridMapRosConverter::toOccupancyGrid(
-    costmap, LayerName::combined, grid_min_value_, grid_max_value_, out_occupancy_grid);
+    costmap, LayerName::combined, param_->grid_min_value, param_->grid_max_value,
+    out_occupancy_grid);
   out_occupancy_grid.header = header;
   pub_occupancy_grid_->publish(out_occupancy_grid);
 
