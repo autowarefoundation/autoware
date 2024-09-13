@@ -51,14 +51,6 @@ lanelet::ConstLanelets getPullOverLanes(
   const RouteHandler & route_handler, const bool left_side, const double backward_distance,
   const double forward_distance);
 
-/*
- * @brief expand pull_over_lanes to the opposite side of drivable roads by bound_offset.
- * bound_offset must be positive regardless of left_side is true/false
- */
-lanelet::ConstLanelets generateExpandedPullOverLanes(
-  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
-  const double forward_distance, const double bound_offset);
-
 lanelet::ConstLanelets generateBetweenEgoAndExpandedPullOverLanes(
   const lanelet::ConstLanelets & pull_over_lanes, const bool left_side,
   const geometry_msgs::msg::Pose ego_pose,
@@ -77,9 +69,6 @@ std::optional<Polygon2d> generateObjectExtractionPolygon(
   const lanelet::ConstLanelets & pull_over_lanes, const bool left_side, const double outer_offset,
   const double inner_offset);
 
-PredictedObjects extractObjectsInExpandedPullOverLanes(
-  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
-  const double forward_distance, double bound_offset, const PredictedObjects & objects);
 PredictedObjects filterObjectsByLateralDistance(
   const Pose & ego_pose, const double vehicle_width, const PredictedObjects & objects,
   const double distance_thresh, const bool filter_inside);

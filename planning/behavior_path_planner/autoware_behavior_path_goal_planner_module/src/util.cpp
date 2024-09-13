@@ -79,17 +79,6 @@ lanelet::ConstLanelets getPullOverLanes(
     outermost_lane, backward_distance_with_buffer, forward_distance, only_route_lanes);
 }
 
-lanelet::ConstLanelets generateExpandedPullOverLanes(
-  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
-  const double forward_distance, const double bound_offset)
-{
-  const auto pull_over_lanes =
-    getPullOverLanes(route_handler, left_side, backward_distance, forward_distance);
-
-  return left_side ? lanelet::utils::getExpandedLanelets(pull_over_lanes, bound_offset, 0.0)
-                   : lanelet::utils::getExpandedLanelets(pull_over_lanes, 0.0, -bound_offset);
-}
-
 static double getOffsetToLanesBoundary(
   const lanelet::ConstLanelets & lanelet_sequence, const geometry_msgs::msg::Pose target_pose,
   const bool left_side)
@@ -258,21 +247,6 @@ std::optional<Polygon2d> generateObjectExtractionPolygon(
   }
 
   return polygon;
-}
-
-PredictedObjects extractObjectsInExpandedPullOverLanes(
-  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
-  const double forward_distance, double bound_offset, const PredictedObjects & objects)
-{
-  const auto lanes = generateExpandedPullOverLanes(
-    route_handler, left_side, backward_distance, forward_distance, bound_offset);
-
-  const auto [objects_in_lanes, others] = utils::path_safety_checker::separateObjectsByLanelets(
-    objects, lanes, [](const auto & obj, const auto & lanelet, const auto yaw_threshold) {
-      return utils::path_safety_checker::isPolygonOverlapLanelet(obj, lanelet, yaw_threshold);
-    });
-
-  return objects_in_lanes;
 }
 
 PredictedObjects filterObjectsByLateralDistance(
