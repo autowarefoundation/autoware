@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Autoware Planning Evaluator Nodes",
+  "type": "object",
+  "definitions": {
+    "autoware_planning_evaluator": {
+      "type": "object",
+      "properties": {
+        "output_file": {
+          "description": "output metrics file path",
+          "type": "string",
+          "default": ""
+        },
+        "ego_frame": {
+          "description": "reference frame of ego",
+          "type": "string",
+          "default": "base_link"
+        },
+        "selected_metrics": {
+          "description": "metrics to collect/record",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "curvature",
+            "point_interval",
+            "relative_angle",
+            "length",
+            "duration",
+            "velocity",
+            "acceleration",
+            "jerk",
+            "lateral_deviation",
+            "yaw_deviation",
+            "velocity_deviation",
+            "stability",
+            "stability_frechet",
+            "obstacle_distance",
+            "obstacle_ttc",
+            "modified_goal_longitudinal_deviation",
+            "modified_goal_lateral_deviation",
+            "modified_goal_yaw_deviation"
+          ]
+        },
+        "trajectory": {
+          "description": "trajectory object",
+          "type": "object",
+          "properties": {
+            "min_point_dist_m": {
+              "description": "minimum distance between two successive points to use for angle calculation",
+              "type": "number",
+              "default": 0.1
+            },
+            "lookahead": {
+              "description": "lookahead object",
+              "type": "object",
+              "properties": {
+                "max_dist_m": {
+                  "description": "maximum distance from ego along the trajectory to use for calculation",
+                  "type": "number",
+                  "default": 5.0
+                },
+                "max_time_s": {
+                  "description": "maximum time ahead of ego along the trajectory to use for calculation",
+                  "type": "number",
+                  "default": 3.0
+                }
+              }
+            }
+          }
+        },
+        "obstacle": {
+          "description": "obstacle object",
+          "type": "object",
+          "properties": {
+            "dist_thr_m": {
+              "description": "distance between ego and the obstacle below which a collision is considered",
+              "type": "number",
+              "default": 1.0
+            }
+          }
+        }
+      },
+      "required": ["ego_frame", "selected_metrics", "trajectory", "obstacle"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/autoware_planning_evaluator"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

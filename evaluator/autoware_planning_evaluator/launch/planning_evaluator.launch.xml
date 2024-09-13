@@ -12,7 +12,7 @@
   <!-- planning evaluator -->
   <group>
     <node name="planning_evaluator" exec="planning_evaluator" pkg="autoware_planning_evaluator">
-      <param from="$(find-pkg-share autoware_planning_evaluator)/param/planning_evaluator.defaults.yaml"/>
+      <param from="$(find-pkg-share autoware_planning_evaluator)/config/planning_evaluator.param.yaml"/>
       <remap from="~/input/odometry" to="$(var input/odometry)"/>
       <remap from="~/input/acceleration" to="$(var input/acceleration)"/>
       <remap from="~/input/trajectory" to="$(var input/trajectory)"/>
