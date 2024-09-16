@@ -10,6 +10,12 @@
     state: present
   become: true
 
+- name: Remove qt5ct from auto-start
+  ansible.builtin.file:
+    path: "/etc/X11/Xsession.d/99qt5ct"
+    state: absent
+  become: true
+
 - name: Set variable qt5ct_config_dir
   ansible.builtin.set_fact:
     qt5ct_config_dir: "{{ ansible_env.HOME }}/.config/qt5ct"
