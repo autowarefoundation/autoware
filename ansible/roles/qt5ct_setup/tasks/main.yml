@@ -24,7 +24,7 @@
   ansible.builtin.debug:
     msg: "The role_path is: {{ role_path }}"
 
-- name: Assign a string to a variable
+- name: Set icons_path variable
   ansible.builtin.set_fact:
     icons_path: "{{ qt5ct_config_dir }}/autoware-rviz-icons"
 
