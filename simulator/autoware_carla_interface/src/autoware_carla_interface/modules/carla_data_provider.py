@@ -763,9 +763,9 @@ class CarlaDataProvider(object):  # pylint: disable=too-many-public-methods
                 CarlaDataProvider._carla_actor_pool.pop(actor_id)
 
         # Remove all keys with None values
-        CarlaDataProvider._carla_actor_pool = dict(
-            {k: v for k, v in CarlaDataProvider._carla_actor_pool.items() if v}
-        )
+        CarlaDataProvider._carla_actor_pool = {
+            k: v for k, v in CarlaDataProvider._carla_actor_pool.items() if v
+        }
 
     @staticmethod
     def get_traffic_manager_port():
