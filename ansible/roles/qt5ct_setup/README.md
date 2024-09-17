@@ -11,7 +11,6 @@ Follow the instructions below to **install** or **update** the custom theme for 
 
 > **Important:** Both steps must be completed during the initial installation and when you want to update the theme.
 
-
 ### Install ansible collections
 
 ```bash
