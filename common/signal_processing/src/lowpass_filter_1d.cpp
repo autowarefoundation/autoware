@@ -36,6 +36,11 @@ void LowpassFilter1d::reset(const double x)
   x_ = x;
 }
 
+void LowpassFilter1d::setGain(const double gain)
+{
+  gain_ = gain;
+}
+
 boost::optional<double> LowpassFilter1d::getValue() const
 {
   return x_;

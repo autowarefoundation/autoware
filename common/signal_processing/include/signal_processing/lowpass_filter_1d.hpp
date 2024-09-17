@@ -38,6 +38,8 @@ public:
   void reset();
   void reset(const double x);
 
+  void setGain(const double gain);
+
   boost::optional<double> getValue() const;
   double filter(const double u);
 };
