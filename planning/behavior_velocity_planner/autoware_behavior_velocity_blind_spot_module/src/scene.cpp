@@ -487,7 +487,7 @@ std::optional<autoware_perception_msgs::msg::PredictedObject> BlindSpotModule::i
       (object_arc_length - stop_line_arc_ego) /
       (object.kinematics.initial_twist_with_covariance.twist.linear.x);
     const auto ttc = ego_time_to_reach_stop_line - object_time_to_reach_stop_line;
-    RCLCPP_INFO(logger_, "object ttc is %f", ttc);
+    RCLCPP_DEBUG(logger_, "object ttc is %f", ttc);
     if (planner_param_.ttc_min < ttc && ttc < planner_param_.ttc_max) {
       return object;
     }
