@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <node pkg="lanelet2_map_preprocessor" exec="transform_maps" name="transform_maps" output="screen">
-    <param from="$(find-pkg-share lanelet2_map_preprocessor)/config/transform_maps.param.yaml" allow_substs="true"/>
-  </node>
-</launch>
