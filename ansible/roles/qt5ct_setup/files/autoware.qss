@@ -367,22 +367,22 @@ QTabBar QToolButton {
 }
 
 QTabBar QToolButton::up-arrow {
-  image: url("/icons_path/primary/uparrow2.svg");
+  image: url("/icons_path/primary/uparrow.svg");
   width: 28px;
 }
 
 QTabBar QToolButton::down-arrow {
-  image: url("/icons_path/primary/downarrow2.svg");
+  image: url("/icons_path/primary/downarrow.svg");
   width: 28px;
 }
 
 QTabBar QToolButton::right-arrow {
-  image: url("/icons_path/disabled/rightarrow2.svg");
+  image: url("/icons_path/disabled/rightarrow.svg");
   height: 28px;
 }
 
 QTabBar QToolButton::left-arrow {
-  image: url("/icons_path/disabled/leftarrow2.svg");
+  image: url("/icons_path/disabled/leftarrow.svg");
   height: 28px;
 }
 
@@ -1045,14 +1045,14 @@ QDialog QToolButton:disabled {
 
 QMainWindow::separator:vertical,
 QSplitter::handle:horizontal {
-  image: url("/icons_path/primary/splitter-vert.svg");
+  image: url("/icons_path/primary/splitter-vertical.svg");
   background-color: rgba(255, 255, 255, 0.03);
   width: 15px;
 }
 
 QMainWindow::separator:horizontal,
 QSplitter::handle:vertical {
-  image: url("/icons_path/primary/splitter-hor.svg");
+  image: url("/icons_path/primary/splitter-horizontal.svg");
   background-color: rgba(255, 255, 255, 0.03);
   height: 15px;
 }
@@ -1066,7 +1066,7 @@ QMenuBar QToolButton:hover,
 QMenuBar QToolButton:pressed,
 QMenuBar QToolButton {
   border-width: 0;
-  border-image: url("/icons_path/primary/rightarrow2.svg");
+  border-image: url("/icons_path/primary/rightarrow.svg");
   background-color: transparent;
 }
 
