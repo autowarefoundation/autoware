@@ -63,5 +63,5 @@
     - role: autoware.dev_env.artifacts
       when: prompt_download_artifacts == 'y'
 
-    # Qt5ct setup
+    # Qt5ct setup (RViz theme)
     - role: autoware.dev_env.qt5ct_setup
