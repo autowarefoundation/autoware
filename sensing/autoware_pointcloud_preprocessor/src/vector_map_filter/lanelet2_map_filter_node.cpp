@@ -228,9 +228,8 @@ void Lanelet2MapFilterComponent::pointcloudCallback(const PointCloud2ConstPtr cl
   if (!transformPointCloud("map", cloud_msg, input_transformed_cloud_ptr.get())) {
     RCLCPP_ERROR_STREAM_THROTTLE(
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(10000).count(),
-      "Failed transform from "
-        << "map"
-        << " to " << cloud_msg->header.frame_id);
+      "Failed transform from " << "map"
+                               << " to " << cloud_msg->header.frame_id);
     return;
   }
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
