@@ -68,6 +68,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     const std::lock_guard<std::mutex> lock(mutex_manager_);  // for planner_manager_
 
     const auto slots = declare_parameter<std::vector<std::string>>("slots");
+    /* cppcheck-suppress syntaxError */
     std::vector<std::vector<std::string>> slot_configuration{slots.size()};
     for (size_t i = 0; i < slots.size(); ++i) {
       const auto & slot = slots.at(i);
