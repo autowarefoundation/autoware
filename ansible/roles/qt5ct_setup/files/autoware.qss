@@ -229,12 +229,12 @@ QSpinBox::down-button:disabled {
 QPushButton {
   text-transform: capitalize;
   margin: 0px;
-  padding: 4px 16px;
+  padding: 0px 16px;
   height: 24px;
   font-weight: bold;
   color: #003546;
   border: 2px solid rgba(255, 255, 255, 0);
-  border-radius: 18px;
+  border-radius: 14px;
   background-color: #8bd0f0;
 }
 
