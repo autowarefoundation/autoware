@@ -87,7 +87,6 @@ jobs:
             *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-main
             *.cache-to=type=registry,ref=${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.head_ref }},mode=max
           tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ matrix.platform }}
-          tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Show disk space
