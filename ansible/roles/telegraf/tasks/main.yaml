@@ -1,0 +1,136 @@
+- name: Download influxdata-archive_compat.key
+  become: true
+  ansible.builtin.get_url:
+    url: https://repos.influxdata.com/influxdata-archive_compat.key
+    dest: /tmp/influxdata-archive_compat.key
+    mode: 0755
+
+- name: Verify the checksum of the key file
+  ansible.builtin.command: sha256sum -c
+  args:
+    chdir: /tmp
+    stdin: 393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c  influxdata-archive_compat.key
+  register: checksum_result
+  failed_when: checksum_result.rc != 0
+  changed_when: false
+
+- name: Check if GPG key is already converted
+  ansible.builtin.stat:
+    path: /tmp/influxdata-archive_compat.gpg
+  register: gpg_key_stat
+
+- name: Convert the key to gpg format
+  ansible.builtin.command:
+    cmd: gpg --dearmor -o /tmp/influxdata-archive_compat.gpg /tmp/influxdata-archive_compat.key
+  become: true
+  when: not gpg_key_stat.stat.exists
+  changed_when: false
+
+- name: Check if GPG key is already moved
+  ansible.builtin.stat:
+    path: /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg
+  register: moved_key_stat
+
+- name: Move the gpg key to trusted.gpg.d
+  ansible.builtin.command:
+    cmd: mv /tmp/influxdata-archive_compat.gpg /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg
+  become: true
+  when: not moved_key_stat.stat.exists
+  changed_when: false
+
+- name: Add InfluxData repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main
+    state: present
+    filename: influxdata.list
+
+- name: Update apt cache
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install InfluxDB v2
+  become: true
+  ansible.builtin.apt:
+    name: influxdb2
+    state: present
+
+- name: Install InfluxDB v2 CLI
+  become: true
+  ansible.builtin.apt:
+    name: influxdb2-cli
+    state: present
+
+- name: Install Telegraf
+  become: true
+  ansible.builtin.apt:
+    name: telegraf
+    state: present
+
+- name: Create telegraf_binary directory
+  ansible.builtin.file:
+    path: /opt/autoware/bin
+    state: directory
+    mode: 0755
+  become: true
+
+- name: Copy get_telegraf_proccpu_json.sh to /opt/autoware/bin
+  become: true
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/get_telegraf_proccpu_json.sh"
+    dest: /opt/autoware/bin/get_telegraf_proccpu_json.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy get_telegraf_procmem_json.sh to /opt/autoware/bin
+  become: true
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/get_telegraf_procmem_json.sh"
+    dest: /opt/autoware/bin/get_telegraf_procmem_json.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy telegraf.conf to /opt/autoware/bin
+  become: true
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/telegraf.conf"
+    dest: /etc/telegraf/telegraf.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: true
+  notify:
+    - Restart telegraf
+
+- name: Ensure telegraf is running and enabled
+  become: true
+  ansible.builtin.systemd:
+    name: telegraf
+    enabled: true
+    state: started
+
+- name: Ensure InfluxDB service is running
+  become: true
+  ansible.builtin.service:
+    name: influxdb
+    state: started
+    enabled: true
+
+- name: Check if InfluxDB is already set up
+  become: true
+  ansible.builtin.command:
+    cmd: influx setup --bucket-status
+  register: influx_setup_status
+  ignore_errors: true
+  changed_when: false
+
+- name: Set up influxDB v2
+  become: true
+  ansible.builtin.command:
+    cmd: influx setup -f --name default --username autoware --password autoware --token autowaretoken --org autowarefoundation --bucket autoware --retention 0
+  when: influx_setup_status.rc != 0
+  changed_when: false

@@ -31,7 +31,7 @@ jobs:
             platform: amd64
             base_image_env: base_image
             lib_dir: x86_64
-            additional-tag-suffix: -cuda
+            additional-tag-suffix: cuda
     steps:
       - name: Check if PR author is the specific user
         id: author-check
@@ -87,7 +87,6 @@ jobs:
             *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-main
             *.cache-to=type=registry,ref=${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.head_ref }},mode=max
           tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ matrix.platform }}
-          tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Show disk space
