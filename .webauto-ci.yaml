@@ -1,9 +1,77 @@
+# The configuration file for Web.Auto CI/CD tool.
+# https://docs.web.auto/user-manuals/evaluator/configuration/reference/introduction
+
 version: 2
 
 artifacts:
   - name: main
+    metadata:
+      play-ondemand.ci.web.auto/buildspec: Autoware-Humble_v0.29.0
     build:
-      type: tier4/universe/main/amd64/v1
+      type: custom
+      runtime:
+        type: standard1/amd64/large
+      source:
+        vcstool:
+          repositories_files:
+            - autoware.repos
+            - simulator.repos
+          import_path: src
+      environment_variables:
+        AUTOWARE_PATH: /opt/autoware
+        DEBIAN_FRONTEND: noninteractive
+        LANG: C.UTF-8
+      phases:
+        - name: environment-setup
+          user: root
+          exec: ./.webauto-ci/main/environment-setup/run.sh
+          caches:
+            - name: apt-lists
+              mountpoint: /var/lib/apt/lists
+            - name: apt-archives
+              mountpoint: /var/cache/apt/archives
+          build_result_reuse:
+            key_files:
+              - .webauto-ci/main/environment-setup/**/*
+        - name: autoware-setup
+          user: autoware
+          exec: ./.webauto-ci/main/autoware-setup/run.sh
+          caches:
+            - name: apt-lists
+              mountpoint: /var/lib/apt/lists
+            - name: apt-archives
+              mountpoint: /var/cache/apt/archives
+          build_result_reuse:
+            key_files:
+              - .webauto-ci/main/autoware-setup/**/*
+              - ansible/**/*
+              - ansible-galaxy-requirements.yaml
+              - amd64.env
+          incremental_build:
+            enabled: true
+        - name: autoware-build
+          user: autoware
+          exec: ./.webauto-ci/main/autoware-build/run.sh
+          environment_variables:
+            PARALLEL_WORKERS: "32"
+            CCACHE_DIR: /tmp/build/cache/ccache
+          caches:
+            - name: apt-lists
+              mountpoint: /var/lib/apt/lists
+            - name: apt-archives
+              mountpoint: /var/cache/apt/archives
+            - name: ccache
+              mountpoint: /tmp/build/cache/ccache
+          build_result_reuse:
+            key_files:
+              - .webauto-ci/main/autoware-build/**/*
+              - src/**/*
+      base_container_image:
+        from: ubuntu:22.04
+      output_container_image:
+        from: autoware-build
+        workdir: /opt/autoware
+        user: autoware
 
 simulations:
   - name: lexus_planning_sim
@@ -13,9 +81,7 @@ simulations:
         type: container
         artifact: main
       runtime:
-        type: simulator/standard1/amd64/medium
-        cpu: 8
-        memory: 16384
+        type: standard1/amd64/medium
       parameters:
         launch_autoware: "true"
         autoware_launch_package: autoware_launch
