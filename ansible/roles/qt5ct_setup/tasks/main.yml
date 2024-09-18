@@ -12,7 +12,7 @@
 
 - name: Remove qt5ct from auto-start
   ansible.builtin.file:
-    path: "/etc/X11/Xsession.d/99qt5ct"
+    path: /etc/X11/Xsession.d/99qt5ct
     state: absent
   become: true
 
