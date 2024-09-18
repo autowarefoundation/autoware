@@ -65,9 +65,6 @@ RUN rosdep update && rosdep keys --ignore-src --from-paths src \
 
 COPY src/universe/external /autoware/src/universe/external
 COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
-# TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/8695 is resolved
-COPY src/universe/autoware.universe/simulator/dummy_perception_publisher /autoware/src/universe/autoware.universe/simulator/dummy_perception_publisher
-COPY src/universe/autoware.universe/vehicle/autoware_vehicle_info_utils /autoware/src/universe/autoware.universe/vehicle/autoware_vehicle_info_utils
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -223,9 +220,6 @@ RUN --mount=type=ssh \
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/common,target=/autoware/src/universe/autoware.universe/common \
-  # TODO(youtalk): Remove --mount options when https://github.com/autowarefoundation/autoware.universe/issues/8695 is resolved
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/simulator/dummy_perception_publisher,target=/autoware/src/universe/autoware.universe/simulator/dummy_perception_publisher \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/vehicle/autoware_vehicle_info_utils,target=/autoware/src/universe/autoware.universe/vehicle/autoware_vehicle_info_utils \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/external,target=/autoware/src/universe/external \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
