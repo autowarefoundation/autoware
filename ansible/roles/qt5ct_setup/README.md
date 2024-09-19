@@ -9,24 +9,13 @@ It won't affect the system-wide configuration.
 
 Follow the instructions below to **install** or **update** the custom theme for `RViz2` in Autoware.
 
-> **Important:** Both steps must be completed during the initial installation and when you want to update the theme.
-
-### Install ansible collections
+> **Important:** Both commands must be run when you want to update the theme.
 
 ```bash
 cd ~/autoware # The root directory of the cloned repository
 ansible-galaxy collection install -f -r "ansible-galaxy-requirements.yaml"
-```
-
-This step should be repeated when you want to update the theme.
-
-### Run the playbook
-
-```bash
 ansible-playbook autoware.dev_env.install_rviz_theme  --ask-become-pass
 ```
-
-This will install the custom theme for `RViz2` in Autoware.
 
 ## How to use the custom theme in RViz2
 
