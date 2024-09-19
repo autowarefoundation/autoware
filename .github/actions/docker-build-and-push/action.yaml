@@ -237,6 +237,8 @@ runs:
           ${{ steps.meta-universe-localization-mapping.outputs.bake-file }}
           ${{ steps.meta-universe-planning-control-devel.outputs.bake-file }}
           ${{ steps.meta-universe-planning-control.outputs.bake-file }}
+          ${{ steps.meta-universe-vehicle-system-devel.outputs.bake-file }}
+          ${{ steps.meta-universe-vehicle-system.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
         provenance: false
