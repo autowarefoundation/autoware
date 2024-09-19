@@ -167,7 +167,7 @@ runs:
         bake-target: docker-metadata-action-universe-planning-control
         flavor: |
           latest=false
-    
+
     - name: Docker meta for autoware:universe-vehicle-system-devel
       id: meta-universe-vehicle-system-devel
       uses: docker/metadata-action@v5
