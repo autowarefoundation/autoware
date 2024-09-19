@@ -141,6 +141,27 @@ RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
     > /rosdep-universe-planning-control-exec-depend-packages.txt \
     && cat /rosdep-universe-planning-control-exec-depend-packages.txt
 
+FROM rosdep-depend AS rosdep-universe-vehicle-system-depend
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
+COPY src/universe/autoware.universe/vehicle /autoware/src/universe/autoware.universe/vehicle
+COPY src/universe/autoware.universe/system /autoware/src/universe/autoware.universe/system
+RUN rosdep keys --ignore-src --from-paths src \
+    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
+    | grep -v '^#' \
+    | sed 's/ \+/\n/g'\
+    | sort \
+    > /rosdep-universe-vehicle-system-depend-packages.txt \
+    && cat /rosdep-universe-vehicle-system-depend-packages.txt
+RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
+    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
+    | grep -v '^#' \
+    | sed 's/ \+/\n/g'\
+    | sort \
+    > /rosdep-universe-vehicle-system-exec-depend-packages.txt \
+    && cat /rosdep-universe-vehicle-system-exec-depend-packages.txt
+
 FROM rosdep-depend AS rosdep-universe-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -334,6 +355,38 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
+FROM universe-common-devel AS universe-vehicle-system-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+# Install rosdep dependencies
+COPY --from=rosdep-universe-vehicle-system-depend /rosdep-universe-vehicle-system-depend-packages.txt /tmp/rosdep-universe-vehicle-system-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  apt-get update \
+  && cat /tmp/rosdep-universe-vehicle-system-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+
+# hadolint ignore=SC1091
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/vehicle,target=/autoware/src/universe/autoware.universe/vehicle \
+  --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/system,target=/autoware/src/universe/autoware.universe/system \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && colcon build --cmake-args \
+    " -Wno-dev" \
+    " --no-warn-unused-cli" \
+    --merge-install \
+    --install-base /opt/autoware \
+    --mixin release compile-commands ccache \
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && rm -rf /autoware/build
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
 FROM universe-common-devel AS universe-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -350,6 +403,7 @@ RUN --mount=type=ssh \
 COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
 COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
+COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
@@ -359,9 +413,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/evaluator,target=/autoware/src/universe/autoware.universe/evaluator \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/launch,target=/autoware/src/universe/autoware.universe/launch \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/simulator,target=/autoware/src/universe/autoware.universe/simulator \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/system,target=/autoware/src/universe/autoware.universe/system \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/tools,target=/autoware/src/universe/autoware.universe/tools \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/vehicle,target=/autoware/src/universe/autoware.universe/vehicle \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/vehicle,target=/autoware/src/vehicle \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
@@ -472,6 +524,40 @@ RUN --mount=type=ssh \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
 COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
+
+# Copy bash aliases
+COPY docker/etc/.bash_aliases /root/.bash_aliases
+RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+FROM base AS universe-vehicle-system
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ARG LIB_DIR
+ARG SETUP_ARGS
+
+# Set up runtime environment and artifacts
+COPY --from=rosdep-universe-vehicle-system-depend /rosdep-universe-vehicle-system-exec-depend-packages.txt /tmp/rosdep-universe-vehicle-system-exec-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers --runtime openadkit \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get update \
+  && cat /tmp/rosdep-universe-vehicle-system-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
+  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
+  && find / -name "*.o" -type f -delete \
+  && find / -name "*.h" -type f -delete \
+  && find / -name "*.hpp" -type f -delete \
+  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
+    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
+    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
+    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
+
+COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
 
 # Copy bash aliases
 COPY docker/etc/.bash_aliases /root/.bash_aliases
