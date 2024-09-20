@@ -147,6 +147,8 @@ ARG ROS_DISTRO
 
 COPY src/universe/autoware.universe/vehicle /autoware/src/universe/autoware.universe/vehicle
 COPY src/universe/autoware.universe/system /autoware/src/universe/autoware.universe/system
+COPY src/universe/autoware.universe/map/autoware_map_height_fitter /autoware/src/universe/autoware.universe/map/autoware_map_height_fitter
+COPY src/universe/autoware.universe/localization/autoware_pose2twist /autoware/src/universe/autoware.universe/localization/autoware_pose2twist
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -372,6 +374,8 @@ RUN --mount=type=ssh \
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/vehicle,target=/autoware/src/universe/autoware.universe/vehicle \
   --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/system,target=/autoware/src/universe/autoware.universe/system \
+  --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_height_fitter,target=/autoware/src/universe/autoware.universe/map/autoware_map_height_fitter \
+  --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/localization/autoware_pose2twist,target=/autoware/src/universe/autoware.universe/localization/autoware_pose2twist \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
