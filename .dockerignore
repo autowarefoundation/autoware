@@ -13,14 +13,10 @@ docker
 # Ignore a part of files under src
 src/**/.*
 src/**/*.asc
-src/**/*.csv
 src/**/*.gif
 src/**/*.md
 src/**/*.pcd
-src/**/*.png
 src/**/*.svg
-!src/universe/autoware.universe/common/autoware_overlay_rviz_plugin/autoware_overlay_rviz_plugin/assets
-!src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter/data/default
 
 # Ignore generated files by colcon
 build
