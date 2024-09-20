@@ -31,7 +31,7 @@ jobs:
             platform: amd64
             base_image_env: base_image
             lib_dir: x86_64
-            additional-tag-suffix: cuda
+            additional-tag-suffix: -cuda
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
