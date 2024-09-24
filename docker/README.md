@@ -6,7 +6,60 @@ Detailed instructions on how to use the containers can be found in the [Open AD 
 
 ## Multi-stage Dockerfile structure
 
-![](./Dockerfile.svg)
+```mermaid
+flowchart TD
+    %% Base Image
+    A[Base]
+
+    %% Development Stages
+    subgraph Development[" "]
+        B[Core Devel]
+        C[Universe-Common Devel]
+        subgraph Components["**Development Images**"]
+            direction LR
+            D[Sensing-Perception Devel]
+            E[Localization-Mapping Devel ]
+            F[Planning-Control Devel]
+            G[Vehicle-System Devel]
+        end
+        H[Universe-Devel]
+    end
+
+    %% Final Images
+    subgraph Final["**Runtime Images**"]
+        direction LR
+        I[Sensing-Perception]
+        J[Localization-Mapping]
+        K[Planning-Control]
+        L[Vehicle-System]
+        M[Universe]
+    end
+
+    %% Relationships
+    A -->|FROM| B
+    B -->|FROM| C
+    C -->|FROM| Components
+    C -->|FROM| H
+    A -->|FROM| Final
+
+    %% Component to Universe and Final Output relationships
+    Components -.->|COPY| H
+    Components -.->|COPY| Final
+
+    %% Styling
+    classDef base fill:#f39c12,stroke:#333,stroke-width:3px;
+    classDef dev fill:#85c1e9,stroke:#1f618d,stroke-width:3px;
+    classDef modular fill:#58d68d,stroke:#229954,stroke-width:3px,stroke-dasharray: 5 5;
+    classDef monolithic fill:#58d68d,stroke:#229954,stroke-width:3px;
+
+
+    class A base;
+    class B,C,D,E,F,G,H dev;
+    class I,J,K,L modular;
+    class M monolithic;
+
+    linkStyle default stroke:#34495e,stroke-width:2px,stroke-opacity:0.7;
+```
 
 The suffix `-devel` (e.g. `universe-devel`) is intended for use as a [development container](https://containers.dev). On the other hand, those without the `-devel` suffix (e.g. `universe`) are intended to be used as a runtime container.
 
