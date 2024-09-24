@@ -100,12 +100,12 @@ repositories:
   sensor_component/external/nebula:
     type: git
     url: https://github.com/tier4/nebula.git
-    version: v0.0.1
+    version: v0.2.0
   # Fork of transport_drivers that enables reduction of copy operations
   sensor_component/transport_drivers:
     type: git
     url: https://github.com/autowarefoundation/transport_drivers
-    version: mutable-buffer-in-udp-callback
+    version: main
   # Continental compatible version of ROS 2 socket CAN
   sensor_component/ros2_socketcan:
     type: git
