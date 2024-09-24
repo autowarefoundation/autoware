@@ -100,7 +100,7 @@ repositories:
   sensor_component/external/nebula:
     type: git
     url: https://github.com/tier4/nebula.git
-    version: main
+    version: v0.0.1
   # Fork of transport_drivers that enables reduction of copy operations
   sensor_component/transport_drivers:
     type: git
