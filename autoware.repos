@@ -110,7 +110,7 @@ repositories:
   sensor_component/ros2_socketcan:
     type: git
     url: https://github.com/autowarefoundation/ros2_socketcan
-    version: feat/continental_fd
+    version: main
   # sensor_kit
   sensor_kit/sample_sensor_kit_launch:
     type: git
