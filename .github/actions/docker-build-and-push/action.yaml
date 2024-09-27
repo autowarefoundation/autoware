@@ -168,6 +168,30 @@ runs:
         flavor: |
           latest=false
 
+    - name: Docker meta for autoware:universe-vehicle-system-devel
+      id: meta-universe-vehicle-system-devel
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: |
+          type=raw,value=universe-vehicle-system-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
+          type=raw,value=universe-vehicle-system-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+        bake-target: docker-metadata-action-universe-vehicle-system-devel
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:universe-vehicle-system
+      id: meta-universe-vehicle-system
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: |
+          type=raw,value=universe-vehicle-system${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
+          type=raw,value=universe-vehicle-system${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+        bake-target: docker-metadata-action-universe-vehicle-system
+        flavor: |
+          latest=false
+
     - name: Docker meta for autoware:universe-devel
       id: meta-universe-devel
       uses: docker/metadata-action@v5
@@ -213,6 +237,8 @@ runs:
           ${{ steps.meta-universe-localization-mapping.outputs.bake-file }}
           ${{ steps.meta-universe-planning-control-devel.outputs.bake-file }}
           ${{ steps.meta-universe-planning-control.outputs.bake-file }}
+          ${{ steps.meta-universe-vehicle-system-devel.outputs.bake-file }}
+          ${{ steps.meta-universe-vehicle-system.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
         provenance: false
