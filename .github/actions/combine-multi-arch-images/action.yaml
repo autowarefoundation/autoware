@@ -106,11 +106,11 @@ runs:
               echo "Pushing manifest: docker manifest push ${{ steps.set-image-name.outputs.image-name }}:$base_tag"
               if docker manifest push "${{ steps.set-image-name.outputs.image-name }}:$base_tag"; then
                 echo "Successfully pushed manifest for $base_tag"
-                
+
                 # Verify the manifest
                 echo "Verifying manifest:"
                 docker manifest inspect "${{ steps.set-image-name.outputs.image-name }}:$base_tag"
-                
+
                 # Check if both architectures are present in the manifest
                 if docker manifest inspect "${{ steps.set-image-name.outputs.image-name }}:$base_tag" | grep -q "arm64" && \
                    docker manifest inspect "${{ steps.set-image-name.outputs.image-name }}:$base_tag" | grep -q "amd64"; then
