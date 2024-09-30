@@ -78,10 +78,12 @@ runs:
         echo "tags=${base_tags[*]}" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Create Docker manifest and remove architecture-specific tags
+    - name: Create Docker manifests
+      id: create-manifests
       run: |
         IFS=' ' read -ra BASE_TAGS <<< "${{ steps.get-base-tags.outputs.tags }}"
         echo "Base tags: ${BASE_TAGS[*]}"
+        tags_to_remove=""
         for base_tag in "${BASE_TAGS[@]}"; do
           echo -e "\nProcessing base_tag: $base_tag"
 
@@ -97,7 +99,6 @@ runs:
               "${{ steps.set-image-name.outputs.image-name }}:$amd64_tag"
               "${{ steps.set-image-name.outputs.image-name }}:$arm64_tag"
             )
-            tags_to_remove=("$amd64_tag" "$arm64_tag")
 
             echo "Creating manifest for $base_tag with 2 architectures"
             echo "Manifest command: docker manifest create ${{ steps.set-image-name.outputs.image-name }}:$base_tag ${manifest_args[*]}"
@@ -113,17 +114,8 @@ runs:
                 # Check if both architectures are present in the manifest
                 if docker manifest inspect "${{ steps.set-image-name.outputs.image-name }}:$base_tag" | grep -q "arm64" && \
                    docker manifest inspect "${{ steps.set-image-name.outputs.image-name }}:$base_tag" | grep -q "amd64"; then
-                  echo "Manifest verification successful. Proceeding with tag removal."
-                  
-                  # Remove architecture-specific tags
-                  for tag_to_remove in "${tags_to_remove[@]}"; do
-                    echo "Removing tag: ${{ steps.set-image-name.outputs.image-name }}:$tag_to_remove"
-                    if docker push --delete "${{ steps.set-image-name.outputs.image-name }}:$tag_to_remove"; then
-                      echo "Successfully removed tag: $tag_to_remove"
-                    else
-                      echo "Failed to remove tag: $tag_to_remove"
-                    fi
-                  done
+                  echo "Manifest verification successful. Adding tags to removal list."
+                  tags_to_remove+="$amd64_tag,$arm64_tag,"
                 else
                   echo "Manifest verification failed. Skipping tag removal to prevent data loss."
                 fi
@@ -142,4 +134,15 @@ runs:
             echo "Both amd64 and arm64 tags not found for '$base_tag'. Skipping manifest creation."
           fi
         done
+        # Remove trailing comma and set output
+        tags_to_remove=${tags_to_remove%,}
+        echo "tags-to-remove=$tags_to_remove" >> $GITHUB_OUTPUT
       shell: bash
+
+    - name: Remove architecture-specific tags
+      uses: dataaxiom/ghcr-cleanup-action@v1
+      with:
+        delete-tags: ${{ steps.create-manifests.outputs.tags-to-remove }}
+        token: ${{ github.token }}
+        package: ${{ inputs.package-name }}
+        dry-run: true
