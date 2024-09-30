@@ -7,6 +7,8 @@ on:
 
 jobs:
   update-docker-manifest:
+    permissions:
+      packages: write
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
