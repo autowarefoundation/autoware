@@ -145,4 +145,3 @@ runs:
         delete-tags: ${{ steps.create-manifests.outputs.tags-to-remove }}
         token: ${{ github.token }}
         package: ${{ inputs.package-name }}
-        dry-run: true
