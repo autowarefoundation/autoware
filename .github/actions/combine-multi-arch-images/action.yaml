@@ -144,5 +144,6 @@ runs:
       with:
         delete-tags: ${{ steps.create-manifests.outputs.tags-to-remove }}
         token: ${{ github.token }}
-        package: autoware
-        log-level: debug
+        package: ${{ inputs.package-name }}
+        owner: ${{ github.repository_owner }}
+        repository: ${{ github.repository }}
