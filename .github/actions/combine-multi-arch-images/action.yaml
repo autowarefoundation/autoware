@@ -143,5 +143,6 @@ runs:
       uses: dataaxiom/ghcr-cleanup-action@v1.0.13
       with:
         delete-tags: ${{ steps.create-manifests.outputs.tags-to-remove }}
-        token: ${{ github.token }}
-        package: ${{ inputs.package-name }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        package: autoware
+        log-level: debug
