@@ -147,3 +147,4 @@ runs:
         package: ${{ inputs.package-name }}
         owner: ${{ github.repository_owner }}
         repository: ${{ github.repository }}
+        dry-run: true
