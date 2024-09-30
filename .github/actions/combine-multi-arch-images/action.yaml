@@ -54,55 +54,78 @@ runs:
     - name: Get base tags
       id: get-base-tags
       run: |
-        amd64_tags=$(printf "%s\n" $ALL_TAGS | grep "\-amd64" | sed "s/-amd64$//g")
-        arm64_tags=$(printf "%s\n" $ALL_TAGS | grep "\-arm64" | sed "s/-arm64$//g")
-        base_tags=$(printf "%s\n" "$amd64_tags" "$arm64_tags" | sort | uniq)
+        echo "All tags: ${{ steps.get-all-tags.outputs.tags }}"
+        amd64_tags=()
+        arm64_tags=()
+        for tag in ${{ steps.get-all-tags.outputs.tags }}; do
+          echo "Processing tag: $tag"
+          if [[ $tag == *-amd64 ]]; then
+            amd64_tags+=("${tag%-amd64}")
+            echo "Added to amd64_tags: ${tag%-amd64}"
+          elif [[ $tag == *-arm64 ]]; then
+            arm64_tags+=("${tag%-arm64}")
+            echo "Added to arm64_tags: ${tag%-arm64}"
+          else
+            echo "Tag doesn't match expected pattern: $tag"
+          fi
+        done
+        base_tags=($(printf "%s\n" "${amd64_tags[@]}" "${arm64_tags[@]}" | sort -u))
 
-        echo -e "\n[amd64_tags]\n$amd64_tags"
-        echo -e "\n[arm64_tags]\n$arm64_tags"
-        echo -e "\n[base_tags]\n$base_tags"
+        echo -e "\n[amd64_tags]\n${amd64_tags[*]}"
+        echo -e "\n[arm64_tags]\n${arm64_tags[*]}"
+        echo -e "\n[base_tags]\n${base_tags[*]}"
 
-        echo "tags=$(printf "%s " $base_tags | sed 's/\s*$//')" >> $GITHUB_OUTPUT
-      env:
-        ALL_TAGS: ${{ steps.get-all-tags.outputs.tags }}
+        echo "tags=${base_tags[*]}" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Create Docker manifest
       run: |
-        for base_tag in $BASE_TAGS; do
-          echo -e "\nbase_tag: $base_tag"
+        IFS=' ' read -ra BASE_TAGS <<< "${{ steps.get-base-tags.outputs.tags }}"
+        echo "Base tags: ${BASE_TAGS[*]}"
+        for base_tag in "${BASE_TAGS[@]}"; do
+          echo -e "\nProcessing base_tag: $base_tag"
 
-          amd64_tag=$(printf "%s\n" $ALL_TAGS | grep "^$base_tag\-amd64" || true)
-          arm64_tag=$(printf "%s\n" $ALL_TAGS | grep "^$base_tag\-arm64" || true)
+          amd64_tag=$(echo "${{ steps.get-all-tags.outputs.tags }}" | tr ' ' '\n' | grep "^${base_tag}-amd64$" || true)
+          arm64_tag=$(echo "${{ steps.get-all-tags.outputs.tags }}" | tr ' ' '\n' | grep "^${base_tag}-arm64$" || true)
 
           echo "amd64_tag: $amd64_tag"
           echo "arm64_tag: $arm64_tag"
 
-          if [ "$amd64_tag" != "" ]; then
-            amd64_image="${{ steps.set-image-name.outputs.image-name }}:$amd64_tag"
+          manifest_args=()
+          if [ -n "$amd64_tag" ]; then
+            manifest_args+=("${{ steps.set-image-name.outputs.image-name }}:$amd64_tag")
+            echo "Added to manifest_args: ${{ steps.set-image-name.outputs.image-name }}:$amd64_tag"
           else
             echo "No amd64 tag found for '$base_tag'."
-            amd64_image=""
           fi
 
-          if [ "$arm64_tag" != "" ]; then
-            arm64_image="${{ steps.set-image-name.outputs.image-name }}:$arm64_tag"
+          if [ -n "$arm64_tag" ]; then
+            manifest_args+=("${{ steps.set-image-name.outputs.image-name }}:$arm64_tag")
+            echo "Added to manifest_args: ${{ steps.set-image-name.outputs.image-name }}:$arm64_tag"
           else
             echo "No arm64 tag found for '$base_tag'."
-            arm64_image=""
           fi
 
-          echo "amd64_image: $amd64_image"
-          echo "arm64_image: $arm64_image"
-
-          if docker manifest create ${{ steps.set-image-name.outputs.image-name }}:$base_tag \
-            $amd64_image \
-            $arm64_image; then
-
-            docker manifest push ${{ steps.set-image-name.outputs.image-name }}:$base_tag
+          if [ ${#manifest_args[@]} -gt 0 ]; then
+            echo "Creating manifest for $base_tag with ${#manifest_args[@]} architectures"
+            echo "Manifest command: docker manifest create ${{ steps.set-image-name.outputs.image-name }}:$base_tag ${manifest_args[*]}"
+            if docker manifest create "${{ steps.set-image-name.outputs.image-name }}:$base_tag" "${manifest_args[@]}"; then
+              echo "Pushing manifest: docker manifest push ${{ steps.set-image-name.outputs.image-name }}:$base_tag"
+              if docker manifest push "${{ steps.set-image-name.outputs.image-name }}:$base_tag"; then
+                echo "Successfully pushed manifest for $base_tag"
+              else
+                echo "Failed to push manifest for $base_tag"
+                docker manifest inspect "${{ steps.set-image-name.outputs.image-name }}:$base_tag"
+              fi
+            else
+              echo "Failed to create manifest for $base_tag"
+              echo "Docker info:"
+              docker info
+              echo "Docker version:"
+              docker version
+            fi
+          else
+            echo "No valid tags found for '$base_tag'. Skipping manifest creation."
           fi
         done
-      env:
-        ALL_TAGS: ${{ steps.get-all-tags.outputs.tags }}
-        BASE_TAGS: ${{ steps.get-base-tags.outputs.tags }}
       shell: bash
