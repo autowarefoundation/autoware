@@ -140,7 +140,7 @@ runs:
       shell: bash
 
     - name: Remove architecture-specific tags
-      uses: dataaxiom/ghcr-cleanup-action@v1
+      uses: dataaxiom/ghcr-cleanup-action@v1.0.13
       with:
         delete-tags: ${{ steps.create-manifests.outputs.tags-to-remove }}
         token: ${{ github.token }}
