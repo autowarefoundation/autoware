@@ -48,7 +48,23 @@ Init ByteTrack!
 
 ## Runtime containers
 
+In the execution container, there is the all-in-one runtime container for Autoware, `ghcr.io/autowarefoundation/autoware:universe-cuda`, and the multi-containerized `ghcr.io/autowarefoundation/autoware:universe-***-cuda` for each component of Autoware Universe.
 
+The all-in-one execution container also has the autoware_launch package installed, allowing it to be started in the same way as a locally built Autoware.
+
+```shell
+$ git clone git@github.com:autowarefoundation/autoware.git
+$ cd autoware
+$ docker run -it --rm ghcr.io/autowarefoundation/autoware:universe-cuda
+$ ros2 launch autoware_launch planning_simulator.launch.xml map_path:=...
+```
+
+For example, if you want to run the runtime container that only includes the `sensing/perception` components, you can execute it as follows.
+
+```shell
+$ docker run -it --rm ghcr.io/autowarefoundation/autoware:universe-sensing-perception-cuda
+$ ros2 launch autoware_pointcloud_preprocessor preprocessor.launch.xml
+```
 
 ## Multi-stage Dockerfile structure
 
