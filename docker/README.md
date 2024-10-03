@@ -23,6 +23,8 @@ $ ros2 run --prefix "gdb -ex run --args" autoware_YYY ZZZ
 
 For example, if you want to make modifications to [`autoware.universe/perception/autoware_bytetrack`](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/autoware_bytetrack), you can execute the following commands to perform the volume mount and debug build and execution of only the `autoware_bytetrack`.
 
+Note that `gdb` is not currently installed in the development containers, but it would be installed in the near future.
+
 ```shell
 $ docker run -it --rm \
   -v $PWD/src/universe/autoware.universe/perception/autoware_bytetrack:/autoware/src/autoware_bytetrack \
@@ -34,35 +36,12 @@ Finished <<< autoware_bytetrack [37.9s]
 
 Summary: 1 package finished [38.1s]
 $ root@a566e785c4d2:/autoware# source install/setup.bash
+$ root@a566e785c4d2:/autoware# apt update && apt install gdb
 $ root@a566e785c4d2:/autoware# ros2 run --prefix "gdb -ex run --args" autoware_bytetrack bytetrack_node_exe
 GNU gdb (Ubuntu 12.1-0ubuntu1~22.04.2) 12.1
-Copyright (C) 2022 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
-Type "show copying" and "show warranty" for details.
-This GDB was configured as "x86_64-linux-gnu".
-Type "show configuration" for configuration details.
-For bug reporting instructions, please see:
-<https://www.gnu.org/software/gdb/bugs/>.
-Find the GDB manual and other documentation resources online at:
-    <http://www.gnu.org/software/gdb/documentation/>.
-
-For help, type "help".
-Type "apropos word" to search for commands related to "word"...
-Reading symbols from /autoware/install/autoware_bytetrack/lib/autoware_bytetrack/bytetrack_node_exe...
-Starting program: /autoware/install/autoware_bytetrack/lib/autoware_bytetrack/bytetrack_node_exe
-warning: Error disabling address space randomization: Operation not permitted
+...
 [Thread debugging using libthread_db enabled]
-Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
-[New Thread 0x7ff714a2f640 (LWP 1197)]
-[New Thread 0x7ff713d19640 (LWP 1198)]
-[New Thread 0x7ff713518640 (LWP 1199)]
-[New Thread 0x7ff712d17640 (LWP 1200)]
-[New Thread 0x7ff712516640 (LWP 1201)]
-[New Thread 0x7ff711c14640 (LWP 1202)]
-[New Thread 0x7ff711312640 (LWP 1203)]
-[New Thread 0x7ff710a10640 (LWP 1204)]
+...
 [New Thread 0x7ff6f3fff640 (LWP 1205)]
 Init ByteTrack!
 ```
