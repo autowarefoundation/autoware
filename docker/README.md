@@ -6,6 +6,9 @@ Detailed instructions on how to use the containers can be found in the [Open AD 
 
 ## Development containers
 
+When using Open AD Kit as a development container, it is easy to use Autoware's all-in-one development container image, `ghcr.io/autowarefoundation/autoware:universe-devel-cuda`.
+If you do not need the CUDA drivers, you can also use the smaller image `ghcr.io/autowarefoundation/autoware:universe-devel`.
+
 ```shell
 $ git clone git@github.com:autowarefoundation/autoware.git
 $ cd autoware
@@ -17,6 +20,8 @@ $ colcon build --mixin debug compile-commands
 $ source install/setup.bash
 $ ros2 run --prefix "gdb -ex run --args" autoware_YYY ZZZ
 ```
+
+For example, if you want to make modifications to [`autoware.universe/perception/autoware_bytetrack`](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/autoware_bytetrack), you can execute the following commands to perform the volume mount and debug build and execution of only the `autoware_bytetrack`.
 
 ```shell
 $ docker run -it --rm \
