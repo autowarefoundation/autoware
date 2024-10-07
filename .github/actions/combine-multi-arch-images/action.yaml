@@ -144,7 +144,7 @@ runs:
       with:
         account: autowarefoundation
         token: ${{ github.token }}
-        image-names: "autoware"
+        image-names: autoware
         image-tags: ${{ steps.create-manifests.outputs.tags-to-remove }}
         cut-off: 1h
         dry-run: false
