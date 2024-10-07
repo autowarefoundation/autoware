@@ -145,7 +145,7 @@ runs:
         account: autowarefoundation
         token: ${{ github.token }}
         image-names: "autoware"
-        image-tags: "${{ steps.create-manifests.outputs.tags-to-remove }}"
+        image-tags: universe-cuda-amd64
         cut-off: 1h
-        dry-run: true
+        dry-run: false
         tag-selection: tagged
