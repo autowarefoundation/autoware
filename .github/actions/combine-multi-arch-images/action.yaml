@@ -134,7 +134,7 @@ runs:
             echo "Both amd64 and arm64 tags not found for '$base_tag'. Skipping manifest creation."
           fi
         done
-        # Remove trailing comma and set output
+
         tags_to_remove=${tags_to_remove% }
         echo "tags-to-remove=$tags_to_remove" >> $GITHUB_OUTPUT
       shell: bash
