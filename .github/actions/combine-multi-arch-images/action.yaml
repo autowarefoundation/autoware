@@ -145,7 +145,8 @@ runs:
         account: autowarefoundation
         token: ${{ github.token }}
         image-names: "autoware"
-        image-tags: universe-cuda-amd64
+        image-tags: universe-cuda-20241004-amd64
         cut-off: 1h
         dry-run: false
         tag-selection: tagged
+        rust-log: container_retention_policy=debug
