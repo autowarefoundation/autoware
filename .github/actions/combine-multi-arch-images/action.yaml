@@ -115,7 +115,7 @@ runs:
                 if docker manifest inspect "${{ steps.set-image-name.outputs.image-name }}:$base_tag" | grep -q "arm64" && \
                    docker manifest inspect "${{ steps.set-image-name.outputs.image-name }}:$base_tag" | grep -q "amd64"; then
                   echo "Manifest verification successful. Adding tags to removal list."
-                  tags_to_remove+="$amd64_tag,$arm64_tag,"
+                  tags_to_remove+="$amd64_tag $arm64_tag "
                 else
                   echo "Manifest verification failed. Skipping tag removal to prevent data loss."
                 fi
@@ -135,15 +135,16 @@ runs:
           fi
         done
         # Remove trailing comma and set output
-        tags_to_remove=${tags_to_remove%,}
+        tags_to_remove=${tags_to_remove% }
         echo "tags-to-remove=$tags_to_remove" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Remove architecture-specific tags
-      uses: dataaxiom/ghcr-cleanup-action@v1.0.13
+    - name: Remove old images
+      uses: snok/container-retention-policy@v3.0.0
       with:
-        delete-tags: ${{ steps.create-manifests.outputs.tags-to-remove }}
-        token: ${{ github.token }}
-        package: ${{ inputs.package-name }}
-        owner: ${{ github.repository_owner }}
+        account: autowarefoundation
+        token: ${{ secrets.GITHUB_TOKEN }}
+        image-names: "autoware"
+        image-tags: "${{ steps.create-manifests.outputs.tags-to-remove }}"
+        cut-off: 1h
         dry-run: true
