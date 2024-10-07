@@ -148,3 +148,4 @@ runs:
         image-tags: "${{ steps.create-manifests.outputs.tags-to-remove }}"
         cut-off: 1h
         dry-run: true
+        tag-selection: tagged
