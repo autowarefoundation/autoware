@@ -8,6 +8,8 @@ group "default" {
     "universe-localization-mapping",
     "universe-planning-control-devel",
     "universe-planning-control",
+    "universe-vehicle-system-devel",
+    "universe-vehicle-system",
     "universe-devel",
     "universe"
   ]
@@ -22,6 +24,8 @@ target "docker-metadata-action-universe-localization-mapping-devel" {}
 target "docker-metadata-action-universe-localization-mapping" {}
 target "docker-metadata-action-universe-planning-control-devel" {}
 target "docker-metadata-action-universe-planning-control" {}
+target "docker-metadata-action-universe-vehicle-system-devel" {}
+target "docker-metadata-action-universe-vehicle-system" {}
 target "docker-metadata-action-universe-devel" {}
 target "docker-metadata-action-universe" {}
 
@@ -71,6 +75,18 @@ target "universe-planning-control" {
   inherits = ["docker-metadata-action-universe-planning-control"]
   dockerfile = "docker/Dockerfile"
   target = "universe-planning-control"
+}
+
+target "universe-vehicle-system-devel" {
+  inherits = ["docker-metadata-action-universe-vehicle-system-devel"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-vehicle-system-devel"
+}
+
+target "universe-vehicle-system" {
+  inherits = ["docker-metadata-action-universe-vehicle-system"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-vehicle-system"
 }
 
 target "universe-devel" {

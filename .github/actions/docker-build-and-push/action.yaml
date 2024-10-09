@@ -81,8 +81,8 @@ runs:
       with:
         images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=base${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
-          type=raw,value=base${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+          type=raw,value=base${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=base${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-base
         flavor: |
           latest=false
@@ -93,8 +93,8 @@ runs:
       with:
         images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=core-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
-          type=raw,value=core-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+          type=raw,value=core-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=core-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-core-devel
         flavor: |
           latest=false
@@ -105,8 +105,8 @@ runs:
       with:
         images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=universe-sensing-perception-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
-          type=raw,value=universe-sensing-perception-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+          type=raw,value=universe-sensing-perception-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=universe-sensing-perception-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-sensing-perception-devel
         flavor: |
           latest=false
@@ -117,8 +117,8 @@ runs:
       with:
         images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=universe-sensing-perception${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
-          type=raw,value=universe-sensing-perception${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+          type=raw,value=universe-sensing-perception${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=universe-sensing-perception${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-sensing-perception
         flavor: |
           latest=false
@@ -129,8 +129,8 @@ runs:
       with:
         images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=universe-localization-mapping-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
-          type=raw,value=universe-localization-mapping-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+          type=raw,value=universe-localization-mapping-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=universe-localization-mapping-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-localization-mapping-devel
         flavor: |
           latest=false
@@ -141,8 +141,8 @@ runs:
       with:
         images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=universe-localization-mapping${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
-          type=raw,value=universe-localization-mapping${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+          type=raw,value=universe-localization-mapping${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=universe-localization-mapping${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-localization-mapping
         flavor: |
           latest=false
@@ -153,8 +153,8 @@ runs:
       with:
         images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=universe-planning-control-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
-          type=raw,value=universe-planning-control-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+          type=raw,value=universe-planning-control-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=universe-planning-control-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-planning-control-devel
         flavor: |
           latest=false
@@ -165,9 +165,33 @@ runs:
       with:
         images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=universe-planning-control${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
-          type=raw,value=universe-planning-control${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+          type=raw,value=universe-planning-control${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=universe-planning-control${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-planning-control
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:universe-vehicle-system-devel
+      id: meta-universe-vehicle-system-devel
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: |
+          type=raw,value=universe-vehicle-system-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
+          type=raw,value=universe-vehicle-system-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+        bake-target: docker-metadata-action-universe-vehicle-system-devel
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:universe-vehicle-system
+      id: meta-universe-vehicle-system
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: |
+          type=raw,value=universe-vehicle-system${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
+          type=raw,value=universe-vehicle-system${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+        bake-target: docker-metadata-action-universe-vehicle-system
         flavor: |
           latest=false
 
@@ -177,8 +201,8 @@ runs:
       with:
         images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=universe-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
-          type=raw,value=universe-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+          type=raw,value=universe-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=universe-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-devel
         flavor: |
           latest=false
@@ -189,8 +213,8 @@ runs:
       with:
         images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=universe${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
-          type=raw,value=universe${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
+          type=raw,value=universe${{ inputs.tag-suffix }}-${{ inputs.platform }}
+          type=raw,value=universe${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe
         flavor: |
           latest=auto
@@ -215,6 +239,8 @@ runs:
           ${{ steps.meta-universe-localization-mapping.outputs.bake-file }}
           ${{ steps.meta-universe-planning-control-devel.outputs.bake-file }}
           ${{ steps.meta-universe-planning-control.outputs.bake-file }}
+          ${{ steps.meta-universe-vehicle-system-devel.outputs.bake-file }}
+          ${{ steps.meta-universe-vehicle-system.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
         provenance: false

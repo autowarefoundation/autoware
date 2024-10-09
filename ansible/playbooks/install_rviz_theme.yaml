@@ -1,0 +1,4 @@
+- name: Install RViz theme
+  hosts: localhost
+  roles:
+    - autoware.dev_env.qt5ct_setup
