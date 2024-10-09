@@ -26,12 +26,12 @@ jobs:
             base_image_env: base_image
             lib_dir: aarch64
             setup-args: --no-nvidia
-            additional-tag-suffix: ""
+            tag-suffix: ""
           - name: cuda
             platform: arm64
             base_image_env: base_image
             lib_dir: aarch64
-            additional-tag-suffix: cuda
+            tag-suffix: -cuda
     steps:
       - name: Check if PR author is the specific user
         id: author-check
@@ -86,7 +86,7 @@ jobs:
             *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.head_ref }}
             *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-main
             *.cache-to=type=registry,ref=${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.head_ref }},mode=max
-          tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ matrix.platform }}
+          tag-suffix: ${{ matrix.tag-suffix }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Show disk space
