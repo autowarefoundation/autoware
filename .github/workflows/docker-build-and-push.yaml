@@ -13,7 +13,7 @@ jobs:
 
   docker-build-and-push:
     needs: load-env
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:

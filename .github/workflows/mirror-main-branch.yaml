@@ -8,7 +8,7 @@ on:
 
 jobs:
   mirror-main-branch:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: zofrex/mirror-branch@v1
         with:
