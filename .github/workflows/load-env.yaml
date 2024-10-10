@@ -10,7 +10,7 @@ on:
 
 jobs:
   load-env:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       base_image: ${{ steps.set-env.outputs.base_image }}
       rosdistro: ${{ steps.set-env.outputs.rosdistro }}

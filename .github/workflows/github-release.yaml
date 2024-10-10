@@ -15,7 +15,7 @@ on:
 
 jobs:
   github-release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Set tag name
         id: set-tag-name
