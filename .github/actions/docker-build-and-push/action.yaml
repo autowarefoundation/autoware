@@ -175,7 +175,7 @@ runs:
       id: meta-universe-vehicle-system-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
           type=raw,value=universe-vehicle-system-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
           type=raw,value=universe-vehicle-system-devel${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
@@ -187,7 +187,7 @@ runs:
       id: meta-universe-vehicle-system
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
           type=raw,value=universe-vehicle-system${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}
           type=raw,value=universe-vehicle-system${{ inputs.tag-suffix && '-' }}${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}
