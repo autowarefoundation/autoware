@@ -1,0 +1,5 @@
+repositories:
+  simulator/scenario_simulator:
+    type: git
+    url: https://github.com/tier4/scenario_simulator_v2.git
+    version: 7dcf94e7274cce23aabf13ebc96b037dfae0c150 # RJD-736/autoware_msgs_support, Tue Sep 24 18:12:21 2024 +0900
