@@ -193,12 +193,13 @@ RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
 FROM base AS core-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
+ARG SETUP_ARGS
 ENV CCACHE_DIR="/root/.ccache"
 
 # Set up development environment and tools
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all openadkit \
+  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadkit \
   && ./setup-dev-env.sh -y --module dev-tools openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
