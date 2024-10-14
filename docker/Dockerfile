@@ -223,7 +223,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --install-base /opt/autoware \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build
+  && rm -rf /autoware/build /autoware/log
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -255,7 +255,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --install-base /opt/autoware \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build
+  && rm -rf /autoware/build /autoware/log
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -287,7 +287,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --install-base /opt/autoware \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build
+  && rm -rf /autoware/build /autoware/log
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -319,7 +319,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --install-base /opt/autoware \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build
+  && rm -rf /autoware/build /autoware/log
 
 FROM universe-common-devel AS universe-planning-control-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -353,7 +353,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --install-base /opt/autoware \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build
+  && rm -rf /autoware/build /autoware/log
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -387,7 +387,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --install-base /opt/autoware \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build
+  && rm -rf /autoware/build /autoware/log
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -430,7 +430,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --install-base /opt/autoware \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build
+  && rm -rf /autoware/build /autoware/log
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
