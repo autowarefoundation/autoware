@@ -40,8 +40,8 @@ repositories:
   # universe
   universe/autoware.universe:
     type: git
-    url: https://github.com/autowarefoundation/autoware.universe.git
-    version: 96dae8d3bcea24b0a63416f07845e79fef5fe6a9
+    url: https://github.com/mackierx111/autoware.universe.git
+    version: awsim-stable
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
@@ -102,8 +102,8 @@ repositories:
     version: de4bf6be79aa2968cf2f62e0ebe1ff8a5797e6ad
   sensor_component/external/nebula:
     type: git
-    url: https://github.com/tier4/nebula.git
-    version: d9aaefc9a4c06f6dae86cd7ef22f6353f1379e4f
+    url: https://github.com/mackierx111/nebula.git
+    version: awsim-stable
   # Fork of transport_drivers that enables reduction of copy operations
   sensor_component/transport_drivers:
     type: git
