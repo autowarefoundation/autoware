@@ -107,23 +107,22 @@ artifacts:
         base_iso: ubuntu-20.04.3-live-server-amd64
 
 simulations:
- - name: perception
-   type: perception
-   simulator:
-    deployment:
-     type: container
-     artifact: main
-    runtime:
-     type: gpu1/amd64/large
-    pre_tasks:
-     - exec: source /home/autoware/autoware.proj/install/setup.bash && ros2 launch lidar_centerpointlidar_centerpoint.launch.xml model_name:=centerpoint_tiny
-model_path:=/home/autoware/autoware_data/lidar_centerpoint model_param_path:=$(ros2 pkg prefixlidar_centerpoint --share)/config/centerpoint_tiny.param.yaml build_only:=true
+  - name: perception
+    type: perception
+    simulator:
+      deployment:
+        type: container
+        artifact: main
+      runtime:
+        type: gpu1/amd64/large
+      pre_tasks:
+        - exec: source /home/autoware/autoware.proj/install/setup.bash && ros2 launch lidar_centerpointlidar_centerpoint.launch.xml model_name:=centerpoint_tiny model_path:=/home/autoware/autoware_data/lidar_centerpoint model_param_path:=$(ros2 pkg prefixlidar_centerpoint --share)/config/centerpoint_tiny.param.yaml build_only:=true
       mounts:
-       - volume: model
-    volumes:
-     - name: model
-       path: /home/autoware/autoware_data/lidar_centerpoint
-       preserve_original_files: true
+        - volume: model
+      volumes:
+        - name: model
+          path: /home/autoware/autoware_data/lidar_centerpoint
+          preserve_original_files: true
 
   - name: lexus_planning_sim
     type: planning_sim_v2
@@ -143,14 +142,15 @@ model_path:=/home/autoware/autoware_data/lidar_centerpoint model_param_path:=$(r
         vehicle_model: sample_vehicle
         sensor_model: sample_sensor_kit
         initialize_duration: "90"
+
   - name: localization
     type: localization
     simulator:
-     deployment:
-      type: container
-      artifact: main
-     runtime:
-      type: standard1/amd64/large
+      deployment:
+        type: container
+        artifact: main
+      runtime:
+        type: standard1/amd64/large
 
 release:
   components:
