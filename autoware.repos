@@ -94,11 +94,11 @@ repositories:
   sensor_component/external/nebula:
     type: git
     url: https://github.com/tier4/nebula.git
-    version: 2314f61a76e75838a507e78e42cd9ad41c923fb3
+    version: 18af521fc3a3ab1ce9c17ec94c2a0a8633317de4
   sensor_component/transport_drivers:
     type: git
     url: https://github.com/autowarefoundation/transport_drivers
-    version: abf8aa8e171f33e0acd6d845c3d795192c964e9c
+    version: 39ebd8afe1bb9760a6cd6272e428468480f6de90
   sensor_component/ros2_socketcan:
     type: git
     url: https://github.com/autowarefoundation/ros2_socketcan
