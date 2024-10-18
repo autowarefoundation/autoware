@@ -14,24 +14,6 @@ jobs:
   docker-build-and-push:
     needs: load-env
     runs-on: [self-hosted, linux, ARM64]
-    strategy:
-      fail-fast: false
-      matrix:
-        name:
-          - no-cuda
-          - cuda
-        include:
-          - name: no-cuda
-            platform: arm64
-            base_image_env: base_image
-            lib_dir: aarch64
-            setup-args: --no-nvidia
-            tag-suffix: ""
-          - name: cuda
-            platform: arm64
-            base_image_env: base_image
-            lib_dir: aarch64
-            tag-suffix: -cuda
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
@@ -68,19 +50,16 @@ jobs:
           (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/docker-build-and-push
         with:
-          name: ${{ matrix.name }}
-          platform: ${{ matrix.platform }}
+          platform: arm64
           bake-target: autoware
           build-args: |
-            *.platform=linux/${{ matrix.platform }}
+            *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
-            *.args.SETUP_ARGS=${{ matrix.setup-args }}
-            *.args.LIB_DIR=${{ matrix.lib_dir }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.ref_name }},mode=max
-          tag-suffix: ${{ matrix.tag-suffix }}
+            *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
+            *.args.LIB_DIR=aarch64
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }},mode=max
 
       - name: Show disk space
         if: always()
