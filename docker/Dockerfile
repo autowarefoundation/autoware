@@ -4,7 +4,6 @@ ARG BASE_IMAGE
 FROM $BASE_IMAGE AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
-ARG SETUP_ARGS
 
 # Install apt packages and add GitHub to known hosts for private repositories
 RUN rm -f /etc/apt/apt.conf.d/docker-clean \
@@ -25,7 +24,7 @@ WORKDIR /autoware
 # Set up base environment
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module base ${SETUP_ARGS} --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module base --no-nvidia --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache \
   && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
@@ -193,13 +192,12 @@ RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
 FROM base AS core-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
-ARG SETUP_ARGS
 ENV CCACHE_DIR="/root/.ccache"
 
 # Set up development environment and tools
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all ${SETUP_ARGS} --no-cuda-drivers openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers openadkit \
   && ./setup-dev-env.sh -y --module dev-tools openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
@@ -288,6 +286,48 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     --mixin release compile-commands ccache \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && rm -rf /autoware/build /autoware/log
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+FROM universe-sensing-perception-devel AS universe-sensing-perception-cuda-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+# Set up CUDA development environment
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit \
+  && ./setup-dev-env.sh -y --module dev-tools openadkit \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache
+
+# hadolint ignore=SC1091
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_bytetrack,target=/autoware/src/universe/autoware.universe/perception/autoware_bytetrack \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_apollo_instance_segmentation,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_apollo_instance_segmentation \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_centerpoint,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_centerpoint \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_transfusion,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_transfusion \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_shape_estimation,target=/autoware/src/universe/autoware.universe/perception/autoware_shape_estimation \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_classifier,target=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_classifier \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_yolox,target=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_yolox \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_classifier,target=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_classifier \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_fine_detector,target=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_fine_detector \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing/cuda_utils,target=/autoware/src/universe/autoware.universe/sensing/cuda_utils \
+  # TODO(youtalk): Remove --mount option when https://github.com/autowarefoundation/autoware.universe/pull/9099 is merged
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/common/tensorrt_common,target=/autoware/src/universe/autoware.universe/common/tensorrt_common \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && colcon build --cmake-args \
+    " -Wno-dev" \
+    " --no-warn-unused-cli" \
+    --merge-install \
+    --install-base /opt/autoware \
+    --mixin release compile-commands ccache \
+  && du -sh ${CCACHE_DIR} && ccache -s \
+  && rm -rf /autoware/build
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
