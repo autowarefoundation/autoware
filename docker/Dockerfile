@@ -299,13 +299,12 @@ ENV CCACHE_DIR="/root/.ccache"
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit \
-  && ./setup-dev-env.sh -y --module dev-tools openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_bytetrack,target=/autoware/src/universe/autoware.universe/perception/autoware_bytetrack \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend, source=/autoware/src/universe/autoware.universe/perception/autoware_bytetrack,target=/autoware/src/universe/autoware.universe/perception/autoware_bytetrack \
   --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_apollo_instance_segmentation,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_apollo_instance_segmentation \
   --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_centerpoint,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_centerpoint \
   --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_transfusion,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_transfusion \
@@ -316,7 +315,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_fine_detector,target=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_fine_detector \
   --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing/cuda_utils,target=/autoware/src/universe/autoware.universe/sensing/cuda_utils \
   # TODO(youtalk): Remove --mount option when https://github.com/autowarefoundation/autoware.universe/pull/9099 is merged
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/common/tensorrt_common,target=/autoware/src/universe/autoware.universe/common/tensorrt_common \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/common/tensorrt_common,target=/autoware/src/universe/autoware.universe/common/tensorrt_common \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
@@ -475,6 +474,21 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
+FROM universe-devel AS universe-cuda-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Set up CUDA development environment
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache
+
+COPY --from=universe-sensing-perception-cuda-devel /opt/autoware /opt/autoware
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
 FROM base AS universe-sensing-perception
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -494,8 +508,7 @@ RUN --mount=type=ssh \
   && find / -name "*.o" -type f -delete \
   && find / -name "*.h" -type f -delete \
   && find / -name "*.hpp" -type f -delete \
-  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
-    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
+  && rm -rf /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
     /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
@@ -504,6 +517,32 @@ COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 # Copy bash aliases
 COPY docker/etc/.bash_aliases /root/.bash_aliases
 RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+FROM universe-sensing-perception AS universe-sensing-perception-cuda
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ARG LIB_DIR
+
+# Set up CUDA runtime environment and artifacts
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  ./setup-dev-env.sh -y --module all --download-artifacts --no-cuda-drivers --runtime openadkit \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
+  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
+  && find / -name "*.o" -type f -delete \
+  && find / -name "*.h" -type f -delete \
+  && find / -name "*.hpp" -type f -delete \
+  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
+    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
+    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
+    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
+
+COPY --from=universe-sensing-perception-cuda-devel /opt/autoware /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -626,8 +665,7 @@ RUN --mount=type=ssh \
   && find / -name "*.o" -type f -delete \
   && find / -name "*.h" -type f -delete \
   && find / -name "*.hpp" -type f -delete \
-  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
-    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
+  && rm -rf /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
     /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
@@ -636,6 +674,32 @@ COPY --from=universe-devel /opt/autoware /opt/autoware
 # Copy bash aliases
 COPY docker/etc/.bash_aliases /root/.bash_aliases
 RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+FROM universe AS universe-cuda
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ARG LIB_DIR
+
+# Set up CUDA runtime environment and artifacts
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  ./setup-dev-env.sh -y --module all --download-artifacts --no-cuda-drivers --runtime openadkit \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
+  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
+  && find / -name "*.o" -type f -delete \
+  && find / -name "*.h" -type f -delete \
+  && find / -name "*.hpp" -type f -delete \
+  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
+    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
+    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
+    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
+
+COPY --from=universe-cuda-devel /opt/autoware /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
