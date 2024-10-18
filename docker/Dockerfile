@@ -480,7 +480,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
 
-# Set up runtime environment and artifacts
+# Set up runtime environment
 COPY --from=rosdep-universe-sensing-perception-depend /rosdep-universe-sensing-perception-exec-depend-packages.txt /tmp/rosdep-universe-sensing-perception-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
@@ -513,7 +513,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
 
-# Set up runtime environment and artifacts
+# Set up runtime environment
 COPY --from=rosdep-universe-localization-mapping-depend /rosdep-universe-localization-mapping-exec-depend-packages.txt /tmp/rosdep-universe-localization-mapping-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
@@ -546,7 +546,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
 
-# Set up runtime environment and artifacts
+# Set up runtime environment
 COPY --from=rosdep-universe-planning-control-depend /rosdep-universe-planning-control-exec-depend-packages.txt /tmp/rosdep-universe-planning-control-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
@@ -579,7 +579,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
 
-# Set up runtime environment and artifacts
+# Set up runtime environment
 COPY --from=rosdep-universe-vehicle-system-depend /rosdep-universe-vehicle-system-exec-depend-packages.txt /tmp/rosdep-universe-vehicle-system-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
@@ -612,7 +612,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
 
-# Set up runtime environment and artifacts
+# Set up runtime environment
 COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
