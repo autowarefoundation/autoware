@@ -8,6 +8,8 @@ sudo -E apt-get -y install usbutils # For kvaser
 
 export GITHUB_TOKEN="$WEBAUTO_CI_GITHUB_TOKEN"
 git config --global --add url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+git config --global --add url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "git@github.com:"
+
 ansible_args=()
 ansible_args+=("--extra-vars" "prompt_install_nvidia=y")
 ansible_args+=("--extra-vars" "prompt_download_artifacts=y")
