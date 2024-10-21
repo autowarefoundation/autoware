@@ -33,9 +33,9 @@
     - role: autoware.dev_env.geographiclib
       when: module == 'perception-localization' or module == 'all'
     - role: autoware.dev_env.cuda
-      when: (module == 'base' or module == 'perception-localization' or module == 'all') and prompt_install_nvidia=='y'
+      when: (module == 'perception-localization' or module == 'all') and prompt_install_nvidia=='y'
     - role: autoware.dev_env.tensorrt
-      when: (module == 'base' or module == 'perception-localization' or module == 'all') and prompt_install_nvidia=='y'
+      when: (module == 'perception-localization' or module == 'all') and prompt_install_nvidia=='y'
 
     # Development environment
     - role: autoware.dev_env.dev_tools
