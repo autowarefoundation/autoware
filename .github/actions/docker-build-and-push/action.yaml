@@ -75,11 +75,12 @@ runs:
     - name: Docker meta for autoware:base
       id: meta-base
       uses: docker/metadata-action@v5
+      if: ${{ inputs.name == 'no-cuda' }}
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
-          type=raw,value=base${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=base${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=base-${{ inputs.platform }}
+          type=raw,value=base-${{ steps.date.outputs.date }}-${{ inputs.platform }}
         bake-target: docker-metadata-action-base
         flavor: |
           latest=false
