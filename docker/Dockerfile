@@ -290,7 +290,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM universe-sensing-perception-devel AS universe-sensing-perception-cuda-devel
+FROM universe-sensing-perception-devel AS universe-sensing-perception-devel-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -474,7 +474,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM universe-devel AS universe-cuda-devel
+FROM universe-devel AS universe-devel-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set up CUDA development environment
@@ -484,7 +484,7 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
-COPY --from=universe-sensing-perception-cuda-devel /opt/autoware /opt/autoware
+COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -542,7 +542,7 @@ RUN --mount=type=ssh \
     /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
-COPY --from=universe-sensing-perception-cuda-devel /opt/autoware /opt/autoware
+COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -699,7 +699,7 @@ RUN --mount=type=ssh \
     /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
     /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
 
-COPY --from=universe-cuda-devel /opt/autoware /opt/autoware
+COPY --from=universe-devel-cuda /opt/autoware /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
