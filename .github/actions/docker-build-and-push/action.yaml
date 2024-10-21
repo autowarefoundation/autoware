@@ -75,7 +75,6 @@ runs:
     - name: Docker meta for autoware:base
       id: meta-base
       uses: docker/metadata-action@v5
-      if: ${{ inputs.name == 'no-cuda' }}
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
         tags: |
