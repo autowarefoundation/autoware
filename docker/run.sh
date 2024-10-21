@@ -91,7 +91,7 @@ parse_arguments() {
 set_variables() {
     if [ "$option_devel" = "true" ]; then
         # Set image based on option
-        IMAGE="ghcr.io/autowarefoundation/autoware:latest-devel"
+        IMAGE="ghcr.io/autowarefoundation/autoware:universe-devel"
 
         # Set workspace path, if not provided use the current directory
         if [ "$WORKSPACE_PATH" = "" ]; then
@@ -113,12 +113,12 @@ set_variables() {
         fi
     else
         # Set image based on option
-        IMAGE="ghcr.io/autowarefoundation/autoware:latest-runtime"
+        IMAGE="ghcr.io/autowarefoundation/autoware:universe"
 
         # Set map path
         if [ "$MAP_PATH" = "" ]; then
             echo -e "\n------------------------------------------------------------"
-            echo -e "${RED}Note:${NC} The --map-path option is mandatory for the runtime. For development environment with shell access, use --devel option."
+            echo -e "${RED}Note:${NC} The --map-path option is mandatory for the universe(runtime image). For development environment with shell access, use --devel option."
             echo -e "------------------------------------------------------------"
             exit 1
         else

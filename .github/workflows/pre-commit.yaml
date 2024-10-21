@@ -6,7 +6,7 @@ on:
 jobs:
   pre-commit:
     if: ${{ github.event.repository.private }} # Use pre-commit.ci for public repositories
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Generate token
         id: generate-token

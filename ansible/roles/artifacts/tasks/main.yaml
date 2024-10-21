@@ -169,23 +169,23 @@
 - name: Download lidar_transfusion/transfusion.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2/transfusion.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2.1/transfusion.onnx
     dest: "{{ data_dir }}/lidar_transfusion/transfusion.onnx"
     mode: "644"
-    checksum: sha256:ad66a061d61449af671bd0d14c2c407f0d749753f17f3165287857f686c4fd1a
+    checksum: sha256:1d8f0ee6d59ccc3cca914f9892f6ac8f0a9e35082abb91da183c00e3e2c2718a
 
-- name: Download lidar_transfusion/transfusion.param.yaml
+- name: Download lidar_transfusion/transfusion_ml_package.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2/transfusion.param.yaml
-    dest: "{{ data_dir }}/lidar_transfusion/transfusion.param.yaml"
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2.1/transfusion_ml_package.param.yaml
+    dest: "{{ data_dir }}/lidar_transfusion/transfusion_ml_package.param.yaml"
     mode: "644"
-    checksum: sha256:fdd8dd21b7c1c0f9a15119fa6a79565f927ce8f6bac4ddf095cb7e27672cb3d8
+    checksum: sha256:476f7727adc17a823962f2e09ba23d40f3116c50be48361d98179d054cd131b6
 
 - name: Download lidar_transfusion/detection_class_remapper.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2/detection_class_remapper.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2.1/detection_class_remapper.param.yaml
     dest: "{{ data_dir }}/lidar_transfusion/detection_class_remapper.param.yaml"
     mode: "644"
     checksum: sha256:c711f8875ece9b527dfe31ffc75f8c0de2e77945ef67860a959a4e04c36772d5
@@ -428,29 +428,3 @@
   ansible.builtin.unarchive:
     src: "{{ data_dir }}/tvm_utility/yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz"
     dest: "{{ data_dir }}/tvm_utility/models/yolo_v2_tiny"
-
-# lidar_apollo_segmentation_tvm
-- name: Create lidar_apollo_segmentation_tvm/models directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/lidar_apollo_segmentation_tvm/models"
-    mode: "755"
-    state: directory
-
-- name: Download baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz
-  become: true
-  ansible.builtin.get_url:
-    url: https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz
-    dest: "{{ data_dir }}/lidar_apollo_segmentation_tvm/baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz"
-    mode: "644"
-    checksum: sha256:4293e6196ec937d2cd5ec658e5ce70933647d2d38633a1805febb36cafd684e3
-
-- name: Create baidu_cnn folder in lidar_apollo_segmentation_tvm/models of {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/lidar_apollo_segmentation_tvm/models/baidu_cnn"
-    mode: "755"
-    state: directory
-
-- name: Extract baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz
-  ansible.builtin.unarchive:
-    src: "{{ data_dir }}/lidar_apollo_segmentation_tvm/baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz"
-    dest: "{{ data_dir }}/lidar_apollo_segmentation_tvm/models/baidu_cnn"

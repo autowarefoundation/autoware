@@ -59,7 +59,7 @@ set_cuda_options() {
 # Set build options
 set_build_options() {
     if [ "$option_devel_only" = "true" ]; then
-        targets=("devel")
+        targets=("universe-devel")
     else
         targets=()
     fi
@@ -132,10 +132,9 @@ build_images() {
         --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
-        --set "base.tags=ghcr.io/autowarefoundation/autoware:latest-base" \
-        --set "devel.tags=ghcr.io/autowarefoundation/autoware:latest-devel$image_name_suffix" \
-        --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware:latest-prebuilt$image_name_suffix" \
-        --set "runtime.tags=ghcr.io/autowarefoundation/autoware:latest-runtime$image_name_suffix" \
+        --set "base.tags=ghcr.io/autowarefoundation/autoware:base" \
+        --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel$image_name_suffix" \
+        --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe$image_name_suffix" \
         "${targets[@]}"
     set +x
 }

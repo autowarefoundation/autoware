@@ -1,17 +1,32 @@
 name: health-check
 
 on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
   schedule:
     - cron: 0 12 * * *
   workflow_dispatch:
 
 jobs:
+  label-check:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
+    with:
+      label: tag:run-health-check
+
   load-env:
+    needs: label-check
+    if: ${{ needs.label-check.outputs.result == 'true' ||
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/load-env.yaml
 
   docker-build:
     needs: load-env
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -24,12 +39,10 @@ jobs:
             base_image_env: base_image
             lib_dir: x86_64
             setup-args: --no-nvidia
-            additional-tag-suffix: ""
           - name: cuda
             platform: amd64
             base_image_env: base_image
             lib_dir: x86_64
-            additional-tag-suffix: -cuda
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

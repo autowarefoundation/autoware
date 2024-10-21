@@ -7,11 +7,18 @@
 *.md
 
 # Ignore Docker files
-docker-bake.hcl
+docker
+!docker/etc
 
-# Etc
-*.ignore
-*.lint
-*.lock
-*.log
-*.out
+# Ignore a part of files under src
+src/**/.*
+src/**/*.asc
+src/**/*.gif
+src/**/*.md
+src/**/*.pcd
+src/**/*.svg
+
+# Ignore generated files by colcon
+build
+install
+log

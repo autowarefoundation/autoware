@@ -1,8 +1,8 @@
 {
-  "name": "Autoware",
+  "name": "autoware:universe-devel",
   "build": {
     "dockerfile": "../Dockerfile",
-    "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware:latest-devel" }
+    "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware:universe-devel" }
   },
   "remoteUser": "autoware",
   "runArgs": [
