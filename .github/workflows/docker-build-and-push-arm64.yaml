@@ -83,5 +83,6 @@ jobs:
           tag-suffix: ${{ matrix.tag-suffix }}
 
       - name: Show disk space
+        if: always()
         run: |
           df -h

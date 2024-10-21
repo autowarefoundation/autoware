@@ -68,5 +68,6 @@ jobs:
             LIB_DIR=${{ matrix.lib_dir }}
 
       - name: Show disk space
+        if: always()
         run: |
           df -h
