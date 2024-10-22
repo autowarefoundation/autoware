@@ -3,7 +3,9 @@ group "default" {
     "base",
     "core-devel",
     "universe-sensing-perception-devel",
+    "universe-sensing-perception-devel-cuda",
     "universe-sensing-perception",
+    "universe-sensing-perception-cuda",
     "universe-localization-mapping-devel",
     "universe-localization-mapping",
     "universe-planning-control-devel",
@@ -11,7 +13,9 @@ group "default" {
     "universe-vehicle-system-devel",
     "universe-vehicle-system",
     "universe-devel",
-    "universe"
+    "universe-devel-cuda",
+    "universe",
+    "universe-cuda"
   ]
 }
 
@@ -19,7 +23,9 @@ group "default" {
 target "docker-metadata-action-base" {}
 target "docker-metadata-action-core-devel" {}
 target "docker-metadata-action-universe-sensing-perception-devel" {}
+target "docker-metadata-action-universe-sensing-perception-devel-cuda" {}
 target "docker-metadata-action-universe-sensing-perception" {}
+target "docker-metadata-action-universe-sensing-perception-cuda" {}
 target "docker-metadata-action-universe-localization-mapping-devel" {}
 target "docker-metadata-action-universe-localization-mapping" {}
 target "docker-metadata-action-universe-planning-control-devel" {}
@@ -27,7 +33,9 @@ target "docker-metadata-action-universe-planning-control" {}
 target "docker-metadata-action-universe-vehicle-system-devel" {}
 target "docker-metadata-action-universe-vehicle-system" {}
 target "docker-metadata-action-universe-devel" {}
+target "docker-metadata-action-universe-devel-cuda" {}
 target "docker-metadata-action-universe" {}
+target "docker-metadata-action-universe-cuda" {}
 
 target "base" {
   inherits = ["docker-metadata-action-base"]
@@ -47,10 +55,22 @@ target "universe-sensing-perception-devel" {
   target = "universe-sensing-perception-devel"
 }
 
+target "universe-sensing-perception-devel-cuda" {
+  inherits = ["docker-metadata-action-universe-sensing-perception-devel-cuda"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-sensing-perception-devel-cuda"
+}
+
 target "universe-sensing-perception" {
   inherits = ["docker-metadata-action-universe-sensing-perception"]
   dockerfile = "docker/Dockerfile"
   target = "universe-sensing-perception"
+}
+
+target "universe-sensing-perception-cuda" {
+  inherits = ["docker-metadata-action-universe-sensing-perception-cuda"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-sensing-perception-cuda"
 }
 
 target "universe-localization-mapping-devel" {
@@ -95,8 +115,20 @@ target "universe-devel" {
   target = "universe-devel"
 }
 
+target "universe-devel-cuda" {
+  inherits = ["docker-metadata-action-universe-devel-cuda"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-devel-cuda"
+}
+
 target "universe" {
   inherits = ["docker-metadata-action-universe"]
   dockerfile = "docker/Dockerfile"
   target = "universe"
+}
+
+target "universe-cuda" {
+  inherits = ["docker-metadata-action-universe-cuda"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-cuda"
 }
