@@ -61,24 +61,9 @@ jobs:
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-main
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }},mode=max
 
-      - name: Show disk space
-        run: |
-          df -h
-
-  docker-build-and-push-cuda:
-    needs: docker-build-and-push
-    runs-on: buildjet-16vcpu-ubuntu-2204-arm
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set git config
-        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build 'Autoware' with CUDA
-        if: ${{ github.event_name == 'workflow_dispatch' ||
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/docker-build-and-push-cuda
         with:
