@@ -56,23 +56,6 @@ jobs:
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-main
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }},mode=max
 
-      - name: Build 'Autoware' with CUDA
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && github.ref_type == 'tag') }}
-        uses: ./.github/actions/docker-build-and-push-cuda
-        with:
-          platform: amd64
-          bake-target: autoware
-          build-args: |
-            *.platform=linux/amd64
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
-            *.args.LIB_DIR=x86_64
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-cuda-${{ github.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-cuda-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-cuda-${{ github.ref_name }},mode=max
-
       - name: Show disk space
         if: always()
         run: |
@@ -103,10 +86,9 @@ jobs:
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
             *.args.LIB_DIR=x86_64
-            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:amd64-cuda-${{ github.head_ref }}
-            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:amd64-cuda-main
-            *.cache-to=type=registry,ref=${{ github.repository }}-buildcache:amd64-cuda-${{ github.head_ref }},mode=max
-          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-cuda-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-cuda-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-cuda-${{ github.ref_name }},mode=max
 
       - name: Show disk space
         run: |
