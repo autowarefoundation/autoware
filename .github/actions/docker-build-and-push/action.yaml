@@ -100,21 +100,6 @@ runs:
         flavor: |
           latest=false
 
-<<<<<<< HEAD
-    - name: Docker meta for autoware:universe-sensing-perception-devel-cuda
-      id: meta-universe-sensing-perception-devel-cuda
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
-        tags: |
-          type=raw,value=universe-sensing-perception-devel-cuda-${{ inputs.platform }}
-          type=raw,value=universe-sensing-perception-devel-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        bake-target: docker-metadata-action-universe-sensing-perception-devel-cuda
-        flavor: |
-          latest=false
-
-=======
->>>>>>> 3f6461b (Revert "integrate")
     - name: Docker meta for autoware:universe-sensing-perception
       id: meta-universe-sensing-perception
       uses: docker/metadata-action@v5
@@ -127,21 +112,6 @@ runs:
         flavor: |
           latest=false
 
-<<<<<<< HEAD
-    - name: Docker meta for autoware:universe-sensing-perception-cuda
-      id: meta-universe-sensing-perception-cuda
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
-        tags: |
-          type=raw,value=universe-sensing-perception-cuda-${{ inputs.platform }}
-          type=raw,value=universe-sensing-perception-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        bake-target: docker-metadata-action-universe-sensing-perception-cuda
-        flavor: |
-          latest=false
-
-=======
->>>>>>> 3f6461b (Revert "integrate")
     - name: Docker meta for autoware:universe-localization-mapping-devel
       id: meta-universe-localization-mapping-devel
       uses: docker/metadata-action@v5
@@ -226,21 +196,6 @@ runs:
         flavor: |
           latest=false
 
-<<<<<<< HEAD
-    - name: Docker meta for autoware:universe-devel-cuda
-      id: meta-universe-devel-cuda
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
-        tags: |
-          type=raw,value=universe-devel-cuda-${{ inputs.platform }}
-          type=raw,value=universe-devel-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        bake-target: docker-metadata-action-universe-devel-cuda
-        flavor: |
-          latest=false
-
-=======
->>>>>>> 3f6461b (Revert "integrate")
     - name: Docker meta for autoware:universe
       id: meta-universe
       uses: docker/metadata-action@v5
@@ -253,22 +208,7 @@ runs:
         flavor: |
           latest=auto
 
-<<<<<<< HEAD
-    - name: Docker meta for autoware:universe-cuda
-      id: meta-universe-cuda
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
-        tags: |
-          type=raw,value=universe-cuda-${{ inputs.platform }}
-          type=raw,value=universe-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        bake-target: docker-metadata-action-universe-cuda
-        flavor: |
-          latest=auto
-
-=======
->>>>>>> 3f6461b (Revert "integrate")
-    - name: Login to Docker Hub
+    - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
