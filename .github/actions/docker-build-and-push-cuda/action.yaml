@@ -1,0 +1,123 @@
+name: docker-build-and-push
+description: ""
+
+inputs:
+  platform:
+    description: ""
+    required: true
+  bake-target:
+    description: ""
+    required: true
+  build-args:
+    description: ""
+    required: false
+  dockerhub-token:
+    description: ""
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Restore ccache
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          root-ccache
+        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
+        restore-keys: |
+          ccache-${{ inputs.platform }}-
+
+    - name: Restore apt-get
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          var-cache-apt
+        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
+        restore-keys: |
+          apt-get-${{ inputs.platform }}-
+
+    - name: Inject cache into docker
+      uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+      with:
+        cache-map: |
+          {
+            "root-ccache": "/root/.ccache",
+            "var-cache-apt": "/var/cache/apt"
+          }
+        skip-extraction: true
+
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Docker meta for autoware:universe-sensing-perception-devel-cuda
+      id: meta-universe-sensing-perception-devel-cuda
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: |
+          type=raw,value=universe-sensing-perception-devel-cuda-${{ inputs.platform }}
+          type=raw,value=universe-sensing-perception-devel-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-sensing-perception-devel-cuda
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:universe-sensing-perception-cuda
+      id: meta-universe-sensing-perception-cuda
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: |
+          type=raw,value=universe-sensing-perception-cuda-${{ inputs.platform }}
+          type=raw,value=universe-sensing-perception-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-sensing-perception-cuda
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:universe-devel-cuda
+      id: meta-universe-devel-cuda
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: |
+          type=raw,value=universe-devel-cuda-${{ inputs.platform }}
+          type=raw,value=universe-devel-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-devel-cuda
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:universe-cuda
+      id: meta-universe-cuda
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ github.repository_owner }}/${{ inputs.bake-target }}
+        tags: |
+          type=raw,value=universe-cuda-${{ inputs.platform }}
+          type=raw,value=universe-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-cuda
+        flavor: |
+          latest=auto
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ github.repository_owner }}
+        password: ${{ inputs.dockerhub-token }}
+
+    - name: Build and Push to GitHub Container Registry
+      uses: docker/bake-action@v5
+      with:
+        push: true
+        files: |
+          docker/docker-bake-cuda.hcl
+          ${{ steps.meta-universe-sensing-perception-devel-cuda.outputs.bake-file }}
+          ${{ steps.meta-universe-sensing-perception-cuda.outputs.bake-file }}
+          ${{ steps.meta-universe-devel-cuda.outputs.bake-file }}
+          ${{ steps.meta-universe-cuda.outputs.bake-file }}
+        provenance: false
+        set: |
+          ${{ inputs.build-args }}

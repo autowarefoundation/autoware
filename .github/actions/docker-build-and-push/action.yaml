@@ -100,6 +100,7 @@ runs:
         flavor: |
           latest=false
 
+<<<<<<< HEAD
     - name: Docker meta for autoware:universe-sensing-perception-devel-cuda
       id: meta-universe-sensing-perception-devel-cuda
       uses: docker/metadata-action@v5
@@ -112,6 +113,8 @@ runs:
         flavor: |
           latest=false
 
+=======
+>>>>>>> 3f6461b (Revert "integrate")
     - name: Docker meta for autoware:universe-sensing-perception
       id: meta-universe-sensing-perception
       uses: docker/metadata-action@v5
@@ -124,6 +127,7 @@ runs:
         flavor: |
           latest=false
 
+<<<<<<< HEAD
     - name: Docker meta for autoware:universe-sensing-perception-cuda
       id: meta-universe-sensing-perception-cuda
       uses: docker/metadata-action@v5
@@ -136,6 +140,8 @@ runs:
         flavor: |
           latest=false
 
+=======
+>>>>>>> 3f6461b (Revert "integrate")
     - name: Docker meta for autoware:universe-localization-mapping-devel
       id: meta-universe-localization-mapping-devel
       uses: docker/metadata-action@v5
@@ -220,6 +226,7 @@ runs:
         flavor: |
           latest=false
 
+<<<<<<< HEAD
     - name: Docker meta for autoware:universe-devel-cuda
       id: meta-universe-devel-cuda
       uses: docker/metadata-action@v5
@@ -232,6 +239,8 @@ runs:
         flavor: |
           latest=false
 
+=======
+>>>>>>> 3f6461b (Revert "integrate")
     - name: Docker meta for autoware:universe
       id: meta-universe
       uses: docker/metadata-action@v5
@@ -244,6 +253,7 @@ runs:
         flavor: |
           latest=auto
 
+<<<<<<< HEAD
     - name: Docker meta for autoware:universe-cuda
       id: meta-universe-cuda
       uses: docker/metadata-action@v5
@@ -256,6 +266,8 @@ runs:
         flavor: |
           latest=auto
 
+=======
+>>>>>>> 3f6461b (Revert "integrate")
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
@@ -272,9 +284,7 @@ runs:
           ${{ steps.meta-base.outputs.bake-file }}
           ${{ steps.meta-core-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception-devel.outputs.bake-file }}
-          ${{ steps.meta-universe-sensing-perception-devel-cuda.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception.outputs.bake-file }}
-          ${{ steps.meta-universe-sensing-perception-cuda.outputs.bake-file }}
           ${{ steps.meta-universe-localization-mapping-devel.outputs.bake-file }}
           ${{ steps.meta-universe-localization-mapping.outputs.bake-file }}
           ${{ steps.meta-universe-planning-control-devel.outputs.bake-file }}
@@ -282,9 +292,7 @@ runs:
           ${{ steps.meta-universe-vehicle-system-devel.outputs.bake-file }}
           ${{ steps.meta-universe-vehicle-system.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
-          ${{ steps.meta-universe-devel-cuda.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
-          ${{ steps.meta-universe-cuda.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}
