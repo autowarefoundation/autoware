@@ -74,5 +74,6 @@ jobs:
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-cuda-${{ github.ref_name }},mode=max
 
       - name: Show disk space
+        if: always()
         run: |
           df -h
