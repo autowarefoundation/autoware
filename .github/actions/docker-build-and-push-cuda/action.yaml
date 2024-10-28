@@ -1,4 +1,4 @@
-name: docker-build-and-push
+name: docker-build-and-push-cuda
 description: ""
 
 inputs:
