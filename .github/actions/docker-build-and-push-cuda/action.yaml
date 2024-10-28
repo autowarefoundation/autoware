@@ -1,5 +1,5 @@
 name: docker-build-and-push-cuda
-description: "Workflow do build and push CUDA images to registry."
+description: Workflow do build and push CUDA images to registry.
 
 inputs:
   platform:
