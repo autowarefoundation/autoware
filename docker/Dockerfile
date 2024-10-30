@@ -100,6 +100,10 @@ ARG ROS_DISTRO
 
 COPY src/universe/autoware.universe/localization /autoware/src/universe/autoware.universe/localization
 COPY src/universe/autoware.universe/map /autoware/src/universe/autoware.universe/map
+COPY src/universe/autoware.universe/launch/tier4_localization_launch /autoware/src/universe/autoware.universe/launch/tier4_localization_launch
+COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
+COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
+COPY src/universe/autoware.universe/system/default_ad_api_helpers/automatic_pose_initializer /autoware/src/universe/autoware.universe/system/default_ad_api_helpers/automatic_pose_initializer
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -126,6 +130,15 @@ COPY src/universe/autoware.universe/map/map_loader /autoware/src/universe/autowa
 COPY src/universe/autoware.universe/map/autoware_map_projection_loader /autoware/src/universe/autoware.universe/map/autoware_map_projection_loader
 COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
 COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
+# Control Launch Dependencies
+COPY src/universe/autoware.universe/launch/tier4_control_launch /autoware/src/universe/autoware.universe/launch/tier4_control_launch
+COPY src/universe/autoware.universe/evaluator/autoware_control_evaluator /autoware/src/universe/autoware.universe/evaluator/autoware_control_evaluator
+# Planning Launch Dependencies
+COPY src/universe/autoware.universe/launch/tier4_planning_launch /autoware/src/universe/autoware.universe/launch/tier4_planning_launch
+COPY src/universe/autoware.universe/evaluator/autoware_evaluator_utils /autoware/src/universe/autoware.universe/evaluator/autoware_evaluator_utils
+COPY src/universe/autoware.universe/evaluator/autoware_planning_evaluator /autoware/src/universe/autoware.universe/evaluator/autoware_planning_evaluator
+COPY src/universe/autoware.universe/vehicle/autoware_external_cmd_converter /autoware/src/universe/autoware.universe/vehicle/autoware_external_cmd_converter
+COPY src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter /autoware/src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -149,6 +162,7 @@ COPY src/universe/autoware.universe/vehicle /autoware/src/universe/autoware.univ
 COPY src/universe/autoware.universe/system /autoware/src/universe/autoware.universe/system
 COPY src/universe/autoware.universe/map/autoware_map_height_fitter /autoware/src/universe/autoware.universe/map/autoware_map_height_fitter
 COPY src/universe/autoware.universe/localization/autoware_pose2twist /autoware/src/universe/autoware.universe/localization/autoware_pose2twist
+COPY src/universe/autoware.universe/launch/tier4_system_launch /autoware/src/universe/autoware.universe/launch/tier4_system_launch
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -309,6 +323,10 @@ RUN --mount=type=ssh \
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/localization,target=/autoware/src/universe/autoware.universe/localization \
   --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/map,target=/autoware/src/universe/autoware.universe/map \
+  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_localization_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_localization_launch \
+  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
+  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions \
+  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/system/default_ad_api_helpers/automatic_pose_initializer,target=/autoware/src/universe/autoware.universe/system/default_ad_api_helpers/automatic_pose_initializer \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
@@ -343,6 +361,15 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
+  # Control Launch Dependencies
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_control_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_control_launch \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/evaluator/autoware_control_evaluator,target=/autoware/src/universe/autoware.universe/evaluator/autoware_control_evaluator \
+  # Planning Launch Dependencies
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_planning_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_planning_launch \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/evaluator/autoware_evaluator_utils,target=/autoware/src/universe/autoware.universe/evaluator/autoware_evaluator_utils \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/evaluator/autoware_planning_evaluator,target=/autoware/src/universe/autoware.universe/evaluator/autoware_planning_evaluator \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/vehicle/autoware_external_cmd_converter,target=/autoware/src/universe/autoware.universe/vehicle/autoware_external_cmd_converter \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter,target=/autoware/src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
@@ -377,6 +404,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/system,target=/autoware/src/universe/autoware.universe/system \
   --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_height_fitter,target=/autoware/src/universe/autoware.universe/map/autoware_map_height_fitter \
   --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/localization/autoware_pose2twist,target=/autoware/src/universe/autoware.universe/localization/autoware_pose2twist \
+  --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_system_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_system_launch \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
