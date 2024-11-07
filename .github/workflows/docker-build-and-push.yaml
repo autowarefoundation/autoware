@@ -69,9 +69,9 @@ jobs:
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
             *.args.LIB_DIR=x86_64
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-cuda-${{ github.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-cuda-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-cuda-${{ github.ref_name }},mode=max
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }},mode=max
 
       - name: Show disk space
         if: always()
