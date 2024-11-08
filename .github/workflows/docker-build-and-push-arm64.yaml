@@ -70,19 +70,6 @@ jobs:
     needs: [load-env, docker-build-and-push]
     runs-on: buildjet-16vcpu-ubuntu-2204-arm
     steps:
-      - name: Check if PR author is the specific user
-        id: author-check
-        run: |
-          PR_AUTHOR=$(jq -r '.pull_request.user.login' "$GITHUB_EVENT_PATH")
-          if [[ "$PR_AUTHOR" == "youtalk" ]]; then
-            echo "$PR_AUTHOR is a target user"
-            echo "author-found=true" >> $GITHUB_OUTPUT
-          else
-            echo "$PR_AUTHOR is not a target user"
-            echo "author-found=false" >> $GITHUB_OUTPUT
-          fi
-        shell: bash
-
       - name: Check out repository
         uses: actions/checkout@v4
 
