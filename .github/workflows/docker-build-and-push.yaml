@@ -63,7 +63,7 @@ jobs:
 
   docker-build-and-push-cuda:
     needs: [load-env, docker-build-and-push]
-    runs-on: buildjet-16vcpu-ubuntu-2204
+    runs-on: ubuntu-22.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -72,6 +72,9 @@ jobs:
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
 
       - name: Get changed files
         id: changed-files
