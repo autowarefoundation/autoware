@@ -14,24 +14,6 @@ jobs:
   docker-build-and-push:
     needs: load-env
     runs-on: buildjet-16vcpu-ubuntu-2204
-    strategy:
-      fail-fast: false
-      matrix:
-        name:
-          - no-cuda
-          - cuda
-        include:
-          - name: no-cuda
-            platform: amd64
-            base_image_env: base_image
-            lib_dir: x86_64
-            setup-args: --no-nvidia
-            tag-suffix: ""
-          - name: cuda
-            platform: amd64
-            base_image_env: base_image
-            lib_dir: x86_64
-            tag-suffix: -cuda
     steps:
       - name: Check if PR author is the specific user
         id: author-check
@@ -67,28 +49,44 @@ jobs:
             ansible/**
             docker/**
 
-      - name: Build 'Autoware'
+      - name: Build 'Autoware' without CUDA
         if: ${{ steps.author-check.outputs.author-found == 'true' ||
           steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/docker-build-and-push
         with:
-          name: ${{ matrix.name }}
-          platform: ${{ matrix.platform }}
+          platform: amd64
           bake-target: autoware
           build-args: |
-            *.platform=linux/${{ matrix.platform }}
+            *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env.outputs[format('{0}', matrix.base_image_env)] }}
-            *.args.SETUP_ARGS=${{ matrix.setup-args }}
-            *.args.LIB_DIR=${{ matrix.lib_dir }}
-            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.head_ref }}
-            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=${{ github.repository }}-buildcache:${{ matrix.name }}-${{ matrix.platform }}-${{ github.head_ref }},mode=max
-          tag-suffix: ${{ matrix.tag-suffix }}
+            *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
+            *.args.LIB_DIR=x86_64
+            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:amd64-${{ github.head_ref }}
+            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:amd64-main
+            *.cache-to=type=registry,ref=${{ github.repository }}-buildcache:amd64-${{ github.head_ref }},mode=max
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build 'Autoware' with CUDA
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.ref_type == 'tag') }}
+        uses: ./.github/actions/docker-build-and-push-cuda
+        with:
+          platform: amd64
+          bake-target: autoware
+          build-args: |
+            *.platform=linux/amd64
+            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
+            *.args.LIB_DIR=x86_64
+            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:amd64-${{ github.head_ref }}
+            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:amd64-main
+            *.cache-to=type=registry,ref=${{ github.repository }}-buildcache:amd64-${{ github.head_ref }},mode=max
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Show disk space
+        if: always()
         run: |
           df -h
