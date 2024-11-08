@@ -1,16 +1,16 @@
 name: docker-build
-description: ""
+description: Workflow do only build images.
 
 inputs:
   platform:
-    description: ""
+    description: Target platform.
     required: true
   cache-tag-suffix:
-    description: ""
+    description: Suffix of the target cache tag.
     required: true
   build-args:
-    description: ""
-    required: true
+    description: Additional build args.
+    required: false
 
 runs:
   using: composite

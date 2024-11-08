@@ -46,7 +46,7 @@ jobs:
         uses: ./.github/actions/docker-build-and-push
         with:
           platform: amd64
-          bake-target: autoware
+          target-image: autoware
           build-args: |
             *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
@@ -63,7 +63,7 @@ jobs:
         uses: ./.github/actions/docker-build-and-push-cuda
         with:
           platform: amd64
-          bake-target: autoware
+          target-image: autoware
           build-args: |
             *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
