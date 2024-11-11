@@ -1,5 +1,5 @@
 name: docker-build-and-push-cuda
-description: Workflow do build and push CUDA images to registry.
+description: Composite action to build and push CUDA images to registry.
 
 inputs:
   platform:
@@ -59,7 +59,7 @@ runs:
         tags: |
           type=raw,value=universe-sensing-perception-devel-cuda-${{ inputs.platform }}
           type=raw,value=universe-sensing-perception-devel-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-sensing-perception-devel-cuda
+        bake-target: docker-metadata-action-universe-sensing-perception-devel-cuda
         flavor: |
           latest=false
 
@@ -71,7 +71,7 @@ runs:
         tags: |
           type=raw,value=universe-sensing-perception-cuda-${{ inputs.platform }}
           type=raw,value=universe-sensing-perception-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-sensing-perception-cuda
+        bake-target: docker-metadata-action-universe-sensing-perception-cuda
         flavor: |
           latest=false
 
@@ -83,7 +83,7 @@ runs:
         tags: |
           type=raw,value=universe-devel-cuda-${{ inputs.platform }}
           type=raw,value=universe-devel-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-devel-cuda
+        bake-target: docker-metadata-action-universe-devel-cuda
         flavor: |
           latest=false
 
@@ -95,7 +95,7 @@ runs:
         tags: |
           type=raw,value=universe-cuda-${{ inputs.platform }}
           type=raw,value=universe-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-cuda
+        bake-target: docker-metadata-action-universe-cuda
         flavor: |
           latest=auto
 

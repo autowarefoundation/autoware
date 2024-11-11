@@ -1,5 +1,5 @@
 name: docker-build-and-push
-description: Workflow do build and push non CUDA images to registry.
+description: Composite action to build and push non CUDA images to registry.
 
 inputs:
   platform:
@@ -72,7 +72,7 @@ runs:
         tags: |
           type=raw,value=base-${{ inputs.platform }}
           type=raw,value=base-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-base
+        bake-target: docker-metadata-action-base
         flavor: |
           latest=false
 
@@ -84,7 +84,7 @@ runs:
         tags: |
           type=raw,value=core-devel-${{ inputs.platform }}
           type=raw,value=core-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-core-devel
+        bake-target: docker-metadata-action-core-devel
         flavor: |
           latest=false
 
@@ -96,7 +96,7 @@ runs:
         tags: |
           type=raw,value=universe-sensing-perception-devel-${{ inputs.platform }}
           type=raw,value=universe-sensing-perception-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-sensing-perception-devel
+        bake-target: docker-metadata-action-universe-sensing-perception-devel
         flavor: |
           latest=false
 
@@ -108,7 +108,7 @@ runs:
         tags: |
           type=raw,value=universe-sensing-perception-${{ inputs.platform }}
           type=raw,value=universe-sensing-perception-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-sensing-perception
+        bake-target: docker-metadata-action-universe-sensing-perception
         flavor: |
           latest=false
 
@@ -120,7 +120,7 @@ runs:
         tags: |
           type=raw,value=universe-localization-mapping-devel-${{ inputs.platform }}
           type=raw,value=universe-localization-mapping-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-localization-mapping-devel
+        bake-target: docker-metadata-action-universe-localization-mapping-devel
         flavor: |
           latest=false
 
@@ -132,7 +132,7 @@ runs:
         tags: |
           type=raw,value=universe-localization-mapping-${{ inputs.platform }}
           type=raw,value=universe-localization-mapping-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-localization-mapping
+        bake-target: docker-metadata-action-universe-localization-mapping
         flavor: |
           latest=false
 
@@ -144,7 +144,7 @@ runs:
         tags: |
           type=raw,value=universe-planning-control-devel-${{ inputs.platform }}
           type=raw,value=universe-planning-control-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-planning-control-devel
+        bake-target: docker-metadata-action-universe-planning-control-devel
         flavor: |
           latest=false
 
@@ -156,7 +156,7 @@ runs:
         tags: |
           type=raw,value=universe-planning-control-${{ inputs.platform }}
           type=raw,value=universe-planning-control-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-planning-control
+        bake-target: docker-metadata-action-universe-planning-control
         flavor: |
           latest=false
 
@@ -168,7 +168,7 @@ runs:
         tags: |
           type=raw,value=universe-vehicle-system-devel-${{ inputs.platform }}
           type=raw,value=universe-vehicle-system-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-vehicle-system-devel
+        bake-target: docker-metadata-action-universe-vehicle-system-devel
         flavor: |
           latest=false
 
@@ -180,7 +180,7 @@ runs:
         tags: |
           type=raw,value=universe-vehicle-system-${{ inputs.platform }}
           type=raw,value=universe-vehicle-system-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-vehicle-system
+        bake-target: docker-metadata-action-universe-vehicle-system
         flavor: |
           latest=false
 
@@ -192,7 +192,7 @@ runs:
         tags: |
           type=raw,value=universe-devel-${{ inputs.platform }}
           type=raw,value=universe-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe-devel
+        bake-target: docker-metadata-action-universe-devel
         flavor: |
           latest=false
 
@@ -204,7 +204,7 @@ runs:
         tags: |
           type=raw,value=universe-${{ inputs.platform }}
           type=raw,value=universe-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        target-image: docker-metadata-action-universe
+        bake-target: docker-metadata-action-universe
         flavor: |
           latest=auto
 

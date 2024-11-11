@@ -1,5 +1,5 @@
 name: docker-build
-description: Workflow do only build images.
+description: Compsite action to build images only.
 
 inputs:
   platform:
