@@ -63,10 +63,9 @@ jobs:
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
             *.args.LIB_DIR=aarch64
-            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:arm64-${{ github.head_ref }}
-            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:arm64-main
-            *.cache-to=type=registry,ref=${{ github.repository }}-buildcache:arm64-${{ github.head_ref }},mode=max
-          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }},mode=max
 
       - name: Build 'Autoware' with CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
@@ -81,10 +80,9 @@ jobs:
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
             *.args.LIB_DIR=aarch64
-            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:arm64-${{ github.head_ref }}
-            *.cache-from=type=registry,ref=${{ github.repository }}-buildcache:arm64-main
-            *.cache-to=type=registry,ref=${{ github.repository }}-buildcache:arm64-${{ github.head_ref }},mode=max
-          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }},mode=max
 
       - name: Show disk space
         if: always()
