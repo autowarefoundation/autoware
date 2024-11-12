@@ -52,6 +52,8 @@ ARG ROS_DISTRO
 
 COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
+COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
+RUN chmod +x /autoware/resolve_rosdep_keys.sh
 WORKDIR /autoware
 
 RUN rm -f /etc/apt/apt.conf.d/docker-clean \
@@ -64,21 +66,13 @@ RUN --mount=type=ssh \
 
 # Generate install package lists
 COPY src/core /autoware/src/core
-RUN rosdep update && rosdep keys --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-core-depend-packages.txt \
     && cat /rosdep-core-depend-packages.txt
 
 COPY src/universe/external /autoware/src/universe/external
 COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
-RUN rosdep keys --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-universe-common-depend-packages.txt \
     && cat /rosdep-universe-common-depend-packages.txt
 
@@ -88,18 +82,10 @@ ARG ROS_DISTRO
 
 COPY src/universe/autoware.universe/perception /autoware/src/universe/autoware.universe/perception
 COPY src/universe/autoware.universe/sensing /autoware/src/universe/autoware.universe/sensing
-RUN rosdep keys --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-universe-sensing-perception-depend-packages.txt \
     && cat /rosdep-universe-sensing-perception-depend-packages.txt
-RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-universe-sensing-perception-exec-depend-packages.txt \
     && cat /rosdep-universe-sensing-perception-exec-depend-packages.txt
 
@@ -109,18 +95,10 @@ ARG ROS_DISTRO
 
 COPY src/universe/autoware.universe/localization /autoware/src/universe/autoware.universe/localization
 COPY src/universe/autoware.universe/map /autoware/src/universe/autoware.universe/map
-RUN rosdep keys --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-universe-localization-mapping-depend-packages.txt \
     && cat /rosdep-universe-localization-mapping-depend-packages.txt
-RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-universe-localization-mapping-exec-depend-packages.txt \
     && cat /rosdep-universe-localization-mapping-exec-depend-packages.txt
 
@@ -135,18 +113,10 @@ COPY src/universe/autoware.universe/map/map_loader /autoware/src/universe/autowa
 COPY src/universe/autoware.universe/map/autoware_map_projection_loader /autoware/src/universe/autoware.universe/map/autoware_map_projection_loader
 COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
 COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
-RUN rosdep keys --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-universe-planning-control-depend-packages.txt \
     && cat /rosdep-universe-planning-control-depend-packages.txt
-RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-universe-planning-control-exec-depend-packages.txt \
     && cat /rosdep-universe-planning-control-exec-depend-packages.txt
 
@@ -158,18 +128,10 @@ COPY src/universe/autoware.universe/vehicle /autoware/src/universe/autoware.univ
 COPY src/universe/autoware.universe/system /autoware/src/universe/autoware.universe/system
 COPY src/universe/autoware.universe/map/autoware_map_height_fitter /autoware/src/universe/autoware.universe/map/autoware_map_height_fitter
 COPY src/universe/autoware.universe/localization/autoware_pose2twist /autoware/src/universe/autoware.universe/localization/autoware_pose2twist
-RUN rosdep keys --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-universe-vehicle-system-depend-packages.txt \
     && cat /rosdep-universe-vehicle-system-depend-packages.txt
-RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-universe-vehicle-system-exec-depend-packages.txt \
     && cat /rosdep-universe-vehicle-system-exec-depend-packages.txt
 
@@ -183,19 +145,11 @@ COPY src/sensor_component /autoware/src/sensor_component
 COPY src/sensor_kit /autoware/src/sensor_kit
 COPY src/universe /autoware/src/universe
 COPY src/vehicle /autoware/src/vehicle
-RUN rosdep keys --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-universe-depend-packages.txt \
     && cat /rosdep-universe-depend-packages.txt
 
-RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-exec-depend-packages.txt \
     && cat /rosdep-exec-depend-packages.txt
 
