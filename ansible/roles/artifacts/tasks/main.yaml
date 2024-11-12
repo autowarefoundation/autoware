@@ -402,29 +402,3 @@
     dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_labels.txt"
     mode: "644"
     checksum: sha256:a2a91f5fe9c2e68e3e3647a272bb9bb25cd07631a1990a3fb15efddce7691131
-
-# tvm_utility
-- name: Create tvm_utility/models directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/tvm_utility/models"
-    mode: "755"
-    state: directory
-
-- name: Download yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz
-  become: true
-  ansible.builtin.get_url:
-    url: https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz
-    dest: "{{ data_dir }}/tvm_utility/yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz"
-    mode: "644"
-    checksum: sha256:66b3ca668e577393b657fbe1ed626538d89ca3adccd5862de6c7fa190238dbca
-
-- name: Create yolo_v2_tiny folder in tvm_utility/models of {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/tvm_utility/models/yolo_v2_tiny"
-    mode: "755"
-    state: directory
-
-- name: Extract yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz
-  ansible.builtin.unarchive:
-    src: "{{ data_dir }}/tvm_utility/yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz"
-    dest: "{{ data_dir }}/tvm_utility/models/yolo_v2_tiny"
