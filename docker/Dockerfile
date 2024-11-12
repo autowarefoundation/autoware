@@ -19,6 +19,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Copy files
 COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
+COPY docker/scripts/cleanup_system.sh /autoware/cleanup_system.sh
 WORKDIR /autoware
 
 # Set up base environment
@@ -424,15 +425,7 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-universe-sensing-perception-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
-  && find / -name "*.o" -type f -delete \
-  && find / -name "*.h" -type f -delete \
-  && find / -name "*.hpp" -type f -delete \
-  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
-    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
-    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
-    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 
@@ -457,15 +450,7 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-universe-sensing-perception-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
-  && find / -name "*.o" -type f -delete \
-  && find / -name "*.h" -type f -delete \
-  && find / -name "*.hpp" -type f -delete \
-  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
-    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
-    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
-    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 
@@ -486,15 +471,7 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-universe-localization-mapping-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
-  && find / -name "*.o" -type f -delete \
-  && find / -name "*.h" -type f -delete \
-  && find / -name "*.hpp" -type f -delete \
-  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
-    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
-    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
-    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
 
@@ -519,15 +496,7 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-universe-planning-control-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
-  && find / -name "*.o" -type f -delete \
-  && find / -name "*.h" -type f -delete \
-  && find / -name "*.hpp" -type f -delete \
-  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
-    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
-    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
-    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
 
@@ -552,15 +521,7 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-universe-vehicle-system-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
-  && find / -name "*.o" -type f -delete \
-  && find / -name "*.h" -type f -delete \
-  && find / -name "*.hpp" -type f -delete \
-  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
-    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
-    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
-    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
 
@@ -585,15 +546,7 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
-  && find / -name "*.o" -type f -delete \
-  && find / -name "*.h" -type f -delete \
-  && find / -name "*.hpp" -type f -delete \
-  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
-    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
-    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
-    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-devel /opt/autoware /opt/autoware
 
@@ -618,15 +571,7 @@ RUN --mount=type=ssh \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
-  && find /usr/lib/$LIB_DIR-linux-gnu -name "*.a" -type f -delete \
-  && find / -name "*.o" -type f -delete \
-  && find / -name "*.h" -type f -delete \
-  && find / -name "*.hpp" -type f -delete \
-  && rm -rf /autoware/ansible /autoware/ansible-galaxy-requirements.yaml /autoware/setup-dev-env.sh /autoware/*.env \
-    /root/.local/pipx /opt/ros/"$ROS_DISTRO"/include /etc/apt/sources.list.d/cuda*.list \
-    /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/nvidia-docker.list \
-    /usr/include /usr/share/doc /usr/lib/gcc /usr/lib/jvm /usr/lib/llvm*
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-devel-cuda /opt/autoware /opt/autoware
 
