@@ -9,6 +9,7 @@
 # Ignore Docker files
 docker
 !docker/etc
+!docker/scripts
 
 # Ignore a part of files under src
 src/**/.*
