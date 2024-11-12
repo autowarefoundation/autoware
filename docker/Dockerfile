@@ -158,6 +158,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
 
+COPY docker/scripts/build_and_clean.sh /autoware/build_and_clean.sh
+RUN chmod +x /autoware/build_and_clean.sh
+
 # Set up development environment and tools
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -177,15 +180,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -209,15 +204,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/external,target=/autoware/src/universe/external \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -254,15 +241,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing,target=/autoware/src/universe/autoware.universe/sensing \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -296,15 +275,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_cuda_utils,target=/autoware/src/universe/autoware.universe/sensing/autoware_cuda_utils \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
 COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 
@@ -330,15 +301,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/map,target=/autoware/src/universe/autoware.universe/map \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
 FROM universe-common-devel AS universe-planning-control-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -364,15 +327,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -398,15 +353,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/localization/autoware_pose2twist,target=/autoware/src/universe/autoware.universe/localization/autoware_pose2twist \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -441,15 +388,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/vehicle,target=/autoware/src/vehicle \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
