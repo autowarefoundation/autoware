@@ -20,6 +20,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
 COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
+RUN chmod +x /autoware/resolve_rosdep_keys.sh
 WORKDIR /autoware
 
 # Set up base environment
