@@ -61,6 +61,39 @@ jobs:
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-main
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }},mode=max
 
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
+
+  docker-build-and-push-cuda:
+    needs: [load-env, docker-build-and-push]
+    runs-on: [self-hosted, linux, ARM64]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            *.env
+            *.repos
+            .github/actions/docker-build-and-push/action.yaml
+            .github/workflows/docker-build-and-push*.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+
       - name: Build 'Autoware' with CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
