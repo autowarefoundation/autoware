@@ -5,7 +5,7 @@ function cleanup_system() {
     local ros_distro=$2
 
     apt-get autoremove -y && rm -rf "$HOME"/.cache &&
-        find /usr/lib/$lib_dir-linux-gnu -name "*.a" -type f -delete &&
+        find /usr/lib/"$lib_dir"-linux-gnu -name "*.a" -type f -delete &&
         find / -name "*.o" -type f -delete &&
         find / -name "*.h" -type f -delete &&
         find / -name "*.hpp" -type f -delete &&
