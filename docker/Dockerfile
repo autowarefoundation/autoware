@@ -20,6 +20,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
 COPY docker/scripts/cleanup_system.sh /autoware/cleanup_system.sh
+RUN chmod +x /autoware/cleanup_system.sh
 WORKDIR /autoware
 
 # Set up base environment
