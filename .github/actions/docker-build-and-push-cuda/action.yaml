@@ -1,20 +1,33 @@
 name: docker-build-and-push-cuda
-description: Workflow do build and push CUDA images to registry.
+description: Composite action to build and push CUDA images to registry.
 
 inputs:
   platform:
-    description: ""
+    description: Target platform.
     required: true
-  bake-target:
-    description: ""
+  target-image:
+    description: Target docker image name in the registry.
     required: true
   build-args:
-    description: ""
+    description: Additional build args.
     required: false
 
 runs:
   using: composite
   steps:
+    - name: Install jq and vcstool
+      run: |
+        sudo apt-get -y update
+        sudo apt-get -y install jq python3-pip
+        pip install --no-cache-dir vcstool
+      shell: bash
+
+    - name: Run vcs import
+      run: |
+        mkdir src
+        vcs import src < autoware.repos
+      shell: bash
+
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -51,11 +64,23 @@ runs:
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       shell: bash
 
+    - name: Docker meta for autoware:base-cuda
+      id: meta-base-cuda
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=base-cuda-${{ inputs.platform }}
+          type=raw,value=base-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-base-cuda
+        flavor: |
+          latest=false
+
     - name: Docker meta for autoware:universe-sensing-perception-devel-cuda
       id: meta-universe-sensing-perception-devel-cuda
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-sensing-perception-devel-cuda-${{ inputs.platform }}
           type=raw,value=universe-sensing-perception-devel-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -67,7 +92,7 @@ runs:
       id: meta-universe-sensing-perception-cuda
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-sensing-perception-cuda-${{ inputs.platform }}
           type=raw,value=universe-sensing-perception-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -79,7 +104,7 @@ runs:
       id: meta-universe-devel-cuda
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-devel-cuda-${{ inputs.platform }}
           type=raw,value=universe-devel-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -91,7 +116,7 @@ runs:
       id: meta-universe-cuda
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-cuda-${{ inputs.platform }}
           type=raw,value=universe-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -112,6 +137,7 @@ runs:
         push: true
         files: |
           docker/docker-bake-cuda.hcl
+          ${{ steps.meta-base-cuda.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception-devel-cuda.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception-cuda.outputs.bake-file }}
           ${{ steps.meta-universe-devel-cuda.outputs.bake-file }}

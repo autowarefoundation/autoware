@@ -1,16 +1,16 @@
 name: docker-build
-description: ""
+description: Composite action to build images only.
 
 inputs:
   platform:
-    description: ""
+    description: Target platform.
     required: true
   cache-tag-suffix:
-    description: ""
+    description: Suffix of the target cache tag.
     required: true
   build-args:
-    description: ""
-    required: true
+    description: Additional build args.
+    required: false
 
 runs:
   using: composite

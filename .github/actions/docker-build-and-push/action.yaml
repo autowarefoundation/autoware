@@ -1,15 +1,15 @@
 name: docker-build-and-push
-description: ""
+description: Composite action to build and push non CUDA images to registry.
 
 inputs:
   platform:
-    description: ""
+    description: Target platform.
     required: true
-  bake-target:
-    description: ""
+  target-image:
+    description: Target docker image name in the registry.
     required: true
   build-args:
-    description: ""
+    description: Additional build args.
     required: false
 
 runs:
@@ -68,7 +68,7 @@ runs:
       id: meta-base
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=base-${{ inputs.platform }}
           type=raw,value=base-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -80,7 +80,7 @@ runs:
       id: meta-core-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=core-devel-${{ inputs.platform }}
           type=raw,value=core-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -92,7 +92,7 @@ runs:
       id: meta-universe-sensing-perception-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-sensing-perception-devel-${{ inputs.platform }}
           type=raw,value=universe-sensing-perception-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -104,7 +104,7 @@ runs:
       id: meta-universe-sensing-perception
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-sensing-perception-${{ inputs.platform }}
           type=raw,value=universe-sensing-perception-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -116,7 +116,7 @@ runs:
       id: meta-universe-localization-mapping-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-localization-mapping-devel-${{ inputs.platform }}
           type=raw,value=universe-localization-mapping-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -128,7 +128,7 @@ runs:
       id: meta-universe-localization-mapping
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-localization-mapping-${{ inputs.platform }}
           type=raw,value=universe-localization-mapping-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -140,7 +140,7 @@ runs:
       id: meta-universe-planning-control-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-planning-control-devel-${{ inputs.platform }}
           type=raw,value=universe-planning-control-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -152,7 +152,7 @@ runs:
       id: meta-universe-planning-control
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-planning-control-${{ inputs.platform }}
           type=raw,value=universe-planning-control-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -164,7 +164,7 @@ runs:
       id: meta-universe-vehicle-system-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-vehicle-system-devel-${{ inputs.platform }}
           type=raw,value=universe-vehicle-system-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -176,7 +176,7 @@ runs:
       id: meta-universe-vehicle-system
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-vehicle-system-${{ inputs.platform }}
           type=raw,value=universe-vehicle-system-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -188,7 +188,7 @@ runs:
       id: meta-universe-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-devel-${{ inputs.platform }}
           type=raw,value=universe-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -200,7 +200,7 @@ runs:
       id: meta-universe
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-${{ inputs.platform }}
           type=raw,value=universe-${{ steps.date.outputs.date }}-${{ inputs.platform }}
