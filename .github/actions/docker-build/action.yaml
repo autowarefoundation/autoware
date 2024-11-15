@@ -8,6 +8,10 @@ inputs:
   cache-tag-suffix:
     description: Suffix of the target cache tag.
     required: true
+  repos:
+    description: Target .repos file.
+    default: autoware.repos
+    required: true
   build-args:
     description: Additional build args.
     required: false
@@ -28,7 +32,7 @@ runs:
     - name: Run vcs import
       run: |
         mkdir src
-        vcs import src < autoware.repos
+        vcs import src < ${{ inputs.repos }}
       shell: bash
 
     - name: Cache ccache
