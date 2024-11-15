@@ -55,6 +55,10 @@ repositories:
     type: git
     url: https://github.com/tier4/muSSP.git
     version: tier4/main
+  universe/external/ndt_omp:
+    type: git
+    url: https://github.com/tier4/ndt_omp.git
+    version: tier4/main
   universe/external/pointcloud_to_laserscan:
     type: git
     url: https://github.com/tier4/pointcloud_to_laserscan.git
