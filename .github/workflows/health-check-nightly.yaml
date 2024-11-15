@@ -24,7 +24,7 @@ jobs:
       github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/load-env.yaml
 
-  docker-build:
+  docker-build-nightly:
     needs: load-env
     runs-on: ubuntu-22.04
     strategy:
