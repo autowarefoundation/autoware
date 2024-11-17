@@ -13,7 +13,7 @@ This role installs optional development tools for Autoware.
 ## Inputs
 
 | Name                            | Required | Description                             |
-|---------------------------------|----------|-----------------------------------------|
+| ------------------------------- | -------- | --------------------------------------- |
 | pre_commit_clang_format_version | true     | The version of clang-format to install. |
 | rosdistro                       | true     | The ROS distribution.                   |
 
