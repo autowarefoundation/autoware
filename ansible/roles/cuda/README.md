@@ -31,7 +31,7 @@ Once the drivers are installed correctly, you may safely restart your system.
 
 Follow these instructions to download and install the CUDA Toolkit.
 
-From: https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#network-repo-installation-for-ubuntu
+From: <https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#network-repo-installation-for-ubuntu>
 
 ```bash
 wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
