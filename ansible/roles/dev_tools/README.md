@@ -13,33 +13,26 @@ This role installs optional development tools for Autoware.
 ## Inputs
 
 | Name          | Required | Description                             |
-| ------------- | -------- | --------------------------------------- |
+|---------------| -------- | --------------------------------------- |
 | clang-version | true     | The version of clang-format to install. |
-| ros-distro    | true     | The ROS distribution.                   |
+| rosdistro     | true     | The ROS distribution.                   |
 
 ## Manual Installation
 
 ```bash
-#!/bin/bash
+# For the environment variables
+wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
 
-# Update package lists
 sudo apt-get update
 
-# Install Git LFS
+sudo apt install python3-pip
+sudo apt-get install -y golang
+sudo apt-get install -y ros-${rosdistro}-plotjuggler-ros
 sudo apt-get install -y git-lfs
 
 # Setup Git LFS
 git lfs install
 
-# Install pre-commit using pip3
 pip3 install pre-commit
-
-# Install a specific version of clang-format using pip3
 pip3 install clang-format==${pre_commit_clang_format_version}
-
-# Install Go
-sudo apt-get install -y golang
-
-# Install PlotJuggler
-sudo apt-get install -y ros-${ROS_DISTRO}-plotjuggler-ros
 ```

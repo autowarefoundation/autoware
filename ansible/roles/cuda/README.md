@@ -1,6 +1,6 @@
 # cuda
 
-This role installs [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) following [this page](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network) and [this page](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions).
+This role installs [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) following [this page](https://developer.nvidia.com/cuda-12-3-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network) and [this page](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions).
 
 This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
@@ -13,22 +13,36 @@ This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
 ## Manual Installation
 
-Follow these instructions to download and install the CUDA Toolkit and the corresponding NVIDIA Driver for Ubuntu 20.04.
+### Version compatibility
 
-For Universe, the `cuda_version` version can also be found in:
-[../../playbooks/universe.yaml](../../playbooks/universe.yaml)
+Autoware currently uses CUDA `12.3` and from this [CUDA Application Compatibility Support Matrix](https://docs.nvidia.com/deploy/cuda-compatibility/#use-the-right-compat-package) that only the NVIDIA driver version `545` is compatible with this version of CUDA.
+
+#### 🛠️ For Advanced Users
+
+⚠️ **Proceed with caution**: Avoid removing essential system components.
+
+To prevent conflicts during NVIDIA installation, we recommend completely removing old NVIDIA Drivers and CUDA by following this guide: [How can I uninstall a NVIDIA driver completely?](https://askubuntu.com/a/206289/761440).
+
+- **Important**: If you remove the previous NVIDIA drivers, ensure you install the recommended versions listed below **before restarting your system**.
+
+Once the drivers are installed correctly, you may safely restart your system.
+
+### CUDA Toolkit and Driver
+
+Follow these instructions to download and install the CUDA Toolkit.
+
+From: https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#network-repo-installation-for-ubuntu
 
 ```bash
 wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
-
-# From: https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#network-repo-installation-for-ubuntu
 
 os=ubuntu2204
 wget https://developer.download.nvidia.com/compute/cuda/repos/$os/$(uname -m)/cuda-keyring_1.1-1_all.deb
 sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
 cuda_version_dashed=$(eval sed -e "s/[.]/-/g" <<< "${cuda_version}")
-sudo apt-get -y install cuda-${cuda_version_dashed}
+sudo apt-get -y install cuda-toolkit-${cuda_version_dashed}
+sudo apt-get install -y cuda-drivers-545
 ```
 
 Perform the post installation actions:
@@ -37,9 +51,13 @@ Perform the post installation actions:
 # Taken from: https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions
 echo 'export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}' >> ~/.bashrc
 echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' >> ~/.bashrc
+```
 
-# Register Vulkan, OpenGL, and OpenCL GPU vendors
+### GPU Vendors
 
+Register Vulkan, OpenGL, and OpenCL GPU vendors following the instructions below.
+
+```bash
 # Create Vulkan directory
 sudo mkdir -p /etc/vulkan/icd.d
 sudo chmod 0755 /etc/vulkan/icd.d
