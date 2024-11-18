@@ -14,6 +14,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}  #test comments
           fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
       - name: Automatic Cherry Pick
-        uses: vendoo/gha-cherry-pick@v1
+        uses: tier4/simple-cherry-pick@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
