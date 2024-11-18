@@ -268,6 +268,8 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-sensing-perception-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_apt.sh
 
+COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
+
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   # TODO(youtalk): Move CUDA related packages into a dedicated directory
@@ -285,8 +287,6 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
-
-COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
