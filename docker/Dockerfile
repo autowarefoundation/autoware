@@ -217,7 +217,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Set up CUDA development environment
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module all --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
