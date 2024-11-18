@@ -4,14 +4,14 @@ on:
     types: [created]
 jobs:
   cherry-pick:
-    name: Cherry Pick
+    name: Cherry Pick  #test comments 2222
     if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/cherry-pick')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the latest code
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}  #test comments
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
       - name: Automatic Cherry Pick
         uses: tier4/simple-cherry-pick@v1
