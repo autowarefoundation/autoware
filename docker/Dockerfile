@@ -56,6 +56,8 @@ ARG ROS_DISTRO
 
 COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
+COPY docker/scripts/cleanup_aptget.sh /autoware/cleanup_aptget.sh
+RUN chmod +x /autoware/cleanup_aptget.sh
 COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
 RUN chmod +x /autoware/resolve_rosdep_keys.sh
 WORKDIR /autoware
