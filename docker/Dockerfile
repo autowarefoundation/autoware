@@ -277,7 +277,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_cuda_utils,target=/autoware/src/universe/autoware.universe/sensing/autoware_cuda_utils \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware true
 
 COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 
