@@ -8,8 +8,8 @@ ARG ROS_DISTRO
 # Copy files
 COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
-COPY docker/scripts/cleanup_aptget.sh /autoware/cleanup_aptget.sh
-RUN chmod +x /autoware/cleanup_aptget.sh
+COPY docker/scripts/cleanup_apt.sh /autoware/cleanup_apt.sh
+RUN chmod +x /autoware/cleanup_apt.sh
 COPY docker/scripts/cleanup_system.sh /autoware/cleanup_system.sh
 RUN chmod +x /autoware/cleanup_system.sh
 WORKDIR /autoware
@@ -21,7 +21,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
   gosu \
   ssh \
-  && /autoware/cleanup_aptget.sh \
+  && /autoware/cleanup_apt.sh \
   && mkdir -p ~/.ssh \
   && ssh-keyscan github.com >> ~/.ssh/known_hosts
 
@@ -30,7 +30,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module base --no-nvidia --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
-  && /autoware/cleanup_aptget.sh \
+  && /autoware/cleanup_apt.sh \
   && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
 
 # Create entrypoint
@@ -47,7 +47,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module base --download-artifacts --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
-  && /autoware/cleanup_aptget.sh true
+  && /autoware/cleanup_apt.sh true
 
 # hadolint ignore=DL3006
 FROM $BASE_IMAGE AS rosdep-depend
@@ -56,8 +56,8 @@ ARG ROS_DISTRO
 
 COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
-COPY docker/scripts/cleanup_aptget.sh /autoware/cleanup_aptget.sh
-RUN chmod +x /autoware/cleanup_aptget.sh
+COPY docker/scripts/cleanup_apt.sh /autoware/cleanup_apt.sh
+RUN chmod +x /autoware/cleanup_apt.sh
 COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
 RUN chmod +x /autoware/resolve_rosdep_keys.sh
 WORKDIR /autoware
@@ -68,7 +68,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y rosdep \
   && pip uninstall -y ansible ansible-core \
-  && /autoware/cleanup_aptget.sh
+  && /autoware/cleanup_apt.sh
 
 # Generate install package lists
 COPY src/core /autoware/src/core
@@ -173,7 +173,7 @@ RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers openadkit \
   && ./setup-dev-env.sh -y --module dev-tools openadkit \
   && pip uninstall -y ansible ansible-core \
-  && /autoware/cleanup_aptget.sh
+  && /autoware/cleanup_apt.sh
 
 # Install rosdep dependencies
 COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
@@ -181,7 +181,7 @@ COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depe
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_aptget.sh
+  && /autoware/cleanup_apt.sh
 
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
@@ -203,7 +203,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-common-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_aptget.sh
+  && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -224,7 +224,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module all --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
-  && /autoware/cleanup_aptget.sh true
+  && /autoware/cleanup_apt.sh true
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -241,7 +241,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-sensing-perception-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_aptget.sh
+  && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -266,7 +266,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-sensing-perception-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_aptget.sh
+  && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -303,7 +303,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-localization-mapping-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_aptget.sh
+  && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -325,7 +325,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-planning-control-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_aptget.sh
+  && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -355,7 +355,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-vehicle-system-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_aptget.sh
+  && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -382,7 +382,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_aptget.sh
+  && /autoware/cleanup_apt.sh
 
 COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
@@ -416,7 +416,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_aptget.sh
+  && /autoware/cleanup_apt.sh
 
 COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 COPY --from=universe-devel /opt/autoware /opt/autoware
