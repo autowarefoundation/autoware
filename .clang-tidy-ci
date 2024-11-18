@@ -225,6 +225,9 @@ WarningsAsErrors: "
 
 HeaderFilterRegex: ^(?!\/usr)(?!\/opt)
 
+ExtraArgs:
+  - -std=c++17
+
 CheckOptions:
   - key: bugprone-argument-comment.CommentBoolLiterals
     value: "0"
