@@ -7,6 +7,7 @@ function build_and_clean() {
 
     local cmake_args=" -Wno-dev --no-warn-unused-cli"
     if [ "$cuda_image" = true ]; then
+        # cspell: ignore DFORCE
         cmake_args="$cmake_args -DFORCE_CUDA=1"
     fi
 
