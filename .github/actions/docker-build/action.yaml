@@ -39,7 +39,7 @@ runs:
 
     - name: Cache ccache
       uses: actions/cache@v4
-      if: ${{ github.ref == 'refs/heads/main' && inputs.repos == 'autoware.repos' }}
+      if: ${{ github.ref == 'refs/heads/main' && inputs.repos == ['autoware.repos'] }}
       id: cache-ccache
       with:
         path: |
@@ -50,7 +50,7 @@ runs:
 
     - name: Cache apt-get
       uses: actions/cache@v4
-      if: ${{ github.ref == 'refs/heads/main' && inputs.repos == 'autoware.repos' }}
+      if: ${{ github.ref == 'refs/heads/main' && inputs.repos == ['autoware.repos'] }}
       id: cache-apt-get
       with:
         path: |
@@ -61,7 +61,7 @@ runs:
 
     - name: Restore ccache
       uses: actions/cache/restore@v4
-      if: ${{ github.ref != 'refs/heads/main' || inputs.repos != 'autoware.repos' }}
+      if: ${{ github.ref != 'refs/heads/main' || inputs.repos != ['autoware.repos'] }}
       with:
         path: |
           root-ccache
@@ -71,7 +71,7 @@ runs:
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
-      if: ${{ github.ref != 'refs/heads/main' || inputs.repos != 'autoware.repos' }}
+      if: ${{ github.ref != 'refs/heads/main' || inputs.repos != ['autoware.repos'] }}
       with:
         path: |
           var-cache-apt
