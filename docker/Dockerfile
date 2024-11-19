@@ -222,7 +222,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Set up CUDA development environment
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module all --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit \
   && pip uninstall -y ansible ansible-core \
   && /autoware/cleanup_apt.sh true
 
@@ -268,6 +268,8 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-sensing-perception-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_apt.sh
 
+COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
+
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   # TODO(youtalk): Move CUDA related packages into a dedicated directory
@@ -285,8 +287,6 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
-
-COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
