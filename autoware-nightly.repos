@@ -27,7 +27,6 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/single_lidar_sensor_kit_launch.git
     version: main
-  # vehicle
   vehicle/sample_vehicle_launch:
     type: git
     url: https://github.com/autowarefoundation/sample_vehicle_launch.git
