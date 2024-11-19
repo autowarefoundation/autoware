@@ -10,7 +10,7 @@ inputs:
     required: true
   additional-repos:
     description: Additional target .repos file.
-    default: ''
+    default: ""
     required: false
   build-args:
     description: Additional build args.
