@@ -41,6 +41,7 @@ repositories:
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Migrate to AD API
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
+    # TODO(youtalk): Use version tag instead
     version: 3de19bc5b554d4cecef2240da3c33434379ccb54
   universe/external/tier4_autoware_msgs:
     type: git
