@@ -36,8 +36,8 @@ repositories:
   # universe
   universe/autoware.universe:
     type: git
-    url: https://github.com/youtalk/autoware.universe.git
-    version: install-perception-utils-include
+    url: https://github.com/autowarefoundation/autoware.universe.git
+    version: main
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Migrate to AD API
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
