@@ -1,0 +1,37 @@
+repositories:
+  core/autoware.core:
+    type: git
+    url: https://github.com/autowarefoundation/autoware.core.git
+    version: main
+  universe/autoware.universe:
+    type: git
+    url: https://github.com/autowarefoundation/autoware.universe.git
+    version: main
+  launcher/autoware_launch:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_launch.git
+    version: main
+  sensor_kit/sample_sensor_kit_launch:
+    type: git
+    url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
+    version: main
+  sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
+    type: git
+    url: https://github.com/tier4/awsim_sensor_kit_launch.git
+    version: main
+  sensor_kit/awsim_labs_sensor_kit_launch:
+    type: git
+    url: https://github.com/autowarefoundation/awsim_labs_sensor_kit_launch.git
+    version: main
+  sensor_kit/single_lidar_sensor_kit_launch:
+    type: git
+    url: https://github.com/autowarefoundation/single_lidar_sensor_kit_launch.git
+    version: main
+  vehicle/sample_vehicle_launch:
+    type: git
+    url: https://github.com/autowarefoundation/sample_vehicle_launch.git
+    version: main
+  vehicle/awsim_labs_vehicle_launch:
+    type: git
+    url: https://github.com/autowarefoundation/awsim_labs_vehicle_launch.git
+    version: main

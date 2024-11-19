@@ -1,0 +1,58 @@
+name: health-check-nightly
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+  schedule:
+    - cron: 0 6 * * *
+  workflow_dispatch:
+
+jobs:
+  label-check:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
+    with:
+      label: tag:run-health-check
+
+  load-env:
+    needs: label-check
+    if: ${{ needs.label-check.outputs.result == 'true' ||
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/load-env.yaml
+
+  docker-build-nightly:
+    needs: load-env
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+
+      - name: Build 'Autoware'
+        uses: ./.github/actions/docker-build
+        with:
+          platform: amd64
+          cache-tag-suffix: nightly
+          additional-repos: autoware-nightly.repos
+          build-args: |
+            ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
+            LIB_DIR=x86_64
+
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
