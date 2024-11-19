@@ -8,10 +8,10 @@ inputs:
   cache-tag-suffix:
     description: Suffix of the target cache tag.
     required: true
-  repos:
-    description: Target .repos file.
-    default: autoware.repos
-    required: true
+  additional-repos:
+    description: Additional target .repos file.
+    default: ""
+    required: false
   build-args:
     description: Additional build args.
     required: false
@@ -32,12 +32,18 @@ runs:
     - name: Run vcs import
       run: |
         mkdir src
-        vcs import src < ${{ inputs.repos }}
+        vcs import src < autoware.repos
+      shell: bash
+
+    - name: Import additional repositories
+      if: ${{ inputs.additional-repos != '' }}
+      run: |
+        vcs import src < ${{ inputs.additional-repos }}
       shell: bash
 
     - name: Cache ccache
       uses: actions/cache@v4
-      if: ${{ github.ref == 'refs/heads/main' }}
+      if: ${{ github.ref == 'refs/heads/main' && inputs.additional-repos == '' }}
       id: cache-ccache
       with:
         path: |
@@ -48,7 +54,7 @@ runs:
 
     - name: Cache apt-get
       uses: actions/cache@v4
-      if: ${{ github.ref == 'refs/heads/main' }}
+      if: ${{ github.ref == 'refs/heads/main' && inputs.additional-repos == '' }}
       id: cache-apt-get
       with:
         path: |
@@ -59,7 +65,7 @@ runs:
 
     - name: Restore ccache
       uses: actions/cache/restore@v4
-      if: ${{ github.ref != 'refs/heads/main' }}
+      if: ${{ github.ref != 'refs/heads/main' || inputs.additional-repos != '' }}
       with:
         path: |
           root-ccache
@@ -69,7 +75,7 @@ runs:
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
-      if: ${{ github.ref != 'refs/heads/main' }}
+      if: ${{ github.ref != 'refs/heads/main' || inputs.additional-repos != '' }}
       with:
         path: |
           var-cache-apt

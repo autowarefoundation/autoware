@@ -5,6 +5,15 @@ FROM $BASE_IMAGE AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
+# Copy files
+COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
+COPY ansible/ /autoware/ansible/
+COPY docker/scripts/cleanup_apt.sh /autoware/cleanup_apt.sh
+RUN chmod +x /autoware/cleanup_apt.sh
+COPY docker/scripts/cleanup_system.sh /autoware/cleanup_system.sh
+RUN chmod +x /autoware/cleanup_system.sh
+WORKDIR /autoware
+
 # Install apt packages and add GitHub to known hosts for private repositories
 RUN rm -f /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
@@ -12,23 +21,16 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
   gosu \
   ssh \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
+  && /autoware/cleanup_apt.sh \
   && mkdir -p ~/.ssh \
   && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-# Copy files
-COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
-COPY ansible/ /autoware/ansible/
-COPY docker/scripts/cleanup_system.sh /autoware/cleanup_system.sh
-RUN chmod +x /autoware/cleanup_system.sh
-WORKDIR /autoware
 
 # Set up base environment
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module base --no-nvidia --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache \
+  && /autoware/cleanup_apt.sh \
   && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
 
 # Create entrypoint
@@ -45,7 +47,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module base --download-artifacts --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache
+  && /autoware/cleanup_apt.sh true
 
 # hadolint ignore=DL3006
 FROM $BASE_IMAGE AS rosdep-depend
@@ -54,6 +56,8 @@ ARG ROS_DISTRO
 
 COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
+COPY docker/scripts/cleanup_apt.sh /autoware/cleanup_apt.sh
+RUN chmod +x /autoware/cleanup_apt.sh
 COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
 RUN chmod +x /autoware/resolve_rosdep_keys.sh
 WORKDIR /autoware
@@ -64,7 +68,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y rosdep \
   && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache
+  && /autoware/cleanup_apt.sh
 
 # Generate install package lists
 COPY src/core /autoware/src/core
@@ -111,7 +115,7 @@ ARG ROS_DISTRO
 COPY src/universe/autoware.universe/control /autoware/src/universe/autoware.universe/control
 COPY src/universe/autoware.universe/planning /autoware/src/universe/autoware.universe/planning
 # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
-COPY src/universe/autoware.universe/map/map_loader /autoware/src/universe/autoware.universe/map/map_loader
+COPY src/universe/autoware.universe/map/autoware_map_loader /autoware/src/universe/autoware.universe/map/autoware_map_loader
 COPY src/universe/autoware.universe/map/autoware_map_projection_loader /autoware/src/universe/autoware.universe/map/autoware_map_projection_loader
 COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
 COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
@@ -169,7 +173,7 @@ RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers openadkit \
   && ./setup-dev-env.sh -y --module dev-tools openadkit \
   && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache
+  && /autoware/cleanup_apt.sh
 
 # Install rosdep dependencies
 COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
@@ -177,7 +181,7 @@ COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depe
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache
+  && /autoware/cleanup_apt.sh
 
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
@@ -196,9 +200,10 @@ ENV CCACHE_DIR="/root/.ccache"
 COPY --from=rosdep-depend /rosdep-universe-common-depend-packages.txt /tmp/rosdep-universe-common-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-common-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+  && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -217,9 +222,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Set up CUDA development environment
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module all --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit \
   && pip uninstall -y ansible ansible-core \
-  && apt-get autoremove -y && rm -rf "$HOME"/.cache
+  && /autoware/cleanup_apt.sh true
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -233,9 +238,10 @@ ENV CCACHE_DIR="/root/.ccache"
 COPY --from=rosdep-universe-sensing-perception-depend /rosdep-universe-sensing-perception-depend-packages.txt /tmp/rosdep-universe-sensing-perception-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-sensing-perception-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+  && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -257,9 +263,12 @@ ENV CCACHE_DIR="/root/.ccache"
 COPY --from=rosdep-universe-sensing-perception-depend /rosdep-universe-sensing-perception-depend-packages.txt /tmp/rosdep-universe-sensing-perception-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-sensing-perception-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+  && /autoware/cleanup_apt.sh
+
+COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -279,8 +288,6 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
-COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
-
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
@@ -293,9 +300,10 @@ ENV CCACHE_DIR="/root/.ccache"
 COPY --from=rosdep-universe-localization-mapping-depend /rosdep-universe-localization-mapping-depend-packages.txt /tmp/rosdep-universe-localization-mapping-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-localization-mapping-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+  && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -314,16 +322,17 @@ ENV CCACHE_DIR="/root/.ccache"
 COPY --from=rosdep-universe-planning-control-depend /rosdep-universe-planning-control-depend-packages.txt /tmp/rosdep-universe-planning-control-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-planning-control-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+  && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/planning,target=/autoware/src/universe/autoware.universe/planning \
   # TODO(youtalk): Remove --mount options when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
-  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/map_loader,target=/autoware/src/universe/autoware.universe/map/map_loader \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_loader \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
@@ -343,9 +352,10 @@ ENV CCACHE_DIR="/root/.ccache"
 COPY --from=rosdep-universe-vehicle-system-depend /rosdep-universe-vehicle-system-depend-packages.txt /tmp/rosdep-universe-vehicle-system-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-vehicle-system-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+  && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -369,9 +379,10 @@ ENV CCACHE_DIR="/root/.ccache"
 COPY --from=rosdep-universe-depend /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+  && /autoware/cleanup_apt.sh
 
 COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
@@ -402,9 +413,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 COPY --from=rosdep-universe-depend /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+  && /autoware/cleanup_apt.sh
 
 COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 COPY --from=universe-devel /opt/autoware /opt/autoware

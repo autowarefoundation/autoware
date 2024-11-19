@@ -46,7 +46,7 @@ jobs:
         with:
           platform: amd64
           cache-tag-suffix: nightly
-          repos: autoware-nightly.repos
+          additional-repos: autoware-nightly.repos
           build-args: |
             ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
