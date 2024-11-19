@@ -33,9 +33,7 @@ runs:
       run: |
         mkdir src
         vcs import src < autoware.repos
-        if [ -n "${{ inputs.additional-repos }}" ]; then
-          vcs import src < ${{ inputs.additional-repos }}
-        fi
+        if [ -n "${{ inputs.additional-repos }}" ]; then vcs import src < ${{ inputs.additional-repos }} fi
       shell: bash
 
     - name: Cache ccache
