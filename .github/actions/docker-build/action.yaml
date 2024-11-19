@@ -10,7 +10,7 @@ inputs:
     required: true
   repos:
     description: Target .repos file.
-    default: autoware.repos
+    default: [autoware.repos]
     required: true
   build-args:
     description: Additional build args.
@@ -32,7 +32,9 @@ runs:
     - name: Run vcs import
       run: |
         mkdir src
-        vcs import src < ${{ inputs.repos }}
+        for repos_file in ${{ inputs.repos }}; do
+          vcs import src < $repos_file
+        done
       shell: bash
 
     - name: Cache ccache
