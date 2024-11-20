@@ -9,6 +9,7 @@ group "default" {
     "universe-planning-control",
     "universe-vehicle-system-devel",
     "universe-vehicle-system",
+    "universe-visualization",
     "universe-devel",
     "universe"
   ]
@@ -24,6 +25,7 @@ target "docker-metadata-action-universe-planning-control-devel" {}
 target "docker-metadata-action-universe-planning-control" {}
 target "docker-metadata-action-universe-vehicle-system-devel" {}
 target "docker-metadata-action-universe-vehicle-system" {}
+target "docker-metadata-action-universe-visualization" {}
 target "docker-metadata-action-universe-devel" {}
 target "docker-metadata-action-universe" {}
 
@@ -79,6 +81,12 @@ target "universe-vehicle-system" {
   inherits = ["docker-metadata-action-universe-vehicle-system"]
   dockerfile = "docker/Dockerfile"
   target = "universe-vehicle-system"
+}
+
+target "universe-visualization" {
+  inherits = ["docker-metadata-action-universe-visualization"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-visualization"
 }
 
 target "universe-devel" {
