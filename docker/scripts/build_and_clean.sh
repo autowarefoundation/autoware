@@ -5,6 +5,7 @@ function build_and_clean() {
     local install_base=$2
     local colcon_build_args=$3
 
+    # shellcheck disable=SC2086
     du -sh "$ccache_dir" && ccache -s &&
         colcon build --cmake-args \
             " -Wno-dev" \
