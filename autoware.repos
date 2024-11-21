@@ -29,7 +29,7 @@ repositories:
   core/autoware_lanelet2_extension:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
-    version: 0.6.1
+    version: 0.6.2
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
