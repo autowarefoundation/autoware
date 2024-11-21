@@ -272,21 +272,11 @@ COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  # TODO(youtalk): Move CUDA related packages into a dedicated directory
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_bytetrack,target=/autoware/src/universe/autoware.universe/perception/autoware_bytetrack \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_apollo_instance_segmentation,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_apollo_instance_segmentation \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_centerpoint,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_centerpoint \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_lidar_transfusion,target=/autoware/src/universe/autoware.universe/perception/autoware_lidar_transfusion \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_shape_estimation,target=/autoware/src/universe/autoware.universe/perception/autoware_shape_estimation \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_classifier,target=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_classifier \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_common,target=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_common \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_yolox,target=/autoware/src/universe/autoware.universe/perception/autoware_tensorrt_yolox \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_classifier,target=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_classifier \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_fine_detector,target=/autoware/src/universe/autoware.universe/perception/autoware_traffic_light_fine_detector \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing/cuda_utils,target=/autoware/src/universe/autoware.universe/sensing/cuda_utils \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception,target=/autoware/src/universe/autoware.universe/perception \
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing,target=/autoware/src/universe/autoware.universe/sensing \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware "--packages-above-and-dependencies autoware_tensorrt_common"
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
