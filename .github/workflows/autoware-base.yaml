@@ -14,7 +14,7 @@ jobs:
 
   docker-build-and-push-base:
     needs: load-env
-    runs-on: ubuntu-22.04
+    runs-on: buildjet-16vcpu-ubuntu-2204
     steps:
       - name: Check out this repository
         uses: actions/checkout@v4
