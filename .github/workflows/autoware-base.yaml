@@ -33,5 +33,6 @@ jobs:
         with:
           target-image: autoware-base
           build-args: |
+            *.platform=linux/amd64,linux/arm64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
