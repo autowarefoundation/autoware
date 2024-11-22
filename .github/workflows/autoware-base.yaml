@@ -2,7 +2,7 @@ name: autoware-base
 
 on:
   schedule:
-    - cron: 0 0 15 * *  # every 15th of the month
+    - cron: 0 0 15 * * # every 15th of the month
   workflow_dispatch:
 
 jobs:
