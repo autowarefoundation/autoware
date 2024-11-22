@@ -37,7 +37,7 @@ runs:
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=latest-cuda
+          type=raw,value=cuda-latest
           type=raw,value=cuda-${{ steps.date.outputs.date }}
         bake-target: docker-metadata-action-base-cuda
         flavor: |
