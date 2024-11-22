@@ -109,7 +109,7 @@ jobs:
             *.args.LIB_DIR=aarch64
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }},mode=max
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }}
 
       - name: Show disk space
         if: always()
