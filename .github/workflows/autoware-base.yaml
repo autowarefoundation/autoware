@@ -19,12 +19,6 @@ jobs:
       - name: Check out this repository
         uses: actions/checkout@v4
 
-      - name: Check out autowarefoundation/autoware repository
-        uses: actions/checkout@v4
-        with:
-          repository: autowarefoundation/autoware
-          path: 'autoware'
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
