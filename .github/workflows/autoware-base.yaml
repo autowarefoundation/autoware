@@ -12,7 +12,7 @@ jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
 
-  docker-build-and-push:
+  docker-build-and-push-base:
     needs: load-env
     runs-on: ubuntu-22.04
     steps:
