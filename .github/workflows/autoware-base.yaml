@@ -1,0 +1,38 @@
+name: autoware-base
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+  workflow_dispatch:
+
+jobs:
+  load-env:
+    uses: ./.github/workflows/load-env.yaml
+
+  docker-build-and-push:
+    needs: load-env
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v4
+
+      - name: Check out autowarefoundation/autoware repository
+        uses: actions/checkout@v4
+        with:
+          repository: autowarefoundation/autoware
+          path: 'autoware'
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Build Autoware's base images
+        uses: ./.github/actions/docker-build-and-push-base
+        with:
+          name: autoware-base
+          target-image: docker-bake-base.hcl
+          build-args: |
+            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
+          tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
