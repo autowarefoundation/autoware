@@ -31,9 +31,7 @@ jobs:
       - name: Build Autoware's base images
         uses: ./.github/actions/docker-build-and-push-base
         with:
-          name: autoware-base
-          target-image: docker-bake-base.hcl
+          target-image: autoware-base
           build-args: |
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
-          tag-prefix: ${{ needs.load-env.outputs.rosdistro }}
