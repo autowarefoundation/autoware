@@ -31,7 +31,7 @@ runs:
         flavor: |
           latest=true
 
-    - name: Docker meta for autoware-base:latest-cuda
+    - name: Docker meta for autoware-base:cuda-latest
       id: meta-base-cuda
       uses: docker/metadata-action@v5
       with:
