@@ -10,6 +10,8 @@ COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /auto
 COPY ansible/ /autoware/ansible/
 COPY docker/scripts/cleanup_apt.sh /autoware/cleanup_apt.sh
 RUN chmod +x /autoware/cleanup_apt.sh
+COPY docker/scripts/cleanup_system.sh /autoware/cleanup_system.sh
+RUN chmod +x /autoware/cleanup_system.sh
 WORKDIR /autoware
 
 # Install apt packages and add GitHub to known hosts for private repositories
