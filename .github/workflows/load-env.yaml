@@ -28,5 +28,7 @@ jobs:
       - name: Set env
         id: set-env
         run: |
-          echo "base_image=${{ env.base_image }}" >> $GITHUB_OUTPUT
           echo "rosdistro=${{ env.rosdistro }}" >> $GITHUB_OUTPUT
+          echo "base_image=${{ env.base_image }}" >> $GITHUB_OUTPUT
+          echo "autoware_base_image=${{ env.autoware_base_image }}" >> $GITHUB_OUTPUT
+          echo "autoware_base_cuda_image=${{ env.autoware_base_cuda_image }}" >> $GITHUB_OUTPUT
