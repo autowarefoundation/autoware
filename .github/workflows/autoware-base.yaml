@@ -16,6 +16,9 @@ jobs:
       - name: Check out this repository
         uses: actions/checkout@v4
 
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+
       - name: Build Autoware's base images
         uses: ./.github/actions/docker-build-and-push-base
         with:
@@ -31,6 +34,9 @@ jobs:
     steps:
       - name: Check out this repository
         uses: actions/checkout@v4
+
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
