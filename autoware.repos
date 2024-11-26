@@ -76,6 +76,10 @@ repositories:
     type: git
     url: https://github.com/tier4/glog.git
     version: v0.6.0_t4-ros
+  universe/external/trt_batched_nms:
+    type: git
+    url: https://github.com/autowarefoundation/trt_batched_nms.git
+    version: main
   # launcher
   launcher/autoware_launch:
     type: git
