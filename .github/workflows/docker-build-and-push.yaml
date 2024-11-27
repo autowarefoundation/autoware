@@ -65,7 +65,7 @@ jobs:
 
   docker-build-and-push-cuda:
     needs: [load-env, docker-build-and-push]
-    runs-on: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
+    runs-on: ubuntu-22.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
