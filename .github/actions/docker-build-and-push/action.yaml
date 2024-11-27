@@ -26,6 +26,7 @@ runs:
       run: |
         mkdir src
         vcs import src < autoware.repos
+        vcs import src < simulator.repos
       shell: bash
 
     - name: Setup Docker Buildx
@@ -208,6 +209,18 @@ runs:
         flavor: |
           latest=auto
 
+    - name: Docker meta for simulator-visualizer
+      id: meta-simulator-visualizer
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/simulator-visualizer
+        tags: |
+          type=raw,value=simulator-visualizer-${{ inputs.platform }}
+          type=raw,value=simulator-visualizer-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+        bake-target: docker-metadata-action-simulator-visualizer
+        flavor: |
+          latest=false
+
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
@@ -233,6 +246,7 @@ runs:
           ${{ steps.meta-universe-vehicle-system.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
+          ${{ steps.meta-simulator-visualizer.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}
