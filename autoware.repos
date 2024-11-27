@@ -38,7 +38,7 @@ repositories:
   universe/autoware.universe:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
-    version: main
+    version: 0.39.0
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Migrate to AD API and remove this repository entry.
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
@@ -80,7 +80,7 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
-    version: main
+    version: 0.39.0
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
