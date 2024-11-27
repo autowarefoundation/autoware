@@ -72,14 +72,14 @@ RUN --mount=type=ssh \
 # Generate install package lists
 COPY src/core /autoware/src/core
 RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-core-depend-packages.txt \
-    && cat /rosdep-core-depend-packages.txt
+  > /rosdep-core-depend-packages.txt \
+  && cat /rosdep-core-depend-packages.txt
 
 COPY src/universe/external /autoware/src/universe/external
 COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-common-depend-packages.txt \
-    && cat /rosdep-universe-common-depend-packages.txt
+  > /rosdep-universe-common-depend-packages.txt \
+  && cat /rosdep-universe-common-depend-packages.txt
 
 FROM rosdep-depend AS rosdep-universe-sensing-perception-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -88,11 +88,11 @@ ARG ROS_DISTRO
 COPY src/universe/autoware.universe/perception /autoware/src/universe/autoware.universe/perception
 COPY src/universe/autoware.universe/sensing /autoware/src/universe/autoware.universe/sensing
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-sensing-perception-depend-packages.txt \
-    && cat /rosdep-universe-sensing-perception-depend-packages.txt
+  > /rosdep-universe-sensing-perception-depend-packages.txt \
+  && cat /rosdep-universe-sensing-perception-depend-packages.txt
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-sensing-perception-exec-depend-packages.txt \
-    && cat /rosdep-universe-sensing-perception-exec-depend-packages.txt
+  > /rosdep-universe-sensing-perception-exec-depend-packages.txt \
+  && cat /rosdep-universe-sensing-perception-exec-depend-packages.txt
 
 FROM rosdep-depend AS rosdep-universe-localization-mapping-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -101,11 +101,11 @@ ARG ROS_DISTRO
 COPY src/universe/autoware.universe/localization /autoware/src/universe/autoware.universe/localization
 COPY src/universe/autoware.universe/map /autoware/src/universe/autoware.universe/map
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-localization-mapping-depend-packages.txt \
-    && cat /rosdep-universe-localization-mapping-depend-packages.txt
+  > /rosdep-universe-localization-mapping-depend-packages.txt \
+  && cat /rosdep-universe-localization-mapping-depend-packages.txt
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-localization-mapping-exec-depend-packages.txt \
-    && cat /rosdep-universe-localization-mapping-exec-depend-packages.txt
+  > /rosdep-universe-localization-mapping-exec-depend-packages.txt \
+  && cat /rosdep-universe-localization-mapping-exec-depend-packages.txt
 
 FROM rosdep-depend AS rosdep-universe-planning-control-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -119,11 +119,11 @@ COPY src/universe/autoware.universe/map/autoware_map_projection_loader /autoware
 COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
 COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-planning-control-depend-packages.txt \
-    && cat /rosdep-universe-planning-control-depend-packages.txt
+  > /rosdep-universe-planning-control-depend-packages.txt \
+  && cat /rosdep-universe-planning-control-depend-packages.txt
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-planning-control-exec-depend-packages.txt \
-    && cat /rosdep-universe-planning-control-exec-depend-packages.txt
+  > /rosdep-universe-planning-control-exec-depend-packages.txt \
+  && cat /rosdep-universe-planning-control-exec-depend-packages.txt
 
 FROM rosdep-depend AS rosdep-universe-vehicle-system-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -134,11 +134,11 @@ COPY src/universe/autoware.universe/system /autoware/src/universe/autoware.unive
 COPY src/universe/autoware.universe/map/autoware_map_height_fitter /autoware/src/universe/autoware.universe/map/autoware_map_height_fitter
 COPY src/universe/autoware.universe/localization/autoware_pose2twist /autoware/src/universe/autoware.universe/localization/autoware_pose2twist
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-vehicle-system-depend-packages.txt \
-    && cat /rosdep-universe-vehicle-system-depend-packages.txt
+  > /rosdep-universe-vehicle-system-depend-packages.txt \
+  && cat /rosdep-universe-vehicle-system-depend-packages.txt
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-vehicle-system-exec-depend-packages.txt \
-    && cat /rosdep-universe-vehicle-system-exec-depend-packages.txt
+  > /rosdep-universe-vehicle-system-exec-depend-packages.txt \
+  && cat /rosdep-universe-vehicle-system-exec-depend-packages.txt
 
 FROM rosdep-depend AS rosdep-universe-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -151,12 +151,12 @@ COPY src/sensor_kit /autoware/src/sensor_kit
 COPY src/universe /autoware/src/universe
 COPY src/vehicle /autoware/src/vehicle
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-depend-packages.txt \
-    && cat /rosdep-universe-depend-packages.txt
+  > /rosdep-universe-depend-packages.txt \
+  && cat /rosdep-universe-depend-packages.txt
 
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-exec-depend-packages.txt \
-    && cat /rosdep-exec-depend-packages.txt
+  > /rosdep-exec-depend-packages.txt \
+  && cat /rosdep-exec-depend-packages.txt
 
 FROM base AS core-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
