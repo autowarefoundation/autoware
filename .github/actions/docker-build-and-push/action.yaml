@@ -64,18 +64,6 @@ runs:
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Docker meta for autoware:base
-      id: meta-base
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
-        tags: |
-          type=raw,value=base-${{ inputs.platform }}
-          type=raw,value=base-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        bake-target: docker-metadata-action-base
-        flavor: |
-          latest=false
-
     - name: Docker meta for autoware:core-devel
       id: meta-core-devel
       uses: docker/metadata-action@v5
@@ -221,7 +209,6 @@ runs:
         push: true
         files: |
           docker/docker-bake.hcl
-          ${{ steps.meta-base.outputs.bake-file }}
           ${{ steps.meta-core-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception.outputs.bake-file }}

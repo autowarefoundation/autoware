@@ -1,52 +1,6 @@
 ARG BASE_IMAGE
-
-# hadolint ignore=DL3006
-FROM $BASE_IMAGE AS base
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-
-# Copy files
-COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
-COPY ansible/ /autoware/ansible/
-COPY docker/scripts/cleanup_apt.sh /autoware/cleanup_apt.sh
-RUN chmod +x /autoware/cleanup_apt.sh
-COPY docker/scripts/cleanup_system.sh /autoware/cleanup_system.sh
-RUN chmod +x /autoware/cleanup_system.sh
-WORKDIR /autoware
-
-# Install apt packages and add GitHub to known hosts for private repositories
-RUN rm -f /etc/apt/apt.conf.d/docker-clean \
-  && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
-  gosu \
-  ssh \
-  && /autoware/cleanup_apt.sh \
-  && mkdir -p ~/.ssh \
-  && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-# Set up base environment
-RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module base --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
-  && /autoware/cleanup_apt.sh \
-  && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
-
-# Create entrypoint
-COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
-RUN chmod +x /ros_entrypoint.sh
-CMD ["/bin/bash"]
-
-FROM base AS base-cuda
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-# Set up CUDA runtime environment and artifacts
-# hadolint ignore=SC2002
-RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module base --download-artifacts --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
-  && /autoware/cleanup_apt.sh true
+ARG AUTOWARE_BASE_IMAGE
+ARG AUTOWARE_BASE_CUDA_IMAGE
 
 # hadolint ignore=DL3006
 FROM $BASE_IMAGE AS rosdep-depend
@@ -158,7 +112,8 @@ RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-exec-depend-packages.txt \
     && cat /rosdep-exec-depend-packages.txt
 
-FROM base AS core-devel
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS core-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -413,7 +368,8 @@ COPY --from=universe-devel /opt/autoware /opt/autoware
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base AS universe-sensing-perception
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe-sensing-perception
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -438,7 +394,8 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base-cuda AS universe-sensing-perception-cuda
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_CUDA_IMAGE AS universe-sensing-perception-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -459,7 +416,8 @@ COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base AS universe-localization-mapping
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe-localization-mapping
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -484,7 +442,8 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base AS universe-planning-control
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe-planning-control
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -509,7 +468,8 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base AS universe-vehicle-system
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe-vehicle-system
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -534,7 +494,8 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base AS universe
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -559,7 +520,8 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base-cuda AS universe-cuda
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_CUDA_IMAGE AS universe-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
