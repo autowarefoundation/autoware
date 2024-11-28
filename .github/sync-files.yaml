@@ -18,8 +18,6 @@
       dest: .github/workflows/comment-on-pr.yaml
     - source: sources/.github/workflows/github-release.yaml
       dest: .github/workflows/github-release.yaml
-    - source: sources/.github/workflows/pr-agent.yaml
-      dest: .github/workflows/pr-agent.yaml
     - source: sources/.github/workflows/pre-commit-optional.yaml
       dest: .github/workflows/pre-commit-optional.yaml
     - source: sources/.github/workflows/pre-commit-optional-autoupdate.yaml
