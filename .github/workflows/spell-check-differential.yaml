@@ -14,3 +14,7 @@ jobs:
         uses: autowarefoundation/autoware-github-actions/spell-check@v1
         with:
           cspell-json-url: https://raw.githubusercontent.com/autowarefoundation/autoware-spell-check-dict/main/.cspell.json
+          dict-packages: |
+            https://github.com/autowarefoundation/autoware-spell-check-dict
+            https://github.com/tier4/cspell-dicts
+            https://github.com/streetsidesoftware/cspell-dicts
