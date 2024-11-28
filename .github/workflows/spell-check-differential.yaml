@@ -17,7 +17,3 @@ jobs:
           dict-packages: |
             https://github.com/autowarefoundation/autoware-spell-check-dict
             https://github.com/tier4/cspell-dicts
-            @cspell/dict-cpp
-            @cspell/dict-en_gb
-            @cspell/dict-en_us
-            @cspell/dict-software-terms
