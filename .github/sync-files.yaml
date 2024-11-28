@@ -1,0 +1,82 @@
+- repository: autowarefoundation/sync-file-templates
+  files:
+    - source: sources/.github/ISSUE_TEMPLATE/bug.yaml
+      dest: .github/ISSUE_TEMPLATE/bug.yaml
+    - source: sources/.github/ISSUE_TEMPLATE/config.yml
+      dest: .github/ISSUE_TEMPLATE/config.yml
+    - source: sources/.github/ISSUE_TEMPLATE/task.yaml
+      dest: .github/ISSUE_TEMPLATE/task.yaml
+    - source: sources/.github/dependabot.yaml
+      dest: .github/dependabot.yaml
+    - source: sources/.github/pull_request_template.md
+      dest: .github/pull_request_template.md
+    - source: sources/.github/stale.yml
+      dest: .github/stale.yml
+    - source: sources/.github/workflows/cancel-previous-workflows.yaml
+      dest: .github/workflows/cancel-previous-workflows.yaml
+    - source: sources/.github/workflows/check-build-depends.yaml
+      dest: .github/workflows/check-build-depends.yaml
+    - source: sources/.github/workflows/clang-tidy-pr-comments.yaml
+      dest: .github/workflows/clang-tidy-pr-comments.yaml
+    - source: sources/.github/workflows/clang-tidy-pr-comments-manually.yaml
+      dest: .github/workflows/clang-tidy-pr-comments-manually.yaml
+    - source: sources/.github/workflows/comment-on-pr.yaml
+      dest: .github/workflows/comment-on-pr.yaml
+    - source: sources/.github/workflows/delete-closed-pr-docs.yaml
+      dest: .github/workflows/delete-closed-pr-docs.yaml
+    - source: sources/.github/workflows/deploy-docs.yaml
+      dest: .github/workflows/deploy-docs.yaml
+    - source: sources/.github/workflows/github-release.yaml
+      dest: .github/workflows/github-release.yaml
+    - source: sources/.github/workflows/pr-agent.yaml
+      dest: .github/workflows/pr-agent.yaml
+    - source: sources/.github/workflows/pre-commit-optional.yaml
+      dest: .github/workflows/pre-commit-optional.yaml
+    - source: sources/.github/workflows/pre-commit-optional-autoupdate.yaml
+      dest: .github/workflows/pre-commit-optional-autoupdate.yaml
+    - source: sources/.github/workflows/pre-commit.yaml
+      dest: .github/workflows/pre-commit.yaml
+    - source: sources/.github/workflows/pre-commit-autoupdate.yaml
+      dest: .github/workflows/pre-commit-autoupdate.yaml
+    - source: sources/.github/workflows/semantic-pull-request.yaml
+      dest: .github/workflows/semantic-pull-request.yaml
+    - source: sources/.github/workflows/spell-check-differential.yaml
+      dest: .github/workflows/spell-check-differential.yaml
+    - source: sources/.github/workflows/spell-check-daily.yaml
+      dest: .github/workflows/spell-check-daily.yaml
+    - source: sources/.github/workflows/sync-files.yaml
+      dest: .github/workflows/sync-files.yaml
+    - source: sources/.github/workflows/update-codeowners-from-packages.yaml
+      dest: .github/workflows/update-codeowners-from-packages.yaml
+    - source: sources/.clang-format
+      dest: .clang-format
+    - source: sources/.clang-tidy
+      dest: .clang-tidy
+    - source: sources/.markdown-link-check.json
+      dest: .markdown-link-check.json
+    - source: sources/.markdownlint.yaml
+      dest: .markdownlint.yaml
+    - source: sources/.pre-commit-config-optional.yaml
+      dest: .pre-commit-config-optional.yaml
+    - source: sources/.pre-commit-config.yaml
+      dest: .pre-commit-config.yaml
+    - source: sources/.prettierignore
+      dest: .prettierignore
+    - source: sources/.prettierrc.yaml
+      dest: .prettierrc.yaml
+    - source: sources/.yamllint.yaml
+      dest: .yamllint.yaml
+    - source: sources/CODE_OF_CONDUCT.md
+      dest: CODE_OF_CONDUCT.md
+    - source: sources/codecov.yaml
+      dest: codecov.yaml
+    - source: sources/CONTRIBUTING.md
+      dest: CONTRIBUTING.md
+    - source: sources/CPPLINT.cfg
+      dest: CPPLINT.cfg
+    - source: sources/DISCLAIMER.md
+      dest: DISCLAIMER.md
+    - source: sources/LICENSE
+      dest: LICENSE
+    - source: sources/setup.cfg
+      dest: setup.cfg
