@@ -10,6 +10,7 @@ repos:
       - id: check-toml
       - id: check-xml
       - id: check-yaml
+        args: [--unsafe]
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: mixed-line-ending
@@ -32,6 +33,16 @@ repos:
     hooks:
       - id: yamllint
 
+  - repo: https://github.com/tier4/pre-commit-hooks-ros
+    rev: v0.10.0
+    hooks:
+      - id: flake8-ros
+      - id: prettier-xacro
+      - id: prettier-launch-xml
+      - id: prettier-package-xml
+      - id: ros-include-guard
+      - id: sort-package-xml
+
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1
     hooks:
@@ -43,9 +54,48 @@ repos:
       - id: shfmt
         args: [-w, -s, -i=4]
 
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+        args: [--line-length=100]
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.8
+    hooks:
+      - id: clang-format
+        types_or: [c++, c, cuda]
+
+  - repo: https://github.com/cpplint/cpplint
+    rev: 1.6.1
+    hooks:
+      - id: cpplint
+        args: [--quiet]
+        exclude: .cu
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.29.2
+    hooks:
+      - id: check-metaschema
+        files: ^.+/schema/.*schema\.json$
+
+  - repo: local
+    hooks:
+      - id: prettier-svg
+        name: prettier svg
+        description: Apply Prettier with plugin-xml to svg.
+        entry: prettier --write --list-different --ignore-unknown --print-width 200 --xml-self-closing-space false --xml-whitespace-sensitivity ignore
+        language: node
+        files: .svg$
+        additional_dependencies: [prettier@2.7.1, "@prettier/plugin-xml@2.2.0"]
+
   - repo: https://github.com/AleksaC/hadolint-py
     rev: v2.12.1b3
     hooks:
       - id: hadolint
-
-exclude: .svg
+        exclude: .svg$
