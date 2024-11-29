@@ -1,3 +1,7 @@
+# This file is automatically synced from:
+# https://github.com/autowarefoundation/sync-file-templates
+# To make changes, update the source repository and follow the guidelines in its README.
+
 # Modified from https://github.com/probot/stale#usage
 
 # Number of days of inactivity before an Issue or Pull Request with the stale label is closed
