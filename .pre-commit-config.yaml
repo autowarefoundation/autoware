@@ -98,3 +98,4 @@ repos:
     rev: v2.12.1b3
     hooks:
       - id: hadolint
+        exclude: .svg$
