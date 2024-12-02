@@ -72,7 +72,7 @@ runs:
         tags: |
           type=raw,value=core-devel-${{ inputs.platform }}
           type=raw,value=core-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,value=core-devel-${{ github.ref_name }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=core-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-core-devel
         flavor: |
           latest=false
@@ -85,7 +85,7 @@ runs:
         tags: |
           type=raw,value=universe-sensing-perception-devel-${{ inputs.platform }}
           type=raw,value=universe-sensing-perception-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,value=universe-sensing-perception-devel-${{ github.ref_name }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-sensing-perception-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-sensing-perception-devel
         flavor: |
           latest=false
@@ -98,7 +98,7 @@ runs:
         tags: |
           type=raw,value=universe-sensing-perception-${{ inputs.platform }}
           type=raw,value=universe-sensing-perception-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,value=universe-sensing-perception-${{ github.ref_name }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-sensing-perception-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-sensing-perception
         flavor: |
           latest=false
@@ -111,7 +111,7 @@ runs:
         tags: |
           type=raw,value=universe-localization-mapping-devel-${{ inputs.platform }}
           type=raw,value=universe-localization-mapping-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,value=universe-localization-mapping-devel-${{ github.ref_name }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-localization-mapping-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-localization-mapping-devel
         flavor: |
           latest=false
@@ -124,7 +124,7 @@ runs:
         tags: |
           type=raw,value=universe-localization-mapping-${{ inputs.platform }}
           type=raw,value=universe-localization-mapping-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,value=universe-localization-mapping-${{ github.ref_name }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-localization-mapping-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-localization-mapping
         flavor: |
           latest=false
@@ -137,7 +137,7 @@ runs:
         tags: |
           type=raw,value=universe-planning-control-devel-${{ inputs.platform }}
           type=raw,value=universe-planning-control-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,value=universe-planning-control-devel-${{ github.ref_name }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-planning-control-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-planning-control-devel
         flavor: |
           latest=false
@@ -150,7 +150,7 @@ runs:
         tags: |
           type=raw,value=universe-planning-control-${{ inputs.platform }}
           type=raw,value=universe-planning-control-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,value=universe-planning-control-${{ github.ref_name }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-planning-control-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-planning-control
         flavor: |
           latest=false
@@ -163,7 +163,7 @@ runs:
         tags: |
           type=raw,value=universe-vehicle-system-devel-${{ inputs.platform }}
           type=raw,value=universe-vehicle-system-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,value=universe-vehicle-system-devel-${{ github.ref_name }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-vehicle-system-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-vehicle-system-devel
         flavor: |
           latest=false
@@ -176,7 +176,7 @@ runs:
         tags: |
           type=raw,value=universe-vehicle-system-${{ inputs.platform }}
           type=raw,value=universe-vehicle-system-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,value=universe-vehicle-system-${{ github.ref_name }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-vehicle-system-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-vehicle-system
         flavor: |
           latest=false
@@ -189,7 +189,7 @@ runs:
         tags: |
           type=raw,value=universe-devel-${{ inputs.platform }}
           type=raw,value=universe-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,value=universe-devel-${{ github.ref_name }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-devel
         flavor: |
           latest=false
@@ -202,7 +202,7 @@ runs:
         tags: |
           type=raw,value=universe-${{ inputs.platform }}
           type=raw,value=universe-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,value=universe-${{ github.ref_name }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe
         flavor: |
           latest=auto
