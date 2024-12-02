@@ -5,7 +5,7 @@ on:
     branches:
       - main
     tags:
-      - *.*.*
+      - "*.*.*"
   workflow_dispatch:
 
 jobs:
