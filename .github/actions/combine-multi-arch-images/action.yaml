@@ -82,14 +82,14 @@ runs:
             amd64_image="${{ steps.set-image-name.outputs.image-name }}:$amd64_tag"
           else
             echo "No amd64 tag found for '$base_tag'."
-            amd64_image=""
+            continue
           fi
 
           if [ "$arm64_tag" != "" ]; then
             arm64_image="${{ steps.set-image-name.outputs.image-name }}:$arm64_tag"
           else
             echo "No arm64 tag found for '$base_tag'."
-            arm64_image=""
+            continue
           fi
 
           echo "amd64_image: $amd64_image"
