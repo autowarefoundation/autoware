@@ -76,6 +76,10 @@ repositories:
     type: git
     url: https://github.com/tier4/glog.git
     version: v0.6.0_t4-ros
+  universe/external/bevdet_vendor: # TODO: wrap the original bevdet-tensorrt-cpp source code as a vendor package and provode it to autoware_tensorrt_bevdet package
+    type: git
+    url: https://github.com/autowarefoundation/bevdet_vendor.git
+    version: bevdet_vendor-ros2
   # launcher
   launcher/autoware_launch:
     type: git
