@@ -1,6 +1,16 @@
 Checks: "
   -*,
-  bugprone-dangling-handle"
+  bugprone-*,
+  -bugprone-branch-clone,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-exception-escape,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-integer-division,
+  -bugprone-macro-parentheses,
+  -bugprone-narrowing-conversions,
+  -bugprone-parent-virtual-call,
+  -bugprone-reserved-identifier,
+  -bugprone-signed-char-misuse"
 
 WarningsAsErrors: "*"
 
