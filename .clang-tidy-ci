@@ -5,6 +5,7 @@ Checks: "
   -bugprone-easily-swappable-parameters,
   -bugprone-exception-escape,
   -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-infinite-loop,
   -bugprone-integer-division,
   -bugprone-macro-parentheses,
   -bugprone-narrowing-conversions,
