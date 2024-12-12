@@ -2,7 +2,7 @@
 
 apt-get update
 
-apt-get -y install sudo curl wget unzip gnupg lsb-release ccache python3-apt python3-pip apt-utils software-properties-common jq
+apt-get -y install sudo curl wget unzip gnupg lsb-release git ccache python3-apt python3-pip apt-utils software-properties-common jq rsync
 add-apt-repository universe
 
 pip install --no-cache-dir 'ansible==6.*'
