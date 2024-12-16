@@ -35,6 +35,18 @@ RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-common-depend-packages.txt \
   && cat /rosdep-universe-common-depend-packages.txt
 
+FROM rosdep-depend AS rosdep-universe-visualization-depend
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
+COPY src/universe/autoware.universe/visualization /autoware/src/universe/autoware.universe/visualization
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+  > /rosdep-universe-visualization-depend-packages.txt \
+  && cat /rosdep-universe-visualization-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+  > /rosdep-universe-visualization-exec-depend-packages.txt \
+  && cat /rosdep-universe-visualization-exec-depend-packages.txt
+
 FROM rosdep-depend AS rosdep-universe-sensing-perception-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
