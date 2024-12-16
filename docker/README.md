@@ -167,6 +167,7 @@ This stage installs the dependency packages based on `/rosdep-universe-depend-pa
 - `universe/autoware.universe/system`
 - `universe/autoware.universe/tools`
 - `universe/autoware.universe/vehicle`
+- `universe/autoware.universe/visualization`
 - `vehicle`
 
 This stage provides an all-in-one development container to Autoware developers. By running the host's source code with volume mounting, it allows for easy building and debugging of Autoware.
