@@ -191,6 +191,7 @@ Then it builds the remaining packages of `autoware.repos`:
 - `universe/autoware.universe/launch`
 - `universe/autoware.universe/simulator`
 - `universe/autoware.universe/tools`
+- `universe/autoware.universe/visualization`
 - `vehicle`
 
 This stage provides an all-in-one development container to Autoware developers. By running the host's source code with volume mounting, it allows for easy building and debugging of Autoware.
