@@ -16,11 +16,19 @@ artifacts:
           repositories_files:
             - autoware.repos
             - simulator.repos
+            - tools.repos
           import_path: src
       environment_variables:
-        AUTOWARE_PATH: /opt/autoware
+        AUTOWARE_PATH: /home/autoware/pilot-auto
+        ML_MODELS_PATH: /opt/autoware/mlmodels
         DEBIAN_FRONTEND: noninteractive
         LANG: C.UTF-8
+      developer_options:
+        - name: webauto:ci:caret_enabled
+          environment_variables:
+            WEBAUTO_CI_BUILD_OPTION_CARET_ENABLED: ENABLED
+      linux_parameters:
+        kernel_version: 5.15.0-72-generic
       phases:
         - name: environment-setup
           user: root
@@ -66,14 +74,59 @@ artifacts:
             key_files:
               - .webauto-ci/main/autoware-build/**/*
               - src/**/*
+              - "!src/ecu_system_setup/**"
+          incremental_build:
+            enabled: true
+        - name: ecu-system-setup
+          user: autoware
+          exec: ./.webauto-ci/main/ecu-system-setup/run.sh
+          environment_variables:
+            ECU_SYSTEM_SETUP_SOURCE_PATH: ansible
+            ECU_SYSTEM_SETUP_ANSIBLE_PLAYBOOK: ansible/playbooks/ecu_setup.yaml
+          caches:
+            - name: apt-lists
+              mountpoint: /var/lib/apt/lists
+            - name: apt-archives
+              mountpoint: /var/cache/apt/archives
+          build_result_reuse:
+            key_files:
+              - .webauto-ci/main/ecu-system-setup/**/*
+              - src/ecu_system_setup/**/*
+              - ansible/**/*
+              - ansible-galaxy-requirements.yaml
       base_container_image:
         from: ubuntu:22.04
+        # from: ghcr.io/tier4/pilot-auto/base-image:latest # use base image
       output_container_image:
         from: autoware-build
-        workdir: /opt/autoware
+        workdir: /home/autoware/pilot-auto
         user: autoware
+      output_rootfs_image:
+        from: ecu-system-setup
+        persistent_file_path: /home/autoware/pilot-auto/.webauto-ci/main/ecu-system-setup/persistents.txt
+      output_installer_image:
+        from: ecu-system-setup
+        type: iso
+        base_iso: ubuntu-20.04.3-live-server-amd64
 
 simulations:
+  - name: perception
+    type: perception
+    simulator:
+      deployment:
+        type: container
+        artifact: main
+      runtime:
+        type: gpu1/amd64/large
+      pre_tasks:
+        - exec: source /home/autoware/autoware.proj/install/setup.bash && ros2 launch lidar_centerpointlidar_centerpoint.launch.xml model_name:=centerpoint_tiny model_path:=/home/autoware/autoware_data/lidar_centerpoint model_param_path:=$(ros2 pkg prefixlidar_centerpoint --share)/config/centerpoint_tiny.param.yaml build_only:=true
+      mounts:
+        - volume: model
+      volumes:
+        - name: model
+          path: /home/autoware/autoware_data/lidar_centerpoint
+          preserve_original_files: true
+
   - name: lexus_planning_sim
     type: planning_sim_v2
     simulator:
@@ -90,6 +143,15 @@ simulations:
         vehicle_model: sample_vehicle
         sensor_model: sample_sensor_kit
         initialize_duration: "90"
+
+  - name: localization
+    type: localization
+    simulator:
+      deployment:
+        type: container
+        artifact: main
+      runtime:
+        type: standard1/amd64/large
 
 release:
   components:
