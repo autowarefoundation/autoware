@@ -83,6 +83,8 @@ FROM rosdep-depend AS rosdep-universe-vehicle-system-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
+COPY src/universe/autoware.universe/launch/tier4_vehicle_launch /autoware/src/universe/autoware.universe/launch/tier4_vehicle_launch
+COPY src/universe/autoware.universe/launch/tier4_system_launch /autoware/src/universe/autoware.universe/launch/tier4_system_launch
 COPY src/universe/autoware.universe/vehicle /autoware/src/universe/autoware.universe/vehicle
 COPY src/universe/autoware.universe/system /autoware/src/universe/autoware.universe/system
 COPY src/universe/autoware.universe/map/autoware_map_height_fitter /autoware/src/universe/autoware.universe/map/autoware_map_height_fitter
@@ -303,6 +305,8 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_vehicle_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_vehicle_launch \
+  --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_system_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_system_launch \
   --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/vehicle,target=/autoware/src/universe/autoware.universe/vehicle \
   --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/system,target=/autoware/src/universe/autoware.universe/system \
   --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_height_fitter,target=/autoware/src/universe/autoware.universe/map/autoware_map_height_fitter \
