@@ -52,6 +52,8 @@ FROM rosdep-depend AS rosdep-universe-localization-mapping-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
+COPY src/universe/autoware.universe/launch/tier4_localization_launch /autoware/src/universe/autoware.universe/launch/tier4_localization_launch  
+COPY src/universe/autoware.universe/launch/tier4_map_launch /autoware/src/universe/autoware.universe/launch/tier4_map_launch
 COPY src/universe/autoware.universe/localization /autoware/src/universe/autoware.universe/localization
 COPY src/universe/autoware.universe/map /autoware/src/universe/autoware.universe/map
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
@@ -251,6 +253,8 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_localization_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_localization_launch \
+  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_map_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_map_launch \
   --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/localization,target=/autoware/src/universe/autoware.universe/localization \
   --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/map,target=/autoware/src/universe/autoware.universe/map \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
