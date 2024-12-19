@@ -59,9 +59,9 @@ set_cuda_options() {
 # Set build options
 set_build_options() {
     if [ "$option_devel_only" = "true" ]; then
-        targets=("universe-devel")
+        target="universe-devel"
     else
-        targets=()
+        target="universe"
     fi
 }
 
@@ -123,7 +123,7 @@ build_images() {
     echo "Setup args: $setup_args"
     echo "Lib dir: $lib_dir"
     echo "Image name suffix: $image_name_suffix"
-    echo "Targets: ${targets[*]}"
+    echo "Target: $target"
 
     set -x
     docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake-base.hcl" \
@@ -137,7 +137,8 @@ build_images() {
         --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
         --set "base.tags=ghcr.io/autowarefoundation/autoware-base:latest" \
-        --set "base-cuda.tags=ghcr.io/autowarefoundation/autoware-base:cuda-latest"
+        --set "base-cuda.tags=ghcr.io/autowarefoundation/autoware-base:cuda-latest" \
+        base$image_name_suffix
 
     docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" -f "$SCRIPT_DIR/docker-bake-cuda.hcl" \
         --set "*.context=$WORKSPACE_ROOT" \
@@ -171,7 +172,8 @@ build_images() {
         --set "universe-planning-control.tags=ghcr.io/autowarefoundation/autoware:universe-planning-control" \
         --set "universe-vehicle-system.tags=ghcr.io/autowarefoundation/autoware:universe-vehicle-system" \
         --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe" \
-        --set "universe-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-cuda"
+        --set "universe-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-cuda" \
+        $target$image_name_suffix
     set +x
 }
 
