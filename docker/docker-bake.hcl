@@ -1,13 +1,6 @@
 group "default" {
   targets = [
-    "rosdep-depend",
-    "rosdep-universe-depend",
-    "rosdep-universe-sensing-perception-depend",
-    "rosdep-universe-vehicle-system-depend",
-    "rosdep-universe-planning-control-depend",
-    "rosdep-universe-localization-mapping-depend",
     "core-devel",
-    "universe-common-devel",
     "universe-sensing-perception-devel",
     "universe-sensing-perception",
     "universe-localization-mapping-devel",
@@ -22,14 +15,7 @@ group "default" {
 }
 
 // For docker/metadata-action
-target "docker-metadata-action-rosdep-depend" {}
-target "docker-metadata-action-rosdep-universe-depend" {}
-target "docker-metadata-action-rosdep-universe-sensing-perception-depend" {}
-target "docker-metadata-action-rosdep-universe-vehicle-system-depend" {}
-target "docker-metadata-action-rosdep-universe-planning-control-depend" {}
-target "docker-metadata-action-rosdep-universe-localization-mapping-depend" {}
 target "docker-metadata-action-core-devel" {}
-target "docker-metadata-action-universe-common-devel" {}
 target "docker-metadata-action-universe-sensing-perception-devel" {}
 target "docker-metadata-action-universe-sensing-perception" {}
 target "docker-metadata-action-universe-localization-mapping-devel" {}
@@ -41,51 +27,10 @@ target "docker-metadata-action-universe-vehicle-system" {}
 target "docker-metadata-action-universe-devel" {}
 target "docker-metadata-action-universe" {}
 
-target "rosdep-depend" {
-  inherits = ["docker-metadata-action-rosdep-depend"]
-  dockerfile = "docker/Dockerfile"
-  target = "rosdep-depend"
-}
-
-target "rosdep-universe-depend" {
-  inherits = ["docker-metadata-action-rosdep-universe-depend"]
-  dockerfile = "docker/Dockerfile"
-  target = "rosdep-universe-depend"
-}
-
-target "rosdep-universe-sensing-perception-depend" {
-  inherits = ["docker-metadata-action-rosdep-universe-sensing-perception-depend"]
-  dockerfile = "docker/Dockerfile"
-  target = "rosdep-universe-sensing-perception-depend"
-}
-
-target "rosdep-universe-vehicle-system-depend" {
-  inherits = ["docker-metadata-action-rosdep-universe-vehicle-system-depend"]
-  dockerfile = "docker/Dockerfile"
-  target = "rosdep-universe-vehicle-system-depend"
-}
-
-target "rosdep-universe-planning-control-depend" {
-  inherits = ["docker-metadata-action-rosdep-universe-planning-control-depend"]
-  dockerfile = "docker/Dockerfile"
-  target = "rosdep-universe-planning-control-depend"
-}
-
-target "rosdep-universe-localization-mapping-depend" {
-  inherits = ["docker-metadata-action-rosdep-universe-localization-mapping-depend"]
-  dockerfile = "docker/Dockerfile"
-  target = "rosdep-universe-localization-mapping-depend"
-}
 target "core-devel" {
   inherits = ["docker-metadata-action-core-devel"]
   dockerfile = "docker/Dockerfile"
   target = "core-devel"
-}
-
-target "universe-common-devel" {
-  inherits = ["docker-metadata-action-universe-common-devel"]
-  dockerfile = "docker/Dockerfile"
-  target = "universe-common-devel"
 }
 
 target "universe-sensing-perception-devel" {
