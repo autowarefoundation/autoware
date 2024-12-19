@@ -8,9 +8,7 @@ print_help() {
     echo "Options:"
     echo "  --help          Display this help message"
     echo "  -h              Display this help message"
-    echo "  --no-cuda       Disable CUDA support"
     echo "  --platform      Specify the platform (default: current platform)"
-    echo "  --devel-only    Build devel image only"
     echo ""
     echo "Note: The --platform option should be one of 'linux/amd64' or 'linux/arm64'."
 }
@@ -26,15 +24,9 @@ parse_arguments() {
             print_help
             exit 1
             ;;
-        --no-cuda)
-            option_no_cuda=true
-            ;;
         --platform)
             option_platform="$2"
             shift
-            ;;
-        --devel-only)
-            option_devel_only=true
             ;;
         *)
             echo "Unknown option: $1"
@@ -44,25 +36,6 @@ parse_arguments() {
         esac
         shift
     done
-}
-
-# Set CUDA options
-set_cuda_options() {
-    if [ "$option_no_cuda" = "true" ]; then
-        setup_args="--no-nvidia"
-        image_name_suffix=""
-    else
-        image_name_suffix="-cuda"
-    fi
-}
-
-# Set build options
-set_build_options() {
-    if [ "$option_devel_only" = "true" ]; then
-        target="universe-devel"
-    else
-        target="universe"
-    fi
 }
 
 # Set platform
@@ -120,10 +93,7 @@ build_images() {
     echo "Base image: $base_image"
     echo "Base Autoware image: $autoware_base_image"
     echo "Base Autoware CUDA image: $autoware_base_cuda_image"
-    echo "Setup args: $setup_args"
     echo "Lib dir: $lib_dir"
-    echo "Image name suffix: $image_name_suffix"
-    echo "Target: $target"
 
     set -x
     docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake-base.hcl" \
@@ -134,11 +104,9 @@ build_images() {
         --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.AUTOWARE_BASE_IMAGE=$autoware_base_image" \
         --set "*.args.AUTOWARE_BASE_CUDA_IMAGE=$autoware_base_cuda_image" \
-        --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
         --set "base.tags=ghcr.io/autowarefoundation/autoware-base:latest" \
-        --set "base-cuda.tags=ghcr.io/autowarefoundation/autoware-base:cuda-latest" \
-        base$image_name_suffix
+        --set "base-cuda.tags=ghcr.io/autowarefoundation/autoware-base:cuda-latest"
 
     docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" -f "$SCRIPT_DIR/docker-bake-cuda.hcl" \
         --set "*.context=$WORKSPACE_ROOT" \
@@ -148,7 +116,6 @@ build_images() {
         --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.AUTOWARE_BASE_IMAGE=$autoware_base_image" \
         --set "*.args.AUTOWARE_BASE_CUDA_IMAGE=$autoware_base_cuda_image" \
-        --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
         --set "rosdep-depend.tags=ghcr.io/autowarefoundation/autoware:rosdep-depend" \
         --set "rosdep-universe-sensing-perception-depend.tags=ghcr.io/autowarefoundation/autoware:rosdep-universe-sensing-perception-depend" \
@@ -172,8 +139,7 @@ build_images() {
         --set "universe-planning-control.tags=ghcr.io/autowarefoundation/autoware:universe-planning-control" \
         --set "universe-vehicle-system.tags=ghcr.io/autowarefoundation/autoware:universe-vehicle-system" \
         --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe" \
-        --set "universe-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-cuda" \
-        $target$image_name_suffix
+        --set "universe-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-cuda"
     set +x
 }
 
@@ -184,8 +150,6 @@ remove_dangling_images() {
 
 # Main script execution
 parse_arguments "$@"
-set_cuda_options
-set_build_options
 set_platform
 set_arch_lib_dir
 load_env
