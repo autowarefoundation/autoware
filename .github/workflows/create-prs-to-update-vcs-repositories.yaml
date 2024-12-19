@@ -18,7 +18,7 @@ jobs:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.PRIVATE_KEY }}
 
-      - name: Create PRs to update VCS repositories
+      - name: Create PRs to update VCS repositories for autoware.repos
         uses: autowarefoundation/autoware-github-actions/create-prs-to-update-vcs-repositories@v1
         with:
           token: ${{ steps.generate-token.outputs.token }}
@@ -28,4 +28,16 @@ jobs:
           base_branch: main
           new_branch_prefix: feat/update-
           autoware_repos_file_name: autoware.repos
+          verbosity: 0
+
+      - name: Create PRs to update VCS repositories for simulator.repos
+        uses: autowarefoundation/autoware-github-actions/create-prs-to-update-vcs-repositories@v1
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          repo_name: autowarefoundation/autoware
+          parent_dir: .
+          targets: major minor patch
+          base_branch: main
+          new_branch_prefix: feat/update-
+          autoware_repos_file_name: simulator.repos
           verbosity: 0
