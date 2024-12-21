@@ -59,9 +59,9 @@ set_cuda_options() {
 # Set build options
 set_build_options() {
     if [ "$option_devel_only" = "true" ]; then
-        targets=("universe-devel")
+        target="universe-devel"
     else
-        targets=()
+        target="universe"
     fi
 }
 
@@ -121,10 +121,10 @@ build_images() {
     echo "Setup args: $setup_args"
     echo "Lib dir: $lib_dir"
     echo "Image name suffix: $image_name_suffix"
-    echo "Targets: ${targets[*]}"
+    echo "Target: $target"
 
     set -x
-    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" \
+    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake-base.hcl" \
         --set "*.context=$WORKSPACE_ROOT" \
         --set "*.ssh=default" \
         --set "*.platform=$platform" \
@@ -132,10 +132,23 @@ build_images() {
         --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
-        --set "base.tags=ghcr.io/autowarefoundation/autoware:base" \
-        --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel$image_name_suffix" \
-        --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe$image_name_suffix" \
-        "${targets[@]}"
+        --set "base.tags=ghcr.io/autowarefoundation/autoware-base:latest" \
+        --set "base-cuda.tags=ghcr.io/autowarefoundation/autoware-base:cuda-latest"
+    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" -f "$SCRIPT_DIR/docker-bake-cuda.hcl" \
+        --set "*.context=$WORKSPACE_ROOT" \
+        --set "*.ssh=default" \
+        --set "*.platform=$platform" \
+        --set "*.args.ROS_DISTRO=$rosdistro" \
+        --set "*.args.BASE_IMAGE=$base_image" \
+        --set "*.args.AUTOWARE_BASE_IMAGE=$autoware_base_image" \
+        --set "*.args.AUTOWARE_BASE_CUDA_IMAGE=$autoware_base_cuda_image" \
+        --set "*.args.SETUP_ARGS=$setup_args" \
+        --set "*.args.LIB_DIR=$lib_dir" \
+        --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel" \
+        --set "universe-devel-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-devel-cuda" \
+        --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe" \
+        --set "universe-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-cuda" \
+        "$target$image_name_suffix"
     set +x
 }
 
