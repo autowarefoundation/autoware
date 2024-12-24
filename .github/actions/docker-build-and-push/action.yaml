@@ -181,29 +181,29 @@ runs:
         flavor: |
           latest=false
 
-    - name: Docker meta for autoware:universe-visualizer
-      id: meta-universe-visualizer
+    - name: Docker meta for autoware:visualizer
+      id: meta-visualizer
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-visualizer-${{ inputs.platform }}
-          type=raw,value=universe-visualizer-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,prefix=universe-visualizer-,suffix=-${{ inputs.platform }}
-        bake-target: docker-metadata-action-universe-visualizer
+          type=raw,value=visualizer-${{ inputs.platform }}
+          type=raw,value=visualizer-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=visualizer-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-visualizer
         flavor: |
           latest=false
 
-    - name: Docker meta for autoware:universe-simulator
+    - name: Docker meta for autoware:simulator
       id: meta-simulator
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-simulator-${{ inputs.platform }}
-          type=raw,value=universe-simulator-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,prefix=universe-simulator-,suffix=-${{ inputs.platform }}
-        bake-target: docker-metadata-action-universe-simulator
+          type=raw,value=simulator-${{ inputs.platform }}
+          type=raw,value=simulator-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=simulator-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-simulator
         flavor: |
           latest=false
 
