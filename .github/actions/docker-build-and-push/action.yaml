@@ -195,7 +195,7 @@ runs:
           latest=false
 
     - name: Docker meta for autoware:universe-simulator
-      id: meta-universe-simulator
+      id: meta-simulator
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
@@ -208,7 +208,7 @@ runs:
           latest=false
 
     - name: Docker meta for autoware:universe-devel
-      id: meta-universe-devel
+      id: meta-devel
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
