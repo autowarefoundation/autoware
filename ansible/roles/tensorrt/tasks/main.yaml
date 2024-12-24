@@ -2,11 +2,10 @@
   become: true
   ansible.builtin.apt:
     name:
-      - libcudnn8={{ cudnn_version }}
-      - libnvinfer8={{ tensorrt_version }}
-      - libnvinfer-plugin8={{ tensorrt_version }}
-      - libnvparsers8={{ tensorrt_version }}
-      - libnvonnxparsers8={{ tensorrt_version }}
+      - "{{ 'libcudnn9-cuda-12=' + cudnn_version if ansible_architecture == 'aarch64' else 'libcudnn8=' + cudnn_version }}"
+      - libnvinfer10={{ tensorrt_version }}
+      - libnvinfer-plugin10={{ tensorrt_version }}
+      - libnvonnxparsers10={{ tensorrt_version }}
     allow_change_held_packages: true
     allow_downgrade: true
     update_cache: true
@@ -15,12 +14,11 @@
   become: true
   ansible.builtin.apt:
     name:
-      - libcudnn8-dev={{ cudnn_version }}
+      - "{{ 'libcudnn9-dev-cuda-12=' + cudnn_version if ansible_architecture == 'aarch64' else 'libcudnn8-dev=' + cudnn_version }}"
       - libnvinfer-dev={{ tensorrt_version }}
       - libnvinfer-plugin-dev={{ tensorrt_version }}
       - libnvinfer-headers-dev={{ tensorrt_version }}
       - libnvinfer-headers-plugin-dev={{ tensorrt_version }}
-      - libnvparsers-dev={{ tensorrt_version }}
       - libnvonnxparsers-dev={{ tensorrt_version }}
     allow_change_held_packages: true
     allow_downgrade: true
@@ -34,11 +32,11 @@
     name: "{{ item }}"
     selection: hold
   with_items:
+    - "{{ 'libcudnn9-cuda-12' if ansible_architecture == 'aarch64' else 'libcudnn8' }}"
     - libcudnn8
-    - libnvinfer8
-    - libnvinfer-plugin8
-    - libnvparsers8
-    - libnvonnxparsers8
+    - libnvinfer10
+    - libnvinfer-plugin10
+    - libnvonnxparsers10
 
 - name: Prevent CUDA-related Dev packages from upgrading
   become: true
@@ -46,11 +44,10 @@
     name: "{{ item }}"
     selection: hold
   with_items:
-    - libcudnn8-dev
+    - "{{ 'libcudnn9-dev-cuda-12' if ansible_architecture == 'aarch64' else 'libcudnn8-dev' }}"
     - libnvinfer-dev
     - libnvinfer-plugin-dev
     - libnvinfer-headers-dev
     - libnvinfer-headers-plugin-dev
-    - libnvparsers-dev
     - libnvonnxparsers-dev
   when: install_devel == 'y'
