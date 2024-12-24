@@ -1,6 +1,6 @@
 # cuda
 
-This role installs [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) following [this page](https://developer.nvidia.com/cuda-12-3-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network) and [this page](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions).
+This role installs [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) following [this page](https://developer.nvidia.com/cuda-12-4-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network) and [this page](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions).
 
 This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
@@ -15,7 +15,7 @@ This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
 ### Version compatibility
 
-Autoware currently uses CUDA `12.3` and from this [CUDA Application Compatibility Support Matrix](https://docs.nvidia.com/deploy/cuda-compatibility/#use-the-right-compat-package) that only the NVIDIA driver version `545` is compatible with this version of CUDA.
+Autoware currently uses CUDA `12.4` which corresponds to the NVIDIA driver version `550` and is minimum required driver version. In case of lower driver version, you can refer to [CUDA Application Compatibility Support Matrix](https://docs.nvidia.com/deploy/cuda-compatibility/#use-the-right-compat-package) and install `cuda-compat-12-4` package if your driver version is supported.
 
 #### 🛠️ For Advanced Users
 
@@ -42,7 +42,7 @@ sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
 cuda_version_dashed=$(eval sed -e "s/[.]/-/g" <<< "${cuda_version}")
 sudo apt-get -y install cuda-toolkit-${cuda_version_dashed}
-sudo apt-get install -y cuda-drivers-545
+sudo apt-get install -y cuda-drivers-550
 ```
 
 Perform the post installation actions:
