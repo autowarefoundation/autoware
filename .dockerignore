@@ -10,6 +10,7 @@
 docker
 !docker/etc
 !docker/scripts
+!docker/tools
 
 # Ignore a part of files under src
 src/**/.*
