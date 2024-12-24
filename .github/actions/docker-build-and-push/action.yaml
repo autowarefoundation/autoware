@@ -181,6 +181,32 @@ runs:
         flavor: |
           latest=false
 
+    - name: Docker meta for autoware:universe-visualizer
+      id: meta-universe-visualizer
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=universe-visualizer-${{ inputs.platform }}
+          type=raw,value=universe-visualizer-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-visualizer-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-visualizer
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:universe-simulator
+      id: meta-universe-simulator
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=universe-simulator-${{ inputs.platform }}
+          type=raw,value=universe-simulator-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-simulator-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-simulator
+        flavor: |
+          latest=false
+
     - name: Docker meta for autoware:universe-devel
       id: meta-universe-devel
       uses: docker/metadata-action@v5
@@ -220,6 +246,7 @@ runs:
         push: true
         files: |
           docker/docker-bake.hcl
+          docker/docker-bake-tools.hcl
           ${{ steps.meta-core-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception.outputs.bake-file }}
@@ -231,6 +258,8 @@ runs:
           ${{ steps.meta-universe-vehicle-system.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
+          ${{ steps.meta-simulator.outputs.bake-file }}
+          ${{ steps.meta-visualizer.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}
