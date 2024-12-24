@@ -288,13 +288,14 @@
   ansible.builtin.unarchive:
     src: "{{ data_dir }}/tensorrt_rtmdet_onnx_models.tar.gz"
     dest: "{{ data_dir }}/tensorrt_rtmdet/"
-    remote_src: yes
+    remote_src: true
 
 - name: Move extracted files to the final destination
   ansible.builtin.copy:
     src: "{{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models/"
     dest: "{{ data_dir }}/tensorrt_rtmdet/"
-    remote_src: yes
+    mode: "0644"
+    remote_src: true
 
 - name: Remove temporary files and directories
   ansible.builtin.file:
