@@ -65,6 +65,8 @@ FROM rosdep-depend AS rosdep-universe-planning-control-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
+COPY src/universe/autoware.universe/launch/tier4_control_launch /autoware/src/universe/autoware.universe/launch/tier4_control_launch
+COPY src/universe/autoware.universe/launch/tier4_planning_launch /autoware/src/universe/autoware.universe/launch/tier4_planning_launch
 COPY src/universe/autoware.universe/control /autoware/src/universe/autoware.universe/control
 COPY src/universe/autoware.universe/planning /autoware/src/universe/autoware.universe/planning
 # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
@@ -273,6 +275,8 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_control_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_control_launch \
+  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_planning_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_planning_launch \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
   --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/planning,target=/autoware/src/universe/autoware.universe/planning \
   # TODO(youtalk): Remove --mount options when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
