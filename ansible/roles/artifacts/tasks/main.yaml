@@ -280,29 +280,26 @@
   become: true
   ansible.builtin.get_url:
     url: https://autoware-files.s3.us-west-2.amazonaws.com/models/tensorrt_rtmdet_onnx_models.tar.gz
-    dest: "{{ data_dir }}/tensorrt_rtmdet_onnx_models.tar.gz"
+    dest: "{{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models.tar.gz"
     mode: "644"
     checksum: sha256:eaf6fe9caf1b4a0211dc3b0f4068b1fd6c1d35fe1582cc2aed95b8ed9468c598
 
 - name: Extract tensorrt_rtmdet_onnx_models.tar.gz
   ansible.builtin.unarchive:
-    src: "{{ data_dir }}/tensorrt_rtmdet_onnx_models.tar.gz"
+    src: "{{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models.tar.gz"
     dest: "{{ data_dir }}/tensorrt_rtmdet/"
-    remote_src: true
 
 - name: Move extracted files to the final destination
-  ansible.builtin.copy:
-    src: "{{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models/"
-    dest: "{{ data_dir }}/tensorrt_rtmdet/"
-    mode: "0644"
-    remote_src: true
+  ansible.builtin.shell: >
+    mv {{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models/* {{ data_dir }}/tensorrt_rtmdet/
+  args:
+    removes: "{{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models/"
 
 - name: Remove temporary files and directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items:
-    - "{{ data_dir }}/tensorrt_rtmdet_onnx_models.tar.gz"
     - "{{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models/"
 
 # traffic_light_classifier
