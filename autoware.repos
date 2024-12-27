@@ -71,6 +71,10 @@ repositories:
     type: git
     url: https://github.com/tier4/glog.git
     version: v0.6.0_t4-ros
+  universe/external/managed_transform_buffer:
+    type: git
+    url: https://github.com/autowarefoundation/ManagedTransformBuffer.git
+    version: main
   # launcher
   launcher/autoware_launch:
     type: git
