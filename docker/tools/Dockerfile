@@ -45,6 +45,9 @@ RUN --mount=type=ssh \
     apt-get update && apt-get install -y curl unzip \
     && source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
     && rosdep update \
+    # Remove xmlschema and yamale from rosdep packages since we install via pip
+    && sed -i '/\(xmlschema\|yamale\)/d' /tmp/rosdep-simulator-depend-packages.txt \
+    && pip install yamale xmlschema \
     && cat /tmp/rosdep-simulator-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* "$HOME"/.cache && \
