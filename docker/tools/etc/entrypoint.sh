@@ -3,7 +3,7 @@
 configure_vnc() {
     # Create Openbox application configuration
     mkdir -p /etc/xdg/openbox
-    cat > /etc/xdg/openbox/rc.xml << 'EOF'
+    cat >/etc/xdg/openbox/rc.xml <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <openbox_config xmlns="http://openbox.org/3.4/rc"
                 xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -21,7 +21,7 @@ configure_vnc() {
 </openbox_config>
 EOF
     # Create rviz2 start script
-    cat > /usr/local/bin/start-rviz2.sh << 'EOF'
+    cat >/usr/local/bin/start-rviz2.sh <<'EOF'
 #!/bin/bash
 source /opt/ros/humble/setup.bash
 source /opt/autoware/setup.bash
@@ -32,8 +32,8 @@ else
 fi
 EOF
     chmod +x /usr/local/bin/start-rviz2.sh
-    echo "echo 'Autostart executed at $(date)' >> /tmp/autostart.log" >> /etc/xdg/openbox/autostart
-    echo "/usr/local/bin/start-rviz2.sh" >> /etc/xdg/openbox/autostart
+    echo "echo 'Autostart executed at $(date)' >> /tmp/autostart.log" >>/etc/xdg/openbox/autostart
+    echo "/usr/local/bin/start-rviz2.sh" >>/etc/xdg/openbox/autostart
 
     # Start VNC server with Openbox
     echo "Starting VNC server with Openbox..."
@@ -47,7 +47,7 @@ EOF
 
     # Set the DISPLAY variable to match VNC server
     echo "Setting DISPLAY to :99"
-    echo "export DISPLAY=:99" >> ~/.bashrc
+    echo "export DISPLAY=:99" >>~/.bashrc
     sleep 2
 
     # Start NoVNC
