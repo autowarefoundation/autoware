@@ -1,21 +1,15 @@
 name: docker-build-and-push
-description: ""
+description: Composite action to build and push non CUDA images to registry.
 
 inputs:
-  name:
-    description: ""
-    required: true
   platform:
-    description: ""
+    description: Target platform.
     required: true
-  bake-target:
-    description: ""
+  target-image:
+    description: Target docker image name in the registry.
     required: true
   build-args:
-    description: ""
-    required: false
-  tag-suffix:
-    description: ""
+    description: Additional build args.
     required: false
 
 runs:
@@ -42,9 +36,8 @@ runs:
       with:
         path: |
           root-ccache
-        key: ccache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
-          ccache-${{ inputs.platform }}-${{ inputs.name }}-
           ccache-${{ inputs.platform }}-
 
     - name: Restore apt-get
@@ -52,9 +45,8 @@ runs:
       with:
         path: |
           var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/package.xml') }}
+        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
-          apt-get-${{ inputs.platform }}-${{ inputs.name }}-
           apt-get-${{ inputs.platform }}-
 
     - name: Inject cache into docker
@@ -72,26 +64,15 @@ runs:
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Docker meta for autoware:base
-      id: meta-base
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
-        tags: |
-          type=raw,value=base${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=base${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-        bake-target: docker-metadata-action-base
-        flavor: |
-          latest=false
-
     - name: Docker meta for autoware:core-devel
       id: meta-core-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=core-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=core-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=core-devel-${{ inputs.platform }}
+          type=raw,value=core-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=core-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-core-devel
         flavor: |
           latest=false
@@ -100,10 +81,11 @@ runs:
       id: meta-universe-sensing-perception-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-sensing-perception-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=universe-sensing-perception-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=universe-sensing-perception-devel-${{ inputs.platform }}
+          type=raw,value=universe-sensing-perception-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-sensing-perception-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-sensing-perception-devel
         flavor: |
           latest=false
@@ -112,10 +94,11 @@ runs:
       id: meta-universe-sensing-perception
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-sensing-perception${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=universe-sensing-perception${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=universe-sensing-perception-${{ inputs.platform }}
+          type=raw,value=universe-sensing-perception-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-sensing-perception-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-sensing-perception
         flavor: |
           latest=false
@@ -124,10 +107,11 @@ runs:
       id: meta-universe-localization-mapping-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-localization-mapping-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=universe-localization-mapping-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=universe-localization-mapping-devel-${{ inputs.platform }}
+          type=raw,value=universe-localization-mapping-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-localization-mapping-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-localization-mapping-devel
         flavor: |
           latest=false
@@ -136,10 +120,11 @@ runs:
       id: meta-universe-localization-mapping
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-localization-mapping${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=universe-localization-mapping${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=universe-localization-mapping-${{ inputs.platform }}
+          type=raw,value=universe-localization-mapping-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-localization-mapping-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-localization-mapping
         flavor: |
           latest=false
@@ -148,10 +133,11 @@ runs:
       id: meta-universe-planning-control-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-planning-control-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=universe-planning-control-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=universe-planning-control-devel-${{ inputs.platform }}
+          type=raw,value=universe-planning-control-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-planning-control-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-planning-control-devel
         flavor: |
           latest=false
@@ -160,10 +146,11 @@ runs:
       id: meta-universe-planning-control
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-planning-control${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=universe-planning-control${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=universe-planning-control-${{ inputs.platform }}
+          type=raw,value=universe-planning-control-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-planning-control-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-planning-control
         flavor: |
           latest=false
@@ -172,10 +159,11 @@ runs:
       id: meta-universe-vehicle-system-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-vehicle-system-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=universe-vehicle-system-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=universe-vehicle-system-devel-${{ inputs.platform }}
+          type=raw,value=universe-vehicle-system-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-vehicle-system-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-vehicle-system-devel
         flavor: |
           latest=false
@@ -184,10 +172,11 @@ runs:
       id: meta-universe-vehicle-system
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-vehicle-system${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=universe-vehicle-system${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=universe-vehicle-system-${{ inputs.platform }}
+          type=raw,value=universe-vehicle-system-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-vehicle-system-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-vehicle-system
         flavor: |
           latest=false
@@ -196,10 +185,11 @@ runs:
       id: meta-universe-devel
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-devel${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=universe-devel${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=universe-devel-${{ inputs.platform }}
+          type=raw,value=universe-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe-devel
         flavor: |
           latest=false
@@ -208,10 +198,11 @@ runs:
       id: meta-universe
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.bake-target }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe${{ inputs.tag-suffix }}-${{ inputs.platform }}
-          type=raw,value=universe${{ inputs.tag-suffix }}-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=raw,value=universe-${{ inputs.platform }}
+          type=raw,value=universe-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-universe
         flavor: |
           latest=auto
@@ -229,7 +220,6 @@ runs:
         push: true
         files: |
           docker/docker-bake.hcl
-          ${{ steps.meta-base.outputs.bake-file }}
           ${{ steps.meta-core-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception.outputs.bake-file }}

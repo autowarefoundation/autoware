@@ -3,20 +3,16 @@ repositories:
   core/autoware_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
-    version: 1.2.0
+    version: 1.3.0
+  # TODO (isamu-takagi): Use a released version when autoware.universe uses a released version.
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
-    version: 1.3.0
+    version: beta/1.7.0
   core/autoware_internal_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_internal_msgs.git
-    version: 1.1.0
-  # TODO(youtalk): Remove autoware_common when https://github.com/autowarefoundation/autoware/issues/4911 is closed
-  core/autoware_common:
-    type: git
-    url: https://github.com/autowarefoundation/autoware_common.git
-    version: remove-autoware-cmake-utils
+    version: 1.3.0
   core/autoware_cmake:
     type: git
     url: https://github.com/autowarefoundation/autoware_cmake.git
@@ -28,17 +24,17 @@ repositories:
   core/autoware_lanelet2_extension:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
-    version: 0.6.1
+    version: 0.6.2
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
-    version: main
+    version: 0.1.0
   # universe
   universe/autoware.universe:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
-    version: main
-  universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Migrate to AD API
+    version: 0.40.0
+  universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Migrate to AD API and remove this repository entry.
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
     version: tier4/universe
@@ -54,10 +50,6 @@ repositories:
   universe/external/muSSP:
     type: git
     url: https://github.com/tier4/muSSP.git
-    version: tier4/main
-  universe/external/ndt_omp:
-    type: git
-    url: https://github.com/tier4/ndt_omp.git
     version: tier4/main
   universe/external/pointcloud_to_laserscan:
     type: git
@@ -75,10 +67,6 @@ repositories:
     type: git
     url: https://github.com/MapIV/llh_converter.git
     version: ros2
-  universe/external/ament_cmake: # TODO(mitsudome-r): remove when https://github.com/ament/ament_cmake/pull/448 is merged
-    type: git
-    url: https://github.com/autowarefoundation/ament_cmake.git
-    version: feat/faster_ament_libraries_deduplicate
   universe/external/glog:  # TODO(Horibe): to use isGoogleInitialized() API in v0.6.0. Remove when the rosdep glog version is updated to v0.6.0 (already updated in Ubuntu 24.04)
     type: git
     url: https://github.com/tier4/glog.git
@@ -87,7 +75,7 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
-    version: main
+    version: 0.40.0
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
@@ -115,19 +103,19 @@ repositories:
   sensor_kit/sample_sensor_kit_launch:
     type: git
     url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
-    version: main
+    version: 0.39.0
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
-    url: https://github.com/RobotecAI/awsim_sensor_kit_launch.git
-    version: main
+    url: https://github.com/tier4/awsim_sensor_kit_launch.git
+    version: 0.39.0
   sensor_kit/awsim_labs_sensor_kit_launch:
     type: git
     url: https://github.com/autowarefoundation/awsim_labs_sensor_kit_launch.git
-    version: main
+    version: 0.39.0
   sensor_kit/single_lidar_sensor_kit_launch:
     type: git
     url: https://github.com/autowarefoundation/single_lidar_sensor_kit_launch.git
-    version: main
+    version: 0.39.0
   # vehicle
   vehicle/sample_vehicle_launch:
     type: git

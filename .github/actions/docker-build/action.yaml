@@ -1,19 +1,20 @@
 name: docker-build
-description: ""
+description: Composite action to build images only.
 
 inputs:
-  name:
-    description: ""
-    required: true
   platform:
-    description: ""
+    description: Target platform.
     required: true
   cache-tag-suffix:
-    description: ""
+    description: Suffix of the target cache tag.
     required: true
+  additional-repos:
+    description: Additional target .repos file.
+    default: ""
+    required: false
   build-args:
-    description: ""
-    required: true
+    description: Additional build args.
+    required: false
 
 runs:
   using: composite
@@ -34,50 +35,52 @@ runs:
         vcs import src < autoware.repos
       shell: bash
 
+    - name: Import additional repositories
+      if: ${{ inputs.additional-repos != '' }}
+      run: |
+        vcs import --force src < ${{ inputs.additional-repos }}
+      shell: bash
+
     - name: Cache ccache
       uses: actions/cache@v4
-      if: ${{ inputs.name == 'no-cuda' && github.ref == 'refs/heads/main' }}
+      if: ${{ github.ref == 'refs/heads/main' && inputs.additional-repos == '' }}
       id: cache-ccache
       with:
         path: |
           root-ccache
-        key: ccache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
-          ccache-${{ inputs.platform }}-${{ inputs.name }}-
           ccache-${{ inputs.platform }}-
 
     - name: Cache apt-get
       uses: actions/cache@v4
-      if: ${{ inputs.name == 'no-cuda' && github.ref == 'refs/heads/main' }}
+      if: ${{ github.ref == 'refs/heads/main' && inputs.additional-repos == '' }}
       id: cache-apt-get
       with:
         path: |
           var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/package.xml') }}
+        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
-          apt-get-${{ inputs.platform }}-${{ inputs.name }}-
           apt-get-${{ inputs.platform }}-
 
     - name: Restore ccache
       uses: actions/cache/restore@v4
-      if: ${{ inputs.name != 'no-cuda' || github.ref != 'refs/heads/main' }}
+      if: ${{ github.ref != 'refs/heads/main' || inputs.additional-repos != '' }}
       with:
         path: |
           root-ccache
-        key: ccache-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
-          ccache-${{ inputs.platform }}-${{ inputs.name }}-
           ccache-${{ inputs.platform }}-
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
-      if: ${{ inputs.name != 'no-cuda' || github.ref != 'refs/heads/main' }}
+      if: ${{ github.ref != 'refs/heads/main' || inputs.additional-repos != '' }}
       with:
         path: |
           var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ inputs.name }}-${{ hashFiles('src/**/package.xml') }}
+        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
-          apt-get-${{ inputs.platform }}-${{ inputs.name }}-
           apt-get-${{ inputs.platform }}-
 
     - name: Inject cache into docker
@@ -104,4 +107,4 @@ runs:
         context: .
         push: false
         build-args: ${{ inputs.build-args }}
-        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.name }}-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}
+        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}

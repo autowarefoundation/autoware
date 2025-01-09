@@ -1,3 +1,7 @@
+# This file is automatically synced from:
+# https://github.com/autowarefoundation/sync-file-templates
+# To make changes, update the source repository and follow the guidelines in its README.
+
 name: semantic-pull-request
 
 on:
