@@ -148,6 +148,22 @@ build_images() {
         --set "universe-devel-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-devel-cuda" \
         --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe" \
         --set "universe-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-cuda" \
+        --set "universe-visualization.tags=ghcr.io/autowarefoundation/autoware:universe-visualization" \
+        "universe-visualization"
+    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" -f "$SCRIPT_DIR/docker-bake-cuda.hcl" \
+        --set "*.context=$WORKSPACE_ROOT" \
+        --set "*.ssh=default" \
+        --set "*.platform=$platform" \
+        --set "*.args.ROS_DISTRO=$rosdistro" \
+        --set "*.args.BASE_IMAGE=$base_image" \
+        --set "*.args.AUTOWARE_BASE_IMAGE=$autoware_base_image" \
+        --set "*.args.AUTOWARE_BASE_CUDA_IMAGE=$autoware_base_cuda_image" \
+        --set "*.args.SETUP_ARGS=$setup_args" \
+        --set "*.args.LIB_DIR=$lib_dir" \
+        --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel" \
+        --set "universe-devel-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-devel-cuda" \
+        --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe" \
+        --set "universe-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-cuda" \
         "$target$image_name_suffix"
     set +x
 }

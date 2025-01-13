@@ -9,6 +9,7 @@ group "default" {
     "universe-planning-control",
     "universe-vehicle-system-devel",
     "universe-vehicle-system",
+    "universe-visualization-devel",
     "universe-visualization",
     "universe-devel",
     "universe"
@@ -25,6 +26,7 @@ target "docker-metadata-action-universe-planning-control-devel" {}
 target "docker-metadata-action-universe-planning-control" {}
 target "docker-metadata-action-universe-vehicle-system-devel" {}
 target "docker-metadata-action-universe-vehicle-system" {}
+target "docker-metadata-action-universe-visualization-devel" {}
 target "docker-metadata-action-universe-visualization" {}
 target "docker-metadata-action-universe-devel" {}
 target "docker-metadata-action-universe" {}
