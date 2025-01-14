@@ -42,6 +42,7 @@ jobs:
         with:
           git-cliff-args: |
             --tag-pattern "^(\d+)\.(\d+)\.(\d+)$"
+            --latest
 
       - name: Select verb
         id: select-verb
