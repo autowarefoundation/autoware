@@ -80,6 +80,10 @@ This is a base image of this Dockerfile. [`ros:humble-ros-base-jammy`](https://h
 
 This stage performs only the basic setup required for all Autoware images.
 
+# `base-cuda`
+
+This stage is the same as `base`, but it also installs the CUDA runtime environment and artifacts.
+
 ### `rosdep-depend`
 
 The ROS dependency package list files will be generated.
@@ -105,9 +109,20 @@ This stage installs the dependency packages based on `/rosdep-universe-common-de
 - `universe/external`
 - `universe/autoware.universe/common`
 
+### `universe-common-devel-cuda`
+
+This stage is the same as `universe-common-devel`, but it also installs the CUDA development environment.
+
 ### `universe-sensing-perception-devel`
 
-This stage installs the dependency packages based on `/rosdep-universe-sensing-perception-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
+This stage installs the dependency packages based on `/rosdep-universe-sensing-perception-depend-packages.txt` and build the non-CUDA related packages under the following directories of `autoware.repos`.
+
+- `universe/autoware.universe/perception`
+- `universe/autoware.universe/sensing`
+
+### `universe-sensing-perception-devel-cuda`
+
+This stage builds the CUDA related packages under the following directories of `autoware.repos`.
 
 - `universe/autoware.universe/perception`
 - `universe/autoware.universe/sensing`
@@ -115,6 +130,10 @@ This stage installs the dependency packages based on `/rosdep-universe-sensing-p
 ### `universe-sensing-perception`
 
 This stage is a Autoware Universe Sensing/Perception runtime container. It only includes the dependencies given by `/rosdep-universe-sensing-perception-exec-depend-packages.txt` and the binaries built in the `universe-sensing-perception-devel` stage.
+
+### `universe-sensing-perception-cuda`
+
+This stage installs the CUDA runtime environment and copies the binaries built in the `universe-sensing-perception-devel-cuda` stage to the `universe-sensing-perception` stage.
 
 ### `universe-localization-mapping-devel`
 
@@ -151,7 +170,14 @@ This stage is a Autoware Universe Vehicle/System runtime container. It only incl
 
 ### `universe-devel`
 
-This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and build the remaining packages of `autoware.repos`:
+This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and copies the binaries built in the following stages:
+
+- `universe-sensing-perception-devel`
+- `universe-localization-mapping-devel`
+- `universe-planning-control-devel`
+- `universe-vehicle-system-devel`
+
+Then it builds the remaining packages of `autoware.repos`:
 
 - `launcher`
 - `param`
@@ -160,13 +186,19 @@ This stage installs the dependency packages based on `/rosdep-universe-depend-pa
 - `universe/autoware.universe/evaluator`
 - `universe/autoware.universe/launch`
 - `universe/autoware.universe/simulator`
-- `universe/autoware.universe/system`
 - `universe/autoware.universe/tools`
-- `universe/autoware.universe/vehicle`
 - `vehicle`
 
 This stage provides an all-in-one development container to Autoware developers. By running the host's source code with volume mounting, it allows for easy building and debugging of Autoware.
 
+### `universe-devel-cuda`
+
+This stage installs the CUDA development environment and copies the binaries built in the `universe-sensing-perception-devel-cuda` stage to the `universe-devel` stage.
+
 ### `universe`
 
-This stage is an Autoware Universe runtime container. It only includes the dependencies given by `/rosdep-exec-depend-packages.txt`, the binaries built in the `universe-devel` stage, and artifacts.
+This stage is an Autoware Universe runtime container. It only includes the dependencies given by `/rosdep-exec-depend-packages.txt`, the binaries built in the `universe-devel` stage.
+
+### `universe-cuda`
+
+This stage installs the CUDA runtime environment and copies the binaries built in the `universe-sensing-perception-devel-cuda` stage to the `universe` stage.
