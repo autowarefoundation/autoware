@@ -11,6 +11,7 @@ print_help() {
     echo "  --no-cuda       Disable CUDA support"
     echo "  --platform      Specify the platform (default: current platform)"
     echo "  --devel-only    Build devel image only"
+    echo "  --target        Specify the target image"
     echo ""
     echo "Note: The --platform option should be one of 'linux/amd64' or 'linux/arm64'."
 }
@@ -36,6 +37,10 @@ parse_arguments() {
         --devel-only)
             option_devel_only=true
             ;;
+        --target)
+            option_target="$2"
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             print_help
@@ -58,10 +63,14 @@ set_cuda_options() {
 
 # Set build options
 set_build_options() {
-    if [ "$option_devel_only" = "true" ]; then
-        target="universe-devel"
+    if [ -n "$option_target" ]; then
+        target="$option_target"
     else
-        target="universe"
+        if [ "$option_devel_only" = "true" ]; then
+            target="universe-devel"
+        else
+            target="universe"
+        fi
     fi
 }
 
