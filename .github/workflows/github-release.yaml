@@ -28,13 +28,13 @@ jobs:
             REF_NAME="${{ github.ref_name }}"
           fi
 
-          echo "ref-name=$REF_NAME" >> $GITHUB_OUTPUT
+          echo "tag-name=$REF_NAME" >> $GITHUB_OUTPUT
 
       - name: Check out repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ steps.set-tag-name.outputs.ref-name }}
+          ref: ${{ steps.set-tag-name.outputs.tag-name }}
 
       - name: Run generate-changelog
         id: generate-changelog
