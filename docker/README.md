@@ -111,7 +111,7 @@ This stage installs the dependency packages based on `/rosdep-universe-common-de
 
 ### `universe-common-devel-cuda`
 
-This stage is the same as `universe-common-devel`, but it also installs the CUDA development environment.
+This stage is build on top of `universe-common-devel` and installs the CUDA development environment.
 
 ### `universe-sensing-perception-devel`
 
