@@ -6,14 +6,12 @@ name: github-release
 
 on:
   push:
-    branches:
-      - beta/v*
     tags:
-      - v*
+      - "*.*.*"
   workflow_dispatch:
     inputs:
-      beta-branch-or-tag-name:
-        description: The name of the beta branch or tag to release
+      tag-name:
+        description: The name of the tag to release
         type: string
         required: true
 
@@ -25,32 +23,18 @@ jobs:
         id: set-tag-name
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            REF_NAME="${{ github.event.inputs.beta-branch-or-tag-name }}"
+            REF_NAME="${{ github.event.inputs.tag-name }}"
           else
             REF_NAME="${{ github.ref_name }}"
           fi
 
           echo "ref-name=$REF_NAME" >> $GITHUB_OUTPUT
-          echo "tag-name=${REF_NAME#beta/}" >> $GITHUB_OUTPUT
 
       - name: Check out repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ steps.set-tag-name.outputs.ref-name }}
-
-      - name: Set target name for beta branches
-        id: set-target-name
-        run: |
-          if [[ "${{ steps.set-tag-name.outputs.ref-name }}" =~ "beta/" ]]; then
-            echo "target-name=${{ steps.set-tag-name.outputs.ref-name }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create a local tag for beta branches
-        run: |
-          if [ "${{ steps.set-target-name.outputs.target-name }}" != "" ]; then
-            git tag "${{ steps.set-tag-name.outputs.tag-name }}"
-          fi
 
       - name: Run generate-changelog
         id: generate-changelog
@@ -74,7 +58,6 @@ jobs:
         run: |
           gh release ${{ steps.select-verb.outputs.verb }} "${{ steps.set-tag-name.outputs.tag-name }}" \
             --draft \
-            --target "${{ steps.set-target-name.outputs.target-name }}" \
             --title "Release ${{ steps.set-tag-name.outputs.tag-name }}" \
             --notes "$NOTES"
         env:
