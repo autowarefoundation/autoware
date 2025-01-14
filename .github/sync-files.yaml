@@ -9,7 +9,6 @@
     - source: .github/stale.yml
     - source: .github/workflows/cancel-previous-workflows.yaml
     - source: .github/workflows/comment-on-pr.yaml
-    - source: .github/workflows/github-release.yaml
     - source: .github/workflows/pre-commit-optional.yaml
     - source: .github/workflows/pre-commit-optional-autoupdate.yaml
     - source: .github/workflows/pre-commit-autoupdate.yaml

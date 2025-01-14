@@ -39,6 +39,9 @@ jobs:
       - name: Run generate-changelog
         id: generate-changelog
         uses: autowarefoundation/autoware-github-actions/generate-changelog@v1
+        with:
+          git-cliff-args: |
+            --tag-pattern "^(\d+)\.(\d+)\.(\d+)$"
 
       - name: Select verb
         id: select-verb
