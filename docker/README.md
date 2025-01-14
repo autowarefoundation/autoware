@@ -122,7 +122,7 @@ This stage installs the dependency packages based on `/rosdep-universe-sensing-p
 
 ### `universe-sensing-perception-devel-cuda`
 
-This stage builds the CUDA related packages under the following directories of `autoware.repos`:
+This stage copies the non-CUDA related binaries built in the `universe-sensing-perception-devel` stage and builds the CUDA related packages under the following directories of `autoware.repos`:
 
 - `universe/autoware.universe/perception`
 - `universe/autoware.universe/sensing`
