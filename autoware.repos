@@ -74,7 +74,7 @@ repositories:
   universe/external/ros2_spconv:
     type: git
     url: https://github.com/knzo25/ros2_spconv.git
-    version: main
+    version: feat/autoware_compile_test
   # launcher
   launcher/autoware_launch:
     type: git
