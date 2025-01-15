@@ -76,6 +76,10 @@ repositories:
     type: git
     url: https://github.com/tier4/glog.git
     version: v0.6.0_t4-ros
+  universe/external/ros2_spconv:
+    type: git
+    url: https://github.com/knzo25/ros2_spconv.git
+    version: main
   # launcher
   launcher/autoware_launch:
     type: git
