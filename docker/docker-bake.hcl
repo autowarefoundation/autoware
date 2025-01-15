@@ -85,6 +85,12 @@ target "universe-vehicle-system" {
   target = "universe-vehicle-system"
 }
 
+target "universe-visualization-devel" {
+  inherits = ["docker-metadata-action-universe-visualization-devel"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-visualization-devel"
+}
+
 target "universe-visualization" {
   inherits = ["docker-metadata-action-universe-visualization"]
   dockerfile = "docker/Dockerfile"
