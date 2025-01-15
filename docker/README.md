@@ -135,6 +135,10 @@ This stage is an Autoware Universe Sensing/Perception runtime container. It only
 
 This stage installs the CUDA runtime environment and copies the binaries built in the `universe-sensing-perception-devel-cuda` stage.
 
+### `universe-visualization`
+
+This stage is a Autoware Universe Visualization runtime container. It only includes the dependencies given by `/rosdep-universe-visualization-exec-depend-packages.txt` and the binaries built in the `universe-visualization-devel` stage.
+
 ### `universe-localization-mapping-devel`
 
 This stage installs the dependency packages based on `/rosdep-universe-localization-mapping-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
@@ -187,6 +191,7 @@ Then it builds the remaining packages of `autoware.repos`:
 - `universe/autoware.universe/launch`
 - `universe/autoware.universe/simulator`
 - `universe/autoware.universe/tools`
+- `universe/autoware.universe/visualization`
 - `vehicle`
 
 This stage provides an all-in-one development container to Autoware developers. By running the host's source code with volume mounting, it allows for easy building and debugging of Autoware.
