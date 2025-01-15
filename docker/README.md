@@ -76,9 +76,13 @@ The suffix `-devel` (e.g. `universe-devel`) is intended for use as a [developmen
 
 This is a base image of this Dockerfile. [`ros:humble-ros-base-jammy`](https://hub.docker.com/_/ros/tags?page=&page_size=&ordering=&name=humble-ros-base-jammy) will be given.
 
-### `base`
+### `base` (from Dockerfile.base)
 
 This stage performs only the basic setup required for all Autoware images.
+
+### `base-cuda` (from Dockerfile.base)
+
+This stage is built on top of `base` and adds the CUDA runtime environment and artifacts.
 
 ### `rosdep-depend`
 
@@ -96,62 +100,84 @@ By generating only the package list files and copying them to the subsequent sta
 
 ### `core-devel`
 
-This stage installs the dependency packages based on `/rosdep-core-depend-packages.txt` and build the packages under the `core` directory of `autoware.repos`.
+This stage installs the dependency packages based on `/rosdep-core-depend-packages.txt` and builds the packages under the `core` directory of `autoware.repos`.
 
 ### `universe-common-devel`
 
-This stage installs the dependency packages based on `/rosdep-universe-common-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
+This stage installs the dependency packages based on `/rosdep-universe-common-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
 
 - `universe/external`
 - `universe/autoware.universe/common`
 
+### `universe-common-devel-cuda`
+
+This stage is build on top of `universe-common-devel` and installs the CUDA development environment.
+
 ### `universe-sensing-perception-devel`
 
-This stage installs the dependency packages based on `/rosdep-universe-sensing-perception-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
+This stage installs the dependency packages based on `/rosdep-universe-sensing-perception-depend-packages.txt` and builds the non-CUDA related packages under the following directories of `autoware.repos`:
+
+- `universe/autoware.universe/perception`
+- `universe/autoware.universe/sensing`
+
+### `universe-sensing-perception-devel-cuda`
+
+This stage copies the non-CUDA related binaries built in the `universe-sensing-perception-devel` stage and builds the CUDA related packages under the following directories of `autoware.repos`:
 
 - `universe/autoware.universe/perception`
 - `universe/autoware.universe/sensing`
 
 ### `universe-sensing-perception`
 
-This stage is a Autoware Universe Sensing/Perception runtime container. It only includes the dependencies given by `/rosdep-universe-sensing-perception-exec-depend-packages.txt` and the binaries built in the `universe-sensing-perception-devel` stage.
+This stage is an Autoware Universe Sensing/Perception runtime container. It only includes the dependencies given by `/rosdep-universe-sensing-perception-exec-depend-packages.txt` and the binaries built in the `universe-sensing-perception-devel` stage.
+
+### `universe-sensing-perception-cuda`
+
+This stage installs the CUDA runtime environment and copies the binaries built in the `universe-sensing-perception-devel-cuda` stage.
 
 ### `universe-localization-mapping-devel`
 
-This stage installs the dependency packages based on `/rosdep-universe-localization-mapping-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
+This stage installs the dependency packages based on `/rosdep-universe-localization-mapping-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
 
 - `universe/autoware.universe/localization`
 - `universe/autoware.universe/map`
 
 ### `universe-localization-mapping`
 
-This stage is a Autoware Universe Localization/Mapping runtime container. It only includes the dependencies given by `/rosdep-universe-localization-mapping-exec-depend-packages.txt` and the binaries built in the `universe-localization-mapping-devel` stage.
+This stage is an Autoware Universe Localization/Mapping runtime container. It only includes the dependencies given by `/rosdep-universe-localization-mapping-exec-depend-packages.txt` and the binaries built in the `universe-localization-mapping-devel` stage.
 
 ### `universe-planning-control-devel`
 
-This stage installs the dependency packages based on `/rosdep-universe-planning-control-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
+This stage installs the dependency packages based on `/rosdep-universe-planning-control-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
 
 - `universe/autoware.universe/control`
 - `universe/autoware.universe/planning`
 
 ### `universe-planning-control`
 
-This stage is a Autoware Universe Planning/Control runtime container. It only includes the dependencies given by `/rosdep-universe-planning-control-exec-depend-packages.txt` and the binaries built in the `universe-planning-control-devel` stage.
+This stage is an Autoware Universe Planning/Control runtime container. It only includes the dependencies given by `/rosdep-universe-planning-control-exec-depend-packages.txt` and the binaries built in the `universe-planning-control-devel` stage.
 
 ### `universe-vehicle-system-devel`
 
-This stage installs the dependency packages based on `/rosdep-universe-vehicle-system-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
+This stage installs the dependency packages based on `/rosdep-universe-vehicle-system-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
 
 - `universe/autoware.universe/vehicle`
 - `universe/autoware.universe/system`
 
 ### `universe-vehicle-system`
 
-This stage is a Autoware Universe Vehicle/System runtime container. It only includes the dependencies given by `/rosdep-universe-vehicle-system-exec-depend-packages.txt` and the binaries built in the `universe-vehicle-system-devel` stage.
+This stage is an Autoware Universe Vehicle/System runtime container. It only includes the dependencies given by `/rosdep-universe-vehicle-system-exec-depend-packages.txt` and the binaries built in the `universe-vehicle-system-devel` stage.
 
 ### `universe-devel`
 
-This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and build the remaining packages of `autoware.repos`:
+This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and copies the binaries built in the following stages:
+
+- `universe-sensing-perception-devel`
+- `universe-localization-mapping-devel`
+- `universe-planning-control-devel`
+- `universe-vehicle-system-devel`
+
+Then it builds the remaining packages of `autoware.repos`:
 
 - `launcher`
 - `param`
@@ -160,13 +186,19 @@ This stage installs the dependency packages based on `/rosdep-universe-depend-pa
 - `universe/autoware.universe/evaluator`
 - `universe/autoware.universe/launch`
 - `universe/autoware.universe/simulator`
-- `universe/autoware.universe/system`
 - `universe/autoware.universe/tools`
-- `universe/autoware.universe/vehicle`
 - `vehicle`
 
 This stage provides an all-in-one development container to Autoware developers. By running the host's source code with volume mounting, it allows for easy building and debugging of Autoware.
 
+### `universe-devel-cuda`
+
+This stage installs the CUDA development environment and copies the binaries built in the `universe-sensing-perception-devel-cuda` stage to the `universe-devel` stage.
+
 ### `universe`
 
-This stage is an Autoware Universe runtime container. It only includes the dependencies given by `/rosdep-exec-depend-packages.txt`, the binaries built in the `universe-devel` stage, and artifacts.
+This stage is an Autoware Universe runtime container. It only includes the dependencies given by `/rosdep-exec-depend-packages.txt` and the binaries built in the `universe-devel` stage.
+
+### `universe-cuda`
+
+This stage installs the CUDA runtime environment and copies the binaries built in the `universe-devel-cuda` stage.
