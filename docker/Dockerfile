@@ -368,6 +368,7 @@ COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
 COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
 COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
+COPY --from=universe-visualization-devel /opt/autoware /opt/autoware
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
