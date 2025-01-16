@@ -56,7 +56,7 @@ COPY src/universe/autoware.universe/sensing /autoware/src/universe/autoware.univ
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-sensing-perception-depend-packages.txt \
   && cat /rosdep-universe-sensing-perception-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
   > /rosdep-universe-sensing-perception-exec-depend-packages.txt \
   && cat /rosdep-universe-sensing-perception-exec-depend-packages.txt
 
@@ -69,7 +69,7 @@ COPY src/universe/autoware.universe/map /autoware/src/universe/autoware.universe
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-localization-mapping-depend-packages.txt \
   && cat /rosdep-universe-localization-mapping-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
   > /rosdep-universe-localization-mapping-exec-depend-packages.txt \
   && cat /rosdep-universe-localization-mapping-exec-depend-packages.txt
 
@@ -87,7 +87,7 @@ COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /au
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-planning-control-depend-packages.txt \
   && cat /rosdep-universe-planning-control-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
   > /rosdep-universe-planning-control-exec-depend-packages.txt \
   && cat /rosdep-universe-planning-control-exec-depend-packages.txt
 
@@ -102,7 +102,7 @@ COPY src/universe/autoware.universe/localization/autoware_pose2twist /autoware/s
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-vehicle-system-depend-packages.txt \
   && cat /rosdep-universe-vehicle-system-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
   > /rosdep-universe-vehicle-system-exec-depend-packages.txt \
   && cat /rosdep-universe-vehicle-system-exec-depend-packages.txt
 
@@ -120,7 +120,7 @@ RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-depend-packages.txt \
   && cat /rosdep-universe-depend-packages.txt
 
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
   > /rosdep-exec-depend-packages.txt \
   && cat /rosdep-exec-depend-packages.txt
 
