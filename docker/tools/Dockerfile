@@ -69,10 +69,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up VNC password
-RUN mkdir -p ~/.vnc && \
-    echo "openadkit" | vncpasswd -f > ~/.vnc/passwd && \
-    chmod 600 ~/.vnc/passwd
+# # Set up VNC password
+# RUN mkdir -p ~/.vnc && \
+#     echo "openadkit" | vncpasswd -f > ~/.vnc/passwd && \
+#     chmod 600 ~/.vnc/passwd
 
 # Create SSL certificate for NoVNC
 RUN openssl req -x509 -nodes -newkey rsa:2048 \
