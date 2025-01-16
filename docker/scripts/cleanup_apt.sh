@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 function cleanup_apt() {
     local apt_clean=$1

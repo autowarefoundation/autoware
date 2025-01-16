@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 function build_and_clean() {
     local ccache_dir=$1
