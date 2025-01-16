@@ -1,0 +1,110 @@
+name: docker-build-and-push-tools
+description: Composite action to build and push tools images to registry.
+
+inputs:
+  platform:
+    description: Target platform.
+    required: true
+  target-image:
+    description: Target docker image name in the registry.
+    required: true
+  build-args:
+    description: Additional build args.
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Install jq and vcstool
+      run: |
+        sudo apt-get -y update
+        sudo apt-get -y install jq python3-pip
+        pip install --no-cache-dir vcstool
+      shell: bash
+
+    - name: Run vcs import
+      run: |
+        mkdir src
+        vcs import src < autoware.repos
+      shell: bash
+
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Restore ccache
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          root-ccache
+        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
+        restore-keys: |
+          ccache-${{ inputs.platform }}-
+
+    - name: Restore apt-get
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          var-cache-apt
+        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
+        restore-keys: |
+          apt-get-${{ inputs.platform }}-
+
+    - name: Inject cache into docker
+      uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+      with:
+        cache-map: |
+          {
+            "root-ccache": "/root/.ccache",
+            "var-cache-apt": "/var/cache/apt"
+          }
+        skip-extraction: true
+
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Docker meta for autoware:visualizer
+      id: meta-visualizer
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=visualizer-${{ inputs.platform }}
+          type=raw,value=visualizer-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=visualizer-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-visualizer
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:simulator
+      id: meta-simulator
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=simulator-${{ inputs.platform }}
+          type=raw,value=simulator-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=simulator-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-simulator
+        flavor: |
+          latest=false
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ github.token }}
+
+    - name: Build and Push to GitHub Container Registry
+      uses: docker/bake-action@v5
+      with:
+        push: true
+        files: |
+          docker/docker-bake-tools.hcl
+          ${{ steps.meta-simulator.outputs.bake-file }}
+          ${{ steps.meta-visualizer.outputs.bake-file }}
+        provenance: false
+        set: |
+          ${{ inputs.build-args }}
