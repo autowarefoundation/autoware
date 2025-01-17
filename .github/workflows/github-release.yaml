@@ -60,7 +60,7 @@ jobs:
         run: |
           gh release ${{ steps.select-verb.outputs.verb }} "${{ steps.set-tag-name.outputs.tag-name }}" \
             --draft \
-            --target "main"
+            --target "main" \
             --title "Release ${{ steps.set-tag-name.outputs.tag-name }}" \
             --notes "$NOTES"
         env:
