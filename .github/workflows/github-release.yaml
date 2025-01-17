@@ -7,7 +7,7 @@ name: github-release
 on:
   push:
     tags:
-      - "*.*.*"
+      - "[0-9]+.[0-9]+.[0-9]+"
   workflow_dispatch:
     inputs:
       tag-name:
@@ -60,6 +60,7 @@ jobs:
         run: |
           gh release ${{ steps.select-verb.outputs.verb }} "${{ steps.set-tag-name.outputs.tag-name }}" \
             --draft \
+            --target "main"
             --title "Release ${{ steps.set-tag-name.outputs.tag-name }}" \
             --notes "$NOTES"
         env:
