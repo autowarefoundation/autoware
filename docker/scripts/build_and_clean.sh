@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 function build_and_clean() {
     local ccache_dir=$1
