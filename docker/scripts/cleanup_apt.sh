@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 function cleanup_apt() {
     local apt_clean=$1
