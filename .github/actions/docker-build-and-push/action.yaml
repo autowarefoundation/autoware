@@ -181,6 +181,32 @@ runs:
         flavor: |
           latest=false
 
+    - name: Docker meta for autoware:universe-visualization-devel
+      id: meta-universe-visualization-devel
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=universe-visualization-devel-${{ inputs.platform }}
+          type=raw,value=universe-visualization-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-visualization-devel-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-visualization-devel
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:universe-visualization
+      id: meta-universe-visualization
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=universe-visualization-${{ inputs.platform }}
+          type=raw,value=universe-visualization-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-visualization-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-visualization
+        flavor: |
+          latest=false
+
     - name: Docker meta for autoware:universe-devel
       id: meta-universe-devel
       uses: docker/metadata-action@v5
@@ -229,6 +255,8 @@ runs:
           ${{ steps.meta-universe-planning-control.outputs.bake-file }}
           ${{ steps.meta-universe-vehicle-system-devel.outputs.bake-file }}
           ${{ steps.meta-universe-vehicle-system.outputs.bake-file }}
+          ${{ steps.meta-universe-visualization-devel.outputs.bake-file }}
+          ${{ steps.meta-universe-visualization.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
         provenance: false
