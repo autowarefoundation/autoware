@@ -185,7 +185,7 @@ runs:
       id: meta-universe-visualization-devel
       uses: docker/metadata-action@v5
       with:
-        images: ${{ github.repository_owner }}/${{ inputs.target-image }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-visualization-devel-${{ inputs.platform }}
           type=raw,value=universe-visualization-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
@@ -198,7 +198,7 @@ runs:
       id: meta-universe-visualization
       uses: docker/metadata-action@v5
       with:
-        images: ${{ github.repository_owner }}/${{ inputs.target-image }}
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=universe-visualization-${{ inputs.platform }}
           type=raw,value=universe-visualization-${{ steps.date.outputs.date }}-${{ inputs.platform }}
