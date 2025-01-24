@@ -14,7 +14,7 @@ jobs:
 
   docker-build-and-push:
     needs: load-env
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: ubuntu-22.04-arm
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
@@ -74,7 +74,7 @@ jobs:
 
   docker-build-and-push-cuda:
     needs: [load-env, docker-build-and-push]
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: ubuntu-22.04-arm
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
