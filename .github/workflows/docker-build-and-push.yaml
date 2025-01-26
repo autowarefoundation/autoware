@@ -5,6 +5,7 @@ on:
     branches:
       - main
     tags:
+      - "*.*.*"
   workflow_dispatch:
 
 jobs:
@@ -23,9 +24,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
-
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v45
@@ -39,6 +37,12 @@ jobs:
             ansible/**
             docker/**
 
+      - name: Free disk space
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.ref_type == 'tag') }}
+        uses: ./.github/actions/free-disk-space
+
       - name: Build 'Autoware' without CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
@@ -51,6 +55,8 @@ jobs:
             *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=x86_64
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-main
@@ -73,9 +79,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
-
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v45
@@ -89,6 +92,12 @@ jobs:
             ansible/**
             docker/**
 
+      - name: Free disk space
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.ref_type == 'tag') }}
+        uses: ./.github/actions/free-disk-space
+
       - name: Build 'Autoware' with CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
@@ -101,6 +110,8 @@ jobs:
             *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=x86_64
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-main

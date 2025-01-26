@@ -1,6 +1,14 @@
 name: autoware-base
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - docker/Dockerfile.base
+      - docker/scripts/cleanup_*.sh
+      - .github/actions/docker-build-and-push-base/*
+      - .github/workflows/autoware-base.yaml
   schedule:
     - cron: 0 0 15 * * # every 15th of the month
   workflow_dispatch:
@@ -9,27 +17,8 @@ jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
 
-  autoware-base-amd64:
+  autoware-base:
     needs: load-env
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Check out this repository
-        uses: actions/checkout@v4
-
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
-
-      - name: Build Autoware's base images
-        uses: ./.github/actions/docker-build-and-push-base
-        with:
-          target-image: autoware-base
-          build-args: |
-            *.platform=linux/amd64
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
-
-  autoware-base-arm64:
-    needs: [load-env, autoware-base-amd64]
     runs-on: ubuntu-22.04
     steps:
       - name: Check out this repository
@@ -46,6 +35,6 @@ jobs:
         with:
           target-image: autoware-base
           build-args: |
-            *.platform=linux/arm64
+            *.platform=linux/amd64,linux/arm64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}

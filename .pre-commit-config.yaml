@@ -1,15 +1,24 @@
+# This file is automatically synced from:
+# https://github.com/autowarefoundation/sync-file-templates
+# To make changes, update the source repository and follow the guidelines in its README.
+
+# https://pre-commit.ci/#configuration
 ci:
   autofix_commit_msg: "style(pre-commit): autofix"
+  # we already have our own daily update mechanism, we set this to quarterly
+  autoupdate_schedule: quarterly
+  autoupdate_commit_msg: "ci(pre-commit): quarterly autoupdate"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-json
       - id: check-merge-conflict
       - id: check-toml
       - id: check-xml
       - id: check-yaml
+        args: [--unsafe]
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: mixed-line-ending
@@ -17,7 +26,7 @@ repos:
         args: [--markdown-linebreak-ext=md]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.41.0
+    rev: v0.43.0
     hooks:
       - id: markdownlint
         args: [-c, .markdownlint.yaml, --fix]
@@ -32,20 +41,69 @@ repos:
     hooks:
       - id: yamllint
 
+  - repo: https://github.com/tier4/pre-commit-hooks-ros
+    rev: v0.10.0
+    hooks:
+      - id: flake8-ros
+      - id: prettier-xacro
+      - id: prettier-launch-xml
+      - id: prettier-package-xml
+      - id: ros-include-guard
+      - id: sort-package-xml
+
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
 
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.9.0-1
+    rev: v3.10.0-2
     hooks:
       - id: shfmt
         args: [-w, -s, -i=4]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args: [--line-length=100]
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v19.1.5
+    hooks:
+      - id: clang-format
+        types_or: [c++, c, cuda]
+
+  - repo: https://github.com/cpplint/cpplint
+    rev: 2.0.0
+    hooks:
+      - id: cpplint
+        args: [--quiet]
+        exclude: .cu
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.30.0
+    hooks:
+      - id: check-metaschema
+        files: ^.+/schema/.*schema\.json$
+
+  - repo: local
+    hooks:
+      - id: prettier-svg
+        name: prettier svg
+        description: Apply Prettier with plugin-xml to svg.
+        entry: prettier --write --list-different --ignore-unknown --print-width 200 --xml-self-closing-space false --xml-whitespace-sensitivity ignore
+        language: node
+        files: .svg$
+        additional_dependencies: [prettier@2.7.1, "@prettier/plugin-xml@2.2.0"]
 
   - repo: https://github.com/AleksaC/hadolint-py
     rev: v2.12.1b3
     hooks:
       - id: hadolint
-
-exclude: .svg
+        exclude: .svg$

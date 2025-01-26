@@ -1,0 +1,34 @@
+- repository: autowarefoundation/sync-file-templates
+  source-dir: sources
+  files:
+    - source: .github/ISSUE_TEMPLATE/bug.yaml
+    - source: .github/ISSUE_TEMPLATE/config.yml
+    - source: .github/ISSUE_TEMPLATE/task.yaml
+    - source: .github/dependabot.yaml
+    - source: .github/pull_request_template.md
+    - source: .github/stale.yml
+    - source: .github/workflows/cancel-previous-workflows.yaml
+    - source: .github/workflows/comment-on-pr.yaml
+    - source: .github/workflows/github-release.yaml
+    - source: .github/workflows/pre-commit-optional.yaml
+    - source: .github/workflows/pre-commit-optional-autoupdate.yaml
+    - source: .github/workflows/pre-commit-autoupdate.yaml
+    - source: .github/workflows/semantic-pull-request.yaml
+    - source: .github/workflows/spell-check-differential.yaml
+    - source: .github/workflows/spell-check-daily.yaml
+    - source: .github/workflows/sync-files.yaml
+    - source: .clang-format
+    - source: .clang-tidy
+    - source: .markdown-link-check.json
+    - source: .markdownlint.yaml
+    - source: .pre-commit-config-optional.yaml
+    - source: .pre-commit-config.yaml
+    - source: .prettierignore
+    - source: .prettierrc.yaml
+    - source: .yamllint.yaml
+    - source: CODE_OF_CONDUCT.md
+    - source: CONTRIBUTING.md
+    - source: CPPLINT.cfg
+    - source: DISCLAIMER.md
+    - source: LICENSE
+    - source: setup.cfg

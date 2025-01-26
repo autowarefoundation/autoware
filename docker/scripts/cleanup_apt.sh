@@ -1,10 +1,11 @@
 #!/bin/bash
+set -e
 
 function cleanup_apt() {
-    local remove_var_lib_apt_lists=$1
-    apt-get autoremove -y && rm -rf "$HOME"/.cache
-    if [[ $remove_var_lib_apt_lists == true ]]; then
-        rm -rf /var/lib/apt/lists/*
+    local apt_clean=$1
+    apt-get autoremove -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+    if [[ $apt_clean == true ]]; then
+        apt-get clean
     fi
 }
 

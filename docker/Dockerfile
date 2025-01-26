@@ -1,52 +1,6 @@
 ARG BASE_IMAGE
-
-# hadolint ignore=DL3006
-FROM $BASE_IMAGE AS base
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-
-# Copy files
-COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
-COPY ansible/ /autoware/ansible/
-COPY docker/scripts/cleanup_apt.sh /autoware/cleanup_apt.sh
-RUN chmod +x /autoware/cleanup_apt.sh
-COPY docker/scripts/cleanup_system.sh /autoware/cleanup_system.sh
-RUN chmod +x /autoware/cleanup_system.sh
-WORKDIR /autoware
-
-# Install apt packages and add GitHub to known hosts for private repositories
-RUN rm -f /etc/apt/apt.conf.d/docker-clean \
-  && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
-  gosu \
-  ssh \
-  && /autoware/cleanup_apt.sh \
-  && mkdir -p ~/.ssh \
-  && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-# Set up base environment
-RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module base --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
-  && /autoware/cleanup_apt.sh \
-  && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
-
-# Create entrypoint
-COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
-RUN chmod +x /ros_entrypoint.sh
-CMD ["/bin/bash"]
-
-FROM base AS base-cuda
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-# Set up CUDA runtime environment and artifacts
-# hadolint ignore=SC2002
-RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module base --download-artifacts --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
-  && /autoware/cleanup_apt.sh true
+ARG AUTOWARE_BASE_IMAGE
+ARG AUTOWARE_BASE_CUDA_IMAGE
 
 # hadolint ignore=DL3006
 FROM $BASE_IMAGE AS rosdep-depend
@@ -72,14 +26,26 @@ RUN --mount=type=ssh \
 # Generate install package lists
 COPY src/core /autoware/src/core
 RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-core-depend-packages.txt \
-    && cat /rosdep-core-depend-packages.txt
+  > /rosdep-core-depend-packages.txt \
+  && cat /rosdep-core-depend-packages.txt
 
 COPY src/universe/external /autoware/src/universe/external
 COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-common-depend-packages.txt \
-    && cat /rosdep-universe-common-depend-packages.txt
+  > /rosdep-universe-common-depend-packages.txt \
+  && cat /rosdep-universe-common-depend-packages.txt
+
+FROM rosdep-depend AS rosdep-universe-visualization-depend
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
+COPY src/universe/autoware.universe/visualization /autoware/src/universe/autoware.universe/visualization
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+  > /rosdep-universe-visualization-depend-packages.txt \
+  && cat /rosdep-universe-visualization-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+  > /rosdep-universe-visualization-exec-depend-packages.txt \
+  && cat /rosdep-universe-visualization-exec-depend-packages.txt
 
 FROM rosdep-depend AS rosdep-universe-sensing-perception-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -88,11 +54,11 @@ ARG ROS_DISTRO
 COPY src/universe/autoware.universe/perception /autoware/src/universe/autoware.universe/perception
 COPY src/universe/autoware.universe/sensing /autoware/src/universe/autoware.universe/sensing
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-sensing-perception-depend-packages.txt \
-    && cat /rosdep-universe-sensing-perception-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-sensing-perception-exec-depend-packages.txt \
-    && cat /rosdep-universe-sensing-perception-exec-depend-packages.txt
+  > /rosdep-universe-sensing-perception-depend-packages.txt \
+  && cat /rosdep-universe-sensing-perception-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+  > /rosdep-universe-sensing-perception-exec-depend-packages.txt \
+  && cat /rosdep-universe-sensing-perception-exec-depend-packages.txt
 
 FROM rosdep-depend AS rosdep-universe-localization-mapping-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -101,11 +67,11 @@ ARG ROS_DISTRO
 COPY src/universe/autoware.universe/localization /autoware/src/universe/autoware.universe/localization
 COPY src/universe/autoware.universe/map /autoware/src/universe/autoware.universe/map
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-localization-mapping-depend-packages.txt \
-    && cat /rosdep-universe-localization-mapping-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-localization-mapping-exec-depend-packages.txt \
-    && cat /rosdep-universe-localization-mapping-exec-depend-packages.txt
+  > /rosdep-universe-localization-mapping-depend-packages.txt \
+  && cat /rosdep-universe-localization-mapping-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+  > /rosdep-universe-localization-mapping-exec-depend-packages.txt \
+  && cat /rosdep-universe-localization-mapping-exec-depend-packages.txt
 
 FROM rosdep-depend AS rosdep-universe-planning-control-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -119,11 +85,11 @@ COPY src/universe/autoware.universe/map/autoware_map_projection_loader /autoware
 COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
 COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-planning-control-depend-packages.txt \
-    && cat /rosdep-universe-planning-control-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-planning-control-exec-depend-packages.txt \
-    && cat /rosdep-universe-planning-control-exec-depend-packages.txt
+  > /rosdep-universe-planning-control-depend-packages.txt \
+  && cat /rosdep-universe-planning-control-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+  > /rosdep-universe-planning-control-exec-depend-packages.txt \
+  && cat /rosdep-universe-planning-control-exec-depend-packages.txt
 
 FROM rosdep-depend AS rosdep-universe-vehicle-system-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -134,11 +100,11 @@ COPY src/universe/autoware.universe/system /autoware/src/universe/autoware.unive
 COPY src/universe/autoware.universe/map/autoware_map_height_fitter /autoware/src/universe/autoware.universe/map/autoware_map_height_fitter
 COPY src/universe/autoware.universe/localization/autoware_pose2twist /autoware/src/universe/autoware.universe/localization/autoware_pose2twist
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-vehicle-system-depend-packages.txt \
-    && cat /rosdep-universe-vehicle-system-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-vehicle-system-exec-depend-packages.txt \
-    && cat /rosdep-universe-vehicle-system-exec-depend-packages.txt
+  > /rosdep-universe-vehicle-system-depend-packages.txt \
+  && cat /rosdep-universe-vehicle-system-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+  > /rosdep-universe-vehicle-system-exec-depend-packages.txt \
+  && cat /rosdep-universe-vehicle-system-exec-depend-packages.txt
 
 FROM rosdep-depend AS rosdep-universe-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -151,14 +117,15 @@ COPY src/sensor_kit /autoware/src/sensor_kit
 COPY src/universe /autoware/src/universe
 COPY src/vehicle /autoware/src/vehicle
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-universe-depend-packages.txt \
-    && cat /rosdep-universe-depend-packages.txt
+  > /rosdep-universe-depend-packages.txt \
+  && cat /rosdep-universe-depend-packages.txt
 
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-exec-depend-packages.txt \
-    && cat /rosdep-exec-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+  > /rosdep-exec-depend-packages.txt \
+  && cat /rosdep-exec-depend-packages.txt
 
-FROM base AS core-devel
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS core-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -359,6 +326,30 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
+FROM universe-common-devel AS universe-visualization-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+# Install rosdep dependencies
+COPY --from=rosdep-universe-visualization-depend /rosdep-universe-visualization-depend-packages.txt /tmp/rosdep-universe-visualization-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update \
+  && cat /tmp/rosdep-universe-visualization-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && /autoware/cleanup_apt.sh
+
+# hadolint ignore=SC1091
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-universe-visualization-depend,source=/autoware/src/universe/autoware.universe/visualization,target=/autoware/src/universe/autoware.universe/visualization \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
 FROM universe-common-devel AS universe-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -377,6 +368,7 @@ COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
 COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
 COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
+COPY --from=universe-visualization-devel /opt/autoware /opt/autoware
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
@@ -413,7 +405,8 @@ COPY --from=universe-devel /opt/autoware /opt/autoware
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base AS universe-sensing-perception
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe-sensing-perception
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -438,7 +431,8 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base-cuda AS universe-sensing-perception-cuda
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_CUDA_IMAGE AS universe-sensing-perception-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -459,7 +453,8 @@ COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base AS universe-localization-mapping
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe-localization-mapping
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -484,7 +479,8 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base AS universe-planning-control
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe-planning-control
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -509,7 +505,8 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base AS universe-vehicle-system
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe-vehicle-system
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -534,7 +531,34 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base AS universe
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe-visualization
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ARG LIB_DIR
+
+# Set up runtime environment
+COPY --from=rosdep-universe-visualization-depend /rosdep-universe-visualization-exec-depend-packages.txt /tmp/rosdep-universe-visualization-exec-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get update \
+  && cat /tmp/rosdep-universe-visualization-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
+
+COPY --from=universe-visualization-devel /opt/autoware /opt/autoware
+
+# Copy bash aliases
+COPY docker/etc/.bash_aliases /root/.bash_aliases
+RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -559,7 +583,8 @@ RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM base-cuda AS universe-cuda
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_CUDA_IMAGE AS universe-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
