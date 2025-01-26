@@ -291,12 +291,6 @@
     extra_opts:
       - --strip-components=1 # Removes the top-level folder during extraction
 
-- name: Move extracted files to the final destination
-  ansible.builtin.shell: >
-    mv {{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models/* {{ data_dir }}/tensorrt_rtmdet/
-  args:
-    removes: "{{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models/"
-
 # traffic_light_classifier
 - name: Create traffic_light_classifier directory inside {{ data_dir }}
   ansible.builtin.file:
