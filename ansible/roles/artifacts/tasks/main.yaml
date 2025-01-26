@@ -289,7 +289,7 @@
     src: "{{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models.tar.gz"
     dest: "{{ data_dir }}/tensorrt_rtmdet/"
     extra_opts:
-    - --strip-components=1  # Removes the top-level folder during extraction
+      - --strip-components=1 # Removes the top-level folder during extraction
 
 - name: Move extracted files to the final destination
   ansible.builtin.shell: >
