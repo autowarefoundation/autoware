@@ -269,6 +269,28 @@
     mode: "644"
     checksum: sha256:3d93ca05f31b63424d7d7246a01a2365953705a0ed3323ba5b6fddd744a4bfea
 
+# tensorrt_rtmdet
+- name: Create tensorrt_rtmdet directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/tensorrt_rtmdet"
+    mode: "755"
+    state: directory
+
+- name: Download tensorrt_rtmdet_onnx_models.tar.gz
+  become: true
+  ansible.builtin.get_url:
+    url: https://autoware-files.s3.us-west-2.amazonaws.com/models/tensorrt_rtmdet_onnx_models.tar.gz
+    dest: "{{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models.tar.gz"
+    mode: "644"
+    checksum: sha256:eaf6fe9caf1b4a0211dc3b0f4068b1fd6c1d35fe1582cc2aed95b8ed9468c598
+
+- name: Extract tensorrt_rtmdet_onnx_models.tar.gz
+  ansible.builtin.unarchive:
+    src: "{{ data_dir }}/tensorrt_rtmdet/tensorrt_rtmdet_onnx_models.tar.gz"
+    dest: "{{ data_dir }}/tensorrt_rtmdet/"
+    extra_opts:
+      - --strip-components=1 # Removes the top-level folder during extraction
+
 # traffic_light_classifier
 - name: Create traffic_light_classifier directory inside {{ data_dir }}
   ansible.builtin.file:
