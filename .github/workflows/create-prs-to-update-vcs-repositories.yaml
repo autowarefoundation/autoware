@@ -36,7 +36,7 @@ jobs:
           token: ${{ steps.generate-token.outputs.token }}
           repo_name: autowarefoundation/autoware
           parent_dir: .
-          targets: major minor patch
+          targets: major minor
           base_branch: main
           new_branch_prefix: feat/update-
           autoware_repos_file_name: simulator.repos
