@@ -84,7 +84,7 @@ This stage performs only the basic setup required for all Autoware images.
 
 ### `$AUTOWARE_BASE_CUDA_IMAGE` (from Dockerfile.base)
 
-This stage is built on top of `base` and adds the CUDA runtime environment and artifacts.
+This stage is built on top of `$AUTOWARE_BASE_IMAGE` and adds the CUDA runtime environment and artifacts.
 
 ### `rosdep-depend`
 
