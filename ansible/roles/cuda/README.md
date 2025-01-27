@@ -15,7 +15,7 @@ This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
 ### Version compatibility
 
-Autoware currently uses CUDA `12.6` which corresponds to the NVIDIA driver version `560` and is minimum required driver version.
+Autoware currently uses CUDA `12.4` which corresponds to the NVIDIA driver version `550` and is minimum required driver version.
 
 #### 🛠️ For Advanced Users
 
@@ -42,7 +42,7 @@ sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
 cuda_version_dashed=$(eval sed -e "s/[.]/-/g" <<< "${cuda_version}")
 sudo apt-get -y install cuda-toolkit-${cuda_version_dashed}
-sudo apt-get install -y cuda-drivers-560
+sudo apt-get install -y cuda-drivers-550
 ```
 
 Perform the post installation actions:
