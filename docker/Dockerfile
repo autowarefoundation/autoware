@@ -31,6 +31,8 @@ RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO
 
 COPY src/universe/external /autoware/src/universe/external
 COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
+COPY src/universe/autoware.universe/perception/autoware_tensorrt_common /autoware/src/universe/autoware.universe/perception/autoware_tensorrt_common
+COPY src/universe/autoware.universe/sensing/autoware_cuda_utils /autoware/src/universe/autoware.universe/sensing/autoware_cuda_utils
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-common-depend-packages.txt \
   && cat /rosdep-universe-common-depend-packages.txt
