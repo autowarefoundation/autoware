@@ -68,6 +68,8 @@ ros2 launch autoware_pointcloud_preprocessor preprocessor.launch.xml
 
 ## Multi-stage Dockerfile structure
 
+<!-- dockerfilegraph -f docker/Dockerfile -o svg --legend --concentrate --nodesep 0.3 --unflatten 4 -m 50 -e solid -->
+
 ![](./Dockerfile.svg)
 
 The suffix `-devel` (e.g. `universe-devel`) is intended for use as a [development container](https://containers.dev). On the other hand, those without the `-devel` suffix (e.g. `universe`) are intended to be used as a runtime container.
