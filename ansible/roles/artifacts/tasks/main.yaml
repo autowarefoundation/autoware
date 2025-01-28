@@ -245,6 +245,7 @@
     mode: "644"
     checksum: sha256:3540a365bfd6d8afb1b5d8df4ec47f82cb984760d3270c9b41dbbb3422d09a0c
 
+# cspell: ignore semseg
 - name: Download tensorrt_yolox/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.onnx
   become: true
   ansible.builtin.get_url:
