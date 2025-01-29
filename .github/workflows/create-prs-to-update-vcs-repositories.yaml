@@ -41,3 +41,15 @@ jobs:
           new_branch_prefix: feat/update-
           autoware_repos_file_name: simulator.repos
           verbosity: 0
+
+      - name: Create PRs to update VCS repositories for tools.repos
+        uses: autowarefoundation/autoware-github-actions/create-prs-to-update-vcs-repositories@v1
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          repo_name: autowarefoundation/autoware
+          parent_dir: .
+          targets: major minor patch
+          base_branch: main
+          new_branch_prefix: feat/update-
+          autoware_repos_file_name: tools.repos
+          verbosity: 0
