@@ -415,14 +415,14 @@ ARG ROS_DISTRO
 ARG LIB_DIR
 
 # Set up runtime environment
-COPY --from=rosdep-core-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
+COPY --from=rosdep-depend /rosdep-core-exec-depend-packages.txt /tmp/rosdep-core-exec-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
-  && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && cat /tmp/rosdep-core-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=core-devel /opt/autoware /opt/autoware
