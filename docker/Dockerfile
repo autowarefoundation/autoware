@@ -28,6 +28,9 @@ COPY src/core /autoware/src/core
 RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-core-depend-packages.txt \
   && cat /rosdep-core-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+  > /rosdep-core-exec-depend-packages.txt \
+  && cat /rosdep-core-exec-depend-packages.txt
 
 COPY src/universe/external /autoware/src/universe/external
 COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
@@ -43,7 +46,7 @@ COPY src/universe/autoware.universe/visualization /autoware/src/universe/autowar
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-visualization-depend-packages.txt \
   && cat /rosdep-universe-visualization-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
   > /rosdep-universe-visualization-exec-depend-packages.txt \
   && cat /rosdep-universe-visualization-exec-depend-packages.txt
 
@@ -401,6 +404,32 @@ RUN --mount=type=ssh \
 
 COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 COPY --from=universe-devel /opt/autoware /opt/autoware
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS core
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ARG LIB_DIR
+
+# Set up runtime environment
+COPY --from=rosdep-core-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get update \
+  && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
+
+COPY --from=core-devel /opt/autoware /opt/autoware
+
+# Copy bash aliases
+COPY docker/etc/.bash_aliases /root/.bash_aliases
+RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
