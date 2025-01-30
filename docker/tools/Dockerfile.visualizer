@@ -1,4 +1,5 @@
 ### Builder
+# TODO: Remove architecture specific image after arm64 builds are working
 FROM ghcr.io/autowarefoundation/autoware:universe-visualization-devel-amd64 AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV CCACHE_DIR="/root/.ccache"
@@ -35,6 +36,7 @@ RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash 
     && cat /rosdep-visualizer-depend-packages.txt
 
 ### Visualizer
+# TODO: Remove architecture specific image after arm64 builds are working
 FROM ghcr.io/autowarefoundation/autoware:universe-visualization-amd64 AS visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO

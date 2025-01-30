@@ -1,5 +1,6 @@
 ### Builder
-FROM ghcr.io/autowarefoundation/autoware:universe-devel AS builder
+# TODO: Remove architecture specific image after arm64 builds are FIXED
+FROM ghcr.io/autowarefoundation/autoware:universe-devel-amd64 AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -35,6 +36,7 @@ RUN /autoware/resolve_rosdep_keys.sh /autoware/src/simulator ${ROS_DISTRO} \
     && cat /rosdep-simulator-depend-packages.txt
 
 ### Simulator
+# TODO: Remove architecture specific image after arm64 builds are FIXED
 FROM ghcr.io/autowarefoundation/autoware:universe-visualization-amd64 AS simulator
 ARG ROS_DISTRO
 ARG LIB_DIR
