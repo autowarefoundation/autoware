@@ -1,3 +1,5 @@
+# cspell:ignore openbox, VNC, ngrok, tigervnc, novnc, websockify, newkey, xstartup, vncpasswd, keyout
+
 ### Builder
 # TODO: Remove architecture specific image after arm64 builds are working
 FROM ghcr.io/autowarefoundation/autoware:universe-visualization-devel-amd64 AS builder
@@ -46,7 +48,6 @@ WORKDIR /autoware
 COPY --from=builder /opt/autoware /opt/autoware
 COPY --from=builder /rosdep-visualizer-depend-packages.txt /tmp/rosdep-visualizer-depend-packages.txt
 
-# cspell:ignore openbox, VNC, ngrok, tigervnc, novnc, websockify, newkey, xstartup, vncpassword, keyout
 # Install openbox, VNC, ngrok, and simulator dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   curl unzip openbox tigervnc-standalone-server tigervnc-common \
