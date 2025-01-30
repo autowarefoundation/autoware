@@ -6,7 +6,7 @@ name: pre-commit-autoupdate
 
 on:
   schedule:
-    - cron: 0 0 * * *
+    - cron: 0 0 1 1,4,7,10 * # quarterly
   workflow_dispatch:
 
 jobs:
