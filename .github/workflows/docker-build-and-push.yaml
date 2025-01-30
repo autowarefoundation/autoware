@@ -62,11 +62,11 @@ jobs:
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-main
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }},mode=max
 
-      - name: Build 'Tools'
+      - name: Build 'autoware-tools'
         uses: ./.github/actions/docker-build-and-push-tools
         with:
           platform: amd64
-          target-image: autoware-tools
+          target-image: autoware
           build-args: |
             *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
