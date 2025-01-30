@@ -77,7 +77,7 @@ jobs:
       #   uses: ./.github/actions/docker-build-and-push-tools
       #   with:
       #     platform: arm64
-      #     target-image: autoware
+      #     target-image: autoware-tools
       #     build-args: |
       #       *.platform=linux/arm64
       #       *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
