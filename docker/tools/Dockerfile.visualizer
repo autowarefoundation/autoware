@@ -11,20 +11,20 @@ RUN chmod +x /autoware/resolve_rosdep_keys.sh
 
 # Build simulator messages and rviz plugins ONLY
 RUN --mount=type=ssh \
-    --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    && apt-get update \
-    && source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
-    && rosdep update && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
-    && colcon build --cmake-args \
-      "-Wno-dev" \
-      "--no-warn-unused-cli" \
-      --install-base /opt/autoware \
-      --merge-install \
-      --mixin release compile-commands ccache \
-      --base-paths /autoware/src \
-      --packages-up-to-regex ".*_msgs$" ".*rviz_plugin$" \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update \
+  && source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
+  && rosdep update && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
+  && colcon build --cmake-args \
+    "-Wno-dev" \
+    "--no-warn-unused-cli" \
+    --install-base /opt/autoware \
+    --merge-install \
+    --mixin release compile-commands ccache \
+    --base-paths /autoware/src \
+    --packages-up-to-regex ".*_msgs$" ".*rviz_plugin$" \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Extract rosdep dependencies for visualizer
 RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
@@ -48,18 +48,18 @@ COPY --from=builder /rosdep-visualizer-depend-packages.txt /tmp/rosdep-visualize
 
 # Install openbox, VNC, ngrok, and simulator dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    curl unzip openbox tigervnc-standalone-server tigervnc-common \
-    novnc websockify python3-numpy python3-xdg \
-    && curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
-    | tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && \
-    echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
-    | tee /etc/apt/sources.list.d/ngrok.list && \
-    apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ngrok \
-    # Remove xmlschema and yamale from rosdep packages since we install via pip
-    && sed -i '/\(xmlschema\|yamale\)/d' /tmp/rosdep-visualizer-depend-packages.txt \
-    && pip install yamale xmlschema \
-    && cat /tmp/rosdep-visualizer-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-    && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
+  curl unzip openbox tigervnc-standalone-server tigervnc-common \
+  novnc websockify python3-numpy python3-xdg \
+  && curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+  | tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+  && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+  | tee /etc/apt/sources.list.d/ngrok.list \
+  && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ngrok \
+  # Remove xmlschema and yamale from rosdep packages since we install via pip
+  && sed -i '/\(xmlschema\|yamale\)/d' /tmp/rosdep-visualizer-depend-packages.txt \
+  && pip install yamale xmlschema \
+  && cat /tmp/rosdep-visualizer-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 # Set up VNC password
 RUN mkdir -p ~/.vnc && \
