@@ -1,0 +1,69 @@
+name: docker-build-and-push-tools
+
+on:
+  # TODO: Remove after tests are completed
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags:
+      - "*.*.*"
+  workflow_dispatch:
+
+jobs:
+  load-env:
+    uses: ./.github/workflows/load-env.yaml
+
+  docker-build-and-push-tools:
+    needs: load-env
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            *.env
+            *.repos
+            .github/actions/docker-build-and-push*/action.yaml
+            .github/workflows/docker-build-and-push*.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+
+      - name: Free disk space
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.ref_type == 'tag') }}
+        uses: ./.github/actions/free-disk-space
+
+      - name: Build 'Tools'
+        uses: ./.github/actions/docker-build-and-push-tools
+        with:
+          platform: amd64
+          target-image: autoware-tools
+          build-args: |
+            *.platform=linux/amd64
+            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
+            *.args.LIB_DIR=x86_64
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }},mode=max
+
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
