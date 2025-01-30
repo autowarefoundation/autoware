@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # cspell:ignore openbox, VNC, ngrok, tigervnc, novnc, websockify, newkey, xstartup, pixelformat, AUTHTOKEN, authtoken, vncserver, autoconnect
+# shellcheck disable=SC1090
 
 configure_vnc() {
     # Create Openbox application configuration
