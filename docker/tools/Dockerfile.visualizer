@@ -31,7 +31,6 @@ RUN --mount=type=ssh \
 # Extract rosdep dependencies for visualizer
 RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
     && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    | grep -v "yamale\|xmlschema" \
     > /rosdep-visualizer-depend-packages.txt \
     && cat /rosdep-visualizer-depend-packages.txt
 
@@ -59,7 +58,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ngrok \
   # Remove xmlschema and yamale from rosdep packages since we install via pip
   && sed -i '/\(xmlschema\|yamale\)/d' /tmp/rosdep-visualizer-depend-packages.txt \
-  && pip install yamale xmlschema \
+  && pip install --no-cache-dir yamale xmlschema \
   && cat /tmp/rosdep-visualizer-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
