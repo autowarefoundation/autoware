@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cspell:ignore openbox, VNC, ngrok, tigervnc, novnc, websockify, newkey, xstartup
+# cspell:ignore openbox, VNC, ngrok, tigervnc, novnc, websockify, newkey, xstartup, pixelformat, AUTHTOKEN, authtoken
 
 configure_vnc() {
     # Create Openbox application configuration
