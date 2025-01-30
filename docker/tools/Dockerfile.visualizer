@@ -1,0 +1,88 @@
+### Builder
+FROM ghcr.io/autowarefoundation/autoware:universe-visualization-devel-amd64 AS builder
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ENV CCACHE_DIR="/root/.ccache"
+ARG ROS_DISTRO
+WORKDIR /autoware
+COPY simulator.repos /autoware/simulator.repos
+COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
+RUN chmod +x /autoware/resolve_rosdep_keys.sh
+
+# Build simulator messages and rviz plugins ONLY
+RUN --mount=type=ssh \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    mkdir -p src \
+    && vcs import src < simulator.repos \
+    && apt-get update \
+    && source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
+    && rosdep update && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
+    && colcon build --cmake-args \
+      "-Wno-dev" \
+      "--no-warn-unused-cli" \
+      --install-base /opt/autoware \
+      --merge-install \
+      --mixin release compile-commands ccache \
+      --base-paths /autoware/src \
+      --packages-up-to-regex ".*_msgs$" ".*rviz_plugin$" \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+
+# Extract rosdep dependencies for visualizer
+RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
+    && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+    | grep -v "yamale\|xmlschema" \
+    > /rosdep-visualizer-depend-packages.txt \
+    && cat /rosdep-visualizer-depend-packages.txt
+
+### Visualizer
+FROM ghcr.io/autowarefoundation/autoware:universe-visualization-amd64 AS visualizer
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ARG LIB_DIR
+ARG VNC_PASSWORD="*"
+WORKDIR /autoware
+
+# Get simulator messages, rviz plugins and dependencies
+COPY --from=builder /opt/autoware /opt/autoware
+COPY --from=builder /rosdep-visualizer-depend-packages.txt /tmp/rosdep-visualizer-depend-packages.txt
+
+# Install openbox, VNC, ngrok, and simulator dependencies
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl unzip openbox tigervnc-standalone-server tigervnc-common \
+    novnc websockify python3-numpy python3-xdg \
+    && curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+    | tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && \
+    echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+    | tee /etc/apt/sources.list.d/ngrok.list && \
+    apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ngrok \
+    # Remove xmlschema and yamale from rosdep packages since we install via pip
+    && sed -i '/\(xmlschema\|yamale\)/d' /tmp/rosdep-visualizer-depend-packages.txt \
+    && pip install yamale xmlschema \
+    && cat /tmp/rosdep-visualizer-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+    && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
+
+# Set up VNC password
+RUN mkdir -p ~/.vnc && \
+    echo "$VNC_PASSWORD" | vncpasswd -f > ~/.vnc/passwd && \
+    chmod 600 ~/.vnc/passwd
+
+# Create SSL certificate for NoVNC
+RUN openssl req -x509 -nodes -newkey rsa:2048 \
+    -keyout /etc/ssl/private/novnc.key \
+    -out /etc/ssl/certs/novnc.crt \
+    -days 365 \
+    -subj "/O=Autoware-OpenADKit/CN=localhost"
+
+# Need to expose VNC and NoVNC ports when running the container
+EXPOSE 5900 6080
+
+# Add source commands to bash startup
+RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /root/.bashrc && \
+    echo "source /opt/autoware/setup.bash" >> /root/.bashrc
+
+# Copy startup scripts
+COPY docker/tools/etc/xstartup /root/.vnc/xstartup
+COPY docker/tools/etc/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh && chmod +x /root/.vnc/xstartup
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/bin/bash"]
