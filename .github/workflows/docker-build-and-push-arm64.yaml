@@ -73,11 +73,11 @@ jobs:
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }},mode=max
 
       # TODO: Uncomment once arm64 builds are FIXED
-      # - name: Build 'Tools'
+      # - name: Build 'autoware-tools'
       #   uses: ./.github/actions/docker-build-and-push-tools
       #   with:
       #     platform: arm64
-      #     target-image: autoware-tools
+      #     target-image: autoware
       #     build-args: |
       #       *.platform=linux/arm64
       #       *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
