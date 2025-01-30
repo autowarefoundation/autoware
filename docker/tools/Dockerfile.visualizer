@@ -12,6 +12,7 @@ COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
 RUN chmod +x /autoware/resolve_rosdep_keys.sh
 
 # Build simulator messages and rviz plugins ONLY
+# hadolint ignore=SC1091
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -29,6 +30,7 @@ RUN --mount=type=ssh \
   && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Extract rosdep dependencies for visualizer
+# hadolint ignore=SC1091
 RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
     && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
     > /rosdep-visualizer-depend-packages.txt \
@@ -48,6 +50,7 @@ COPY --from=builder /opt/autoware /opt/autoware
 COPY --from=builder /rosdep-visualizer-depend-packages.txt /tmp/rosdep-visualizer-depend-packages.txt
 
 # Install openbox, VNC, ngrok, and simulator dependencies
+# hadolint ignore=SC2002
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   curl unzip openbox tigervnc-standalone-server tigervnc-common \
   novnc websockify python3-numpy python3-xdg \
