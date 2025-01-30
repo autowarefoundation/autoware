@@ -7,14 +7,12 @@ ARG LIB_DIR
 ENV CCACHE_DIR="/root/.ccache"
 WORKDIR /autoware
 COPY src /autoware/src
-COPY simulator.repos /autoware/simulator.repos
 COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
 RUN chmod +x /autoware/resolve_rosdep_keys.sh
 
 # Install dependencies and build the simulator
 RUN --mount=type=ssh \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    vcs import src < simulator.repos \
     && apt-get update \
     && rosdep update && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
     && source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
