@@ -11,6 +11,7 @@ COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
 RUN chmod +x /autoware/resolve_rosdep_keys.sh
 
 # Install dependencies and build the simulator
+# hadolint ignore=SC1091
 RUN --mount=type=ssh \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update \
@@ -43,6 +44,7 @@ WORKDIR /autoware
 COPY --from=builder /opt/autoware /opt/autoware
 COPY --from=builder /rosdep-simulator-depend-packages.txt /tmp/rosdep-simulator-depend-packages.txt
 
+# hadolint ignore=SC2002
 RUN --mount=type=ssh \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && apt-get install -y curl unzip \
