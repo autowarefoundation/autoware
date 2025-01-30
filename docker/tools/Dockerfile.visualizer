@@ -46,6 +46,7 @@ WORKDIR /autoware
 COPY --from=builder /opt/autoware /opt/autoware
 COPY --from=builder /rosdep-visualizer-depend-packages.txt /tmp/rosdep-visualizer-depend-packages.txt
 
+# cspell:ignore openbox, VNC, ngrok
 # Install openbox, VNC, ngrok, and simulator dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   curl unzip openbox tigervnc-standalone-server tigervnc-common \
