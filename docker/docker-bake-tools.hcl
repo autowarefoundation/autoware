@@ -1,13 +1,13 @@
 group "default" {
   targets = [
     "simulator",
-    "visualizer"
+    "web-visualizer"
   ]
 }
 
 // For docker/metadata-action
 target "docker-metadata-action-simulator" {}
-target "docker-metadata-action-visualizer" {}
+target "docker-metadata-action-web-visualizer" {}
 
 target "simulator" {
   inherits = ["docker-metadata-action-simulator"]
@@ -15,8 +15,8 @@ target "simulator" {
   target = "simulator"
 }
 
-target "visualizer" {
-  inherits = ["docker-metadata-action-visualizer"]
-  dockerfile = "docker/tools/Dockerfile.visualizer"
-  target = "visualizer"
+target "web-visualizer" {
+  inherits = ["docker-metadata-action-web-visualizer"]
+  dockerfile = "docker/tools/Dockerfile.web-visualizer"
+  target = "web-visualizer"
 }
