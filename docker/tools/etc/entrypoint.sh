@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cspell:ignore openbox, VNC, ngrok, tigervnc, novnc, websockify, newkey, xstartup, pixelformat, AUTHTOKEN, authtoken, vncserver, autoconnect
+# cspell:ignore openbox, VNC, tigervnc, novnc, websockify, newkey, xstartup, pixelformat, AUTHTOKEN, authtoken, vncserver, autoconnect
 # shellcheck disable=SC1090,SC1091
 
 configure_vnc() {
@@ -37,6 +37,10 @@ EOF
     echo "echo 'Autostart executed at $(date)' >> /tmp/autostart.log" >>/etc/xdg/openbox/autostart
     echo "/usr/local/bin/start-rviz2.sh" >>/etc/xdg/openbox/autostart
 
+    # Configure VNC password
+    mkdir -p ~/.vnc
+    echo "$VNC_PASSWORD" | vncpasswd -f >~/.vnc/passwd && chmod 600 ~/.vnc/passwd
+
     # Start VNC server with Openbox
     echo "Starting VNC server with Openbox..."
     vncserver :99 -geometry 1024x768 -depth 16 -pixelformat rgb565
@@ -56,24 +60,14 @@ EOF
     echo "Starting NoVNC..."
     websockify --daemon --web=/usr/share/novnc/ --cert=/etc/ssl/certs/novnc.crt --key=/etc/ssl/private/novnc.key 6080 localhost:5999
 
-    # Configure ngrok if set
-    if [ -n "$NGROK_AUTHTOKEN" ]; then
-        ngrok config add-authtoken "$NGROK_AUTHTOKEN"
-
-        if [ -n "$NGROK_URL" ]; then
-            ngrok http --url="$NGROK_URL" 6080 --log=stdout >ngrok.log &
-        else
-            ngrok http 6080 --log=stdout >ngrok.log &
-            sleep 2
-            NGROK_URL=$(grep -oP 'url=\K[^\s]+' ngrok.log)
-        fi
-    fi
-
     # Print info
     echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
-    echo -e "\033[32mBrowser interface available at local address http://$(hostname -I | cut -d' ' -f1):6080/vnc.html?resize=scale&password=openadkit&autoconnect=true\033[0m"
-    [ -z "$NGROK_AUTHTOKEN" ] && echo -e "\033[32mIf you have a static public ip you can access it on WEB at http://$(curl -s ifconfig.me):6080/vnc.html?resize=scale&password=openadkit&autoconnect=true\033[0m"
-    [ -n "$NGROK_AUTHTOKEN" ] && echo -e "\033[32mBrowser interface available at WEB address $NGROK_URL/vnc.html?resize=scale&password=openadkit&autoconnect=true\033[0m"
+    echo -e "\033[32mBrowser interface available at local address http://$(hostname -I | cut -d' ' -f1):6080/vnc.html?resize=scale&password=${VNC_PASSWORD}&autoconnect=true\033[0m"
+    if ping -c 1 8.8.8.8 >/dev/null 2>&1; then
+        echo -e "\033[32mIf you have a static public ip you can access it on WEB at http://$(curl -s ifconfig.me):6080/vnc.html?resize=scale&password=${VNC_PASSWORD}&autoconnect=true\033[0m"
+    else
+        echo -e "\033[31mNo internet connection available\033[0m"
+    fi
     echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
 }
 
