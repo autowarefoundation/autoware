@@ -20,4 +20,3 @@ target "visualizer" {
   dockerfile = "docker/tools/Dockerfile.visualizer"
   target = "visualizer"
 }
-
