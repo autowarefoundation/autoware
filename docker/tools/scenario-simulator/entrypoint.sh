@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cspell:ignore 
+# cspell:ignore
 # shellcheck disable=SC1090,SC1091
 
 run_scenario_simulator() {

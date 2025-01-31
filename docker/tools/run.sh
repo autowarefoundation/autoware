@@ -8,7 +8,6 @@
 #     --env WEB_PASSWORD=openadkit \
 #     ghcr.io/autowarefoundation/autoware:visualizer-20250130-amd64
 
-
 docker run -it --rm \
     --net=host \
     --platform linux/amd64 \
