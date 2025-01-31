@@ -1,4 +1,4 @@
-# cspell:ignore openbox, VNC, tigervnc, novnc, websockify, newkey, xstartup, vncpasswd, keyout
+# cspell:ignore openbox, VNC, tigervnc, novnc, websockify, newkey, xstartup, keyout
 
 ### Builder
 # TODO: Remove architecture specific image after arm64 builds are working
@@ -29,16 +29,16 @@ RUN --mount=type=ssh \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-# Extract rosdep dependencies for web-visualizer
+# Extract rosdep dependencies for visualizer
 # hadolint ignore=SC1091
 RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
     && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
-    > /rosdep-web-visualizer-depend-packages.txt \
-    && cat /rosdep-web-visualizer-depend-packages.txt
+    > /rosdep-visualizer-depend-packages.txt \
+    && cat /rosdep-visualizer-depend-packages.txt
 
-### web-visualizer
+### visualizer
 # TODO: Remove architecture specific image after arm64 builds are working
-FROM ghcr.io/autowarefoundation/autoware:universe-visualization-amd64 AS web-visualizer
+FROM ghcr.io/autowarefoundation/autoware:universe-visualization-amd64 AS visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
@@ -46,7 +46,7 @@ WORKDIR /autoware
 
 # Get simulator messages, rviz plugins and dependencies
 COPY --from=builder /opt/autoware /opt/autoware
-COPY --from=builder /rosdep-web-visualizer-depend-packages.txt /tmp/rosdep-web-visualizer-depend-packages.txt
+COPY --from=builder /rosdep-visualizer-depend-packages.txt /tmp/rosdep-visualizer-depend-packages.txt
 
 # Install openbox, VNC, and simulator dependencies
 # hadolint ignore=SC2002
@@ -54,9 +54,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   curl unzip openbox tigervnc-standalone-server tigervnc-common \
   novnc websockify python3-numpy python3-xdg \
   # Remove xmlschema and yamale from rosdep packages since we install via pip
-  && sed -i '/\(xmlschema\|yamale\)/d' /tmp/rosdep-web-visualizer-depend-packages.txt \
+  && sed -i '/\(xmlschema\|yamale\)/d' /tmp/rosdep-visualizer-depend-packages.txt \
   && pip install --no-cache-dir yamale xmlschema \
-  && cat /tmp/rosdep-web-visualizer-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && cat /tmp/rosdep-visualizer-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 # Create SSL certificate for NoVNC
