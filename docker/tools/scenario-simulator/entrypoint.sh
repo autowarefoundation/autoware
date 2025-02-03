@@ -15,7 +15,6 @@ run_scenario_simulator() {
     SCENARIO=${SCENARIO:-$(find-pkg-share scenario_test_runner)/scenario/sample.yaml}
     GLOBAL_TIMEOUT=${GLOBAL_TIMEOUT:-120}
     RECORD=${RECORD:-false}
-    RVIZ_CONFIG=${RVIZ_CONFIG:-$(find-pkg-share rviz2)/share/rviz2/launch/default.rviz}
     USE_SIM_TIME=${USE_SIM_TIME:-false}
 
     # Print all variables
@@ -28,7 +27,6 @@ run_scenario_simulator() {
     echo "SCENARIO: $SCENARIO"
     echo "GLOBAL_TIMEOUT: $GLOBAL_TIMEOUT"
     echo "RECORD: $RECORD"
-    echo "RVIZ_CONFIG: $RVIZ_CONFIG"
     echo "USE_SIM_TIME: $USE_SIM_TIME"
 
     # Launch scenario test runner
@@ -44,7 +42,6 @@ run_scenario_simulator() {
         scenario:="$SCENARIO" \
         global_timeout:="$GLOBAL_TIMEOUT" \
         record:="$RECORD" \
-        rviz_config:="$RVIZ_CONFIG" \
         use_sim_time:="$USE_SIM_TIME"
 }
 
