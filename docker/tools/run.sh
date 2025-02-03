@@ -11,5 +11,5 @@
 docker run -it --rm \
     --net=host \
     --platform linux/amd64 \
-    --name simulator \
-    ghcr.io/autowarefoundation/autoware:simulator-20250130-amd64
+    --name scenario-simulator \
+    ghcr.io/autowarefoundation/autoware:scenario-simulator-20250130-amd64
