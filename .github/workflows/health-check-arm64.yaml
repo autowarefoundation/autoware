@@ -29,6 +29,11 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
+        with:
+          swap-size-gb: 16
+
       - name: Build 'Autoware'
         uses: ./.github/actions/docker-build
         with:
