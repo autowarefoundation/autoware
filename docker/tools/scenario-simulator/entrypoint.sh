@@ -52,7 +52,7 @@ run_scenario_simulator() {
 source "/opt/ros/$ROS_DISTRO/setup.bash"
 source "/opt/autoware/setup.bash"
 
-# Execute passed command if provided, otherwise run simulator
+# Execute passed command if provided, otherwise run scenario simulator
 if [ $# -eq 0 ]; then
     run_scenario_simulator
 else
