@@ -1,5 +1,5 @@
 #!/bin/sh
-# cspell:ignore openbox, VNC, tigervnc, novnc, websockify, newkey, xstartup, DBUS, Xresources, xrdb
+# cspell:ignore openbox, VNC, xstartup, DBUS, Xresources, xrdb
 
 unset SESSION_MANAGER
 unset DBUS_SESSION_BUS_ADDRESS

@@ -15,6 +15,8 @@ run_scenario_simulator() {
     SCENARIO=${SCENARIO:-$(find-pkg-share scenario_test_runner)/scenario/sample.yaml}
     GLOBAL_TIMEOUT=${GLOBAL_TIMEOUT:-120}
     RECORD=${RECORD:-false}
+    RVIZ_CONFIG=${RVIZ_CONFIG:-$(find-pkg-share rviz2)/share/rviz2/launch/default.rviz}
+    USE_SIM_TIME=${USE_SIM_TIME:-false}
 
     # Print all variables
     echo "ARCHITECTURE_TYPE: $ARCHITECTURE_TYPE"
@@ -26,6 +28,8 @@ run_scenario_simulator() {
     echo "SCENARIO: $SCENARIO"
     echo "GLOBAL_TIMEOUT: $GLOBAL_TIMEOUT"
     echo "RECORD: $RECORD"
+    echo "RVIZ_CONFIG: $RVIZ_CONFIG"
+    echo "USE_SIM_TIME: $USE_SIM_TIME"
 
     # Launch scenario test runner
     ros2 launch scenario_test_runner scenario_test_runner.launch.py \
@@ -39,7 +43,9 @@ run_scenario_simulator() {
         output_directory:="$OUTPUT_DIRECTORY" \
         scenario:="$SCENARIO" \
         global_timeout:="$GLOBAL_TIMEOUT" \
-        record:="$RECORD"
+        record:="$RECORD" \
+        rviz_config:="$RVIZ_CONFIG" \
+        use_sim_time:="$USE_SIM_TIME"
 }
 
 # Source ROS and Autoware setup files
