@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
-# cspell:ignore openbox, VNC, tigervnc, novnc, websockify, newkey, xstartup, pixelformat, AUTHTOKEN, authtoken, vncserver, autoconnect
+# cspell:ignore openbox, VNC, tigervnc, novnc, websockify, newkey, xstartup, pixelformat, AUTHTOKEN, authtoken, vncserver, autoconnect, vncpasswd
 # shellcheck disable=SC1090,SC1091
+
+# Check if RVIZ_CONFIG is provided
+[ -z "$RVIZ_CONFIG" ] && RVIZ_CONFIG="$(find-pkg-share autoware_launch)/rviz/autoware.rviz" || echo -e "\e[31mRVIZ_CONFIG is not set defaulting to autoware.rviz\e[0m"
+export RVIZ_CONFIG
 
 configure_vnc() {
     # Check if WEB_PASSWORD is provided
     [ -z "$WEB_PASSWORD" ] && echo -e "\e[31mPassword is needed. Set WEB_PASSWORD environment variable\e[0m" && exit 1
 
-    # Check if RVIZ_CONFIG is provided
-    [ -z "$RVIZ_CONFIG" ] && RVIZ_CONFIG="$(find-pkg-share rviz2)/share/rviz2/launch/default.rviz" || echo -e "\e[31mRVIZ_CONFIG is not set defaulting to default.rviz\e[0m"
 
     # Create Openbox application configuration
     mkdir -p /etc/xdg/openbox
@@ -33,11 +35,7 @@ EOF
 #!/bin/bash
 source /opt/ros/humble/setup.bash
 source /opt/autoware/setup.bash
-if [ -n "$RVIZ_CONFIG" ]; then
-    exec rviz2 -d "$RVIZ_CONFIG"
-else
-    exec rviz2 -d "$(find-pkg-share rviz2)/share/rviz2/launch/default.rviz"
-fi
+exec rviz2 -d "$RVIZ_CONFIG"
 EOF
     chmod +x /usr/local/bin/start-rviz2.sh
     echo "echo 'Autostart executed at $(date)' >> /tmp/autostart.log" >>/etc/xdg/openbox/autostart
@@ -87,7 +85,6 @@ if [ "$WEB_ENABLED" == "true" ]; then
     [ $# -eq 0 ] && sleep infinity
     exec "$@"
 else
-    [ -z "$RVIZ_CONFIG" ] && RVIZ_CONFIG="$(find-pkg-share autoware_launch)/rviz/$(var rviz_config_name)"
     [ $# -eq 0 ] && rviz2 -d "$RVIZ_CONFIG"
     exec "$@"
 fi
