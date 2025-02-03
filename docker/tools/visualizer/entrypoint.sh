@@ -10,7 +10,6 @@ configure_vnc() {
     # Check if WEB_PASSWORD is provided
     [ -z "$WEB_PASSWORD" ] && echo -e "\e[31mPassword is needed. Set WEB_PASSWORD environment variable\e[0m" && exit 1
 
-
     # Create Openbox application configuration
     mkdir -p /etc/xdg/openbox
     cat >/etc/xdg/openbox/rc.xml <<'EOF'
