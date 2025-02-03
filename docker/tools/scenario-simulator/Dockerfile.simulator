@@ -10,7 +10,7 @@ COPY src /autoware/src
 COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
 RUN chmod +x /autoware/resolve_rosdep_keys.sh
 
-# Install dependencies and build the simulator
+# Install dependencies and build the scenario simulator
 # hadolint ignore=SC1091
 RUN --mount=type=ssh \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -36,7 +36,7 @@ RUN /autoware/resolve_rosdep_keys.sh /autoware/src/simulator ${ROS_DISTRO} \
 
 ### Simulator
 # TODO: Remove architecture specific image after arm64 builds are FIXED
-FROM ghcr.io/autowarefoundation/autoware:universe-visualization-amd64 AS simulator
+FROM ghcr.io/autowarefoundation/autoware:universe-visualization-amd64 AS scenario-simulator
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR

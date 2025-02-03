@@ -1,18 +1,18 @@
 group "default" {
   targets = [
-    "simulator",
+    "scenario-simulator",
     "visualizer"
   ]
 }
 
 // For docker/metadata-action
-target "docker-metadata-action-simulator" {}
+target "docker-metadata-action-scenario-simulator" {}
 target "docker-metadata-action-visualizer" {}
 
-target "simulator" {
-  inherits = ["docker-metadata-action-simulator"]
-  dockerfile = "docker/tools/Dockerfile.simulator"
-  target = "simulator"
+target "scenario-simulator" {
+  inherits = ["docker-metadata-action-scenario-simulator"]
+  dockerfile = "docker/tools/Dockerfile.scenario-simulator"
+  target = "scenario-simulator"
 }
 
 target "visualizer" {
