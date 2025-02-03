@@ -77,8 +77,17 @@ EOF
     echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
 }
 
-# shellcheck disable=SC1090
-[ "$WEB_ENABLED" == "true" ] && configure_vnc
+# Source ROS and Autoware setup files
 source "/opt/ros/$ROS_DISTRO/setup.bash"
 source "/opt/autoware/setup.bash"
-exec "$@"
+
+# Execute passed command if provided
+if [ "$WEB_ENABLED" == "true" ]; then
+    configure_vnc
+    [ $# -eq 0 ] && sleep infinity
+    exec "$@"
+else
+    [ -z "$RVIZ_CONFIG" ] && RVIZ_CONFIG="$(find-pkg-share autoware_launch)/rviz/$(var rviz_config_name)"
+    [ $# -eq 0 ] && rviz2 -d "$RVIZ_CONFIG"
+    exec "$@"
+fi
