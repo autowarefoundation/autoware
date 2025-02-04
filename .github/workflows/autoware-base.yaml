@@ -5,10 +5,17 @@ on:
     branches:
       - main
     paths:
-      - docker/Dockerfile.base
-      - docker/scripts/cleanup_*.sh
-      - .github/actions/docker-build-and-push-base/*
+      - .github/actions/docker-build-and-push-base
       - .github/workflows/autoware-base.yaml
+      - amd64.env
+      - ansible-galaxy-requirements.yaml
+      - ansible/playbooks/openadkit.yaml
+      - ansible/roles/**
+      - arm64.env
+      - docker/Dockerfile.base
+      - docker/etc
+      - docker/scripts/cleanup_*.sh
+      - setup-dev-env.sh
   schedule:
     - cron: 0 0 15 * * # every 15th of the month
   workflow_dispatch:
