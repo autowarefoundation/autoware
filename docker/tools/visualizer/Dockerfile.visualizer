@@ -77,7 +77,7 @@ RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /root/.bashrc && \
 COPY docker/tools/visualizer/etc/autoware.rviz /autoware/autoware.rviz
 
 # Copy startup scripts
-COPY docker/tools/visualizer/xstartup /root/.vnc/xstartup
+COPY docker/tools/visualizer/etc/xstartup /root/.vnc/xstartup
 COPY docker/tools/visualizer/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && chmod +x /root/.vnc/xstartup
 ENTRYPOINT ["/entrypoint.sh"]
