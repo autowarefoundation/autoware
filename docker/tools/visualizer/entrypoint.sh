@@ -3,7 +3,7 @@
 # shellcheck disable=SC1090,SC1091
 
 # Check if RVIZ_CONFIG is provided
-[ -z "$RVIZ_CONFIG" ] && RVIZ_CONFIG="$(find-pkg-share autoware_launch)/rviz/autoware.rviz" || echo -e "\e[31mRVIZ_CONFIG is not set defaulting to autoware.rviz\e[0m"
+[ -z "$RVIZ_CONFIG" ] && RVIZ_CONFIG="/autoware/autoware.rviz" || echo -e "\e[31mRVIZ_CONFIG is not set defaulting to autoware.rviz\e[0m"
 export RVIZ_CONFIG
 
 configure_vnc() {
@@ -78,7 +78,7 @@ EOF
 source "/opt/ros/$ROS_DISTRO/setup.bash"
 source "/opt/autoware/setup.bash"
 
-# Execute passed command if provided
+# Execute passed command if provided, otherwise launch rviz2
 if [ "$WEB_ENABLED" == "true" ]; then
     configure_vnc
     [ $# -eq 0 ] && sleep infinity
