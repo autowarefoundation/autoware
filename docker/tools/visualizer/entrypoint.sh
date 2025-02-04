@@ -3,8 +3,11 @@
 # shellcheck disable=SC1090,SC1091
 
 # Check if RVIZ_CONFIG is provided
-[ -z "$RVIZ_CONFIG" ] && RVIZ_CONFIG="/autoware/autoware.rviz" || echo -e "\e[31mRVIZ_CONFIG is not set defaulting to autoware.rviz\e[0m"
-export RVIZ_CONFIG
+if [ -z "$RVIZ_CONFIG" ]; then
+    echo -e "\e[31mRVIZ_CONFIG is not set defaulting to autoware.rviz\e[0m"
+    RVIZ_CONFIG="/autoware/autoware.rviz"
+    export RVIZ_CONFIG
+fi
 
 configure_vnc() {
     # Check if WEB_PASSWORD is provided
@@ -66,7 +69,7 @@ EOF
     # Print info
     echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
     echo -e "\033[32mBrowser interface available at local address http://$(hostname -I | cut -d' ' -f1):6080/vnc.html?resize=scale&password=${WEB_PASSWORD}&autoconnect=true\033[0m"
-    if ping -c 1 8.8.8.8 >/dev/null 2>&1; then
+    if curl -s --head 1.1.1.1 >/dev/null 2>&1; then
         echo -e "\033[32mIf you have a static public ip you can access it on WEB at http://$(curl -s ifconfig.me):6080/vnc.html?resize=scale&password=${WEB_PASSWORD}&autoconnect=true\033[0m"
     else
         echo -e "\033[31mNo internet connection available\033[0m"
