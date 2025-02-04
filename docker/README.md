@@ -92,6 +92,7 @@ The ROS dependency package list files will be generated.
 These files will be used in the subsequent stages:
 
 - `core-devel`
+- `core`
 - `universe-common`
 - `universe-COMPONENT-devel` (e.g. `universe-sensing-perception-devel`)
 - `universe-COMPONENT` (e.g. `universe-sensing-perception`)
@@ -103,6 +104,10 @@ By generating only the package list files and copying them to the subsequent sta
 ### `core-devel`
 
 This stage installs the dependency packages based on `/rosdep-core-depend-packages.txt` and builds the packages under the `core` directory of `autoware.repos`.
+
+### `core`
+
+This stage is an Autoware Core runtime container. It only includes the dependencies given by `/rosdep-core-exec-depend-packages.txt` and the binaries built in the `core-devel` stage.
 
 ### `universe-common-devel`
 
