@@ -59,4 +59,3 @@ RUN --mount=type=ssh \
 COPY docker/tools/scenario-simulator/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/bin/bash"]

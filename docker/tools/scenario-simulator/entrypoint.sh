@@ -5,14 +5,14 @@
 run_scenario_simulator() {
     echo -e "\e[32mRunning scenario simulator...\e[0m"
 
-    # Default values
+    # Set default values if not provided
     ARCHITECTURE_TYPE=${ARCHITECTURE_TYPE:-awf/universe/20240605}
     SENSOR_MODEL=${SENSOR_MODEL:-sample_sensor_kit}
     VEHICLE_MODEL=${VEHICLE_MODEL:-sample_vehicle}
     INITIALIZE_DURATION=${INITIALIZE_DURATION:-90}
     GLOBAL_FRAME_RATE=${GLOBAL_FRAME_RATE:-20}
     OUTPUT_DIRECTORY=${OUTPUT_DIRECTORY:-/autoware/scenario-sim/output}
-    SCENARIO=${SCENARIO:-$(find-pkg-share scenario_test_runner)/scenario/sample.yaml}
+    SCENARIO=${SCENARIO:-$(ros2 pkg prefix --share scenario_test_runner)/scenario/sample.yaml}
     GLOBAL_TIMEOUT=${GLOBAL_TIMEOUT:-120}
     RECORD=${RECORD:-false}
     USE_SIM_TIME=${USE_SIM_TIME:-false}
@@ -50,8 +50,8 @@ source "/opt/ros/$ROS_DISTRO/setup.bash"
 source "/opt/autoware/setup.bash"
 
 # Execute passed command if provided, otherwise run scenario simulator
-if [ $# -eq 0 ]; then
-    run_scenario_simulator
-else
+if [ $# -gt 0 ]; then
     exec "$@"
+else
+    run_scenario_simulator
 fi
