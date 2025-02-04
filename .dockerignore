@@ -17,7 +17,6 @@ src/**/.*
 src/**/*.asc
 src/**/*.gif
 src/**/*.md
-src/**/*.pcd
 src/**/*.svg
 
 # Ignore generated files by colcon
