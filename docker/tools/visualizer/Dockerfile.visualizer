@@ -1,8 +1,7 @@
 # cspell:ignore openbox, VNC, tigervnc, novnc, websockify, newkey, xstartup, keyout
 
 ### Builder
-# TODO: Remove architecture specific image after arm64 builds are working
-FROM ghcr.io/autowarefoundation/autoware:universe-visualization-devel-amd64 AS builder
+FROM ghcr.io/autowarefoundation/autoware:universe-visualization-devel AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV CCACHE_DIR="/root/.ccache"
 ARG ROS_DISTRO
@@ -37,8 +36,7 @@ RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash 
     && cat /rosdep-visualizer-depend-packages.txt
 
 ### visualizer
-# TODO: Remove architecture specific image after arm64 builds are working
-FROM ghcr.io/autowarefoundation/autoware:universe-visualization-amd64 AS visualizer
+FROM ghcr.io/autowarefoundation/autoware:universe-visualization AS visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
