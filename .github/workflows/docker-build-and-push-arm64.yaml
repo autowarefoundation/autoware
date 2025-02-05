@@ -14,7 +14,7 @@ jobs:
 
   docker-build-and-push:
     needs: load-env
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: ubuntu-22.04-arm
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
@@ -48,6 +48,11 @@ jobs:
           (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/free-disk-space
 
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
+        with:
+          swap-size-gb: 16
+
       - name: Build 'Autoware' without CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
@@ -74,7 +79,7 @@ jobs:
 
   docker-build-and-push-cuda:
     needs: [load-env, docker-build-and-push]
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: ubuntu-22.04-arm
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -102,6 +107,11 @@ jobs:
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/free-disk-space
+
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
+        with:
+          swap-size-gb: 16
 
       - name: Build 'Autoware' with CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||

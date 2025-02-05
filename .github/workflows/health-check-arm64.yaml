@@ -11,7 +11,7 @@ jobs:
 
   docker-build:
     needs: load-env
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: ubuntu-22.04-arm
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
@@ -28,6 +28,11 @@ jobs:
 
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
+
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
+        with:
+          swap-size-gb: 16
 
       - name: Build 'Autoware'
         uses: ./.github/actions/docker-build
