@@ -2,7 +2,7 @@
   become: true
   ansible.builtin.apt:
     name:
-      - "{{ 'libcudnn9-cuda-12=' + cudnn_version if ansible_architecture == 'aarch64' else 'libcudnn8=' + cudnn_version }}"
+      - libcudnn8={{ cudnn_version }}
       - libnvinfer10={{ tensorrt_version }}
       - libnvinfer-plugin10={{ tensorrt_version }}
       - libnvonnxparsers10={{ tensorrt_version }}
@@ -14,7 +14,7 @@
   become: true
   ansible.builtin.apt:
     name:
-      - "{{ 'libcudnn9-dev-cuda-12=' + cudnn_version if ansible_architecture == 'aarch64' else 'libcudnn8-dev=' + cudnn_version }}"
+      - libcudnn8-dev={{ cudnn_version }}
       - libnvinfer-dev={{ tensorrt_version }}
       - libnvinfer-plugin-dev={{ tensorrt_version }}
       - libnvinfer-headers-dev={{ tensorrt_version }}
@@ -32,7 +32,6 @@
     name: "{{ item }}"
     selection: hold
   with_items:
-    - "{{ 'libcudnn9-cuda-12' if ansible_architecture == 'aarch64' else 'libcudnn8' }}"
     - libcudnn8
     - libnvinfer10
     - libnvinfer-plugin10
@@ -44,7 +43,7 @@
     name: "{{ item }}"
     selection: hold
   with_items:
-    - "{{ 'libcudnn9-dev-cuda-12' if ansible_architecture == 'aarch64' else 'libcudnn8-dev' }}"
+    - libcudnn8-dev
     - libnvinfer-dev
     - libnvinfer-plugin-dev
     - libnvinfer-headers-dev
