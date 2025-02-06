@@ -35,6 +35,14 @@ RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash 
     > /rosdep-visualizer-depend-packages.txt \
     && cat /rosdep-visualizer-depend-packages.txt
 
+FROM ghcr.io/autowarefoundation/autoware:universe AS universe
+
+# Extract RViz configs for visualizer
+# hadolint ignore=SC1091
+RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
+    && RVIZ_PATH=$(ros2 pkg prefix --share autoware_launch)/rviz \
+    && cp $RVIZ_PATH /autoware/rviz
+
 ### visualizer
 FROM ghcr.io/autowarefoundation/autoware:universe-visualization AS visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -45,6 +53,7 @@ WORKDIR /autoware
 # Get simulator messages, rviz plugins and dependencies
 COPY --from=builder /opt/autoware /opt/autoware
 COPY --from=builder /rosdep-visualizer-depend-packages.txt /tmp/rosdep-visualizer-depend-packages.txt
+COPY --from=universe /autoware/rviz /autoware/rviz
 
 # Install openbox, VNC, and simulator dependencies
 # hadolint ignore=SC2002
@@ -71,11 +80,8 @@ EXPOSE 5900 6080
 RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /root/.bashrc && \
     echo "source /opt/autoware/setup.bash" >> /root/.bashrc
 
-# Copy default rviz config
-COPY docker/tools/visualizer/etc/autoware.rviz /autoware/autoware.rviz
-
 # Copy startup scripts
-COPY docker/tools/visualizer/etc/xstartup /root/.vnc/xstartup
+COPY docker/tools/visualizer/xstartup /root/.vnc/xstartup
 COPY docker/tools/visualizer/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && chmod +x /root/.vnc/xstartup
 ENTRYPOINT ["/entrypoint.sh"]
