@@ -4,8 +4,8 @@
 
 # Check if RVIZ_CONFIG is provided
 if [ -z "$RVIZ_CONFIG" ]; then
-    echo -e "\e[31mRVIZ_CONFIG is not set defaulting to autoware.rviz\e[0m"
-    RVIZ_CONFIG="/autoware/autoware.rviz"
+    echo -e "\e[31mRVIZ_CONFIG is not set defaulting to /autoware/rviz/autoware.rviz\e[0m"
+    RVIZ_CONFIG="/autoware/rviz/autoware.rviz"
     export RVIZ_CONFIG
 fi
 
