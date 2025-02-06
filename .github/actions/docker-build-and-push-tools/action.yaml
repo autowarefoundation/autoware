@@ -24,7 +24,6 @@ runs:
 
     - name: Run vcs import
       run: |
-        mkdir src
         vcs import src < autoware.repos
         vcs import src < simulator.repos
       shell: bash
