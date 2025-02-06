@@ -41,7 +41,7 @@ FROM ghcr.io/autowarefoundation/autoware:universe AS universe
 # hadolint ignore=SC1091
 RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
     && RVIZ_PATH="$(ros2 pkg prefix --share autoware_launch)/rviz" \
-    && cp $RVIZ_PATH /autoware/rviz
+    && cp "$RVIZ_PATH" /autoware/rviz
 
 ### visualizer
 FROM ghcr.io/autowarefoundation/autoware:universe-visualization AS visualizer
