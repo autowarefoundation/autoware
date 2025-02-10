@@ -31,7 +31,7 @@ RUN --mount=type=ssh \
 # Extract rosdep dependencies for visualizer
 # hadolint ignore=SC1091
 RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
-    && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+    && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
     > /rosdep-visualizer-depend-packages.txt \
     && cat /rosdep-visualizer-depend-packages.txt
 
