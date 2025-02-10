@@ -10,7 +10,7 @@ run_scenario_simulator() {
     SENSOR_MODEL=${SENSOR_MODEL:-sample_sensor_kit}
     VEHICLE_MODEL=${VEHICLE_MODEL:-sample_vehicle}
     INITIALIZE_DURATION=${INITIALIZE_DURATION:-90}
-    GLOBAL_FRAME_RATE=${GLOBAL_FRAME_RATE:-20}
+    GLOBAL_FRAME_RATE=${GLOBAL_FRAME_RATE:-30}
     OUTPUT_DIRECTORY=${OUTPUT_DIRECTORY:-/autoware/scenario-sim/output}
     SCENARIO=${SCENARIO:-$(ros2 pkg prefix --share scenario_test_runner)/scenario/sample.yaml}
     GLOBAL_TIMEOUT=${GLOBAL_TIMEOUT:-120}

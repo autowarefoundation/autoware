@@ -29,12 +29,12 @@ RUN --mount=type=ssh \
     && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Extract rosdep dependencies for simulator
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src/simulator ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src/simulator ${ROS_DISTRO} --dependency-types=exec \
     > /rosdep-simulator-depend-packages.txt \
     && cat /rosdep-simulator-depend-packages.txt
 
 ### Scenario Simulator
-FROM ghcr.io/autowarefoundation/autoware:universe-visualization AS scenario-simulator
+FROM ghcr.io/autowarefoundation/autoware:core AS scenario-simulator
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR

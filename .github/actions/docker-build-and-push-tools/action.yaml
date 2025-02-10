@@ -31,34 +31,6 @@ runs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Restore ccache
-      uses: actions/cache/restore@v4
-      with:
-        path: |
-          root-ccache
-        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
-        restore-keys: |
-          ccache-${{ inputs.platform }}-
-
-    - name: Restore apt-get
-      uses: actions/cache/restore@v4
-      with:
-        path: |
-          var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
-        restore-keys: |
-          apt-get-${{ inputs.platform }}-
-
-    - name: Inject cache into docker
-      uses: reproducible-containers/buildkit-cache-dance@v3.1.2
-      with:
-        cache-map: |
-          {
-            "root-ccache": "/root/.ccache",
-            "var-cache-apt": "/var/cache/apt"
-          }
-        skip-extraction: true
-
     - name: Get current date
       id: date
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
