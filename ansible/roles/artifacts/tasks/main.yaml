@@ -292,7 +292,7 @@
     extra_opts:
       - --strip-components=1 # Removes the top-level folder during extraction
 
-# traffic_light_detector model which referenced by tensorrt_yolox package
+# tensorrt_yolox for whole_image_traffic_light_detector
 - name: Download tensorrt_yolox/yolox_s_car_ped_tl_detector_960_960_batch_1.onnx
   become: true
   ansible.builtin.get_url:
