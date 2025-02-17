@@ -1,0 +1,21 @@
+- name: Download the cumm package
+  ansible.builtin.get_url:
+    url: https://github.com/knzo25/spconv_cpp/releases/download/spconv_v{{ spconv_version }}%2Bcumm_v{{ cumm_version }}/cumm_{{ cumm_version }}_amd64.deb
+    dest: /tmp/cumm.deb
+
+- name: Install the cumm package
+  become: true
+  ansible.builtin.apt:
+    deb: /tmp/cumm.deb
+    state: present
+
+- name: Download the spconv package
+  ansible.builtin.get_url:
+    url: https://github.com/knzo25/spconv_cpp/releases/download/spconv_v{{ spconv_version }}%2Bcumm_v{{ cumm_version }}/spconv_{{ spconv_version }}_amd64.deb
+    dest: /tmp/spconv.deb
+
+- name: Install the spconv package
+  become: true
+  ansible.builtin.apt:
+    deb: /tmp/spconv.deb
+    state: present
