@@ -1,6 +1,7 @@
 # cspell:ignore Bcumm, cumm, spconv
 - name: Download the cumm package
   ansible.builtin.get_url:
+    mode: "0644"
     url: https://github.com/knzo25/spconv_cpp/releases/download/spconv_v{{ spconv_version }}%2Bcumm_v{{ cumm_version }}/cumm_{{ cumm_version }}_amd64.deb
     dest: /tmp/cumm.deb
 
@@ -12,6 +13,7 @@
 
 - name: Download the spconv package
   ansible.builtin.get_url:
+    mode: "0644"
     url: https://github.com/knzo25/spconv_cpp/releases/download/spconv_v{{ spconv_version }}%2Bcumm_v{{ cumm_version }}/spconv_{{ spconv_version }}_amd64.deb
     dest: /tmp/spconv.deb
 
