@@ -1,3 +1,5 @@
+<!-- cspell:ignore cumm, spconv -->
+
 # spconv
 
 This role install the `cumm` and `spconv` libraries needed to perform sparse convolutions.

@@ -54,6 +54,7 @@
       when: rosdistro != 'rolling'
     - role: autoware.dev_env.tensorrt
       when: prompt_install_nvidia == 'y'
+    # cspell:ignore spconv
     - role: autoware.dev_env.spconv
       when: prompt_install_nvidia == 'y'
 
