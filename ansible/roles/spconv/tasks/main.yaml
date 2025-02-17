@@ -1,4 +1,4 @@
-# cspell:ignore cumm, spconv
+# cspell:ignore Bcumm, cumm, spconv
 - name: Download the cumm package
   ansible.builtin.get_url:
     url: https://github.com/knzo25/spconv_cpp/releases/download/spconv_v{{ spconv_version }}%2Bcumm_v{{ cumm_version }}/cumm_{{ cumm_version }}_amd64.deb
