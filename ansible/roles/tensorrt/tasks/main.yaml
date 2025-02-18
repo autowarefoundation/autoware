@@ -3,10 +3,9 @@
   ansible.builtin.apt:
     name:
       - libcudnn8={{ cudnn_version }}
-      - libnvinfer8={{ tensorrt_version }}
-      - libnvinfer-plugin8={{ tensorrt_version }}
-      - libnvparsers8={{ tensorrt_version }}
-      - libnvonnxparsers8={{ tensorrt_version }}
+      - libnvinfer10={{ tensorrt_version }}
+      - libnvinfer-plugin10={{ tensorrt_version }}
+      - libnvonnxparsers10={{ tensorrt_version }}
     allow_change_held_packages: true
     allow_downgrade: true
     update_cache: true
@@ -20,7 +19,6 @@
       - libnvinfer-plugin-dev={{ tensorrt_version }}
       - libnvinfer-headers-dev={{ tensorrt_version }}
       - libnvinfer-headers-plugin-dev={{ tensorrt_version }}
-      - libnvparsers-dev={{ tensorrt_version }}
       - libnvonnxparsers-dev={{ tensorrt_version }}
     allow_change_held_packages: true
     allow_downgrade: true
@@ -35,10 +33,9 @@
     selection: hold
   with_items:
     - libcudnn8
-    - libnvinfer8
-    - libnvinfer-plugin8
-    - libnvparsers8
-    - libnvonnxparsers8
+    - libnvinfer10
+    - libnvinfer-plugin10
+    - libnvonnxparsers10
 
 - name: Prevent CUDA-related Dev packages from upgrading
   become: true
@@ -51,6 +48,5 @@
     - libnvinfer-plugin-dev
     - libnvinfer-headers-dev
     - libnvinfer-headers-plugin-dev
-    - libnvparsers-dev
     - libnvonnxparsers-dev
   when: install_devel == 'y'

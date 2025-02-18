@@ -41,7 +41,7 @@ repositories:
   universe/external/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
-    version: v0.40.0
+    version: tier4/universe
   # Fix the version not to merge https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs/pull/9
   universe/external/morai_msgs:
     type: git
@@ -107,19 +107,19 @@ repositories:
   sensor_kit/sample_sensor_kit_launch:
     type: git
     url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
-    version: 0.40.0
+    version: 0.41.0
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
     url: https://github.com/tier4/awsim_sensor_kit_launch.git
-    version: 0.40.0
+    version: 0.41.0
   sensor_kit/awsim_labs_sensor_kit_launch:
     type: git
     url: https://github.com/autowarefoundation/awsim_labs_sensor_kit_launch.git
-    version: 0.39.0
+    version: 0.41.1
   sensor_kit/single_lidar_sensor_kit_launch:
     type: git
     url: https://github.com/autowarefoundation/single_lidar_sensor_kit_launch.git
-    version: 0.39.0
+    version: 0.41.0
   # vehicle
   vehicle/sample_vehicle_launch:
     type: git

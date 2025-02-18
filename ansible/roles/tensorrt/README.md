@@ -17,28 +17,24 @@ wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/auto
 
 sudo apt-get install -y \
 libcudnn8=${cudnn_version} \
-libnvinfer8=${tensorrt_version} \
-libnvinfer-plugin8=${tensorrt_version} \
-libnvparsers8=${tensorrt_version} \
-libnvonnxparsers8=${tensorrt_version} \
+libnvinfer10=${tensorrt_version} \
+libnvinfer-plugin10=${tensorrt_version} \
+libnvonnxparsers10=${tensorrt_version} \
 libcudnn8-dev=${cudnn_version} \
 libnvinfer-dev=${tensorrt_version} \
 libnvinfer-plugin-dev=${tensorrt_version} \
 libnvinfer-headers-dev=${tensorrt_version} \
 libnvinfer-headers-plugin-dev=${tensorrt_version} \
-libnvparsers-dev=${tensorrt_version} \
 libnvonnxparsers-dev=${tensorrt_version}
 
 sudo apt-mark hold \
 libcudnn8 \
-libnvinfer8 \
-libnvinfer-plugin8 \
-libnvparsers8 \
-libnvonnxparsers8 \
+libnvinfer10 \
+libnvinfer-plugin10 \
+libnvonnxparsers10 \
 libcudnn8-dev \
 libnvinfer-dev \
 libnvinfer-plugin-dev \
-libnvparsers-dev \
 libnvonnxparsers-dev \
 libnvinfer-headers-dev \
 libnvinfer-headers-plugin-dev
