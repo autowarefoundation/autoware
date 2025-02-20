@@ -1,4 +1,3 @@
-# cSpell:ignore cumm, spconv
 - name: Download and install the cumm and spconv packages
   hosts: localhost
   roles:

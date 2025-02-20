@@ -1,4 +1,4 @@
-# cspell:ignore Bcumm, cumm, spconv
+# cspell:ignore Bcumm
 - name: Normalize dpkg architecture
   ansible.builtin.set_fact:
     normalized_arch: "{{ ansible_architecture | regex_replace('aarch64', 'arm64') | regex_replace('x86_64', 'amd64') }}"
