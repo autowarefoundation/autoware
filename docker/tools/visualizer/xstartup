@@ -1,0 +1,16 @@
+#!/bin/sh
+# cspell:ignore openbox, VNC, xstartup, DBUS, Xresources, xrdb
+
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+export DISPLAY=:99
+
+[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
+[ -r "$HOME/.Xresources" ] && xrdb "$HOME/.Xresources"
+
+# Start Openbox window manager
+echo "Starting Openbox window manager..."
+openbox-session &
+
+# Keep the session alive
+sleep infinity
