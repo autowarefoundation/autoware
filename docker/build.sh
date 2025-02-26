@@ -113,9 +113,11 @@ clone_repositories() {
     if [ ! -d "src" ]; then
         mkdir -p src
         vcs import src <autoware.repos
+        vcs import src <extra-packages.repos
     else
         echo "Source directory already exists. Updating repositories..."
         vcs import src <autoware.repos
+        vcs import src <extra-packages.repos
         vcs pull src
     fi
 }
