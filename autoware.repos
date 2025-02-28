@@ -75,6 +75,14 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/trt_batched_nms.git
     version: main
+  universe/external/cuda_blackboard:
+    type: git
+    url: https://github.com/autowarefoundation/cuda_blackboard.git
+    version: main
+  universe/external/negotiated:
+    type: git
+    url: https://github.com/osrf/negotiated.git
+    version: master
   # launcher
   launcher/autoware_launch:
     type: git
