@@ -91,7 +91,7 @@ This stage is built on top of `$AUTOWARE_BASE_IMAGE` and adds the CUDA runtime e
 The ROS dependency package list files will be generated.
 These files will be used in the subsequent stages:
 
-- `core-common-devel`
+- `core-external-devel`
 - `core-devel`
 - `core`
 - `universe-common`
@@ -102,9 +102,9 @@ These files will be used in the subsequent stages:
 
 By generating only the package list files and copying them to the subsequent stages, the dependency packages will not be reinstalled during the container build process unless the dependency packages change.
 
-### `core-common-devel`
+### `core-external-devel`
 
-This stage installs the dependency packages based on `/rosdep-core-common-depend-packages.txt` and builds the packages under the `core` directory of `autoware.repos` except for `autoware.core`.
+This stage installs the dependency packages based on `/rosdep-core-external-depend-packages.txt` and builds the packages under the `core` directory of `autoware.repos` except for `autoware.core`.
 
 ### `core-devel`
 

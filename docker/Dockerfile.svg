@@ -21,9 +21,9 @@
     <!-- key2 -->
     <g id="node2" class="node">
       <title>key2</title>
-      <text text-anchor="start" x="315.12" y="-353.8" font-family="monospace" font-size="10.00"/>
-      <text text-anchor="start" x="315.12" y="-337.05" font-family="monospace" font-size="10.00"/>
-      <text text-anchor="start" x="315.12" y="-320.3" font-family="monospace" font-size="10.00"/>
+      <text text-anchor="start" x="315.12" y="-353.8" font-family="monospace" font-size="10.00"></text>
+      <text text-anchor="start" x="315.12" y="-337.05" font-family="monospace" font-size="10.00"></text>
+      <text text-anchor="start" x="315.12" y="-320.3" font-family="monospace" font-size="10.00"></text>
     </g>
     <!-- key&#45;&gt;key2 -->
     <g id="edge1" class="edge">
@@ -180,7 +180,7 @@
         stroke="black"
         d="M582.25,-467.18C582.25,-467.18 462.25,-467.18 462.25,-467.18 456.25,-467.18 450.25,-461.18 450.25,-455.18 450.25,-455.18 450.25,-443.18 450.25,-443.18 450.25,-437.18 456.25,-431.18 462.25,-431.18 462.25,-431.18 582.25,-431.18 582.25,-431.18 588.25,-431.18 594.25,-437.18 594.25,-443.18 594.25,-443.18 594.25,-455.18 594.25,-455.18 594.25,-461.18 588.25,-467.18 582.25,-467.18"
       />
-      <text text-anchor="middle" x="522.25" y="-444.13" font-family="Times,serif" font-size="14.00">core&#45;common&#45;devel</text>
+      <text text-anchor="middle" x="522.25" y="-444.13" font-family="Times,serif" font-size="14.00">core&#45;external&#45;devel</text>
     </g>
     <!-- stage_0&#45;&gt;stage_7 -->
     <g id="edge11" class="edge">

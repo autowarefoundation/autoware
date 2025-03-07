@@ -64,16 +64,16 @@ runs:
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Docker meta for autoware:core-common-devel
-      id: meta-core-common-devel
+    - name: Docker meta for autoware:core-external-devel
+      id: meta-core-external-devel
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=core-common-devel-${{ inputs.platform }}
-          type=raw,value=core-common-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,prefix=core-common-devel-,suffix=-${{ inputs.platform }}
-        bake-target: docker-metadata-action-core-common-devel
+          type=raw,value=core-external-devel-${{ inputs.platform }}
+          type=raw,value=core-external-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=core-external-devel-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-core-external-devel
         flavor: |
           latest=false
 
@@ -272,7 +272,7 @@ runs:
         push: true
         files: |
           docker/docker-bake.hcl
-          ${{ steps.meta-core-common-devel.outputs.bake-file }}
+          ${{ steps.meta-core-external-devel.outputs.bake-file }}
           ${{ steps.meta-core.outputs.bake-file }}
           ${{ steps.meta-core-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception-devel.outputs.bake-file }}
