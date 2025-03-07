@@ -26,7 +26,7 @@ RUN --mount=type=ssh \
 # Generate install package lists
 COPY src/core/autoware_adapi_msgs /autoware/src/core/autoware_adapi_msgs
 COPY src/core/autoware_cmake /autoware/src/core/autoware_cmake
-COPY src/core/autoware_interface_msgs /autoware/src/core/autoware_interface_msgs
+COPY src/core/autoware_internal_msgs /autoware/src/core/autoware_internal_msgs
 COPY src/core/autoware_lanelet2_extension /autoware/src/core/autoware_lanelet2_extension
 COPY src/core/autoware_msgs /autoware/src/core/autoware_msgs
 COPY src/core/autoware_utils /autoware/src/core/autoware_utils
@@ -168,7 +168,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_adapi_msgs,target=/autoware/src/core/autoware_adapi_msgs \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_cmake,target=/autoware/src/core/autoware_cmake \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_interface_msgs,target=/autoware/src/core/autoware_interface_msgs \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_internal_msgs,target=/autoware/src/core/autoware_internal_msgs \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_lanelet2_extension,target=/autoware/src/core/autoware_lanelet2_extension \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_msgs,target=/autoware/src/core/autoware_msgs \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_utils,target=/autoware/src/core/autoware_utils \
