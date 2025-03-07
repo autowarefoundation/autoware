@@ -24,7 +24,20 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # Generate install package lists
-COPY src/core /autoware/src/core
+COPY src/core/autoware_adapi_msgs /autoware/src/core/autoware_adapi_msgs
+COPY src/core/autoware_cmake /autoware/src/core/autoware_cmake
+COPY src/core/autoware_internal_msgs /autoware/src/core/autoware_internal_msgs
+COPY src/core/autoware_lanelet2_extension /autoware/src/core/autoware_lanelet2_extension
+COPY src/core/autoware_msgs /autoware/src/core/autoware_msgs
+COPY src/core/autoware_utils /autoware/src/core/autoware_utils
+RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+  > /rosdep-core-common-depend-packages.txt \
+  && cat /rosdep-core-common-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+  > /rosdep-core-common-exec-depend-packages.txt \
+  && cat /rosdep-core-common-exec-depend-packages.txt
+
+COPY src/core/autoware.core /autoware/src/core/autoware.core
 RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-core-depend-packages.txt \
   && cat /rosdep-core-depend-packages.txt
@@ -128,7 +141,7 @@ RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-ty
   && cat /rosdep-exec-depend-packages.txt
 
 # hadolint ignore=DL3006
-FROM $AUTOWARE_BASE_IMAGE AS core-devel
+FROM $AUTOWARE_BASE_IMAGE AS core-common-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -145,6 +158,32 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # Install rosdep dependencies
+COPY --from=rosdep-depend /rosdep-core-common-depend-packages.txt /tmp/rosdep-core-common-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update \
+  && cat /tmp/rosdep-core-common-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && /autoware/cleanup_apt.sh
+
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_adapi_msgs,target=/autoware/src/core/autoware_adapi_msgs \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_cmake,target=/autoware/src/core/autoware_cmake \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_internal_msgs,target=/autoware/src/core/autoware_internal_msgs \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_lanelet2_extension,target=/autoware/src/core/autoware_lanelet2_extension \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_msgs,target=/autoware/src/core/autoware_msgs \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_utils,target=/autoware/src/core/autoware_utils \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+FROM core-common-devel AS core-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+# Install rosdep dependencies
 COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -153,7 +192,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && /autoware/cleanup_apt.sh
 
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware.core,target=/autoware/src/core/autoware.core \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
