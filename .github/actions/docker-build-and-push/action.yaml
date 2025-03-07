@@ -103,16 +103,16 @@ runs:
         flavor: |
           latest=false
 
-    - name: Docker meta for autoware:universe-common-devel
-      id: meta-universe-common-devel
+    - name: Docker meta for autoware:universe-external-devel
+      id: meta-universe-external-devel
       uses: docker/metadata-action@v5
       with:
         images: ${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=universe-common-devel-${{ inputs.platform }}
-          type=raw,value=universe-common-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
-          type=ref,event=tag,prefix=universe-common-devel-,suffix=-${{ inputs.platform }}
-        bake-target: docker-metadata-action-universe-common-devel
+          type=raw,value=universe-external-devel-${{ inputs.platform }}
+          type=raw,value=universe-external-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-external-devel-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-external-devel
         flavor: |
           latest=false
 
@@ -288,7 +288,7 @@ runs:
           ${{ steps.meta-core-external-devel.outputs.bake-file }}
           ${{ steps.meta-core.outputs.bake-file }}
           ${{ steps.meta-core-devel.outputs.bake-file }}
-          ${{ steps.meta-universe-common-devel.outputs.bake-file }}
+          ${{ steps.meta-universe-external-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception.outputs.bake-file }}
           ${{ steps.meta-universe-localization-mapping-devel.outputs.bake-file }}
