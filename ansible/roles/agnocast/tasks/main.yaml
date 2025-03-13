@@ -1,0 +1,23 @@
+- name: Add agnocast PPA repository
+  apt_repository:
+    repo: "ppa:t4-system-software/agnocast"
+    state: present
+  become: yes
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: Remove existing agnocast DKMS module
+  shell: dkms remove -m agnocast -v 1.0.1 --all --force
+  ignore_errors: yes
+  become: yes
+
+- name: Install agnocast packages with specific version
+  apt:
+    name:
+      - "agnocast-heaphook=1.0.1*"
+      - "agnocast-kmod=1.0.1*"
+    state: present
+  become: yes
