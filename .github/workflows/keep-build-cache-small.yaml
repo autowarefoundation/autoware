@@ -7,7 +7,7 @@ on:
     - cron: 0 6 * * *
 
 env:
-  CACHE_THRESHOLD_GB: 6.5
+  CACHE_THRESHOLD_GB: 6.6
   IMAGE_NAME: autoware-buildcache
   IMAGE_TAG: amd64-main
 
