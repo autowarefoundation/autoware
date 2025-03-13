@@ -8,7 +8,8 @@ on:
 
 env:
   CACHE_THRESHOLD_GB: 6.5
-  BUILD_CACHE_IMAGE: ghcr.io/autowarefoundation/autoware-buildcache:amd64-main
+  IMAGE_NAME: autoware-buildcache
+  IMAGE_TAG: amd64-main
 
 jobs:
   keep-build-cache-small:
@@ -18,6 +19,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y skopeo jq bc
+
+      - name: Set up BUILD_CACHE_IMAGE environment variable
+        run: |
+          echo "BUILD_CACHE_IMAGE=ghcr.io/autowarefoundation/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" >> "$GITHUB_ENV"
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -65,10 +70,13 @@ jobs:
           fi
 
       - name: Delete build cache if exceeded
+        uses: bots-house/ghcr-delete-image-action@v1.1.0
         if: steps.check_threshold.outputs.status == 'exceeded'
-        run: |
-          echo "🗑️ Deleting build cache image: ${{ env.BUILD_CACHE_IMAGE }}..."
-          skopeo delete docker://${{ env.BUILD_CACHE_IMAGE }}
+        with:
+          name: ${{ env.IMAGE_NAME }}
+          tag: ${{ env.IMAGE_TAG }}
+          owner: ${{ github.repository_owner }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify cache deletion
         if: steps.check_threshold.outputs.status == 'exceeded'
