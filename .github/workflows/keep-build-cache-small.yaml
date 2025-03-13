@@ -7,7 +7,7 @@ on:
     - cron: 0 6 * * *
 
 env:
-  CACHE_THRESHOLD_GB: 6.5
+  CACHE_THRESHOLD_GB: 65
   BUILD_CACHE_IMAGE: ghcr.io/autowarefoundation/autoware-buildcache:amd64-main
 
 jobs:
