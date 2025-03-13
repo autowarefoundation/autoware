@@ -55,3 +55,10 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/awsim_labs_vehicle_launch.git
     version: main
+  # TODO(sykwer): During the transition period of Agnocast introduction,
+  # the Agnocast ROS packages are provided as a source build.
+  # Once the transition stabilizes, use the pacakges released from rosditro.
+  middleware/external/agnocast:
+    type: git
+    url: https://github.com/tier4/agnocast.git
+    version: 1.0.1

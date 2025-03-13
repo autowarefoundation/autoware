@@ -45,6 +45,7 @@
     - role: autoware.dev_env.rmw_implementation
     - role: autoware.dev_env.gdown
     - role: autoware.dev_env.build_tools
+    - role: autoware.dev_env.agnocast
 
     # Autoware module dependencies
     - role: autoware.dev_env.geographiclib
