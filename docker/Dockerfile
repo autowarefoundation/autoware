@@ -46,6 +46,8 @@ RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-ty
   && cat /rosdep-core-exec-depend-packages.txt
 
 COPY src/universe/external /autoware/src/universe/external
+# trt_batched_nms depends on autoware_tensorrt_common and autoware_cuda_utils, which are not available in universe-common-devel stage
+RUN rm -rf /autoware/src/universe/external/trt_batched_nms
 COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-common-depend-packages.txt \
@@ -216,7 +218,15 @@ RUN --mount=type=ssh \
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware.universe/common,target=/autoware/src/universe/autoware.universe/common \
-  --mount=type=bind,source=src/universe/external,target=/autoware/src/universe/external \
+  --mount=type=bind,source=src/universe/external/eagleye,target=/autoware/src/universe/external/eagleye \
+  --mount=type=bind,source=src/universe/external/glog,target=/autoware/src/universe/external/glog \
+  --mount=type=bind,source=src/universe/external/llh_converter,target=/autoware/src/universe/external/llh_converter \
+  --mount=type=bind,source=src/universe/external/morai_msgs,target=/autoware/src/universe/external/morai_msgs \
+  --mount=type=bind,source=src/universe/external/muSSP,target=/autoware/src/universe/external/muSSP \
+  --mount=type=bind,source=src/universe/external/pointcloud_to_laserscan,target=/autoware/src/universe/external/pointcloud_to_laserscan \
+  --mount=type=bind,source=src/universe/external/rtklib_ros_bridge,target=/autoware/src/universe/external/rtklib_ros_bridge \
+  --mount=type=bind,source=src/universe/external/tier4_ad_api_adaptor,target=/autoware/src/universe/external/tier4_ad_api_adaptor \
+  --mount=type=bind,source=src/universe/external/tier4_autoware_msgs,target=/autoware/src/universe/external/tier4_autoware_msgs \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
@@ -253,6 +263,7 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,source=src/universe/external/trt_batched_nms,target=/autoware/src/universe/external/trt_batched_nms \
   --mount=type=bind,source=src/universe/autoware.universe/perception,target=/autoware/src/universe/autoware.universe/perception \
   --mount=type=bind,source=src/universe/autoware.universe/sensing,target=/autoware/src/universe/autoware.universe/sensing \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
