@@ -15,20 +15,21 @@
     state: present
   become: true
 
-- name: Check if agnocast-kmod v{{ agnocast_version }} is installed in dkms
-  ansible.builtin.shell: dkms status | grep agnocast | grep {{ agnocast_version }}
+- name: Check if agnocast-kmod is installed in dkms with version v{{ agnocast_version }} # noqa: command-shell
+  ansible.builtin.shell:
+    dkms status | grep agnocast | grep {{ agnocast_version }}
   register: dkms_status
   failed_when: false
-  become: true
+  changed_when: false
 
-- name: Purge agnocast-kmod if v{{ agnocast_version }} not found in dkms
+- name: Purge agnocast-kmod if not found in dkms for version if v{{ agnocast_version }}
   ansible.builtin.apt:
     name: agnocast-kmod={{ agnocast_version }}*
     state: absent
   become: true
   when: dkms_status.rc != 0
 
-- name: Install agnocast-kmod if v{{ agnocast_version }} not found in dkms
+- name: Install agnocast-kmod if not found in dkms for version v{{ agnocast_version }}
   ansible.builtin.apt:
     name: agnocast-kmod={{ agnocast_version }}*
     state: present

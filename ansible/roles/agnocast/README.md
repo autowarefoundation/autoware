@@ -1,6 +1,6 @@
 # agnocast
 
-This role installs [Agnocast](https://github.com/tier4/agnocast), true zero-copy communication middleware for unsized ROS 2 message types.
+This role installs [Agnocast](https://github.com/tier4/agnocast), true zero-copy communication middleware for all ROS 2 message types.
 
 ## Inputs
 
