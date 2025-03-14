@@ -5,23 +5,31 @@ on:
   schedule:
     - cron: 0 6 * * *
 
-env:
-  CACHE_THRESHOLD_GB: 6.6
-  IMAGE_NAME: autoware-buildcache
-  IMAGE_TAG: amd64-main
-
 jobs:
   keep-build-cache-small:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - image_tag: amd64-main
+            cache_threshold_gb: 7.0
+          - image_tag: arm64-main
+            cache_threshold_gb: 9.0
+
+    env:
+      IMAGE_NAME: autoware-buildcache
+
     steps:
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y skopeo jq bc
 
-      - name: Set up BUILD_CACHE_IMAGE environment variable
+      - name: Set up environment variables
         run: |
-          echo "BUILD_CACHE_IMAGE=ghcr.io/autowarefoundation/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" >> "$GITHUB_ENV"
+          echo "CACHE_THRESHOLD_GB=${{ matrix.cache_threshold_gb }}" >> "$GITHUB_ENV"
+          echo "IMAGE_TAG=${{ matrix.image_tag }}" >> "$GITHUB_ENV"
+          echo "BUILD_CACHE_IMAGE=ghcr.io/autowarefoundation/${{ env.IMAGE_NAME }}:${{ matrix.image_tag }}" >> "$GITHUB_ENV"
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -73,7 +81,7 @@ jobs:
         if: steps.check_threshold.outputs.status == 'exceeded'
         with:
           name: ${{ env.IMAGE_NAME }}
-          tag: ${{ env.IMAGE_TAG }}
+          tag: ${{ matrix.image_tag }}
           owner: ${{ github.repository_owner }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
