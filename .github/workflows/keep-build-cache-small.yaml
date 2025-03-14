@@ -1,0 +1,127 @@
+name: keep-build-cache-small
+
+on:
+  workflow_call:
+  schedule:
+    - cron: 0 6 * * *
+
+jobs:
+  keep-build-cache-small:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - image_tag: amd64-main
+            cache_threshold_gb: 7.0
+          - image_tag: arm64-main
+            cache_threshold_gb: 9.0
+
+    env:
+      IMAGE_NAME: autoware-buildcache
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y skopeo jq bc
+
+      - name: Set up environment variables
+        run: |
+          echo "CACHE_THRESHOLD_GB=${{ matrix.cache_threshold_gb }}" >> "$GITHUB_ENV"
+          echo "IMAGE_TAG=${{ matrix.image_tag }}" >> "$GITHUB_ENV"
+          echo "BUILD_CACHE_IMAGE=ghcr.io/autowarefoundation/${{ env.IMAGE_NAME }}:${{ matrix.image_tag }}" >> "$GITHUB_ENV"
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if build cache image exists
+        id: check_image
+        run: |
+          echo "🔍 Checking if build cache image exists..."
+          if skopeo inspect --raw docker://${{ env.BUILD_CACHE_IMAGE }} > /dev/null 2>&1; then
+            echo "✅ Build cache image found. Proceeding..."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "⚠️ Build cache image does not exist. Skipping remaining steps."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Calculate cache size
+        id: calc_size
+        if: steps.check_image.outputs.exists == 'true'
+        run: |
+          echo "🔍 Inspecting build cache size for image: ${{ env.BUILD_CACHE_IMAGE }}..."
+          SIZE_BYTES=$(skopeo inspect --raw docker://${{ env.BUILD_CACHE_IMAGE }} | jq '[.manifests[].size] | add')
+          SIZE_GB=$(echo "scale=2; $SIZE_BYTES / (1024 * 1024 * 1024)" | bc)
+          echo "Cache size: ${SIZE_GB} GB"
+          echo "size_gb=${SIZE_GB}" >> "$GITHUB_OUTPUT"
+
+      - name: Compare cache size with threshold
+        id: check_threshold
+        if: steps.check_image.outputs.exists == 'true'
+        run: |
+          echo "📊 Checking cache size against threshold..."
+          THRESHOLD_GB=${{ env.CACHE_THRESHOLD_GB }}
+          CACHE_SIZE_GB=${{ steps.calc_size.outputs.size_gb }}
+
+          if (( $(echo "$CACHE_SIZE_GB > $THRESHOLD_GB" | bc -l) )); then
+            echo "❌ Cache size exceeds threshold. Action needed."
+            echo "status=exceeded" >> "$GITHUB_OUTPUT"
+          else
+            echo "✅ Cache size is within threshold. No action needed."
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Delete build cache if exceeded
+        uses: bots-house/ghcr-delete-image-action@v1.1.0
+        if: steps.check_threshold.outputs.status == 'exceeded'
+        with:
+          name: ${{ env.IMAGE_NAME }}
+          tag: ${{ matrix.image_tag }}
+          owner: ${{ github.repository_owner }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify cache deletion
+        if: steps.check_threshold.outputs.status == 'exceeded'
+        id: verify_deletion
+        run: |
+          echo "🔍 Verifying if build cache image has been deleted..."
+
+          if skopeo inspect --raw docker://${{ env.BUILD_CACHE_IMAGE }} > /dev/null 2>&1; then
+            echo "❌ Build cache image still exists!"
+            echo "status=failed" >> "$GITHUB_OUTPUT"
+            exit 1
+          else
+            echo "✅ Build cache image successfully deleted."
+            echo "status=success" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate workflow summary
+        if: always()
+        run: |
+          SUMMARY="# 📦 Build Cache Size Check\n"
+          SUMMARY+="- **Image**: \`${{ env.BUILD_CACHE_IMAGE }}\`\n"
+
+          if [[ "${{ steps.check_image.outputs.exists }}" == "false" ]]; then
+            SUMMARY+="⚠️ **Build cache image does not exist. Skipping checks.**\n"
+          else
+            SUMMARY+="- **Cache Size**: ${{ steps.calc_size.outputs.size_gb }} GB\n"
+            SUMMARY+="- **Threshold**: ${{ env.CACHE_THRESHOLD_GB }} GB\n"
+
+            if [[ "${{ steps.check_threshold.outputs.status }}" == "exceeded" ]]; then
+              if [[ "${{ steps.verify_deletion.outputs.status }}" != "success" ]]; then
+                SUMMARY+="❌ **Cache size exceeded, but deletion failed!**\n"
+              else
+                SUMMARY+="🗑️✅ **Cache size exceeded. Image deleted successfully!**\n"
+              fi
+            else
+              SUMMARY+="👌✅ **Cache size is within acceptable limits.**\n"
+            fi
+          fi
+
+          echo -e "$SUMMARY"
+          echo -e "$SUMMARY" >> $GITHUB_STEP_SUMMARY
