@@ -9,7 +9,7 @@ None.
 ## Manual Installation
 
 ```bash
-agnocast_version="1.0.1"
+agnocast_version="1.0.2"
 
 sudo add-apt-repository -y ppa:t4-system-software/agnocast
 sudo apt update
