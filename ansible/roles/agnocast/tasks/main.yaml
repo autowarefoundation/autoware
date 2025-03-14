@@ -11,26 +11,26 @@
 
 - name: Install agnocast-heaphook v{{ agnocast_version }}
   ansible.builtin.apt:
-    name: "agnocast-heaphook={{ agnocast_version }}*"
+    name: agnocast-heaphook={{ agnocast_version }}*
     state: present
   become: true
 
 - name: Check if agnocast-kmod v{{ agnocast_version }} is installed in dkms
-  ansible.builtin.shell: "dkms status | grep agnocast | grep {{ agnocast_version }}"
+  ansible.builtin.shell: dkms status | grep agnocast | grep {{ agnocast_version }}
   register: dkms_status
   failed_when: false
   become: true
 
 - name: Purge agnocast-kmod if v{{ agnocast_version }} not found in dkms
   ansible.builtin.apt:
-    name: "agnocast-kmod={{ agnocast_version }}*"
+    name: agnocast-kmod={{ agnocast_version }}*
     state: absent
   become: true
   when: dkms_status.rc != 0
 
 - name: Install agnocast-kmod if v{{ agnocast_version }} not found in dkms
   ansible.builtin.apt:
-    name: "agnocast-kmod={{ agnocast_version }}*"
+    name: agnocast-kmod={{ agnocast_version }}*
     state: present
   become: true
   when: dkms_status.rc != 0
