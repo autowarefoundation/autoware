@@ -15,8 +15,8 @@
     state: present
   become: true
 
-- name: Check if agnocast-kmod is installed in dkms with version v{{ agnocast_version }} # noqa: command-shell
-  ansible.builtin.shell: dkms status | grep agnocast | grep {{ agnocast_version }}
+- name: Check if agnocast-kmod is installed in dkms with version v{{ agnocast_version }}
+  ansible.builtin.shell: dkms status | grep agnocast | grep {{ agnocast_version }} # noqa: risky-shell-pipe
   register: dkms_status
   failed_when: false
   changed_when: false
