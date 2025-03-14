@@ -11,6 +11,7 @@ print_help() {
     echo "  --no-cuda       Disable CUDA support"
     echo "  --platform      Specify the platform (default: current platform)"
     echo "  --devel-only    Build devel image only"
+    echo "  --target        Specify the target image (default: universe or universe-devel if --devel-only is set)"
     echo ""
     echo "Note: The --platform option should be one of 'linux/amd64' or 'linux/arm64'."
 }
@@ -36,6 +37,10 @@ parse_arguments() {
         --devel-only)
             option_devel_only=true
             ;;
+        --target)
+            option_target="$2"
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             print_help
@@ -58,10 +63,15 @@ set_cuda_options() {
 
 # Set build options
 set_build_options() {
-    if [ "$option_devel_only" = "true" ]; then
-        target="universe-devel"
+    if [ -n "$option_target" ]; then
+        target="$option_target"
+        image_name_suffix=""
     else
-        target="universe"
+        if [ "$option_devel_only" = "true" ]; then
+            target="universe-devel"
+        else
+            target="universe"
+        fi
     fi
 }
 
@@ -144,9 +154,21 @@ build_images() {
         --set "*.args.AUTOWARE_BASE_CUDA_IMAGE=$autoware_base_cuda_image" \
         --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
+        --set "universe-sensing-perception-devel.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel" \
+        --set "universe-sensing-perception.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception" \
+        --set "universe-localization-mapping-devel.tags=ghcr.io/autowarefoundation/autoware:universe-localization-mapping-devel" \
+        --set "universe-localization-mapping.tags=ghcr.io/autowarefoundation/autoware:universe-localization-mapping" \
+        --set "universe-planning-control-devel.tags=ghcr.io/autowarefoundation/autoware:universe-planning-control-devel" \
+        --set "universe-planning-control.tags=ghcr.io/autowarefoundation/autoware:universe-planning-control" \
+        --set "universe-vehicle-system-devel.tags=ghcr.io/autowarefoundation/autoware:universe-vehicle-system-devel" \
+        --set "universe-vehicle-system.tags=ghcr.io/autowarefoundation/autoware:universe-vehicle-system" \
+        --set "universe-visualization-devel.tags=ghcr.io/autowarefoundation/autoware:universe-visualization-devel" \
+        --set "universe-visualization.tags=ghcr.io/autowarefoundation/autoware:universe-visualization" \
         --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel" \
-        --set "universe-devel-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-devel-cuda" \
         --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe" \
+        --set "universe-sensing-perception-devel-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel-cuda" \
+        --set "universe-sensing-perception-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception-cuda" \
+        --set "universe-devel-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-devel-cuda" \
         --set "universe-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-cuda" \
         "$target$image_name_suffix"
     set +x

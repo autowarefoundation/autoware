@@ -24,16 +24,44 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # Generate install package lists
-COPY src/core /autoware/src/core
+COPY src/core/autoware_adapi_msgs /autoware/src/core/autoware_adapi_msgs
+COPY src/core/autoware_cmake /autoware/src/core/autoware_cmake
+COPY src/core/autoware_internal_msgs /autoware/src/core/autoware_internal_msgs
+COPY src/core/autoware_lanelet2_extension /autoware/src/core/autoware_lanelet2_extension
+COPY src/core/autoware_msgs /autoware/src/core/autoware_msgs
+COPY src/core/autoware_utils /autoware/src/core/autoware_utils
+RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+  > /rosdep-core-common-depend-packages.txt \
+  && cat /rosdep-core-common-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+  > /rosdep-core-common-exec-depend-packages.txt \
+  && cat /rosdep-core-common-exec-depend-packages.txt
+
+COPY src/core/autoware.core /autoware/src/core/autoware.core
 RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-core-depend-packages.txt \
   && cat /rosdep-core-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+  > /rosdep-core-exec-depend-packages.txt \
+  && cat /rosdep-core-exec-depend-packages.txt
 
 COPY src/universe/external /autoware/src/universe/external
 COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-common-depend-packages.txt \
   && cat /rosdep-universe-common-depend-packages.txt
+
+FROM rosdep-depend AS rosdep-universe-visualization-depend
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
+COPY src/universe/autoware.universe/visualization /autoware/src/universe/autoware.universe/visualization
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+  > /rosdep-universe-visualization-depend-packages.txt \
+  && cat /rosdep-universe-visualization-depend-packages.txt
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+  > /rosdep-universe-visualization-exec-depend-packages.txt \
+  && cat /rosdep-universe-visualization-exec-depend-packages.txt
 
 FROM rosdep-depend AS rosdep-universe-sensing-perception-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -44,7 +72,7 @@ COPY src/universe/autoware.universe/sensing /autoware/src/universe/autoware.univ
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-sensing-perception-depend-packages.txt \
   && cat /rosdep-universe-sensing-perception-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
   > /rosdep-universe-sensing-perception-exec-depend-packages.txt \
   && cat /rosdep-universe-sensing-perception-exec-depend-packages.txt
 
@@ -57,7 +85,7 @@ COPY src/universe/autoware.universe/map /autoware/src/universe/autoware.universe
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-localization-mapping-depend-packages.txt \
   && cat /rosdep-universe-localization-mapping-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
   > /rosdep-universe-localization-mapping-exec-depend-packages.txt \
   && cat /rosdep-universe-localization-mapping-exec-depend-packages.txt
 
@@ -70,7 +98,7 @@ COPY src/universe/autoware.universe/planning /autoware/src/universe/autoware.uni
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-planning-control-depend-packages.txt \
   && cat /rosdep-universe-planning-control-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
   > /rosdep-universe-planning-control-exec-depend-packages.txt \
   && cat /rosdep-universe-planning-control-exec-depend-packages.txt
 
@@ -85,7 +113,7 @@ COPY src/universe/autoware.universe/localization/autoware_pose2twist /autoware/s
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-vehicle-system-depend-packages.txt \
   && cat /rosdep-universe-vehicle-system-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
   > /rosdep-universe-vehicle-system-exec-depend-packages.txt \
   && cat /rosdep-universe-vehicle-system-exec-depend-packages.txt
 
@@ -103,12 +131,12 @@ RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-depend-packages.txt \
   && cat /rosdep-universe-depend-packages.txt
 
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
   > /rosdep-exec-depend-packages.txt \
   && cat /rosdep-exec-depend-packages.txt
 
 # hadolint ignore=DL3006
-FROM $AUTOWARE_BASE_IMAGE AS core-devel
+FROM $AUTOWARE_BASE_IMAGE AS core-common-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -125,6 +153,32 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # Install rosdep dependencies
+COPY --from=rosdep-depend /rosdep-core-common-depend-packages.txt /tmp/rosdep-core-common-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update \
+  && cat /tmp/rosdep-core-common-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && /autoware/cleanup_apt.sh
+
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_adapi_msgs,target=/autoware/src/core/autoware_adapi_msgs \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_cmake,target=/autoware/src/core/autoware_cmake \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_internal_msgs,target=/autoware/src/core/autoware_internal_msgs \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_lanelet2_extension,target=/autoware/src/core/autoware_lanelet2_extension \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_msgs,target=/autoware/src/core/autoware_msgs \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware_utils,target=/autoware/src/core/autoware_utils \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+FROM core-common-devel AS core-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+# Install rosdep dependencies
 COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
 # hadolint ignore=SC2002
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -133,7 +187,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && /autoware/cleanup_apt.sh
 
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core/autoware.core,target=/autoware/src/core/autoware.core \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
@@ -304,6 +358,30 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
+FROM universe-common-devel AS universe-visualization-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+# Install rosdep dependencies
+COPY --from=rosdep-universe-visualization-depend /rosdep-universe-visualization-depend-packages.txt /tmp/rosdep-universe-visualization-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update \
+  && cat /tmp/rosdep-universe-visualization-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && /autoware/cleanup_apt.sh
+
+# hadolint ignore=SC1091
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,from=rosdep-universe-visualization-depend,source=/autoware/src/universe/autoware.universe/visualization,target=/autoware/src/universe/autoware.universe/visualization \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
 FROM universe-common-devel AS universe-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
@@ -322,6 +400,7 @@ COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
 COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
 COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
+COPY --from=universe-visualization-devel /opt/autoware /opt/autoware
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
@@ -354,6 +433,32 @@ RUN --mount=type=ssh \
 
 COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 COPY --from=universe-devel /opt/autoware /opt/autoware
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS core
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ARG LIB_DIR
+
+# Set up runtime environment
+COPY --from=rosdep-depend /rosdep-core-exec-depend-packages.txt /tmp/rosdep-core-exec-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get update \
+  && cat /tmp/rosdep-core-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
+
+COPY --from=core-devel /opt/autoware /opt/autoware
+
+# Copy bash aliases
+COPY docker/etc/.bash_aliases /root/.bash_aliases
+RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -476,6 +581,32 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
+
+# Copy bash aliases
+COPY docker/etc/.bash_aliases /root/.bash_aliases
+RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+# hadolint ignore=DL3006
+FROM $AUTOWARE_BASE_IMAGE AS universe-visualization
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ARG LIB_DIR
+
+# Set up runtime environment
+COPY --from=rosdep-universe-visualization-depend /rosdep-universe-visualization-exec-depend-packages.txt /tmp/rosdep-universe-visualization-exec-depend-packages.txt
+# hadolint ignore=SC2002
+RUN --mount=type=ssh \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  && pip uninstall -y ansible ansible-core \
+  && apt-get update \
+  && cat /tmp/rosdep-universe-visualization-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
+
+COPY --from=universe-visualization-devel /opt/autoware /opt/autoware
 
 # Copy bash aliases
 COPY docker/etc/.bash_aliases /root/.bash_aliases

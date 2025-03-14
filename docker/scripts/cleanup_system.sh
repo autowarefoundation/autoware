@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 function cleanup_system() {
     local lib_dir=$1
