@@ -9,7 +9,17 @@ None.
 ## Manual Installation
 
 ```bash
-sudo add-apt-repository ppa:t4-system-software/agnocast
+agnocast_version="1.0.1"
+
+sudo add-apt-repository -y ppa:t4-system-software/agnocast
 sudo apt update
-sudo apt install "agnocast-heaphook=1.0.1*" "agnocast-kmod=1.0.1*"
+sudo apt install -y "agnocast-heaphook=${agnocast_version}*"
+
+if dkms status | grep agnocast | grep -q "${agnocast_version}"; then
+    echo "agnocast-kmod version ${agnocast_version} is already registered in dkms. Skipping purge and install."
+else
+    sudo apt purge -y "agnocast-kmod=${agnocast_version}*"
+    sudo apt install -y "agnocast-kmod=${agnocast_version}*"
+fi
+
 ```

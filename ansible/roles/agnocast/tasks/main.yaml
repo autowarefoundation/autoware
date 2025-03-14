@@ -1,23 +1,36 @@
 - name: Add agnocast PPA repository
-  apt_repository:
-    repo: "ppa:t4-system-software/agnocast"
+  ansible.builtin.apt_repository:
+    repo: ppa:t4-system-software/agnocast
     state: present
-  become: yes
+  become: true
 
 - name: Update apt cache
-  apt:
-    update_cache: yes
-  become: yes
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
 
-- name: Remove existing agnocast DKMS module
-  shell: dkms remove -m agnocast -v 1.0.1 --all --force
-  ignore_errors: yes
-  become: yes
-
-- name: Install agnocast packages with specific version
-  apt:
-    name:
-      - "agnocast-heaphook=1.0.1*"
-      - "agnocast-kmod=1.0.1*"
+- name: Install agnocast-heaphook v{{ agnocast_version }}
+  ansible.builtin.apt:
+    name: "agnocast-heaphook={{ agnocast_version }}*"
     state: present
-  become: yes
+  become: true
+
+- name: Check if agnocast-kmod v{{ agnocast_version }} is installed in dkms
+  ansible.builtin.shell: "dkms status | grep agnocast | grep {{ agnocast_version }}"
+  register: dkms_status
+  failed_when: false
+  become: true
+
+- name: Purge agnocast-kmod if v{{ agnocast_version }} not found in dkms
+  ansible.builtin.apt:
+    name: "agnocast-kmod={{ agnocast_version }}*"
+    state: absent
+  become: true
+  when: dkms_status.rc != 0
+
+- name: Install agnocast-kmod if v{{ agnocast_version }} not found in dkms
+  ansible.builtin.apt:
+    name: "agnocast-kmod={{ agnocast_version }}*"
+    state: present
+  become: true
+  when: dkms_status.rc != 0
