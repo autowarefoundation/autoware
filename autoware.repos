@@ -16,7 +16,7 @@ repositories:
   core/autoware_cmake:
     type: git
     url: https://github.com/autowarefoundation/autoware_cmake.git
-    version: 1.0.0
+    version: 1.0.1
   core/autoware_utils:
     type: git
     url: https://github.com/autowarefoundation/autoware_utils.git
