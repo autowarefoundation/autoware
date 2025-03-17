@@ -4,7 +4,8 @@ on:
 
 jobs:
   scenario-test:
-    runs-on: ghcr.io/autowarefoundation/autoware:universe-devel
+    runs-on: ubuntu-24.04
+    container: ghcr.io/autowarefoundation/autoware:universe-devel
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
