@@ -31,7 +31,7 @@ jobs:
       # 5) Download scenario.yaml (separate from sample-scenario.yaml)
       - name: Download scenario file
         run: |
-          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O scenario.yaml
+          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
       # 6) Download and extract sample-map-planning maps
