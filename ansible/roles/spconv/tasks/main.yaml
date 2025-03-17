@@ -1,0 +1,28 @@
+# cspell:ignore Bcumm
+- name: Normalize dpkg architecture
+  ansible.builtin.set_fact:
+    normalized_arch: "{{ ansible_architecture | regex_replace('aarch64', 'arm64') | regex_replace('x86_64', 'amd64') }}"
+
+- name: Download the cumm package
+  ansible.builtin.get_url:
+    mode: "0644"
+    url: https://github.com/autowarefoundation/spconv_cpp/releases/download/spconv_v{{ spconv_version }}%2Bcumm_v{{ cumm_version }}/cumm_{{ cumm_version }}_{{ normalized_arch }}.deb
+    dest: /tmp/cumm.deb
+
+- name: Install the cumm package
+  become: true
+  ansible.builtin.apt:
+    deb: /tmp/cumm.deb
+    state: present
+
+- name: Download the spconv package
+  ansible.builtin.get_url:
+    mode: "0644"
+    url: https://github.com/autowarefoundation/spconv_cpp/releases/download/spconv_v{{ spconv_version }}%2Bcumm_v{{ cumm_version }}/spconv_{{ spconv_version }}_{{ normalized_arch }}.deb
+    dest: /tmp/spconv.deb
+
+- name: Install the spconv package
+  become: true
+  ansible.builtin.apt:
+    deb: /tmp/spconv.deb
+    state: present
