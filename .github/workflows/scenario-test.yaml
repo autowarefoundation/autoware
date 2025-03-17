@@ -45,17 +45,18 @@ jobs:
       # 9) Modify the map file path in scenario.yaml
       - name: Modify the map file path in scenario
         run: |
-          original_path= "/home/user/autoware_map"
-          original_path2= "/home/user/sample-map-planning"
-          updated_path= "/home/vishalchauhan/autoware_map"
-          if [ -f scenario.yaml ]; then
-            sed -i 's/original_path/updated_path/g' sample-scenario.yaml
-            sed -i 's/original_path2/updated_path/g' sample-scenario.yaml
+          original_path="/home/user/autoware_map"
+          original_path2="/home/user/sample-map-planning"
+          updated_path="/home/vishalchauhan/autoware_map"
+          if [ -f sample-scenario.yaml ]; then
+            sed -i "s|${original_path}|${updated_path}|g" sample-scenario.yaml
+            sed -i "s|${original_path2}|${updated_path}|g" sample-scenario.yaml
           else
-            echo "ERROR: scenario.yaml not found!"
+            echo "ERROR: sample-scenario.yaml not found!"
             exit 1
           fi
         shell: bash
+    
 
       # 10) Build scenario_test_runner (and its dependencies) with colcon
       - name: Build scenario_test_runner
