@@ -1,0 +1,4 @@
+- name: Download and install the cumm and spconv packages
+  hosts: localhost
+  roles:
+    - autoware.dev_env.spconv

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eo pipefail
 
 function resolve_rosdep_keys() {
     local src_path=$1

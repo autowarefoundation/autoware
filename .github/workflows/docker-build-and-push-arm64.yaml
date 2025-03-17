@@ -14,7 +14,7 @@ jobs:
 
   docker-build-and-push:
     needs: load-env
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: ubuntu-22.04-arm
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
@@ -31,7 +31,7 @@ jobs:
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v45
+        uses: step-security/changed-files@v45
         with:
           files: |
             *.env
@@ -47,6 +47,11 @@ jobs:
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/free-disk-space
+
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
+        with:
+          swap-size-gb: 16
 
       - name: Build 'Autoware' without CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
@@ -86,7 +91,7 @@ jobs:
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v45
+        uses: step-security/changed-files@v45
         with:
           files: |
             *.env
