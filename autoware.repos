@@ -78,7 +78,7 @@ repositories:
   universe/external/cuda_blackboard:
     type: git
     url: https://github.com/autowarefoundation/cuda_blackboard.git
-    version: main
+    version: v0.1.0
   universe/external/negotiated:
     type: git
     url: https://github.com/osrf/negotiated.git
