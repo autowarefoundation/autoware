@@ -61,7 +61,7 @@ jobs:
       # 10) Build scenario_test_runner (and its dependencies) with colcon
       - name: Build scenario_test_runner
         run: |
-          cd /home/autoware
+          cd /home/vishalchauhan
           colcon build --packages-up-to scenario_test_runner
           source install/setup.bash
           echo "Listing packages in the workspace:"
