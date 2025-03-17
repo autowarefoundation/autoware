@@ -23,6 +23,11 @@ jobs:
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O scenario.yaml
         shell: bash
 
+      - name: Install unzip
+        run: |
+          apt-get update && apt-get install -y unzip
+        shell: bash
+
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
@@ -34,13 +39,15 @@ jobs:
           if [ -f scenario.yaml ]; then
               sed -i 's/original_path/updated_path/g' scenario.yaml
           else
-              echo "scenario.yaml not found!"
+              echo "Error: scenario.yaml not found!"
               exit 1
           fi
+        shell: bash
 
       - name: Colcon build scenario_test_runner
         run: |
           colcon build --packages-select scenario_test_runner
+        shell: bash
 
       - name: Launch scenario_test_runner
         run: |
@@ -58,6 +65,7 @@ jobs:
               echo "Error: Scenario file is missing!"
               exit 1
           fi
+        shell: bash
 
       - name: Parse results and detect failure
         run: |
@@ -90,3 +98,4 @@ jobs:
               echo "No result file found, marking as failure."
               exit 1
           fi
+        shell: bash
