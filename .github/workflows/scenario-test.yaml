@@ -1,12 +1,10 @@
-name: Scenario Test
-
+name: scenario-test
 on:
   workflow_dispatch:
 
 jobs:
   scenario-test:
-    runs-on: ubuntu-latest
-    container: ghcr.io/autowarefoundation/autoware:universe-devel
+    runs-on: ghcr.io/autowarefoundation/autoware:universe-devel
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -35,13 +33,14 @@ jobs:
       - name: Launch scenario_test_runner
         run: |
           ros2 launch scenario_test_runner scenario_test_runner.launch.py \
-          architecture_type:=awf/universe/20250130 \
-          record:=false \
-          scenario:=/home/vishalchauhan/autoware_map/sample-scenario.yaml \
-          sensor_model:=sample_sensor_kit \
-          vehicle_model:=sample_vehicle \
-          initialize_duration:=100 \
-          output_directory:=/home/vishalchauhan/results
+            architecture_type:=awf/universe/20250130 \
+            record:=false \
+            scenario:=/home/vishalchauhan/autoware_map/sample-scenario.yaml \
+            sensor_model:=sample_sensor_kit \
+            vehicle_model:=sample_vehicle \
+            initialize_duration:=100 \
+            output_directory:=/home/vishalchauhan/results
+
       - name: Parse results and detect failure
         run: |
           RESULT_FILE="/results/test_results.log"
