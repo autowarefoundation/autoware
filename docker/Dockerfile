@@ -98,6 +98,7 @@ ARG ROS_DISTRO
 COPY src/universe/autoware.universe/control /autoware/src/universe/autoware.universe/control
 COPY src/universe/autoware.universe/planning /autoware/src/universe/autoware.universe/planning
 # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
+COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
 COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-planning-control-depend-packages.txt \
@@ -339,6 +340,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware.universe/planning,target=/autoware/src/universe/autoware.universe/planning \
   # TODO(youtalk): Remove --mount options when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
   --mount=type=bind,source=src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
+  --mount=type=bind,source=src/universe/autoware.universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
