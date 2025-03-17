@@ -105,6 +105,7 @@ COPY src/universe/autoware.universe/evaluator/autoware_planning_evaluator /autow
 COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
 COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
 COPY src/universe/autoware.universe/vehicle/autoware_external_cmd_converter /autoware/src/universe/autoware.universe/vehicle/autoware_external_cmd_converter
+COPY src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter /autoware/src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-planning-control-depend-packages.txt \
   && cat /rosdep-universe-planning-control-depend-packages.txt
@@ -351,6 +352,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware.universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions \
   --mount=type=bind,source=src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
   --mount=type=bind,source=src/universe/autoware.universe/vehicle/autoware_external_cmd_converter,target=/autoware/src/universe/autoware.universe/vehicle/autoware_external_cmd_converter \
+  --mount=type=bind,source=src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter,target=/autoware/src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
