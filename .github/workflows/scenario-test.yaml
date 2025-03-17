@@ -42,30 +42,15 @@ jobs:
           unzip sample-map-planning.zip -d /home/vishalchauhan/autoware_map
         shell: bash
 
-      # 7) Verify that sample-scenario.yaml is present
-      - name: Debug scenario file location
-        run: |
-          echo "Listing contents of /home/vishalchauhan/autoware_map:"
-          ls -lah /home/vishalchauhan/autoware_map/
-          if [ -f "/home/vishalchauhan/autoware_map/sample-scenario.yaml" ]; then
-            echo "sample-scenario.yaml found."
-          else
-            echo "ERROR: sample-scenario.yaml is missing!"
-            exit 1
-          fi
-        shell: bash
-
-      # 8) Set permissions for sample-scenario.yaml (if needed)
-      - name: Set permissions for scenario file
-        run: |
-          chmod 644 /home/vishalchauhan/autoware_map/sample-scenario.yaml
-        shell: bash
-
       # 9) Modify the map file path in scenario.yaml
       - name: Modify the map file path in scenario
         run: |
+          original_path= "/home/user/autoware_map"
+          original_path2= "/home/user/sample-map-planning"
+          updated_path= "/home/vishalchauhan/autoware_map"
           if [ -f scenario.yaml ]; then
-            sed -i 's/original_path/updated_path/g' scenario.yaml
+            sed -i 's/original_path/updated_path/g' sample-scenario.yaml
+            sed -i 's/original_path2/updated_path/g' sample-scenario.yaml
           else
             echo "ERROR: scenario.yaml not found!"
             exit 1
@@ -85,7 +70,7 @@ jobs:
       # 11) Launch scenario_test_runner
       - name: Launch scenario_test_runner
         run: |
-          SCENARIO_FILE="/home/vishalchauhan/autoware_map/sample-scenario.yaml"
+          SCENARIO_FILE="/home/vishalchauhan/sample-scenario.yaml"
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
