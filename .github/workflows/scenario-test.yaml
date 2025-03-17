@@ -35,6 +35,23 @@ jobs:
           unzip sample-map-planning.zip -d /home/vishalchauhan/autoware_map
         shell: bash
 
+      - name: Debug: Check if scenario file exists
+        run: |
+          echo "Checking for scenario file..."
+          ls -lah /home/vishalchauhan/autoware_map/
+          if [ -f "/home/vishalchauhan/autoware_map/sample-scenario.yaml" ]; then
+              echo "✅ Scenario file found!"
+          else
+              echo "❌ Error: Scenario file is missing!"
+              exit 1
+          fi
+        shell: bash
+
+      - name: Fix permissions for scenario file
+        run: |
+          chmod 644 /home/vishalchauhan/autoware_map/sample-scenario.yaml
+        shell: bash
+
       - name: Modify the map file path in scenario
         run: |
           if [ -f scenario.yaml ]; then
@@ -47,23 +64,28 @@ jobs:
 
       - name: Colcon build scenario_test_runner
         run: |
-          colcon build --packages-select scenario_test_runner
+          cd /home/autoware  # Ensure correct workspace path
+          colcon build --packages-up-to scenario_test_runner
+          source install/setup.bash
+          colcon list
         shell: bash
 
       - name: Launch scenario_test_runner
         run: |
-          if [ -f "/home/vishalchauhan/autoware_map/sample-scenario.yaml" ]; then
-              echo "Launching scenario_test_runner..."
+          SCENARIO_FILE="/home/vishalchauhan/autoware_map/sample-scenario.yaml"
+          
+          if [ -f "$SCENARIO_FILE" ]; then
+              echo "✅ Launching scenario_test_runner..."
               ros2 launch scenario_test_runner scenario_test_runner.launch.py \
                 architecture_type:=awf/universe/20250130 \
                 record:=false \
-                scenario:=/home/vishalchauhan/autoware_map/sample-scenario.yaml \
+                scenario:="$SCENARIO_FILE" \
                 sensor_model:=sample_sensor_kit \
                 vehicle_model:=sample_vehicle \
                 initialize_duration:=100 \
                 output_directory:=/home/vishalchauhan/results
           else
-              echo "Error: Scenario file is missing!"
+              echo "❌ Error: Scenario file is missing!"
               exit 1
           fi
         shell: bash
@@ -96,7 +118,7 @@ jobs:
               echo "</testsuite>" >> "$XML_FILE"
               echo "Results parsed and saved in $XML_FILE"
           else
-              echo "No result file found, marking as failure."
+              echo "❌ No result file found, marking as failure."
               exit 1
           fi
         shell: bash
