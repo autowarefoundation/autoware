@@ -13,13 +13,31 @@ jobs:
 
       # 2) Configure Git
       - name: Set git config
-        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
 
       # 3) (Optional) Free disk space if you have a local action for it
       - name: Free disk space
-        uses: ./.github/actions/free-disk-space
+        run: |
+          BEFORE=$(df -h)
+          sudo apt-get remove -y '^aspnetcore-.*' || echo "::warning::The command [sudo apt-get remove -y '^aspnetcore-.*'] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y '^dotnet-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^dotnet-.*' --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y '^llvm-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^llvm-.*' --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y 'php.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y 'php.*' --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y '^mongodb-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^mongodb-.*' --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y '^mysql-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^mysql-.*' --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri --fix-missing || echo "::warning::The command [sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y google-cloud-sdk --fix-missing || echo "::debug::The command [sudo apt-get remove -y google-cloud-sdk --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y google-cloud-cli --fix-missing || echo "::debug::The command [sudo apt-get remove -y google-cloud-cli --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get autoremove -y || echo "::warning::The command [sudo apt-get autoremove -y] failed to complete successfully. Proceeding..."
+          sudo apt-get clean || echo "::warning::The command [sudo apt-get clean] failed to complete successfully. Proceeding..."
+          AFTER=$(df -h)
+          echo "Disk space before cleanup:"
+          echo "$BEFORE"
+          echo "Disk space after cleanup:"
+          echo "$AFTER"
+        shell: bash
 
       # 4) Install unzip
       - name: Install unzip
@@ -42,7 +60,7 @@ jobs:
           unzip sample-map-planning.zip -d /home/vishalchauhan/autoware_map
         shell: bash
 
-      # 9) Modify the map file path in scenario.yaml
+      # 7) Modify the map file path in scenario.yaml
       - name: Modify the map file path in scenario
         run: |
           original_path="/home/user/autoware_map"
@@ -56,9 +74,8 @@ jobs:
             exit 1
           fi
         shell: bash
-    
 
-      # 10) Build scenario_test_runner (and its dependencies) with colcon
+      # 8) Build scenario_test_runner (and its dependencies) with colcon
       - name: Build scenario_test_runner
         run: |
           cd /home/vishalchauhan
@@ -68,7 +85,7 @@ jobs:
           colcon list
         shell: bash
 
-      # 11) Launch scenario_test_runner
+      # 9) Launch scenario_test_runner
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="/home/vishalchauhan/sample-scenario.yaml"
@@ -88,11 +105,11 @@ jobs:
           fi
         shell: bash
 
-      # 12) Parse results and detect failure
+      # 10) Parse results and detect failure
       - name: Parse results and detect failure
         run: |
-          RESULT_FILE="/results/test_results.log"
-          XML_FILE="/results/scenario_test_runner/result.junit.xml"
+          RESULT_FILE="/home/vishalchauhan/results/test_results.log"
+          XML_FILE="/home/vishalchauhan/results/scenario_test_runner/result.junit.xml"
 
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
@@ -110,7 +127,6 @@ jobs:
               elif echo "$line" | grep -qi "error"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
                 echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
-                echo "  </testcase>" >> "$XML_FILE"
               fi
             done < "$RESULT_FILE"
 
