@@ -84,6 +84,9 @@ COPY src/universe/autoware.universe/launch/tier4_localization_launch /autoware/s
 COPY src/universe/autoware.universe/launch/tier4_map_launch /autoware/src/universe/autoware.universe/launch/tier4_map_launch
 COPY src/universe/autoware.universe/localization /autoware/src/universe/autoware.universe/localization
 COPY src/universe/autoware.universe/map /autoware/src/universe/autoware.universe/map
+# TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/10282 is resolved
+COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
+COPY src/universe/autoware.universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer /autoware/src/universe/autoware.universe/localization/autoware_automatic_pose_initializer
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-localization-mapping-depend-packages.txt \
   && cat /rosdep-universe-localization-mapping-depend-packages.txt
@@ -307,10 +310,13 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_localization_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_localization_launch \
-  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/launch/tier4_map_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_map_launch \
-  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/localization,target=/autoware/src/universe/autoware.universe/localization \
-  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/map,target=/autoware/src/universe/autoware.universe/map \
+  --mount=type=bind,source=src/universe/autoware.universe/launch/tier4_localization_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_localization_launch \
+  --mount=type=bind,source=src/universe/autoware.universe/launch/tier4_map_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_map_launch \
+  --mount=type=bind,source=src/universe/autoware.universe/localization,target=/autoware/src/universe/autoware.universe/localization \
+  --mount=type=bind,source=src/universe/autoware.universe/map,target=/autoware/src/universe/autoware.universe/map \
+  # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/10282 is resolved
+  --mount=type=bind,source=src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
+  --mount=type=bind,source=src/universe/autoware.universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer,target=/autoware/src/universe/autoware.universe/localization/autoware_automatic_pose_initializer \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
