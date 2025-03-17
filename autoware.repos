@@ -16,7 +16,7 @@ repositories:
   core/autoware_cmake:
     type: git
     url: https://github.com/autowarefoundation/autoware_cmake.git
-    version: 1.0.0
+    version: 1.0.1
   core/autoware_utils:
     type: git
     url: https://github.com/autowarefoundation/autoware_utils.git
@@ -24,7 +24,7 @@ repositories:
   core/autoware_lanelet2_extension:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
-    version: 0.6.2
+    version: 0.6.3
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
@@ -92,7 +92,7 @@ repositories:
   sensor_component/external/nebula:
     type: git
     url: https://github.com/tier4/nebula.git
-    version: v0.2.1
+    version: v0.2.4
   # Fork of transport_drivers that enables reduction of copy operations
   sensor_component/transport_drivers:
     type: git
