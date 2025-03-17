@@ -20,7 +20,7 @@ jobs:
 
       - name: Download scenario file
         run: |
-          gdown scenario_file_link
+          gdown https://drive.google.com/file/d/1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV/view?usp=sharing
         shell: bash
 
       - name: Modify the map file path in scenario
