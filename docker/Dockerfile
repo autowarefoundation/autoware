@@ -95,13 +95,17 @@ FROM rosdep-depend AS rosdep-universe-planning-control-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
+COPY src/universe/autoware.universe/launch/tier4_control_launch /autoware/src/universe/autoware.universe/launch/tier4_control_launch
+COPY src/universe/autoware.universe/launch/tier4_planning_launch /autoware/src/universe/autoware.universe/launch/tier4_planning_launch
 COPY src/universe/autoware.universe/control /autoware/src/universe/autoware.universe/control
 COPY src/universe/autoware.universe/planning /autoware/src/universe/autoware.universe/planning
 # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
-COPY src/universe/autoware.universe/map/autoware_map_loader /autoware/src/universe/autoware.universe/map/autoware_map_loader
-COPY src/universe/autoware.universe/map/autoware_map_projection_loader /autoware/src/universe/autoware.universe/map/autoware_map_projection_loader
+COPY src/universe/autoware.universe/evaluator/autoware_control_evaluator /autoware/src/universe/autoware.universe/evaluator/autoware_control_evaluator
+COPY src/universe/autoware.universe/evaluator/autoware_planning_evaluator /autoware/src/universe/autoware.universe/evaluator/autoware_planning_evaluator
 COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
 COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
+COPY src/universe/autoware.universe/vehicle/autoware_external_cmd_converter /autoware/src/universe/autoware.universe/vehicle/autoware_external_cmd_converter
+COPY src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter /autoware/src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-planning-control-depend-packages.txt \
   && cat /rosdep-universe-planning-control-depend-packages.txt
@@ -340,13 +344,17 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,source=src/universe/autoware.universe/launch/tier4_control_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_control_launch \
+  --mount=type=bind,source=src/universe/autoware.universe/launch/tier4_planning_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_planning_launch \
   --mount=type=bind,source=src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
   --mount=type=bind,source=src/universe/autoware.universe/planning,target=/autoware/src/universe/autoware.universe/planning \
   # TODO(youtalk): Remove --mount options when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
-  --mount=type=bind,source=src/universe/autoware.universe/map/autoware_map_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_loader \
-  --mount=type=bind,source=src/universe/autoware.universe/map/autoware_map_projection_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader \
+  --mount=type=bind,source=src/universe/autoware.universe/evaluator/autoware_control_evaluator,target=/autoware/src/universe/autoware.universe/evaluator/autoware_control_evaluator \
+  --mount=type=bind,source=src/universe/autoware.universe/evaluator/autoware_planning_evaluator,target=/autoware/src/universe/autoware.universe/evaluator/autoware_planning_evaluator \
   --mount=type=bind,source=src/universe/autoware.universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions \
   --mount=type=bind,source=src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
+  --mount=type=bind,source=src/universe/autoware.universe/vehicle/autoware_external_cmd_converter,target=/autoware/src/universe/autoware.universe/vehicle/autoware_external_cmd_converter \
+  --mount=type=bind,source=src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter,target=/autoware/src/universe/autoware.universe/vehicle/autoware_raw_vehicle_cmd_converter \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
