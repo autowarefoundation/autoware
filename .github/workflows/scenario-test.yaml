@@ -20,7 +20,6 @@ jobs:
         run: |
           apt-get update
           apt-get install unzip
-          echo "source /opt/ros/foxy/setup.bash" >> $GITHUB_ENV
         shell: bash
 
 
@@ -53,6 +52,7 @@ jobs:
       # 8) Build scenario_test_runner (and its dependencies) with colcon
       - name: Build scenario_test_runner
         run: |
+          source /opt/ros/foxy/setup.bash
           colcon build --packages-select scenario_test_runner
           source install/setup.bash
         shell: bash
@@ -63,6 +63,7 @@ jobs:
           SCENARIO_FILE="./sample-scenario.yaml"
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
+            source /opt/ros/foxy/setup.bash
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=false \
