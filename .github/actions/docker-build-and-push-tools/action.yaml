@@ -24,6 +24,7 @@ runs:
 
     - name: Run vcs import
       run: |
+        mkdir src
         vcs import src < simulator.repos
       shell: bash
 
