@@ -63,7 +63,6 @@ jobs:
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }},mode=max
 
       - name: Build 'autoware-tools'
-        needs: [load-env, docker-build-and-push]
         uses: ./.github/actions/docker-build-and-push-tools
         with:
           platform: amd64
