@@ -16,8 +16,6 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       # 4) Install unzip and ros2
-      - name: Install unzip and ros2
-        run: |
       - name: Install unzip and ROS 2 (if needed)
         run: |
           apt-get update
@@ -26,7 +24,8 @@ jobs:
             echo "ROS 2 not found. Installing..."
             curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | gpg --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg
             echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2-latest.list
-            sudo apt-get install -y ros-foxy-desktop
+            sudo apt-get update
+            sudo apt-get install -y ros-humble-desktop
           else
             echo "ROS 2 is already installed."
           fi
@@ -62,6 +61,7 @@ jobs:
       # 8) Build scenario_test_runner (and its dependencies) with colcon
       - name: Build scenario_test_runner
         run: |
+          source /opt/ros/humble/setup.bash
           colcon build --packages-select scenario_test_runner
           source install/setup.bash
         shell: bash
@@ -70,6 +70,7 @@ jobs:
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
+          source /opt/ros/humble/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
