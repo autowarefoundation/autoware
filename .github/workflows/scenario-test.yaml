@@ -20,6 +20,7 @@ jobs:
         run: |
           apt-get update
           apt-get install unzip
+          echo "source /opt/ros/foxy/setup.bash" >> $GITHUB_ENV
         shell: bash
 
 
