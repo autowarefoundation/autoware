@@ -11,33 +11,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # 2) Configure Git
-      - name: Set git config
-        run: |
-          git config --global user.name github-actions
-          git config --global user.email github-actions@github.com
-
-      # 3) (Optional) Free disk space if you have a local action for it
+      # 3) Free disk space if you have a local action for it
       - name: Free disk space
-        run: |
-          BEFORE=$(df -h)
-          sudo apt-get remove -y '^aspnetcore-.*' || echo "::warning::The command [sudo apt-get remove -y '^aspnetcore-.*'] failed to complete successfully. Proceeding..."
-          sudo apt-get remove -y '^dotnet-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^dotnet-.*' --fix-missing] failed to complete successfully. Proceeding..."
-          sudo apt-get remove -y '^llvm-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^llvm-.*' --fix-missing] failed to complete successfully. Proceeding..."
-          sudo apt-get remove -y 'php.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y 'php.*' --fix-missing] failed to complete successfully. Proceeding..."
-          sudo apt-get remove -y '^mongodb-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^mongodb-.*' --fix-missing] failed to complete successfully. Proceeding..."
-          sudo apt-get remove -y '^mysql-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^mysql-.*' --fix-missing] failed to complete successfully. Proceeding..."
-          sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri --fix-missing || echo "::warning::The command [sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri --fix-missing] failed to complete successfully. Proceeding..."
-          sudo apt-get remove -y google-cloud-sdk --fix-missing || echo "::debug::The command [sudo apt-get remove -y google-cloud-sdk --fix-missing] failed to complete successfully. Proceeding..."
-          sudo apt-get remove -y google-cloud-cli --fix-missing || echo "::debug::The command [sudo apt-get remove -y google-cloud-cli --fix-missing] failed to complete successfully. Proceeding..."
-          sudo apt-get autoremove -y || echo "::warning::The command [sudo apt-get autoremove -y] failed to complete successfully. Proceeding..."
-          sudo apt-get clean || echo "::warning::The command [sudo apt-get clean] failed to complete successfully. Proceeding..."
-          AFTER=$(df -h)
-          echo "Disk space before cleanup:"
-          echo "$BEFORE"
-          echo "Disk space after cleanup:"
-          echo "$AFTER"
-        shell: bash
+        uses: ./.github/actions/free-disk-space
 
       # 4) Install unzip
       - name: Install unzip
@@ -56,39 +32,33 @@ jobs:
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-          mkdir -p /home/vishalchauhan/autoware_map
-          unzip sample-map-planning.zip -d /home/vishalchauhan/autoware_map
+          unzip sample-map-planning.zip
         shell: bash
 
       # 7) Modify the map file path in scenario.yaml
-      - name: Modify the map file path in scenario
-        run: |
-          original_path="/home/user/autoware_map"
-          original_path2="/home/user/sample-map-planning"
-          updated_path="/home/vishalchauhan/autoware_map"
-          if [ -f sample-scenario.yaml ]; then
-            sed -i "s|${original_path}|${updated_path}|g" sample-scenario.yaml
-            sed -i "s|${original_path2}|${updated_path}|g" sample-scenario.yaml
-          else
-            echo "ERROR: sample-scenario.yaml not found!"
-            exit 1
-          fi
-        shell: bash
+      # - name: Modify the map file path in scenario
+      #   run: |
+      #     original_path="/home/user/autoware_map"
+      #     updated_path="/home/vishalchauhan/autoware_map"
+      #     if [ -f sample-scenario.yaml ]; then
+      #       sed -i "s|${original_path}|${updated_path}|g" sample-scenario.yaml
+      #     else
+      #       echo "ERROR: sample-scenario.yaml not found!"
+      #       exit 1
+      #     fi
+      #   shell: bash
 
       # 8) Build scenario_test_runner (and its dependencies) with colcon
       - name: Build scenario_test_runner
         run: |
-          cd /home/vishalchauhan
           colcon build --packages-select scenario_test_runner
           source install/setup.bash
-          echo "Listing packages in the workspace:"
-          colcon list
         shell: bash
 
       # 9) Launch scenario_test_runner
       - name: Launch scenario_test_runner
         run: |
-          SCENARIO_FILE="sample-scenario.yaml"
+          SCENARIO_FILE="./sample-scenario.yaml"
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
@@ -98,7 +68,7 @@ jobs:
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=100 \
-              output_directory:=/home/vishalchauhan/results
+              output_directory:=./results
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
@@ -108,8 +78,8 @@ jobs:
       # 10) Parse results and detect failure
       - name: Parse results and detect failure
         run: |
-          RESULT_FILE="/home/vishalchauhan/results/test_results.log"
-          XML_FILE="/home/vishalchauhan/results/scenario_test_runner/result.junit.xml"
+          RESULT_FILE="./results/test_results.log"
+          XML_FILE="./results/scenario_test_runner/result.junit.xml"
 
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
