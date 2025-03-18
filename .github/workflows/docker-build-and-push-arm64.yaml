@@ -72,6 +72,11 @@ jobs:
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-main
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:arm64-${{ github.ref_name }},mode=max
 
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
+
   docker-build-and-push-tools:
     needs: [load-env, docker-build-and-push]
     runs-on: buildjet-16vcpu-ubuntu-2204-arm
