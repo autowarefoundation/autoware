@@ -79,7 +79,7 @@ jobs:
       - name: Build scenario_test_runner
         run: |
           cd /home/vishalchauhan
-          colcon build --packages-up-to scenario_test_runner
+          colcon build --packages-select scenario_test_runner
           source install/setup.bash
           echo "Listing packages in the workspace:"
           colcon list
