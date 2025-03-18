@@ -82,7 +82,7 @@ repositories:
   universe/external/negotiated:
     type: git
     url: https://github.com/osrf/negotiated.git
-    version: master
+    version: eac198b55dcd052af5988f0f174902913c5f20e7
   # launcher
   launcher/autoware_launch:
     type: git
