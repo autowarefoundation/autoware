@@ -11,15 +11,44 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # 3) Free disk space if you have a local action for it
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
+      # 2) Configure Git
+      - name: Set git config
+        run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
 
-      # 4) Install unzip
-      - name: Install unzip
+      # 3) (Optional) Free disk space if you have a local action for it
+      - name: Free disk space
+        run: |
+          BEFORE=$(df -h)
+          sudo apt-get remove -y '^aspnetcore-.*' || echo "::warning::The command [sudo apt-get remove -y '^aspnetcore-.*'] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y '^dotnet-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^dotnet-.*' --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y '^llvm-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^llvm-.*' --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y 'php.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y 'php.*' --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y '^mongodb-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^mongodb-.*' --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y '^mysql-.*' --fix-missing || echo "::warning::The command [sudo apt-get remove -y '^mysql-.*' --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri --fix-missing || echo "::warning::The command [sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y google-cloud-sdk --fix-missing || echo "::debug::The command [sudo apt-get remove -y google-cloud-sdk --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get remove -y google-cloud-cli --fix-missing || echo "::debug::The command [sudo apt-get remove -y google-cloud-cli --fix-missing] failed to complete successfully. Proceeding..."
+          sudo apt-get autoremove -y || echo "::warning::The command [sudo apt-get autoremove -y] failed to complete successfully. Proceeding..."
+          sudo apt-get clean || echo "::warning::The command [sudo apt-get clean] failed to complete successfully. Proceeding..."
+          AFTER=$(df -h)
+          echo "Disk space before cleanup:"
+          echo "$BEFORE"
+          echo "Disk space after cleanup:"
+          echo "$AFTER"
+        shell: bash
+
+      # 4) Install unzip and ROS2
+      - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y unzip
+          apt-get install -y unzip curl gnupg2 lsb-release
+          curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+          sh -c 'echo "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
+          apt-get update
+          apt-get install -y ros-foxy-desktop
+          source /opt/ros/foxy/setup.bash
         shell: bash
 
       # 5) Download scenario.yaml (separate from sample-scenario.yaml)
@@ -28,37 +57,55 @@ jobs:
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
-      # 6) Download and extract sample-map-planning maps
+      # 6) Verify the scenario file exists
+      - name: Verify scenario file
+        run: |
+          if [ ! -f sample-scenario.yaml ]; then
+            echo "ERROR: sample-scenario.yaml not found!"
+            exit 1
+          fi
+        shell: bash
+
+      # 7) Download and extract sample-map-planning maps
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-          unzip sample-map-planning.zip
+          mkdir -p /home/vishalchauhan/autoware_map
+          unzip sample-map-planning.zip -d /home/vishalchauhan/autoware_map
         shell: bash
 
-      # 7) Modify the map file path in scenario.yaml
-      # - name: Modify the map file path in scenario
-      #   run: |
-      #     original_path="/home/user/autoware_map"
-      #     updated_path="/home/vishalchauhan/autoware_map"
-      #     if [ -f sample-scenario.yaml ]; then
-      #       sed -i "s|${original_path}|${updated_path}|g" sample-scenario.yaml
-      #     else
-      #       echo "ERROR: sample-scenario.yaml not found!"
-      #       exit 1
-      #     fi
-      #   shell: bash
-
-      # 8) Build scenario_test_runner (and its dependencies) with colcon
-      - name: Build scenario_test_runner
+      # 8) Modify the map file path in scenario.yaml
+      - name: Modify the map file path in scenario
         run: |
-          colcon build --packages-select scenario_test_runner
-          source install/setup.bash
+          original_path="/home/user/autoware_map"
+          original_path2="/home/user/sample-map-planning"
+          updated_path="/home/vishalchauhan/autoware_map"
+          if [ -f sample-scenario.yaml ]; then
+            sed -i "s|${original_path}|${updated_path}|g" sample-scenario.yaml
+            sed -i "s|${original_path2}|${updated_path}|g" sample-scenario.yaml
+          else
+            echo "ERROR: sample-scenario.yaml not found!"
+            exit 1
+          fi
         shell: bash
 
-      # 9) Launch scenario_test_runner
+      # 9) Build all packages with colcon
+      - name: Build all packages
+        run: |
+          cd /home/vishalchauhan
+          source /opt/ros/foxy/setup.bash
+          colcon build
+          source install/setup.bash
+          echo "Listing packages in the workspace:"
+          colcon list
+        shell: bash
+
+      # 10) Launch scenario_test_runner
       - name: Launch scenario_test_runner
         run: |
-          SCENARIO_FILE="./sample-scenario.yaml"
+          source /opt/ros/foxy/setup.bash
+          source install/setup.bash
+          SCENARIO_FILE="/home/vishalchauhan/sample-scenario.yaml"
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
@@ -68,18 +115,18 @@ jobs:
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=100 \
-              output_directory:=./results
+              output_directory:=/home/vishalchauhan/results
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
           fi
         shell: bash
 
-      # 10) Parse results and detect failure
+      # 11) Parse results and detect failure
       - name: Parse results and detect failure
         run: |
-          RESULT_FILE="./results/test_results.log"
-          XML_FILE="./results/scenario_test_runner/result.junit.xml"
+          RESULT_FILE="/home/vishalchauhan/results/test_results.log"
+          XML_FILE="/home/vishalchauhan/results/scenario_test_runner/result.junit.xml"
 
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
