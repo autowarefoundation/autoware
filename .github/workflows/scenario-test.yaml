@@ -53,7 +53,7 @@ jobs:
       - name: Build scenario_test_runner
         run: |
           colcon build --packages-select scenario_test_runner
-          echo "source install/setup.bash" >> $GITHUB_ENV
+          source install/setup.bash
         shell: bash
 
       # 9) Launch scenario_test_runner
