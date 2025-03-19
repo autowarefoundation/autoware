@@ -68,6 +68,7 @@ ros2 launch autoware_pointcloud_preprocessor preprocessor.launch.xml
 
 ## Multi-stage Dockerfile structure
 
+<!-- cspell:disable-next-line -->
 <!-- dockerfilegraph -f docker/Dockerfile -o svg --legend --concentrate --nodesep 0.3 --unflatten 4 -m 50 -e solid -->
 
 ![](./Dockerfile.svg)
