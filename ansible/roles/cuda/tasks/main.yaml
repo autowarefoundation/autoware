@@ -35,6 +35,7 @@
       - libcublas-dev-{{ cuda__dash_case_cuda_version.stdout }}
       - libcurand-dev-{{ cuda__dash_case_cuda_version.stdout }}
       - cuda-nvml-dev-{{ cuda__dash_case_cuda_version.stdout }}
+      - cuda-nvrtc-dev-{{ cuda__dash_case_cuda_version.stdout }}
     update_cache: true
   when: install_devel == 'y'
 

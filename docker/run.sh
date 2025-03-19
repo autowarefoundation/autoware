@@ -21,6 +21,7 @@ option_no_nvidia=false
 option_devel=false
 option_headless=false
 MAP_PATH=""
+DATA_PATH=""
 WORKSPACE_PATH=""
 USER_ID=""
 WORKSPACE=""
@@ -38,6 +39,7 @@ print_help() {
     echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory for runtime)"
     echo -e "  ${GREEN}--devel${NC}         Launch the latest Autoware development environment with shell access"
     echo -e "  ${GREEN}--workspace${NC}     (--devel only)Specify the directory to mount into /workspace, by default it uses current directory (pwd)"
+    echo -e "  ${GREEN}--data${NC}          (--devel only)Specify the directory to mount into /autoware_data"
     echo -e "  ${GREEN}--no-nvidia${NC}     Disable NVIDIA GPU support"
     echo -e "  ${GREEN}--headless${NC}      Run Autoware in headless mode (default: false)"
     echo ""
@@ -66,6 +68,10 @@ parse_arguments() {
             ;;
         --map-path)
             MAP_PATH="$2"
+            shift
+            ;;
+        --data)
+            DATA_PATH="$2"
             shift
             ;;
         --*)
@@ -105,6 +111,11 @@ set_variables() {
         # Set map path
         if [ "$MAP_PATH" != "" ]; then
             MAP="-v ${MAP_PATH}:/autoware_map:ro"
+        fi
+
+        # Set data path
+        if [ "$DATA_PATH" != "" ]; then
+            DATA="-v ${DATA_PATH}:/autoware_data:rw"
         fi
 
         # Set launch command
@@ -173,6 +184,9 @@ main() {
     if [ "$MAP_PATH" != "" ]; then
         echo -e "${GREEN}MAP PATH(mounted):${NC} ${MAP_PATH}:/autoware_map"
     fi
+    if [ "$DATA_PATH" != "" ]; then
+        echo -e "${GREEN}DATA PATH(mounted):${NC} ${DATA_PATH}:/autoware_data"
+    fi
     echo -e "${GREEN}LAUNCH CMD:${NC} ${LAUNCH_CMD}"
     echo -e "${GREEN}-----------------------------------------------------------------${NC}"
 
@@ -180,7 +194,7 @@ main() {
     set -x
     docker run -it --rm --net=host ${GPU_FLAG} ${USER_ID} ${MOUNT_X} \
         -e XAUTHORITY=${XAUTHORITY} -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR -e NVIDIA_DRIVER_CAPABILITIES=all -v /etc/localtime:/etc/localtime:ro \
-        ${WORKSPACE} ${MAP} ${IMAGE} \
+        ${WORKSPACE} ${MAP} ${DATA} ${IMAGE} \
         ${LAUNCH_CMD}
 }
 

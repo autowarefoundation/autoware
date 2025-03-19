@@ -36,6 +36,8 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+        with:
+          image: tonistiigi/binfmt:qemu-v7.0.0
 
       - name: Build Autoware's base images
         uses: ./.github/actions/docker-build-and-push-base

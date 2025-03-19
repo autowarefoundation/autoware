@@ -24,7 +24,7 @@ runs:
 
     - name: Run vcs import
       run: |
-        vcs import src < autoware.repos
+        mkdir src
         vcs import src < simulator.repos
       shell: bash
 
@@ -35,6 +35,19 @@ runs:
       id: date
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       shell: bash
+
+    - name: Docker meta for autoware:visualizer
+      id: meta-visualizer
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=visualizer-${{ inputs.platform }}
+          type=raw,value=visualizer-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=visualizer-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-visualizer
+        flavor: |
+          latest=false
 
     - name: Docker meta for autoware:scenario-simulator
       id: meta-scenario-simulator
@@ -62,6 +75,7 @@ runs:
         push: true
         files: |
           docker/docker-bake-tools.hcl
+          ${{ steps.meta-visualizer.outputs.bake-file }}
           ${{ steps.meta-scenario-simulator.outputs.bake-file }}
         provenance: false
         set: |

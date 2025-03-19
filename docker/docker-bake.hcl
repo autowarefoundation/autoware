@@ -1,5 +1,6 @@
 group "default" {
   targets = [
+    "core-common-devel",
     "core",
     "core-devel",
     "universe-sensing-perception-devel",
@@ -18,6 +19,7 @@ group "default" {
 }
 
 // For docker/metadata-action
+target "docker-metadata-action-core-common-devel" {}
 target "docker-metadata-action-core" {}
 target "docker-metadata-action-core-devel" {}
 target "docker-metadata-action-universe-sensing-perception-devel" {}
@@ -32,6 +34,12 @@ target "docker-metadata-action-universe-visualization-devel" {}
 target "docker-metadata-action-universe-visualization" {}
 target "docker-metadata-action-universe-devel" {}
 target "docker-metadata-action-universe" {}
+
+target "core-common-devel" {
+  inherits = ["docker-metadata-action-core-common-devel"]
+  dockerfile = "docker/Dockerfile"
+  target = "core-common-devel"
+}
 
 target "core" {
   inherits = ["docker-metadata-action-core"]
