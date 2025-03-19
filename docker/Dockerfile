@@ -271,8 +271,8 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,source=src/universe/autoware.universe/launch/tier4_perception_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_perception_launch \
-  --mount=type=bind,source=src/universe/autoware.universe/launch/tier4_sensing_launch,target=/autoware/src/universe/autoware.universe/launch/tier4_sensing_launch \
+  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_perception_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_perception_launch \
+  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_sensing_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_sensing_launch \
   --mount=type=bind,source=src/universe/external/trt_batched_nms,target=/autoware/src/universe/external/trt_batched_nms \
   --mount=type=bind,source=src/universe/autoware_universe/perception,target=/autoware/src/universe/autoware_universe/perception \
   --mount=type=bind,source=src/universe/autoware_universe/sensing,target=/autoware/src/universe/autoware_universe/sensing \
