@@ -4,7 +4,7 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
     version: 1.4.0
-  # TODO (isamu-takagi): Use a released version when autoware.universe uses a released version.
+  # TODO (isamu-takagi): Use a released version when autoware_universe uses a released version.
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
@@ -16,7 +16,7 @@ repositories:
   core/autoware_cmake:
     type: git
     url: https://github.com/autowarefoundation/autoware_cmake.git
-    version: 1.0.0
+    version: 1.0.1
   core/autoware_utils:
     type: git
     url: https://github.com/autowarefoundation/autoware_utils.git
@@ -24,15 +24,15 @@ repositories:
   core/autoware_lanelet2_extension:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
-    version: 0.6.2
-  core/autoware.core:
+    version: 0.6.3
+  core/autoware_core:
     type: git
-    url: https://github.com/autowarefoundation/autoware.core.git
+    url: https://github.com/autowarefoundation/autoware_core.git
     version: 0.2.0
   # universe
-  universe/autoware.universe:
+  universe/autoware_universe:
     type: git
-    url: https://github.com/autowarefoundation/autoware.universe.git
+    url: https://github.com/autowarefoundation/autoware_universe.git
     version: 0.41.2
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Migrate to AD API and remove this repository entry.
     type: git
@@ -75,6 +75,14 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/trt_batched_nms.git
     version: main
+  universe/external/cuda_blackboard:
+    type: git
+    url: https://github.com/autowarefoundation/cuda_blackboard.git
+    version: v0.1.1
+  universe/external/negotiated:
+    type: git
+    url: https://github.com/osrf/negotiated.git
+    version: eac198b55dcd052af5988f0f174902913c5f20e7
   # launcher
   launcher/autoware_launch:
     type: git
@@ -85,14 +93,10 @@ repositories:
     type: git
     url: https://github.com/tier4/sensor_component_description.git
     version: main
-  sensor_component/external/tamagawa_imu_driver:
-    type: git
-    url: https://github.com/tier4/tamagawa_imu_driver.git
-    version: ros2
   sensor_component/external/nebula:
     type: git
     url: https://github.com/tier4/nebula.git
-    version: v0.2.1
+    version: v0.2.4
   # Fork of transport_drivers that enables reduction of copy operations
   sensor_component/transport_drivers:
     type: git
@@ -128,10 +132,6 @@ repositories:
   vehicle/awsim_labs_vehicle_launch:
     type: git
     url: https://github.com/autowarefoundation/awsim_labs_vehicle_launch.git
-    version: main
-  vehicle/external/pacmod_interface:
-    type: git
-    url: https://github.com/tier4/pacmod_interface.git
     version: main
   # param
   param/autoware_individual_params:
