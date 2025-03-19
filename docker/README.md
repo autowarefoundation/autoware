@@ -104,11 +104,11 @@ By generating only the package list files and copying them to the subsequent sta
 
 ### `core-common-devel`
 
-This stage installs the dependency packages based on `/rosdep-core-common-depend-packages.txt` and builds the packages under the `core` directory of `autoware.repos` except for `autoware.core`.
+This stage installs the dependency packages based on `/rosdep-core-common-depend-packages.txt` and builds the packages under the `core` directory of `autoware.repos` except for `autoware_core`.
 
 ### `core-devel`
 
-This stage installs the dependency packages based on `/rosdep-core-depend-packages.txt` and builds the `autoware.core` packages.
+This stage installs the dependency packages based on `/rosdep-core-depend-packages.txt` and builds the `autoware_core` packages.
 
 ### `core`
 

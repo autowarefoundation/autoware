@@ -37,7 +37,7 @@ RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-ty
   > /rosdep-core-common-exec-depend-packages.txt \
   && cat /rosdep-core-common-exec-depend-packages.txt
 
-COPY src/core/autoware.core /autoware/src/core/autoware.core
+COPY src/core/autoware_core /autoware/src/core/autoware_core
 RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-core-depend-packages.txt \
   && cat /rosdep-core-depend-packages.txt
@@ -200,7 +200,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && /autoware/cleanup_apt.sh
 
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,source=src/core/autoware.core,target=/autoware/src/core/autoware.core \
+  --mount=type=bind,source=src/core/autoware_core,target=/autoware/src/core/autoware_core \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 

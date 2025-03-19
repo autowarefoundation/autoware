@@ -7,9 +7,9 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_internal_msgs.git
     version: main
-  core/autoware.core:
+  core/autoware_core:
     type: git
-    url: https://github.com/autowarefoundation/autoware.core.git
+    url: https://github.com/autowarefoundation/autoware_core.git
     version: main
   core/autoware_utils: # TODO(mitsudome-r): Remove this repository entry when https://github.com/autowarefoundation/autoware/pull/5700 is merged.
     type: git
