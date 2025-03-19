@@ -2,8 +2,8 @@
 
 This directory offers tools for [Open AD Kit](https://autoware.org/open-ad-kit/) containers to make deployment and simulation easier.
 
-- `visualizer`: a container that can visualize the Autoware.
-- `scenario-simulator`: a container that can visualize scenario simulation on RViz.
+- `visualizer`: a container which visualizes the Autoware with RViz.
+- `scenario-simulator`: a container which runs scenario simulation with RViz.
 
 ## Visualizer
 

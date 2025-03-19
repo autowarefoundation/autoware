@@ -36,7 +36,7 @@ runs:
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Docker meta for autoware:visualizer
+    - name: Docker meta for autoware-tools:visualizer
       id: meta-visualizer
       uses: docker/metadata-action@v5
       with:
@@ -49,7 +49,7 @@ runs:
         flavor: |
           latest=false
 
-    - name: Docker meta for autoware:scenario-simulator
+    - name: Docker meta for autoware-tools:scenario-simulator
       id: meta-scenario-simulator
       uses: docker/metadata-action@v5
       with:
