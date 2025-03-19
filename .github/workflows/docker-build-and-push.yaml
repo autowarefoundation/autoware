@@ -67,6 +67,55 @@ jobs:
         run: |
           df -h
 
+  docker-build-and-push-tools:
+    needs: [load-env, docker-build-and-push]
+    runs-on: buildjet-16vcpu-ubuntu-2204
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: step-security/changed-files@v45
+        with:
+          files: |
+            *.env
+            *.repos
+            .github/actions/docker-build-and-push*/action.yaml
+            .github/workflows/docker-build-and-push*.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+
+      - name: Free disk space
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.ref_type == 'tag') }}
+        uses: ./.github/actions/free-disk-space
+
+      - name: Build 'autoware-tools'
+        uses: ./.github/actions/docker-build-and-push-tools
+        with:
+          platform: amd64
+          target-image: autoware-tools
+          build-args: |
+            *.platform=linux/amd64
+            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            *.args.LIB_DIR=x86_64
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:amd64-${{ github.ref_name }},mode=max
+
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
+
   docker-build-and-push-cuda:
     needs: [load-env, docker-build-and-push]
     runs-on: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
