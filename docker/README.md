@@ -14,20 +14,20 @@ $ git clone git@github.com:autowarefoundation/autoware.git
 $ cd autoware
 $ vcs import src < autoware.repos
 $ docker run -it --rm \
-  –v $PWD/src/universe/autoware.universe/XXX/autoware_YYY:/autoware/src/autoware_YYY \
+  –v $PWD/src/universe/autoware_universe/XXX/autoware_YYY:/autoware/src/autoware_YYY \
   ghcr.io/autowarefoundation/autoware:universe-devel-cuda
 $ colcon build --mixin debug compile-commands
 $ source install/setup.bash
 $ ros2 run --prefix "gdb -ex run --args" autoware_YYY ZZZ
 ```
 
-For example, if you want to make modifications to [`autoware.universe/perception/autoware_bytetrack`](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/autoware_bytetrack), you can execute the following commands to perform the volume mount and debug build and execution of only the `autoware_bytetrack`.
+For example, if you want to make modifications to [`autoware_universe/perception/autoware_bytetrack`](https://github.com/autowarefoundation/autoware_universe/tree/main/perception/autoware_bytetrack), you can execute the following commands to perform the volume mount and debug build and execution of only the `autoware_bytetrack`.
 
 Note that `gdb` is not currently installed in the development containers, but it would be installed in the near future.
 
 ```shell
 $ docker run -it --rm \
-  -v $PWD/src/universe/autoware.universe/perception/autoware_bytetrack:/autoware/src/autoware_bytetrack \
+  -v $PWD/src/universe/autoware_universe/perception/autoware_bytetrack:/autoware/src/autoware_bytetrack \
   ghcr.io/autowarefoundation/autoware:universe-devel-cuda
 $ root@a566e785c4d2:/autoware# colcon build --mixin debug compile-commands
 Starting >>> autoware_bytetrack
@@ -119,7 +119,7 @@ This stage is an Autoware Core runtime container. It only includes the dependenc
 This stage installs the dependency packages based on `/rosdep-universe-common-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
 
 - `universe/external`
-- `universe/autoware.universe/common`
+- `universe/autoware_universe/common`
 
 ### `universe-common-devel-cuda`
 
@@ -129,15 +129,15 @@ This stage is built on top of `universe-common-devel` and installs the CUDA deve
 
 This stage installs the dependency packages based on `/rosdep-universe-sensing-perception-depend-packages.txt` and builds the non-CUDA related packages under the following directories of `autoware.repos`:
 
-- `universe/autoware.universe/perception`
-- `universe/autoware.universe/sensing`
+- `universe/autoware_universe/perception`
+- `universe/autoware_universe/sensing`
 
 ### `universe-sensing-perception-devel-cuda`
 
 This stage copies the non-CUDA related binaries built in the `universe-sensing-perception-devel` stage and builds the CUDA related packages under the following directories of `autoware.repos`:
 
-- `universe/autoware.universe/perception`
-- `universe/autoware.universe/sensing`
+- `universe/autoware_universe/perception`
+- `universe/autoware_universe/sensing`
 
 ### `universe-sensing-perception`
 
@@ -159,8 +159,8 @@ This stage is a Autoware Universe Visualization runtime container. It only inclu
 
 This stage installs the dependency packages based on `/rosdep-universe-localization-mapping-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
 
-- `universe/autoware.universe/localization`
-- `universe/autoware.universe/map`
+- `universe/autoware_universe/localization`
+- `universe/autoware_universe/map`
 
 ### `universe-localization-mapping`
 
@@ -170,8 +170,8 @@ This stage is an Autoware Universe Localization/Mapping runtime container. It on
 
 This stage installs the dependency packages based on `/rosdep-universe-planning-control-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
 
-- `universe/autoware.universe/control`
-- `universe/autoware.universe/planning`
+- `universe/autoware_universe/control`
+- `universe/autoware_universe/planning`
 
 ### `universe-planning-control`
 
@@ -181,8 +181,8 @@ This stage is an Autoware Universe Planning/Control runtime container. It only i
 
 This stage installs the dependency packages based on `/rosdep-universe-vehicle-system-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
 
-- `universe/autoware.universe/vehicle`
-- `universe/autoware.universe/system`
+- `universe/autoware_universe/vehicle`
+- `universe/autoware_universe/system`
 
 ### `universe-vehicle-system`
 
@@ -204,10 +204,10 @@ Then it builds the remaining packages of `autoware.repos`:
 - `param`
 - `sensor_component`
 - `sensor_kit`
-- `universe/autoware.universe/evaluator`
-- `universe/autoware.universe/launch`
-- `universe/autoware.universe/simulator`
-- `universe/autoware.universe/tools`
+- `universe/autoware_universe/evaluator`
+- `universe/autoware_universe/launch`
+- `universe/autoware_universe/simulator`
+- `universe/autoware_universe/tools`
 - `vehicle`
 
 This stage provides an all-in-one development container to Autoware developers. By running the host's source code with volume mounting, it allows for easy building and debugging of Autoware.
