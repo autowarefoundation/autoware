@@ -89,7 +89,7 @@ COPY src/universe/autoware_universe/map /autoware/src/universe/autoware_universe
 # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware_universe/issues/10282 is resolved
 COPY src/universe/autoware_universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware_universe/sensing/autoware_pcl_extensions
 COPY src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor
-COPY src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer /autoware/src/universe/autoware.universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer
+COPY src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer /autoware/src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-localization-mapping-depend-packages.txt \
   && cat /rosdep-universe-localization-mapping-depend-packages.txt
