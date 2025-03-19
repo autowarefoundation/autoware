@@ -4,8 +4,8 @@
 
 <!--- Contributors -->
 <p align="center">
-    <a href="https://github.com/autowarefoundation/autoware.universe/graphs/contributors">
-        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware.universe?style=flat&label=Autoware%20Universe%20Contributors"
+    <a href="https://github.com/autowarefoundation/autoware_universe/graphs/contributors">
+        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Contributors"
             alt="Autoware Universe Contributors" /></a>
     <a href="https://github.com/autowarefoundation/autoware/graphs/contributors">
         <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware?style=flat&label=Autoware%20Contributors"
@@ -14,8 +14,8 @@
 
 <!--- Commit Activity -->
 <p align="center">
-    <a href="https://github.com/autowarefoundation/autoware.universe/pulse">
-        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware.universe?style=flat&label=Autoware%20Universe%20Commit%20Activity"
+    <a href="https://github.com/autowarefoundation/autoware_universe/pulse">
+        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Commit%20Activity"
             alt="Autoware Universe Activity" /></a>
     <a href="https://github.com/autowarefoundation/autoware/pulse">
         <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware?style=flat&label=Autoware%20Commit%20Activity"
@@ -34,8 +34,8 @@
     <a href="https://github.com/autowarefoundation/autoware/actions/workflows/health-check.yaml?query=branch%3Amain">
         <img src="https://img.shields.io/github/actions/workflow/status/autowarefoundation/autoware/health-check.yaml?style=flat&label=health-check"
             alt="health-check CI" /></a>
-    <a href="https://app.codecov.io/gh/autowarefoundation/autoware.universe">
-        <img src="https://img.shields.io/codecov/c/gh/autowarefoundation/autoware.universe?style=flat&label=Coverage&logo=codecov&logoColor=white"
+    <a href="https://app.codecov.io/gh/autowarefoundation/autoware_universe">
+        <img src="https://img.shields.io/codecov/c/gh/autowarefoundation/autoware_universe?style=flat&label=Coverage&logo=codecov&logoColor=white"
             alt="Code Coverage" /></a>
 </p>
 
@@ -68,10 +68,10 @@ To learn more about using or developing Autoware, refer to the [Autoware documen
 - [autowarefoundation/autoware_common](https://github.com/autowarefoundation/autoware_common)
   - Library/utility type repository containing commonly referenced ROS packages.
   - These packages were moved to a separate repository in order to reduce CI execution time
-- [autowarefoundation/autoware.core](https://github.com/autowarefoundation/autoware.core)
+- [autowarefoundation/autoware_core](https://github.com/autowarefoundation/autoware_core)
   - Main repository for high-quality, stable ROS packages for Autonomous Driving.
-  - Based on [Autoware.Auto](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto) and [Autoware.Universe](https://github.com/autowarefoundation/autoware.universe).
-- [autowarefoundation/autoware.universe](https://github.com/autowarefoundation/autoware.universe)
+  - Based on [Autoware.Auto](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto) and [Autoware.Universe](https://github.com/autowarefoundation/autoware_universe).
+- [autowarefoundation/autoware_universe](https://github.com/autowarefoundation/autoware_universe)
   - Repository for experimental, cutting-edge ROS packages for Autonomous Driving.
   - Autoware Universe was created to make it easier for researchers and developers to extend the functionality of Autoware Core
 - [autowarefoundation/autoware_launch](https://github.com/autowarefoundation/autoware_launch)
@@ -89,7 +89,7 @@ If you wish to use Autoware.AI, the previous version of Autoware based on ROS 1,
 
 ## Contributing
 
-- [There is no formal process to become a contributor](https://github.com/autowarefoundation/autoware-projects/wiki#contributors) - you can comment on any [existing issues](https://github.com/autowarefoundation/autoware.universe/issues) or make a pull request on any Autoware repository!
+- [There is no formal process to become a contributor](https://github.com/autowarefoundation/autoware-projects/wiki#contributors) - you can comment on any [existing issues](https://github.com/autowarefoundation/autoware_universe/issues) or make a pull request on any Autoware repository!
   - Make sure to follow the [Contribution Guidelines](https://autowarefoundation.github.io/autoware-documentation/main/contributing/).
   - Take a look at Autoware's [various working groups](https://github.com/autowarefoundation/autoware-projects/wiki#working-group-list) to gain an understanding of any work in progress and to see how projects are managed.
 - If you have any technical questions, you can start a discussion in the [Q&A category](https://github.com/autowarefoundation/autoware/discussions/categories/q-a) to request help and confirm if a potential issue is a bug or not.
