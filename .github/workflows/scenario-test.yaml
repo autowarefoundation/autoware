@@ -1,4 +1,4 @@
-name: scenario-test
+\name: scenario-test
 on:
   workflow_dispatch:
 
@@ -44,7 +44,17 @@ jobs:
           unzip sample-map-planning.zip
         shell: bash
 
-      # 6) Build scenario_test_runner (and its dependencies) with colcon
+      # 6) Install dependencies using rosdep
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-rosdep
+          sudo rosdep init
+          rosdep update
+          rosdep install --from-paths src --ignore-src -r -y
+        shell: bash
+
+      # 7) Build scenario_test_runner (and its dependencies) with colcon
       - name: Build scenario_test_runner
         run: |
           source /opt/ros/humble/setup.bash
@@ -52,7 +62,17 @@ jobs:
           source install/setup.bash
         shell: bash
 
-      # 7) Launch scenario_test_runner
+      # 8) Verify scenario_test_runner package
+      - name: Verify scenario_test_runner package
+        run: |
+          source /opt/ros/humble/setup.bash
+          if ! ros2 pkg list | grep -q scenario_test_runner; then
+            echo "ERROR: scenario_test_runner package not found!"
+            exit 1
+          fi
+        shell: bash
+
+      # 9) Launch scenario_test_runner
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
@@ -73,7 +93,7 @@ jobs:
           fi
         shell: bash
 
-      # 8) Parse results and detect failure
+      # 10) Parse results and detect failure
       - name: Parse results and detect failure
         run: |
           RESULT_FILE="./results/test_results.log"
