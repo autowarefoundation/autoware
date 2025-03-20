@@ -1,4 +1,4 @@
-\name: scenario-test
+name: scenario-test
 on:
   workflow_dispatch:
 
