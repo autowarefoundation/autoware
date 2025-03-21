@@ -101,11 +101,22 @@ runs:
         username: ${{ github.repository_owner }}
         password: ${{ github.token }}
 
-    - name: Run docker build
+    - name: Run docker build autoware:universe
       uses: docker/build-push-action@v6
       with:
         file: docker/Dockerfile
         context: .
         push: false
+        target: universe
+        build-args: ${{ inputs.build-args }}
+        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}
+
+    - name: Run docker build autoware:universe-cuda
+      uses: docker/build-push-action@v6
+      with:
+        file: docker/Dockerfile
+        context: .
+        push: false
+        target: universe-cuda
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}
