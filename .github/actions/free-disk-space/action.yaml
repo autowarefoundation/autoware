@@ -28,10 +28,22 @@ runs:
         docker-images: true
         swap-storage: false
 
+    - name: Show disk space
+      if: always()
+      run: |
+        df -h
+      shell: bash
+
     - name: Clean up docker
       run: |
         docker image list
-        docker system prune -f
-        docker buildx prune -a
+        docker system prune -af
+        docker buildx prune -af
         docker image list
+      shell: bash
+
+    - name: Show disk space
+      if: always()
+      run: |
+        df -h
       shell: bash
