@@ -27,3 +27,11 @@ runs:
         large-packages: true
         docker-images: true
         swap-storage: false
+
+    - name: Clean up docker
+      run: |
+        docker image list
+        docker system prune -f
+        docker buildx prune -a
+        docker image list
+      shell: bash
