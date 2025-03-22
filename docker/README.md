@@ -121,6 +121,7 @@ This stage installs the dependency packages based on `/rosdep-universe-common-de
 
 - `universe/external`
 - `universe/autoware_universe/common`
+- `middleware/external`
 
 ### `universe-common-devel-cuda`
 
