@@ -11,66 +11,78 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # 3) Free disk space if you have a local action for it
+      # 2) Free disk space
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      # 4) Install unzip and ros2
-      - name: Install unzip and ROS 2 (if needed)
+      # 3) Install dependencies
+      - name: Install required packages
         run: |
           apt-get update
-          sudo apt-get install -y unzip curl gnupg2 lsb-release
-          if ! command -v ros2 &> /dev/null; then
-            echo "ROS 2 not found. Installing..."
-            curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | gpg --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg
-            echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2-latest.list
-            sudo apt-get update
-            sudo apt-get install -y ros-humble-desktop
-          else
-            echo "ROS 2 is already installed."
-          fi
+          apt-get install -y unzip curl gnupg2 lsb-release python3-pip
+          pip install --upgrade gdown vcstool
         shell: bash
 
+      # 4) Clone Autoware and Import simulator.repos
+      - name: Clone Autoware and Import simulator.repos
+        run: |
+          mkdir -p ~/autoware_ws/src
+          cd ~/autoware_ws
+          git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
+          cd src
+          vcs import < autoware/simulator.repos
+        shell: bash
 
-      # 5) Download scenario.yaml (separate from sample-scenario.yaml)
+      # 5) Install ROS dependencies
+      - name: Install ROS dependencies
+        run: |
+          cd ~/autoware_ws
+          rosdep update
+          rosdep install --from-paths src --ignore-src -r -y
+        shell: bash
+
+      # 6) Build Autoware with simulator.repos
+      - name: Build Autoware
+        run: |
+          cd ~/autoware_ws
+          source /opt/ros/humble/setup.bash
+          colcon build --symlink-install
+          source install/setup.bash
+        shell: bash
+
+      # 7) Verify Autoware Build
+      - name: Check Autoware installation
+        run: |
+          source ~/autoware_ws/install/setup.bash
+          ros2 pkg list | grep autoware
+        shell: bash
+
+      # 8) Download scenario.yaml (separate from sample-scenario.yaml)
       - name: Download scenario file
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
-      # 6) Download and extract sample-map-planning maps
+      # 9) Download and extract sample-map-planning maps
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           unzip sample-map-planning.zip
         shell: bash
 
-      # 7) Modify the map file path in scenario.yaml
-      # - name: Modify the map file path in scenario
-      #   run: |
-      #     original_path="/home/user/autoware_map"
-      #     updated_path="/home/vishalchauhan/autoware_map"
-      #     if [ -f sample-scenario.yaml ]; then
-      #       sed -i "s|${original_path}|${updated_path}|g" sample-scenario.yaml
-      #     else
-      #       echo "ERROR: sample-scenario.yaml not found!"
-      #       exit 1
-      #     fi
-      #   shell: bash
-
-      # 8) Build scenario_test_runner (and its dependencies) with colcon
+      # 10) Build scenario_test_runner (and its dependencies) with colcon
       - name: Build scenario_test_runner
         run: |
-          source /opt/ros/humble/setup.bash
+          source ~/autoware_ws/install/setup.bash
           colcon build --packages-select scenario_test_runner
           source install/setup.bash
         shell: bash
 
-      # 9) Launch scenario_test_runner
+      # 11) Launch scenario_test_runner
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
-          source /opt/ros/humble/setup.bash
+          source ~/autoware_ws/install/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
@@ -87,7 +99,7 @@ jobs:
           fi
         shell: bash
 
-      # 10) Parse results and detect failure
+      # 12) Parse results and detect failure
       - name: Parse results and detect failure
         run: |
           RESULT_FILE="./results/test_results.log"
@@ -115,9 +127,7 @@ jobs:
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
           else
-            echo "No result file found, marking as failure."
+            echo "ERROR: test_results.log is missing! Check the scenario execution logs."
             exit 1
           fi
         shell: bash
-
-
