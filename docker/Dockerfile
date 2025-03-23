@@ -69,6 +69,8 @@ FROM rosdep-depend AS rosdep-universe-sensing-perception-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
+COPY src/universe/autoware_universe/launch/tier4_perception_launch /autoware/src/universe/autoware_universe/launch/tier4_perception_launch
+COPY src/universe/autoware_universe/launch/tier4_sensing_launch /autoware/src/universe/autoware_universe/launch/tier4_sensing_launch
 COPY src/universe/autoware_universe/perception /autoware/src/universe/autoware_universe/perception
 COPY src/universe/autoware_universe/sensing /autoware/src/universe/autoware_universe/sensing
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
@@ -82,8 +84,14 @@ FROM rosdep-depend AS rosdep-universe-localization-mapping-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
+COPY src/universe/autoware_universe/launch/tier4_localization_launch /autoware/src/universe/autoware_universe/launch/tier4_localization_launch
+COPY src/universe/autoware_universe/launch/tier4_map_launch /autoware/src/universe/autoware_universe/launch/tier4_map_launch
 COPY src/universe/autoware_universe/localization /autoware/src/universe/autoware_universe/localization
 COPY src/universe/autoware_universe/map /autoware/src/universe/autoware_universe/map
+# TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware_universe/issues/10282 is resolved
+COPY src/universe/autoware_universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware_universe/sensing/autoware_pcl_extensions
+COPY src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor
+COPY src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer /autoware/src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-localization-mapping-depend-packages.txt \
   && cat /rosdep-universe-localization-mapping-depend-packages.txt
@@ -269,6 +277,8 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_perception_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_perception_launch \
+  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_sensing_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_sensing_launch \
   --mount=type=bind,source=src/universe/external/trt_batched_nms,target=/autoware/src/universe/external/trt_batched_nms \
   --mount=type=bind,source=src/universe/autoware_universe/perception,target=/autoware/src/universe/autoware_universe/perception \
   --mount=type=bind,source=src/universe/autoware_universe/sensing,target=/autoware/src/universe/autoware_universe/sensing \
@@ -322,8 +332,14 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_localization_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_localization_launch \
+  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_map_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_map_launch \
   --mount=type=bind,source=src/universe/autoware_universe/localization,target=/autoware/src/universe/autoware_universe/localization \
   --mount=type=bind,source=src/universe/autoware_universe/map,target=/autoware/src/universe/autoware_universe/map \
+  # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware_universe/issues/10282 is resolved
+  --mount=type=bind,source=src/universe/autoware_universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware_universe/sensing/autoware_pcl_extensions \
+  --mount=type=bind,source=src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor \
+  --mount=type=bind,source=src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer,target=/autoware/src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
