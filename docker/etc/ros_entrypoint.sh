@@ -27,12 +27,6 @@ else
     source "/opt/ros/$ROS_DISTRO/setup.bash"
     source /opt/autoware/setup.bash
 
-    # Add symlink for autoware_data if directory exists
-    if [ -d /autoware_data ]; then
-        ln -s /autoware_data /home/"$USER_NAME"/autoware_data
-        echo "Linked /autoware_data to /home/$USER_NAME/autoware_data"
-    fi
-
     # Execute the command as the user
     exec /usr/sbin/gosu "$USER_NAME" "$@"
 fi
