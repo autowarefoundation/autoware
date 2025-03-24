@@ -49,6 +49,7 @@ COPY src/universe/external /autoware/src/universe/external
 # trt_batched_nms depends on autoware_tensorrt_common and autoware_cuda_utils, which are not available in universe-common-devel stage
 RUN rm -rf /autoware/src/universe/external/trt_batched_nms
 COPY src/universe/autoware_universe/common /autoware/src/universe/autoware_universe/common
+COPY src/middleware/external /autoware/src/middleware/external
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-common-depend-packages.txt \
   && cat /rosdep-universe-common-depend-packages.txt
@@ -241,6 +242,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/external/rtklib_ros_bridge,target=/autoware/src/universe/external/rtklib_ros_bridge \
   --mount=type=bind,source=src/universe/external/tier4_ad_api_adaptor,target=/autoware/src/universe/external/tier4_ad_api_adaptor \
   --mount=type=bind,source=src/universe/external/tier4_autoware_msgs,target=/autoware/src/universe/external/tier4_autoware_msgs \
+  --mount=type=bind,source=src/middleware/external,target=/autoware/src/middleware/external \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
