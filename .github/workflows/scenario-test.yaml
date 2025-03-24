@@ -5,14 +5,11 @@ on:
 jobs:
   scenario-test:
     runs-on: ubuntu-24.04
-    # If you're on a self-hosted runner and DNS is failing, try enabling host networking:
-    # container:
-    #   image: ghcr.io/autowarefoundation/autoware:universe-devel
-    #   options: --network=host
 
-    # For GitHub-hosted runners (default), just do this:
     container:
       image: ghcr.io/autowarefoundation/autoware:universe-devel
+      # If you're on a self-hosted runner and DNS fails, try:
+      # options: --network=host
 
     steps:
       # 1) Check out your repository
@@ -23,14 +20,14 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      # 3) Install dependencies (unzip, curl, pip, etc.)
+      # 3) Install dependencies
       - name: Install dependencies
         run: |
           apt-get update
           apt-get install -y unzip curl gnupg2 lsb-release python3-pip git
           pip install --upgrade gdown vcstool
 
-          # Optional: If the container might not have ROS 2 installed, check & install
+          # If the container is missing ROS 2 (unlikely), install it:
           if ! command -v ros2 &> /dev/null; then
             echo "ROS 2 not found. Installing..."
             curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | gpg --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg
@@ -50,7 +47,7 @@ jobs:
           echo "Connectivity test passed!"
         shell: bash
 
-      # 5) Clone Autoware and import simulator.repos
+      # 5) Clone Autoware + simulator.repos
       - name: Setup Autoware workspace
         run: |
           mkdir -p ~/autoware_ws/src
@@ -68,12 +65,16 @@ jobs:
           rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
         shell: bash
 
-      # 7) Clone tier4_external_api_msgs if needed (fixes missing "response_status.hpp")
-      - name: Clone tier4_external_api_msgs
+      # 7) Download tier4_external_api_msgs (ZIP) instead of git clone
+      - name: Download tier4_external_api_msgs
         run: |
           cd ~/autoware_ws/src
           if [ ! -d "tier4_external_api_msgs" ]; then
-            git clone https://github.com/tier4/tier4_external_api_msgs.git
+            echo "Downloading tier4_external_api_msgs as a ZIP..."
+            curl -L https://github.com/tier4/tier4_external_api_msgs/archive/refs/heads/main.zip -o tier4_external_api_msgs.zip
+            unzip tier4_external_api_msgs.zip
+            mv tier4_external_api_msgs-main tier4_external_api_msgs
+            rm tier4_external_api_msgs.zip
           fi
         shell: bash
 
