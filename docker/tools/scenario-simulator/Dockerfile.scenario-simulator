@@ -14,8 +14,8 @@ RUN chmod +x /autoware/resolve_rosdep_keys.sh
 RUN --mount=type=ssh \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update \
-    && rosdep update && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
     && source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
+    && rosdep update && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
     && colcon build --cmake-args \
       "-Wno-dev" \
       "--no-warn-unused-cli" \
