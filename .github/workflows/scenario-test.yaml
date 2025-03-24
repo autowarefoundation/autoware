@@ -4,27 +4,53 @@ on:
 
 jobs:
   scenario-test:
-    runs-on: ubuntu-24.04
-    container: ghcr.io/autowarefoundation/autoware:universe-devel
+    runs-on: ubuntu-latest
+
     steps:
       # 1) Check out your repository
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # 2) Free disk space (if you have a local action for it)
+      # 2) Free disk space (optional local action)
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      # 3) Install dependencies
-      - name: Install required packages
+      # 3) Install system dependencies
+      - name: Install dependencies
         run: |
-          apt-get update
-          apt-get install -y unzip curl gnupg2 lsb-release python3-pip git
+          sudo apt-get update
+          sudo apt-get install -y unzip curl gnupg2 lsb-release python3-pip git
           pip install --upgrade gdown vcstool
         shell: bash
 
-      # 4) Clone Autoware and Import simulator.repos
-      - name: Clone Autoware and Import simulator.repos
+      # 4) Install ROS 2 Humble
+      - name: Install ROS 2 Humble
+        run: |
+          # Add ROS 2 GPG key & repository
+          sudo curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc \
+            | sudo gpg --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" \
+            | sudo tee /etc/apt/sources.list.d/ros2-latest.list
+
+          sudo apt-get update
+          sudo apt-get install -y ros-humble-desktop
+        shell: bash
+
+      # 5) Source ROS 2
+      - name: Source ROS 2
+        run: echo "source /opt/ros/humble/setup.bash" >> $BASH_ENV
+        shell: bash
+
+      # 6) Check connectivity to GitHub
+      - name: Check connectivity
+        run: |
+          echo "Checking connectivity to GitHub..."
+          curl -I https://github.com
+          echo "Connectivity test passed!"
+        shell: bash
+
+      # 7) Clone Autoware + simulator.repos
+      - name: Clone Autoware
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
@@ -33,16 +59,17 @@ jobs:
           vcs import < autoware/simulator.repos
         shell: bash
 
-      # 5) Install ROS dependencies
-      - name: Install ROS dependencies
+      # 8) Install ROS dependencies for Autoware
+      - name: Install Autoware dependencies
         run: |
+          source /opt/ros/humble/setup.bash
           cd ~/autoware_ws
           rosdep update
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
-      # 6) Download tier4_external_api_msgs as a ZIP (avoids git clone credential issues)
-      - name: Download tier4_external_api_msgs as ZIP
+      # 9) Download tier4_external_api_msgs (ZIP) to avoid git clone
+      - name: Download tier4_external_api_msgs
         run: |
           cd ~/autoware_ws/src
           if [ ! -d "tier4_external_api_msgs" ]; then
@@ -54,50 +81,41 @@ jobs:
           fi
         shell: bash
 
-      # 7) Build Autoware with simulator.repos
+      # 10) Build Autoware
       - name: Build Autoware
         run: |
-          cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
+          cd ~/autoware_ws
           colcon build --symlink-install
-          source install/setup.bash
+          echo "source ~/autoware_ws/install/setup.bash" >> $BASH_ENV
         shell: bash
 
-      # 8) Verify Autoware Build
-      - name: Check Autoware installation
-        run: |
-          source ~/autoware_ws/install/setup.bash
-          ros2 pkg list | grep autoware
-        shell: bash
-
-      # 9) Download scenario.yaml
+      # 11) Download scenario.yaml
       - name: Download scenario file
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
-      # 10) Download and extract sample-map-planning maps
+      # 12) Download sample-map-planning maps
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           unzip sample-map-planning.zip
         shell: bash
 
-      # 11) Build scenario_test_runner (and its dependencies) with colcon
+      # 13) Build scenario_test_runner
       - name: Build scenario_test_runner
         run: |
           source ~/autoware_ws/install/setup.bash
           colcon build --packages-select scenario_test_runner
-          source install/setup.bash
         shell: bash
 
-      # 12) Launch scenario_test_runner
+      # 14) Launch scenario_test_runner
       - name: Launch scenario_test_runner
         run: |
-          SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
+          SCENARIO_FILE="./sample-scenario.yaml"
           if [ -f "$SCENARIO_FILE" ]; then
-            echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=false \
@@ -112,7 +130,7 @@ jobs:
           fi
         shell: bash
 
-      # 13) Parse results and detect failure
+      # 15) Parse results and detect failure
       - name: Parse results and detect failure
         run: |
           RESULT_FILE="./results/test_results.log"
