@@ -4,11 +4,12 @@ on:
 
 jobs:
   scenario-test:
-    runs-on: ubuntu-latest  # or ubuntu-24.04, either is fine
+    runs-on: ubuntu-latest
     container:
-      image: ghcr.io/autowarefoundation/autoware:universe-devel
-      # Enable host networking so DNS or proxy issues might be avoided
-      options: --network=host
+      # Use the official, publicly available Autoware Universe image for ROS2 Humble
+      image: ghcr.io/autowarefoundation/autoware/universe:humble-latest
+      # If you're on a self-hosted runner and having DNS issues, try enabling host networking:
+      # options: --network=host
 
     steps:
       # 1) Check out your repository
@@ -19,7 +20,7 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      # 3) Basic setup
+      # 3) Install base dependencies
       - name: Install base dependencies
         run: |
           apt-get update
@@ -27,20 +28,22 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
-      # 4) Check connectivity
-      - name: Check connectivity to GitHub
+      # 4) Check connectivity to GitHub
+      - name: Check connectivity
         run: |
-          echo "Attempting to reach GitHub..."
+          echo "Testing network access with curl..."
           curl -I https://github.com
         shell: bash
 
-      # 5) Prepare Autoware workspace
+      # 5) Prepare Autoware workspace and import simulator.repos
       - name: Prepare workspace
         run: |
           mkdir -p /root/autoware_ws/src
           cd /root/autoware_ws/src
+
           # Clone Autoware
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git
+
           # Import simulator.repos
           cd autoware
           vcs import < simulator.repos
@@ -150,6 +153,7 @@ jobs:
               elif echo "$line" | grep -qi "error"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
                 echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
+                echo "  </testcase>" >> "$XML_FILE"
               fi
             done < "$RESULT_FILE"
 
