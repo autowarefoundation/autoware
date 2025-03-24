@@ -5,7 +5,15 @@ on:
 jobs:
   scenario-test:
     runs-on: ubuntu-24.04
-    container: ghcr.io/autowarefoundation/autoware:universe-devel
+    # If you're on a self-hosted runner and DNS is failing, try enabling host networking:
+    # container:
+    #   image: ghcr.io/autowarefoundation/autoware:universe-devel
+    #   options: --network=host
+
+    # For GitHub-hosted runners (default), just do this:
+    container:
+      image: ghcr.io/autowarefoundation/autoware:universe-devel
+
     steps:
       # 1) Check out your repository
       - name: Check out repository
@@ -34,7 +42,15 @@ jobs:
           fi
         shell: bash
 
-      # 4) Clone Autoware and import simulator.repos
+      # 4) Check connectivity to GitHub
+      - name: Check connectivity
+        run: |
+          echo "Checking connectivity to GitHub..."
+          curl -I https://github.com
+          echo "Connectivity test passed!"
+        shell: bash
+
+      # 5) Clone Autoware and import simulator.repos
       - name: Setup Autoware workspace
         run: |
           mkdir -p ~/autoware_ws/src
@@ -44,7 +60,7 @@ jobs:
           vcs import < autoware/simulator.repos
         shell: bash
 
-      # 5) Install ROS dependencies
+      # 6) Install ROS dependencies
       - name: Install ROS dependencies
         run: |
           cd ~/autoware_ws
@@ -52,7 +68,7 @@ jobs:
           rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
         shell: bash
 
-      # 6) Clone tier4_external_api_msgs if needed (fixes missing "response_status.hpp")
+      # 7) Clone tier4_external_api_msgs if needed (fixes missing "response_status.hpp")
       - name: Clone tier4_external_api_msgs
         run: |
           cd ~/autoware_ws/src
@@ -61,7 +77,7 @@ jobs:
           fi
         shell: bash
 
-      # 7) Build Autoware
+      # 8) Build Autoware
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
@@ -70,20 +86,20 @@ jobs:
           source install/setup.bash
         shell: bash
 
-      # 8) Download scenario.yaml
+      # 9) Download scenario.yaml
       - name: Download scenario file
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
-      # 9) Download and extract sample-map-planning maps
+      # 10) Download and extract sample-map-planning maps
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           unzip sample-map-planning.zip
         shell: bash
 
-      # 10) Build scenario_test_runner (and its dependencies) with colcon
+      # 11) Build scenario_test_runner
       - name: Build scenario_test_runner
         run: |
           source ~/autoware_ws/install/setup.bash
@@ -91,7 +107,7 @@ jobs:
           source install/setup.bash
         shell: bash
 
-      # 11) Launch scenario_test_runner
+      # 12) Launch scenario_test_runner
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
@@ -112,7 +128,7 @@ jobs:
           fi
         shell: bash
 
-      # 12) Parse results and detect failure
+      # 13) Parse results and detect failure
       - name: Parse results and detect failure
         run: |
           RESULT_FILE="./results/test_results.log"
