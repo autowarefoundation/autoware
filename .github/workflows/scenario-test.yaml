@@ -23,14 +23,20 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
-      # 4) Clone Autoware and Import simulator.repos
-      - name: Clone Autoware and Import simulator.repos
+      # 4) Clone Autoware and Import repositories
+      - name: Clone Autoware and Import repos
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
+          
+          # Import both core and simulator repositories
+          vcs import < autoware/autoware.repos  # Changed to main repos file
           vcs import < autoware/simulator.repos
+          
+          # Add missing Tier4 dependencies
+          git clone -b humble https://github.com/tier4/tier4_autoware_msgs.git tier4_autoware_msgs
         shell: bash
 
       # 5) Install ROS dependencies
@@ -46,7 +52,7 @@ jobs:
         run: |
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
-          colcon build --symlink-install
+          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
 
@@ -70,7 +76,7 @@ jobs:
           unzip sample-map-planning.zip
         shell: bash
 
-      # 10) Build scenario_test_runner (and its dependencies) with colcon
+      # 10) Build scenario_test_runner
       - name: Build scenario_test_runner
         run: |
           source ~/autoware_ws/install/setup.bash
