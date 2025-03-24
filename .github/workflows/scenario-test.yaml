@@ -11,20 +11,31 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # 2) Free disk space
+      # 2) Free disk space (optional local action)
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      # 3) Install dependencies
-      - name: Install required packages
+      # 3) Install dependencies (unzip, curl, pip, etc.)
+      - name: Install dependencies
         run: |
           apt-get update
-          sudo apt-get install -y unzip curl gnupg2 lsb-release python3-pip git
+          apt-get install -y unzip curl gnupg2 lsb-release python3-pip git
           pip install --upgrade gdown vcstool
+
+          # Optional: If the container might not have ROS 2 installed, check & install
+          if ! command -v ros2 &> /dev/null; then
+            echo "ROS 2 not found. Installing..."
+            curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | gpg --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg
+            echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/ros2-latest.list
+            apt-get update
+            apt-get install -y ros-humble-desktop
+          else
+            echo "ROS 2 is already installed in the container."
+          fi
         shell: bash
 
-      # 4) Clone Autoware and Import simulator.repos
-      - name: Clone Autoware and Import simulator.repos
+      # 4) Clone Autoware and import simulator.repos
+      - name: Setup Autoware workspace
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
@@ -38,10 +49,10 @@ jobs:
         run: |
           cd ~/autoware_ws
           rosdep update
-          rosdep install --from-paths src --ignore-src -r -y
+          rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
         shell: bash
 
-      # 5.1) Clone tier4_external_api_msgs if missing (fixes missing "response_status.hpp")
+      # 6) Clone tier4_external_api_msgs if needed (fixes missing "response_status.hpp")
       - name: Clone tier4_external_api_msgs
         run: |
           cd ~/autoware_ws/src
@@ -50,7 +61,7 @@ jobs:
           fi
         shell: bash
 
-      # 6) Build Autoware with simulator.repos
+      # 7) Build Autoware
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
@@ -59,14 +70,7 @@ jobs:
           source install/setup.bash
         shell: bash
 
-      # 7) Verify Autoware Build
-      - name: Check Autoware installation
-        run: |
-          source ~/autoware_ws/install/setup.bash
-          ros2 pkg list | grep autoware
-        shell: bash
-
-      # 8) Download scenario.yaml (separate from sample-scenario.yaml)
+      # 8) Download scenario.yaml
       - name: Download scenario file
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
