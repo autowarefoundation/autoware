@@ -1,4 +1,3 @@
-name: scenario-test
 on:
   workflow_dispatch:
 
@@ -31,12 +30,17 @@ jobs:
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
           vcs import < autoware/simulator.repos
+          # Ensure tier4_external_api_msgs is present
+          if [ ! -d "tier4_external_api_msgs" ]; then
+            git clone --branch main https://github.com/autowarefoundation/tier4_external_api_msgs.git
+          fi
         shell: bash
 
       # 5) Install ROS dependencies
       - name: Install ROS dependencies
         run: |
           cd ~/autoware_ws
+          source /opt/ros/humble/setup.bash
           rosdep update
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
@@ -46,6 +50,9 @@ jobs:
         run: |
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
+          # Build tier4_external_api_msgs first
+          colcon build --symlink-install --packages-up-to tier4_external_api_msgs
+          # Then build the rest
           colcon build --symlink-install
           source install/setup.bash
         shell: bash
@@ -74,7 +81,7 @@ jobs:
       - name: Build scenario_test_runner
         run: |
           source ~/autoware_ws/install/setup.bash
-          colcon build --packages-select scenario_test_runner
+          colcon build --packages-up-to scenario_test_runner
           source install/setup.bash
         shell: bash
 
@@ -83,6 +90,13 @@ jobs:
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
+          # Debug: Check if tier4_external_api_msgs is built
+          if ros2 pkg list | grep tier4_external_api_msgs; then
+            echo "tier4_external_api_msgs is available"
+          else
+            echo "ERROR: tier4_external_api_msgs is missing!"
+            exit 1
+          fi
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
@@ -132,5 +146,3 @@ jobs:
             exit 1
           fi
         shell: bash
-
-
