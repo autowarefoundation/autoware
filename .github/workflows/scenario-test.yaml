@@ -4,39 +4,44 @@ on:
 
 jobs:
   scenario-test:
-    runs-on: ubuntu-24.04
-
-    # 1) Use the official Autoware container
-    container: ghcr.io/autowarefoundation/autoware:universe-devel
+    runs-on: ubuntu-latest  # or ubuntu-24.04, either is fine
+    container:
+      image: ghcr.io/autowarefoundation/autoware:universe-devel
+      # Enable host networking so DNS or proxy issues might be avoided
+      options: --network=host
 
     steps:
-      # 2) Check out your repository
+      # 1) Check out your repository
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # 3) Free disk space (if you have this local action)
+      # 2) Free disk space (optional local action)
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      # 4) Install base dependencies
-      - name: Setup environment
+      # 3) Basic setup
+      - name: Install base dependencies
         run: |
           apt-get update
           apt-get install -y unzip curl gnupg2 lsb-release python3-pip git
           pip install --upgrade gdown vcstool
         shell: bash
 
-      # 5) Prepare Autoware workspace and import simulator.repos
+      # 4) Check connectivity
+      - name: Check connectivity to GitHub
+        run: |
+          echo "Attempting to reach GitHub..."
+          curl -I https://github.com
+        shell: bash
+
+      # 5) Prepare Autoware workspace
       - name: Prepare workspace
         run: |
-          # Create workspace directories
           mkdir -p /root/autoware_ws/src
           cd /root/autoware_ws/src
-
           # Clone Autoware
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git
-
-          # Import simulator repos
+          # Import simulator.repos
           cd autoware
           vcs import < simulator.repos
         shell: bash
@@ -49,7 +54,7 @@ jobs:
           rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
         shell: bash
 
-      # 7) Clone missing dependency (tier4_external_api_msgs), if needed
+      # 7) Clone missing dependency if needed
       - name: Clone missing dependency
         run: |
           cd /root/autoware_ws/src
@@ -58,7 +63,7 @@ jobs:
           fi
         shell: bash
 
-      # 8) Clean previous builds (just in case)
+      # 8) Clean previous builds
       - name: Clean previous builds
         run: |
           cd /root/autoware_ws
