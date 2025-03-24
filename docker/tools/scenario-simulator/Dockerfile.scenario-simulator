@@ -5,7 +5,7 @@ ARG ROS_DISTRO
 ARG LIB_DIR
 ENV CCACHE_DIR="/root/.ccache"
 WORKDIR /autoware
-COPY src /autoware/src
+COPY src/simulator /autoware/src/simulator
 COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
 RUN chmod +x /autoware/resolve_rosdep_keys.sh
 
@@ -17,12 +17,11 @@ RUN --mount=type=ssh \
     && rosdep update && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
     && source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
     && colcon build --cmake-args \
-        "-Wno-dev" \
-        "--no-warn-unused-cli" \
-        --install-base /opt/autoware \
-        --merge-install \
-        --mixin release compile-commands ccache \
-        --base-paths /autoware/src/simulator \
+      "-Wno-dev" \
+      "--no-warn-unused-cli" \
+      --install-base /opt/autoware \
+      --merge-install \
+      --mixin release compile-commands ccache \
     && find /opt/autoware/lib -type f -name "*.py" -exec chmod +x {} \; \
     && find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \; \
     && apt-get clean \
