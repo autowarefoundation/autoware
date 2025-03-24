@@ -24,6 +24,7 @@ jobs:
         shell: bash
 
       # 4) Clone Autoware and Import repositories
+            # 4) Clone Autoware and Import repos
       - name: Clone Autoware and Import repos
         run: |
           mkdir -p ~/autoware_ws/src
@@ -31,9 +32,12 @@ jobs:
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
           
-          # Import both core and simulator repositories
-          vcs import < autoware/autoware.repos  # Changed to main repos file
+          # Import core repositories
+          vcs import < autoware/autoware.repos
+          
+          # Import simulator repositories
           vcs import < autoware/simulator.repos
+        shell: bash
           
           # Add missing Tier4 dependencies
           git clone -b humble https://github.com/tier4/tier4_autoware_msgs.git tier4_autoware_msgs
