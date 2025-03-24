@@ -5,29 +5,26 @@ on:
 jobs:
   scenario-test:
     runs-on: ubuntu-24.04
-
     container:
       image: ghcr.io/autowarefoundation/autoware:universe-devel
       # If you're on a self-hosted runner and DNS fails, try:
       # options: --network=host
 
     steps:
-      # 1) Check out your repository
+      # Step 1) Must checkout the repository (GitHub Actions requirement)
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # 2) Free disk space (optional local action)
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
-
-      # 3) Install dependencies
-      - name: Install dependencies
+      # Step 2) Run EVERYTHING in one script
+      - name: Build and Run Scenario
         run: |
+          set -e  # Exit on first error
+
+          echo "===== 1) Install dependencies ====="
           apt-get update
           apt-get install -y unzip curl gnupg2 lsb-release python3-pip git
           pip install --upgrade gdown vcstool
 
-          # If the container is missing ROS 2 (unlikely), install it:
           if ! command -v ros2 &> /dev/null; then
             echo "ROS 2 not found. Installing..."
             curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | gpg --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg
@@ -37,84 +34,54 @@ jobs:
           else
             echo "ROS 2 is already installed in the container."
           fi
-        shell: bash
 
-      # 4) Check connectivity to GitHub
-      - name: Check connectivity
-        run: |
-          echo "Checking connectivity to GitHub..."
+          echo "===== 2) Check connectivity ====="
           curl -I https://github.com
           echo "Connectivity test passed!"
-        shell: bash
 
-      # 5) Clone Autoware + simulator.repos
-      - name: Setup Autoware workspace
-        run: |
+          echo "===== 3) Clone Autoware + simulator.repos ====="
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
           vcs import < autoware/simulator.repos
-        shell: bash
 
-      # 6) Install ROS dependencies
-      - name: Install ROS dependencies
-        run: |
+          echo "===== 4) Install ROS dependencies ====="
           cd ~/autoware_ws
           rosdep update
           rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
-        shell: bash
 
-      # 7) Download tier4_external_api_msgs (ZIP) instead of git clone
-      - name: Download tier4_external_api_msgs
-        run: |
+          echo "===== 5) Download tier4_external_api_msgs as ZIP (avoid git) ====="
           cd ~/autoware_ws/src
           if [ ! -d "tier4_external_api_msgs" ]; then
-            echo "Downloading tier4_external_api_msgs as a ZIP..."
+            echo "Downloading tier4_external_api_msgs..."
             curl -L https://github.com/tier4/tier4_external_api_msgs/archive/refs/heads/main.zip -o tier4_external_api_msgs.zip
             unzip tier4_external_api_msgs.zip
             mv tier4_external_api_msgs-main tier4_external_api_msgs
             rm tier4_external_api_msgs.zip
           fi
-        shell: bash
 
-      # 8) Build Autoware
-      - name: Build Autoware
-        run: |
+          echo "===== 6) Build Autoware ====="
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
           colcon build --symlink-install
           source install/setup.bash
-        shell: bash
 
-      # 9) Download scenario.yaml
-      - name: Download scenario file
-        run: |
+          echo "===== 7) Download scenario.yaml ====="
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
-        shell: bash
 
-      # 10) Download and extract sample-map-planning maps
-      - name: Download sample-map-planning maps
-        run: |
+          echo "===== 8) Download sample-map-planning maps ====="
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           unzip sample-map-planning.zip
-        shell: bash
 
-      # 11) Build scenario_test_runner
-      - name: Build scenario_test_runner
-        run: |
+          echo "===== 9) Build scenario_test_runner ====="
           source ~/autoware_ws/install/setup.bash
           colcon build --packages-select scenario_test_runner
           source install/setup.bash
-        shell: bash
 
-      # 12) Launch scenario_test_runner
-      - name: Launch scenario_test_runner
-        run: |
+          echo "===== 10) Launch scenario_test_runner ====="
           SCENARIO_FILE="./sample-scenario.yaml"
-          source ~/autoware_ws/install/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
-            echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=false \
@@ -127,11 +94,8 @@ jobs:
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
           fi
-        shell: bash
 
-      # 13) Parse results and detect failure
-      - name: Parse results and detect failure
-        run: |
+          echo "===== 11) Parse results and detect failure ====="
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
 
