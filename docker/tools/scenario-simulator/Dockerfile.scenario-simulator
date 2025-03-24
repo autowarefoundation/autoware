@@ -28,6 +28,7 @@ RUN --mount=type=ssh \
     && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # Extract rosdep dependencies for simulator
+# hadolint ignore=SC1091
 RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
     && /autoware/resolve_rosdep_keys.sh /autoware/src/simulator ${ROS_DISTRO} --dependency-types=exec \
     > /rosdep-simulator-depend-packages.txt \
