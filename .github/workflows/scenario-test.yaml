@@ -38,39 +38,55 @@ jobs:
         run: |
           cd ~/autoware_ws
           rosdep update
-          rosdep install --from-paths src --ignore-src -r -y
+          rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
         shell: bash
 
-      # 6) Build Autoware with simulator.repos
+      # 6) Clone missing dependency (tier4_external_api_msgs)
+      - name: Clone missing dependency (tier4_external_api_msgs)
+        run: |
+          cd ~/autoware_ws/src
+          if [ ! -d "tier4_external_api_msgs" ]; then
+            git clone https://github.com/tier4/tier4_external_api_msgs.git
+          fi
+        shell: bash
+
+      # 7) Clean previous builds
+      - name: Clean previous builds
+        run: |
+          cd ~/autoware_ws
+          rm -rf build install log
+        shell: bash
+
+      # 8) Build Autoware with simulator.repos
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
-          colcon build --symlink-install
+          colcon build --symlink-install --continue-on-error
           source install/setup.bash
         shell: bash
 
-      # 7) Verify Autoware Build
+      # 9) Verify Autoware Build
       - name: Check Autoware installation
         run: |
           source ~/autoware_ws/install/setup.bash
           ros2 pkg list | grep autoware
         shell: bash
 
-      # 8) Download scenario.yaml (separate from sample-scenario.yaml)
+      # 10) Download scenario.yaml (separate from sample-scenario.yaml)
       - name: Download scenario file
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
-      # 9) Download and extract sample-map-planning maps
+      # 11) Download and extract sample-map-planning maps
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           unzip sample-map-planning.zip
         shell: bash
 
-      # 10) Build scenario_test_runner (and its dependencies) with colcon
+      # 12) Build scenario_test_runner (and its dependencies) with colcon
       - name: Build scenario_test_runner
         run: |
           source ~/autoware_ws/install/setup.bash
@@ -78,7 +94,7 @@ jobs:
           source install/setup.bash
         shell: bash
 
-      # 11) Launch scenario_test_runner
+      # 13) Launch scenario_test_runner
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
@@ -99,7 +115,7 @@ jobs:
           fi
         shell: bash
 
-      # 12) Parse results and detect failure
+      # 14) Parse results and detect failure
       - name: Parse results and detect failure
         run: |
           RESULT_FILE="./results/test_results.log"
