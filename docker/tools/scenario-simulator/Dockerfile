@@ -6,26 +6,19 @@ ARG LIB_DIR
 ENV CCACHE_DIR="/root/.ccache"
 WORKDIR /autoware
 COPY src/simulator /autoware/src/simulator
-COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
-RUN chmod +x /autoware/resolve_rosdep_keys.sh
 
 # Install dependencies and build the scenario simulator
 # hadolint ignore=SC1091
-RUN --mount=type=ssh \
-    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update \
-    && source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
+    && source /opt/autoware/setup.bash \
     && rosdep update && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
-    && colcon build --cmake-args \
-      "-Wno-dev" \
-      "--no-warn-unused-cli" \
-      --install-base /opt/autoware \
-      --merge-install \
-      --mixin release compile-commands ccache \
+    && /autoware/cleanup_apt.sh
+
+RUN source /opt/autoware/setup.bash \
+    && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware \
     && find /opt/autoware/lib -type f -name "*.py" -exec chmod +x {} \; \
-    && find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \; \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
+    && find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
 
 # Extract rosdep dependencies for simulator
 # hadolint ignore=SC1091
