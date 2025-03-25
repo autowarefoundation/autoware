@@ -45,6 +45,7 @@ jobs:
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
+          source /opt/ros/humble/setup.bash     
           source /opt/autoware/setup.bash
           colcon build --symlink-install
           source install/setup.bash
@@ -132,5 +133,6 @@ jobs:
             exit 1
           fi
         shell: bash
+
 
 
