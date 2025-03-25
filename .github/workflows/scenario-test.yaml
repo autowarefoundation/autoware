@@ -15,11 +15,18 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      # 3) Install dependencies
+      # 3) Install dependencies (added ros-humble-pcl-ros)
       - name: Install required packages
         run: |
           apt-get update
-          apt-get install -y unzip curl gnupg2 lsb-release python3-pip git
+          apt-get install -y \
+            unzip \
+            curl \
+            gnupg2 \
+            lsb-release \
+            python3-pip \
+            git \
+            ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
         shell: bash
 
@@ -72,6 +79,8 @@ jobs:
         shell: bash
 
       # 10) Build scenario_test_runner (and its dependencies) with colcon
+      # NOTE: If scenario_test_runner depends on packages from scenario_simulator_v2,
+      # make sure those are built as well. You may want to do a full workspace build.
       - name: Build scenario_test_runner
         run: |
           source ~/autoware_ws/install/setup.bash
@@ -133,6 +142,3 @@ jobs:
             exit 1
           fi
         shell: bash
-
-
-
