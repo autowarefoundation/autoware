@@ -3,8 +3,11 @@ FROM ghcr.io/autowarefoundation/autoware:universe-devel AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
-WORKDIR /autoware
+
+COPY docker/scripts/resolve_rosdep_keys.sh /autoware/resolve_rosdep_keys.sh
+RUN chmod +x /autoware/resolve_rosdep_keys.sh
 COPY src/simulator /autoware/src/simulator
+WORKDIR /autoware
 
 # Install dependencies and build the scenario simulator
 # hadolint ignore=SC1091

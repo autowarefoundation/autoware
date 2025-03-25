@@ -12,9 +12,9 @@ FROM ghcr.io/autowarefoundation/autoware:universe-visualization AS visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
-WORKDIR /autoware
 
 COPY --from=universe /autoware/rviz /autoware/rviz
+WORKDIR /autoware
 
 # Install openbox, VNC, and simulator dependencies
 # hadolint ignore=SC2002
