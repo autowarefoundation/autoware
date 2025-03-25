@@ -74,7 +74,7 @@ runs:
       with:
         push: true
         files: |
-          docker/docker-bake-tools.hcl
+          docker/tools/docker-bake.hcl
           ${{ steps.meta-visualizer.outputs.bake-file }}
           ${{ steps.meta-scenario-simulator.outputs.bake-file }}
         provenance: false
