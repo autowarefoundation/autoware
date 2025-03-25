@@ -2,7 +2,6 @@
 FROM ghcr.io/autowarefoundation/autoware:universe-devel AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
-ARG LIB_DIR
 ENV CCACHE_DIR="/root/.ccache"
 WORKDIR /autoware
 COPY src/simulator /autoware/src/simulator
@@ -22,30 +21,28 @@ RUN source /opt/autoware/setup.bash \
 
 # Extract rosdep dependencies for simulator
 # hadolint ignore=SC1091
-RUN source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
-    && /autoware/resolve_rosdep_keys.sh /autoware/src/simulator ${ROS_DISTRO} --dependency-types=exec \
-    > /rosdep-simulator-depend-packages.txt \
-    && cat /rosdep-simulator-depend-packages.txt
+RUN source /opt/autoware/setup.bash \
+    && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+    > /rosdep-simulator-exec-depend-packages.txt \
+    && cat /rosdep-simulator-exec-depend-packages.txt
 
 ### Scenario Simulator
 FROM ghcr.io/autowarefoundation/autoware:core AS scenario-simulator
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
-WORKDIR /autoware
+
 COPY --from=builder /opt/autoware /opt/autoware
-COPY --from=builder /rosdep-simulator-depend-packages.txt /tmp/rosdep-simulator-depend-packages.txt
+COPY --from=builder /rosdep-simulator-exec-depend-packages.txt /tmp/rosdep-simulator-exec-depend-packages.txt
 
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    apt-get update && apt-get install -y curl unzip \
-    && source /opt/ros/"$ROS_DISTRO"/setup.bash && source /opt/autoware/setup.bash \
-    && rosdep update \
+    apt-get update \
     # Remove xmlschema and yamale from rosdep packages since we install via pip
-    && sed -i '/\(xmlschema\|yamale\)/d' /tmp/rosdep-simulator-depend-packages.txt \
+    && sed -i '/\(xmlschema\|yamale\)/d' /tmp/rosdep-simulator-exec-depend-packages.txt \
     && pip install --no-cache-dir yamale xmlschema \
-    && cat /tmp/rosdep-simulator-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
+    && cat /tmp/rosdep-simulator-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
     && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY docker/tools/scenario-simulator/entrypoint.sh /entrypoint.sh
