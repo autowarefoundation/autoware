@@ -19,10 +19,15 @@ COPY --from=universe /autoware/rviz /autoware/rviz
 # Install openbox, VNC, and simulator dependencies
 # hadolint ignore=SC2002
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  curl unzip openbox tigervnc-standalone-server tigervnc-common \
-  novnc websockify python3-numpy python3-xdg \
-  # Remove xmlschema and yamale from rosdep packages since we install via pip
-  && sed -i '/\(xmlschema\|yamale\)/d' /tmp/rosdep-visualizer-depend-packages.txt \
+  curl \
+  unzip \
+  openbox \
+  tigervnc-standalone-server \
+  tigervnc-common \
+  novnc \
+  websockify \
+  python3-numpy \
+  python3-xdg \
   && pip install --no-cache-dir yamale xmlschema \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
