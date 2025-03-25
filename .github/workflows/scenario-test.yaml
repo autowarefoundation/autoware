@@ -75,8 +75,10 @@ jobs:
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-          unzip sample-map-planning.zip
+          mkdir -p /home/user/autoware_map
+          unzip sample-map-planning.zip -d /home/user/autoware_map
         shell: bash
+
 
       # 10) Build scenario_test_runner (and its dependencies) with colcon
       # NOTE: If scenario_test_runner depends on packages from scenario_simulator_v2,
