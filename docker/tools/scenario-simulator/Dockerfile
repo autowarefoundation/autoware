@@ -14,7 +14,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && rosdep update && rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO \
     && /autoware/cleanup_apt.sh
 
-RUN source /opt/autoware/setup.bash \
+RUN --mount=type=cache,target=${CCACHE_DIR} \
+    source /opt/autoware/setup.bash \
     && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware \
     && find /opt/autoware/lib -type f -name "*.py" -exec chmod +x {} \; \
     && find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
