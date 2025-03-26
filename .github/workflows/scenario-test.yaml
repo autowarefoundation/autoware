@@ -79,15 +79,15 @@ jobs:
           unzip sample-map-planning.zip -d /home/user/autoware_map
         shell: bash
 
-      # 10) Rebuild the full workspace (instead of selective package build)
-      - name: Build workspace
+      # 10) Rebuild workspace (optional step to ensure changes are applied)
+      - name: Rebuild workspace
         run: |
           source ~/autoware_ws/install/setup.bash
           colcon build --symlink-install
           source install/setup.bash
         shell: bash
 
-      # 11) Launch scenario_test_runner
+      # 11) Launch scenario_test_runner and capture its output
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
@@ -96,19 +96,19 @@ jobs:
             echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
-              record:=false \
+              record:=true \
               scenario:="$SCENARIO_FILE" \
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=100 \
-              output_directory:=./results
+              output_directory:=./results 2>&1 | tee scenario_output.log || true
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
           fi
         shell: bash
 
-      # 12) Parse results and detect failure
+      # 12) Parse results and detect failure; if missing, output the captured log for diagnostics.
       - name: Parse results and detect failure
         run: |
           RESULT_FILE="./results/test_results.log"
@@ -133,11 +133,13 @@ jobs:
                 echo "  </testcase>" >> "$XML_FILE"
               fi
             done < "$RESULT_FILE"
-
+        
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
           else
             echo "ERROR: test_results.log is missing! Check the scenario execution logs."
+            echo "Captured scenario output:"
+            cat scenario_output.log
             exit 1
           fi
         shell: bash
