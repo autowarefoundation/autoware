@@ -15,7 +15,7 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      # 3) Install dependencies (added ros-humble-pcl-ros)
+      # 3) Install required packages
       - name: Install required packages
         run: |
           apt-get update
@@ -30,7 +30,7 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
-      # 4) Clone Autoware and Import simulator.repos
+      # 4) Clone Autoware and import simulator.repos
       - name: Clone Autoware and Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
@@ -48,7 +48,7 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
-      # 6) Build Autoware
+      # 6) Build Autoware (full workspace build)
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
@@ -58,14 +58,14 @@ jobs:
           source install/setup.bash
         shell: bash
 
-      # 7) Verify Autoware Build
+      # 7) Verify Autoware installation
       - name: Check Autoware installation
         run: |
           source ~/autoware_ws/install/setup.bash
           ros2 pkg list | grep autoware
         shell: bash
 
-      # 8) Download scenario.yaml
+      # 8) Download scenario file
       - name: Download scenario file
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
@@ -79,14 +79,11 @@ jobs:
           unzip sample-map-planning.zip -d /home/user/autoware_map
         shell: bash
 
-
-      # 10) Build scenario_test_runner (and its dependencies) with colcon
-      # NOTE: If scenario_test_runner depends on packages from scenario_simulator_v2,
-      # make sure those are built as well. You may want to do a full workspace build.
-      - name: Build scenario_test_runner
+      # 10) Rebuild the full workspace (instead of selective package build)
+      - name: Build workspace
         run: |
           source ~/autoware_ws/install/setup.bash
-          colcon build --packages-select scenario_test_runner
+          colcon build --symlink-install
           source install/setup.bash
         shell: bash
 
