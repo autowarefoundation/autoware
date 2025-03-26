@@ -87,15 +87,32 @@ jobs:
           source install/setup.bash
         shell: bash
 
-      # 11) Diagnostic: Print lanelet-related parameters from the config file
+      # 11) Patch parameter file to disable localization and lanelet pose validation
+      - name: Patch parameters in config file
+        run: |
+          PARAM_FILE="/github/home/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml"
+          if [ -f "$PARAM_FILE" ]; then
+            echo "Patching parameters in $PARAM_FILE ..."
+            # Replace the line for simulate_localization to false
+            sed -i 's/^\(simulate_localization:\).*/\1 false/' "$PARAM_FILE"
+            # Replace the line for disable_lanelet_pose_validation to true
+            sed -i 's/^\(disable_lanelet_pose_validation:\).*/\1 true/' "$PARAM_FILE"
+            echo "Patched parameters:"
+            grep -E "^(simulate_localization:|disable_lanelet_pose_validation:)" "$PARAM_FILE"
+          else
+            echo "Parameter file not found at $PARAM_FILE"
+          fi
+        shell: bash
+
+      # 12) Diagnostic: Print lanelet-related parameters from the config file
       - name: Check lanelet parameters in config file
         run: |
           echo "Lanelet-related parameters in the configuration:"
           grep -i "lanelet" /github/home/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
         shell: bash
 
-      # 12) Launch scenario_test_runner with parameter overrides and full output capture
-      - name: Launch scenario_test_runner with diagnostics
+      # 13) Launch scenario_test_runner without command-line overrides
+      - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
@@ -108,15 +125,14 @@ jobs:
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=100 \
-              output_directory:=./results \
-              --ros-args -p simulate_localization:=false -p disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+              output_directory:=./results 2>&1 | tee scenario_output.log || true
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
           fi
         shell: bash
 
-      # 13) Parse results and capture diagnostics if test_results.log is missing
+      # 14) Parse results and capture diagnostics if test_results.log is missing
       - name: Parse results and capture diagnostics
         run: |
           RESULT_FILE="./results/test_results.log"
