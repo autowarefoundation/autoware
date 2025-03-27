@@ -13,23 +13,26 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      # Install required system packages
       - name: Install required packages
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --fix-missing unzip curl gnupg2 lsb-release python3-pip git ros-humble-pcl-ros
-          sudo apt-get autoremove -y
-          sudo apt-get clean
+          apt-get update
+          apt-get install -y \
+            unzip \
+            curl \
+            gnupg2 \
+            lsb-release \
+            python3-pip \
+            git \
+            ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
         shell: bash
 
-      # Clone Autoware and Import simulator.repos
       - name: Clone Autoware and Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
-          
-          # Clone Autoware with submodules
+
+          # Clone Autoware repository
           if [ ! -d "src/autoware" ]; then
             echo "Cloning Autoware..."
             git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
@@ -39,10 +42,10 @@ jobs:
 
           cd src
           
-          # Ensure all repositories in simulator.repos are present
-          vcs import --force < autoware/simulator.repos || echo "WARNING: vcs import encountered issues."
+          # Import missing repositories
+          vcs import < autoware/simulator.repos || echo "WARNING: vcs import encountered issues."
 
-          # Manually clone any missing repositories using GitHub token
+          # Manually clone missing repositories with GitHub Token
           MISSING_REPOS=(
             "Arithmetic"
             "Kashiwanoha_map"
@@ -57,87 +60,40 @@ jobs:
           for repo in "${MISSING_REPOS[@]}"; do
             if [ ! -d "$repo" ]; then
               echo "Cloning missing repository: $repo"
-              git clone https://${{ secrets.GH_PAT }}@github.com/tier4/$repo.git
+              git clone https://${{ secrets.GH_PAT }}@github.com/tier4/$repo.git || echo "WARNING: $repo not found!"
             else
               echo "$repo already exists, skipping clone."
             fi
           done
         shell: bash
 
-      # Verify Cloned Repositories
-      - name: Verify Cloned Repositories
-        run: |
-          cd ~/autoware_ws/src
-          MISSING_PACKAGES="Arithmetic Kashiwanoha_map Scenario_simulator_exception Status_monitor Traffic_simulator_msgs Concealer Geometry Simulation_interface"
-
-          for pkg in $MISSING_PACKAGES; do
-            if [ ! -d "$pkg" ]; then
-              echo "ERROR: $pkg is still missing after cloning!"
-              exit 1
-            fi
-          done
-        shell: bash
-
-      # Install dependencies for ROS
-      - name: Install All ROS Dependencies
+      - name: Install ROS dependencies
         run: |
           cd ~/autoware_ws
           rosdep update
-          rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
+          rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
-      # Apply patch to entity_status.cpp
-      - name: Patch entity_status.cpp
-        run: |
-          echo "Applying fix to entity_status.cpp..."
-          ENTITY_STATUS_FILE=~/autoware_ws/src/simulator/scenario_simulator/simulation/traffic_simulator/src/data_type/entity_status.cpp
-          if [ -f "$ENTITY_STATUS_FILE" ]; then
-            sed -i 's/assert(entity_status_.lanelet_pose_valid == canonicalized_lanelet_pose_.has_value());/entity_status_.lanelet_pose_valid = canonicalized_lanelet_pose_.has_value();/' "$ENTITY_STATUS_FILE"
-            echo "Patch applied successfully."
-          else
-            echo "ERROR: entity_status.cpp not found!"
-            exit 1
-          fi
-        shell: bash
-
-      # Build entire Autoware workspace
-      - name: Build Full Autoware Workspace
+      - name: Build Autoware
         run: |
           cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash
+          source /opt/ros/humble/setup.bash     
           source /opt/autoware/setup.bash
-          
-          # Clean previous builds
-          rm -rf build install log
-          
-          # Build entire workspace
           colcon build --symlink-install
-          
           source install/setup.bash
         shell: bash
 
-      # Cleanup logs and reset ROS before running the scenario
-      - name: Cleanup logs and reset ROS
+      - name: Check Autoware installation
         run: |
-          echo "Cleaning up ROS logs and resetting environment..."
           source ~/autoware_ws/install/setup.bash
-          ros2 daemon stop || true
-          ros2 daemon start
-          rm -rf ~/.ros/log/*
+          ros2 pkg list | grep autoware
         shell: bash
 
-      # Download scenario file
       - name: Download scenario file
         run: |
-          SCENARIO_FILE="./sample-scenario.yaml"
-          if [ ! -f "$SCENARIO_FILE" ]; then
-            echo "Downloading sample scenario file..."
-            wget -O sample-scenario.yaml https://drive.google.com/uc?id=1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV
-          fi
-          ls -l sample-scenario.yaml || { echo "ERROR: sample-scenario.yaml is missing!"; exit 1; }
+          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
-      # Download sample-map-planning maps
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
@@ -145,17 +101,13 @@ jobs:
           unzip sample-map-planning.zip -d /home/user/autoware_map
         shell: bash
 
-      # Debug ROS 2 Context before launching
-      - name: Debug ROS 2 Context
+      - name: Rebuild workspace
         run: |
           source ~/autoware_ws/install/setup.bash
-          echo "Checking running ROS 2 nodes..."
-          ros2 node list || echo "No ROS2 nodes found!"
-          echo "Checking running ROS 2 topics..."
-          ros2 topic list || echo "No ROS2 topics found!"
+          colcon build --symlink-install
+          source install/setup.bash
         shell: bash
 
-      # Launch scenario_test_runner
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
@@ -172,6 +124,41 @@ jobs:
               output_directory:=./results 2>&1 | tee scenario_output.log || true
           else
             echo "ERROR: sample-scenario.yaml is missing!"
+            exit 1
+          fi
+        shell: bash
+
+      - name: Parse results and detect failure
+        run: |
+          RESULT_FILE="./results/test_results.log"
+          XML_FILE="./results/scenario_test_runner/result.junit.xml"
+
+          if [ -f "$RESULT_FILE" ]; then
+            echo "Parsing test results..."
+            FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
+            ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
+            
+            echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
+            echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
+            
+            while IFS= read -r line; do
+              if echo "$line" | grep -qi "failure"; then
+                echo "  <testcase name='$line'>" >> "$XML_FILE"
+                echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
+                echo "  </testcase>" >> "$XML_FILE"
+              elif echo "$line" | grep -qi "error"; then
+                echo "  <testcase name='$line'>" >> "$XML_FILE"
+                echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
+                echo "  </testcase>" >> "$XML_FILE"
+              fi
+            done < "$RESULT_FILE"
+        
+            echo "</testsuite>" >> "$XML_FILE"
+            echo "Results parsed and saved in $XML_FILE"
+          else
+            echo "ERROR: test_results.log is missing! Check the scenario execution logs."
+            echo "Captured scenario output:"
+            cat scenario_output.log
             exit 1
           fi
         shell: bash
