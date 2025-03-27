@@ -13,6 +13,7 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
+      # Ensure required system packages are installed
       - name: Install required packages
         run: |
           sudo apt-get update
@@ -22,22 +23,54 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
+      # Clone Autoware and import simulator.repos
       - name: Clone Autoware and Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
-          git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
+          
+          # Clone Autoware with submodules
+          if [ ! -d "src/autoware" ]; then
+            echo "Cloning Autoware..."
+            git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
+          else
+            echo "Autoware repository already exists, skipping clone."
+          fi
+
           cd src
-          vcs import < autoware/simulator.repos
+          
+          # Ensure all repositories in simulator.repos are present
+          vcs import --force < autoware/simulator.repos
+          
+          # Verify required packages exist
+          MISSING_PACKAGES="Arithmetic Kashiwanoha_map Scenario_simulator_exception Status_monitor Traffic_simulator_msgs Concealer Geometry Simulation_interface"
+          for pkg in $MISSING_PACKAGES; do
+            if [ ! -d "$pkg" ]; then
+              echo "ERROR: $pkg is missing! Please check vcs import."
+              exit 1
+            fi
+          done
         shell: bash
 
-      - name: Install ROS dependencies
+      # Install dependencies for ROS
+      - name: Install All ROS Dependencies
         run: |
           cd ~/autoware_ws
           rosdep update
-          rosdep install --from-paths src --ignore-src -r -y
+          rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
+          
+          # Double-check missing dependencies
+          colcon list | awk '{print $1}' > installed_packages.txt
+          MISSING_PACKAGES="Arithmetic Kashiwanoha_map Scenario_simulator_exception Status_monitor Traffic_simulator_msgs Concealer Geometry Simulation_interface"
+          for pkg in $MISSING_PACKAGES; do
+            if ! grep -q "$pkg" installed_packages.txt; then
+              echo "ERROR: $pkg is still missing after rosdep install!"
+              exit 1
+            fi
+          done
         shell: bash
 
+      # Apply patch to entity_status.cpp
       - name: Patch entity_status.cpp
         run: |
           echo "Applying fix to entity_status.cpp..."
@@ -51,15 +84,23 @@ jobs:
           fi
         shell: bash
 
-      - name: Build Autoware (after patching)
+      # Build entire Autoware workspace
+      - name: Build Full Autoware Workspace
         run: |
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
           source /opt/autoware/setup.bash
-          colcon build --symlink-install --packages-select traffic_simulator
+          
+          # Clean previous builds
+          rm -rf build install log
+          
+          # Build entire workspace
+          colcon build --symlink-install
+          
           source install/setup.bash
         shell: bash
 
+      # Cleanup logs and reset ROS before running the scenario
       - name: Cleanup logs and reset ROS
         run: |
           echo "Cleaning up ROS logs and resetting environment..."
@@ -69,6 +110,7 @@ jobs:
           rm -rf ~/.ros/log/*
         shell: bash
 
+      # Download scenario file
       - name: Download scenario file
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
@@ -79,6 +121,7 @@ jobs:
           ls -l sample-scenario.yaml || { echo "ERROR: sample-scenario.yaml is missing!"; exit 1; }
         shell: bash
 
+      # Download sample-map-planning maps
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
@@ -86,6 +129,7 @@ jobs:
           unzip sample-map-planning.zip -d /home/user/autoware_map
         shell: bash
 
+      # Debug ROS 2 Context before launching
       - name: Debug ROS 2 Context
         run: |
           source ~/autoware_ws/install/setup.bash
@@ -95,6 +139,7 @@ jobs:
           ros2 topic list || echo "No ROS2 topics found!"
         shell: bash
 
+      # Launch scenario_test_runner
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
