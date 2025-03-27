@@ -7,12 +7,15 @@ jobs:
     runs-on: ubuntu-24.04
     container: ghcr.io/autowarefoundation/autoware:universe-devel
     steps:
+      # 1) Check out your repository
       - name: Check out repository
         uses: actions/checkout@v4
 
+      # 2) Free disk space (optional local action)
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
+      # 3) Install required packages
       - name: Install required packages
         run: |
           apt-get update
@@ -27,26 +30,17 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
+      # 4) Clone Autoware and Import simulator.repos
       - name: Clone Autoware and Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
-
-          # Clone Autoware repository
-          if [ ! -d "src/autoware" ]; then
-            echo "Cloning Autoware..."
-            git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
-          else
-            echo "Autoware repository already exists, skipping clone."
-          fi
-
+          git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
-          
-          # Import missing repositories
-          vcs import < autoware/simulator.repos || echo "WARNING: vcs import encountered issues."
-
+          vcs import < autoware/simulator.repos
         shell: bash
 
+      # 5) Install ROS dependencies
       - name: Install ROS dependencies
         run: |
           cd ~/autoware_ws
@@ -54,6 +48,7 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
+      # 6) Build Autoware (full workspace build)
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
@@ -63,37 +58,36 @@ jobs:
           source install/setup.bash
         shell: bash
 
+      # 7) Verify Autoware installation
       - name: Check Autoware installation
         run: |
           source ~/autoware_ws/install/setup.bash
           ros2 pkg list | grep autoware
         shell: bash
 
-      - name: Download scenario file
-        run: |
-          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
-        shell: bash
-
-      - name: Download sample-map-planning maps
-        run: |
-          gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-          mkdir -p /home/user/autoware_map
-          unzip sample-map-planning.zip -d /home/user/autoware_map
-        shell: bash
-
-      - name: Rebuild workspace
+      # 8) Validate Scenario File Before Running
+      - name: Validate scenario file
         run: |
           source ~/autoware_ws/install/setup.bash
-          colcon build --symlink-install
-          source install/setup.bash
+          ros2 launch scenario_test_runner scenario_test_runner.launch.py \
+            architecture_type:=awf/universe/20250130 \
+            scenario:="./sample-scenario.yaml" \
+            --ros-args -p validate_only:=true
         shell: bash
 
-      - name: Set Permissions for Log Files
+      # 9) Ensure Map Files Exist and Extract if Needed
+      - name: Ensure map files exist
         run: |
-          mkdir -p ./results /github/home/.ros/log
-          chmod -R 777 ./results /github/home/.ros/log
+          if [ ! -d "/home/user/autoware_map" ] || [ -z "$(ls -A /home/user/autoware_map)" ]; then
+            echo "Downloading and extracting map..."
+            gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
+            unzip sample-map-planning.zip -d /home/user/autoware_map
+          else
+            echo "Map files found, skipping download."
+          fi
         shell: bash
 
+      # 10) Launch scenario_test_runner with increased initialization duration
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
@@ -106,7 +100,7 @@ jobs:
               scenario:="$SCENARIO_FILE" \
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
-              initialize_duration:=150 \
+              initialize_duration:=200 \
               output_directory:=./results 2>&1 | tee scenario_output.log || true
           else
             echo "ERROR: sample-scenario.yaml is missing!"
@@ -114,55 +108,45 @@ jobs:
           fi
         shell: bash
 
-      - name: Wait for Scenario Execution to Complete
+      # 11) Capture Logs for Debugging
+      - name: Capture logs
         run: |
-          echo "Waiting for scenario execution..."
-          sleep 30
+          echo "Checking logs..."
+          cat /github/home/.ros/log/*/*log | tail -n 50 || echo "No logs found."
         shell: bash
 
-      - name: Check for Results
-        run: |
-          echo "Checking if results log exists..."
-          ls -lah ./results || echo "No results found in ./results"
-          ls -lah /github/home/.ros/log || echo "No results found in /github/home/.ros/log"
-        shell: bash
-
+      # 12) Parse results and detect failure
       - name: Parse results and detect failure
         run: |
           RESULT_FILE="./results/test_results.log"
-          ALT_RESULT_FILE="/github/home/.ros/log/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
 
           if [ -f "$RESULT_FILE" ]; then
-            echo "Parsing test results from ./results/test_results.log..."
-            LOG_PATH="$RESULT_FILE"
-          elif [ -f "$ALT_RESULT_FILE" ]; then
-            echo "Parsing test results from /github/home/.ros/log/test_results.log..."
-            LOG_PATH="$ALT_RESULT_FILE"
+            echo "Parsing test results..."
+            FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
+            ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
+            
+            echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
+            echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
+            
+            while IFS= read -r line; do
+              if echo "$line" | grep -qi "failure"; then
+                echo "  <testcase name='$line'>" >> "$XML_FILE"
+                echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
+                echo "  </testcase>" >> "$XML_FILE"
+              elif echo "$line" | grep -qi "error"; then
+                echo "  <testcase name='$line'>" >> "$XML_FILE"
+                echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
+                echo "  </testcase>" >> "$XML_FILE"
+              fi
+            done < "$RESULT_FILE"
+        
+            echo "</testsuite>" >> "$XML_FILE"
+            echo "Results parsed and saved in $XML_FILE"
           else
-            echo "ERROR: No test results log found!"
-            ls -lah ./results /github/home/.ros/log
+            echo "ERROR: test_results.log is missing! Check the scenario execution logs."
+            echo "Captured scenario output:"
+            cat scenario_output.log
             exit 1
           fi
-
-          FAILURES=$(grep -i "failure" "$LOG_PATH" | wc -l)
-          ERRORS=$(grep -i "error" "$LOG_PATH" | wc -l)
-          
-          echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
-          echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-          
-          while IFS= read -r line; do
-            if echo "$line" | grep -qi "failure"; then
-              echo "  <testcase name='$line'>" >> "$XML_FILE"
-              echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
-              echo "  </testcase>" >> "$XML_FILE"
-            elif echo "$line" | grep -qi "error"; then
-              echo "  <testcase name='$line'>" >> "$XML_FILE"
-              echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
-              echo "  </testcase>" >> "$XML_FILE"
-            fi
-          done < "$LOG_PATH"
-      
-          echo "</testsuite>" >> "$XML_FILE"
-          echo "Results parsed and saved in $XML_FILE"
         shell: bash
