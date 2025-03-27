@@ -11,29 +11,26 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # 2) Free disk space
+      # 2) Free disk space (optional local action)
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
       # 3) Install required packages
       - name: Install required packages
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --fix-missing \
-            unzip curl gnupg2 lsb-release python3-pip git \
-            ros-humble-pcl-ros \
-            software-properties-common
-          
-          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' \
-            'php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-chrome-stable \
-            firefox powershell mono-devel libgl1-mesa-dri google-cloud-sdk google-cloud-cli
-
-          sudo apt-get autoremove -y
-          sudo apt-get clean
+          apt-get update
+          apt-get install -y \
+            unzip \
+            curl \
+            gnupg2 \
+            lsb-release \
+            python3-pip \
+            git \
+            ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
         shell: bash
 
-      # 4) Clone Autoware and Import simulator.repos
+      # 4) Clone Autoware and import simulator.repos
       - name: Clone Autoware and Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
@@ -51,11 +48,11 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
-      # 6) Build Autoware
+      # 6) Build Autoware (full workspace build)
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash
+          source /opt/ros/humble/setup.bash     
           source /opt/autoware/setup.bash
           colcon build --symlink-install
           source install/setup.bash
@@ -65,35 +62,16 @@ jobs:
       - name: Check Autoware installation
         run: |
           source ~/autoware_ws/install/setup.bash
-          ros2 pkg list | grep autoware || { echo "ERROR: Autoware not found!"; exit 1; }
+          ros2 pkg list | grep autoware
         shell: bash
 
-      # 8) Ensure missing ROS dependency (tier4_debug_msgs) is installed
-      - name: Install tier4_debug_msgs
-        run: |
-          cd ~/autoware_ws/src
-          if [ ! -d "tier4_autoware_msgs" ]; then
-            git clone https://github.com/tier4/tier4_autoware_msgs.git
-          fi
-          cd ~/autoware_ws
-          rosdep update
-          rosdep install --from-paths src --ignore-src -r -y
-          colcon build --symlink-install
-          source install/setup.bash
-        shell: bash
-
-      # 9) Download scenario file
+      # 8) Download scenario file
       - name: Download scenario file
         run: |
-          SCENARIO_FILE="./sample-scenario.yaml"
-          if [ ! -f "$SCENARIO_FILE" ]; then
-            echo "ERROR: Sample scenario file missing! Downloading now..."
-            wget -O sample-scenario.yaml https://drive.google.com/uc?id=1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV
-          fi
-          ls -l sample-scenario.yaml || { echo "ERROR: sample-scenario.yaml is missing!"; exit 1; }
+          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
-      # 10) Download and extract sample-map-planning maps
+      # 9) Download and extract sample-map-planning maps
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
@@ -101,7 +79,7 @@ jobs:
           unzip sample-map-planning.zip -d /home/user/autoware_map
         shell: bash
 
-      # 11) Rebuild workspace (optional)
+      # 10) Rebuild workspace (optional step to ensure changes are applied)
       - name: Rebuild workspace
         run: |
           source ~/autoware_ws/install/setup.bash
@@ -109,17 +87,7 @@ jobs:
           source install/setup.bash
         shell: bash
 
-      # 12) Debug scenario_test_runner before launching
-      - name: Debug scenario_test_runner
-        run: |
-          source ~/autoware_ws/install/setup.bash
-          echo "ROS2 Nodes:"
-          ros2 node list || echo "No ROS2 nodes found!"
-          echo "ROS2 Topics:"
-          ros2 topic list || echo "No ROS2 topics found!"
-        shell: bash
-
-      # 13) Launch scenario_test_runner
+      # 11) Launch scenario_test_runner and capture its output
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
@@ -140,7 +108,7 @@ jobs:
           fi
         shell: bash
 
-      # 14) Parse results and detect failure
+      # 12) Parse results and detect failure; if missing, output the captured log for diagnostics.
       - name: Parse results and detect failure
         run: |
           RESULT_FILE="./results/test_results.log"
@@ -175,3 +143,6 @@ jobs:
             exit 1
           fi
         shell: bash
+
+
+
