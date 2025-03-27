@@ -42,25 +42,24 @@ jobs:
           # Ensure all repositories in simulator.repos are present
           vcs import --force < autoware/simulator.repos || echo "WARNING: vcs import encountered issues."
 
-          # Manually clone any missing repositories
+          # Manually clone any missing repositories using GitHub token
           MISSING_REPOS=(
-            "https://github.com/tier4/Arithmetic.git"
-            "https://github.com/tier4/Kashiwanoha_map.git"
-            "https://github.com/tier4/Scenario_simulator_exception.git"
-            "https://github.com/tier4/Status_monitor.git"
-            "https://github.com/tier4/Traffic_simulator_msgs.git"
-            "https://github.com/tier4/Concealer.git"
-            "https://github.com/tier4/Geometry.git"
-            "https://github.com/tier4/Simulation_interface.git"
+            "Arithmetic"
+            "Kashiwanoha_map"
+            "Scenario_simulator_exception"
+            "Status_monitor"
+            "Traffic_simulator_msgs"
+            "Concealer"
+            "Geometry"
+            "Simulation_interface"
           )
 
           for repo in "${MISSING_REPOS[@]}"; do
-            repo_name=$(basename "$repo" .git)
-            if [ ! -d "$repo_name" ]; then
-              echo "Cloning missing repository: $repo_name"
-              git clone "$repo"
+            if [ ! -d "$repo" ]; then
+              echo "Cloning missing repository: $repo"
+              git clone https://${{ secrets.GH_PAT }}@github.com/tier4/$repo.git
             else
-              echo "$repo_name already exists, skipping clone."
+              echo "$repo already exists, skipping clone."
             fi
           done
         shell: bash
