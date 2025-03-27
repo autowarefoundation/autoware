@@ -3,6 +3,7 @@ group "default" {
     "core-common-devel",
     "core",
     "core-devel",
+    "universe-common-devel",
     "universe-sensing-perception-devel",
     "universe-sensing-perception",
     "universe-localization-mapping-devel",
@@ -22,6 +23,7 @@ group "default" {
 target "docker-metadata-action-core-common-devel" {}
 target "docker-metadata-action-core" {}
 target "docker-metadata-action-core-devel" {}
+target "docker-metadata-action-universe-common-devel" {}
 target "docker-metadata-action-universe-sensing-perception-devel" {}
 target "docker-metadata-action-universe-sensing-perception" {}
 target "docker-metadata-action-universe-localization-mapping-devel" {}
@@ -51,6 +53,12 @@ target "core-devel" {
   inherits = ["docker-metadata-action-core-devel"]
   dockerfile = "docker/Dockerfile"
   target = "core-devel"
+}
+
+target "universe-common-devel" {
+  inherits = ["docker-metadata-action-universe-common-devel"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-common-devel"
 }
 
 target "universe-sensing-perception-devel" {
