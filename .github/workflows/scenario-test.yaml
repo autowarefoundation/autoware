@@ -1,4 +1,4 @@
-name: scenario-test
+-name: scenario-test
 on:
   workflow_dispatch:
 
@@ -30,7 +30,7 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
-      # 4) Clone Autoware and Import simulator.repos
+      # 4) Clone Autoware and import simulator.repos
       - name: Clone Autoware and Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
@@ -65,29 +65,29 @@ jobs:
           ros2 pkg list | grep autoware
         shell: bash
 
-      # 8) Validate Scenario File Before Running
-      - name: Validate scenario file
+      # 8) Download scenario file
+      - name: Download scenario file
+        run: |
+          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
+        shell: bash
+
+      # 9) Download and extract sample-map-planning maps
+      - name: Download sample-map-planning maps
+        run: |
+          gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
+          mkdir -p /home/user/autoware_map
+          unzip sample-map-planning.zip -d /home/user/autoware_map
+        shell: bash
+
+      # 10) Rebuild workspace (optional step to ensure changes are applied)
+      - name: Rebuild workspace
         run: |
           source ~/autoware_ws/install/setup.bash
-          ros2 launch scenario_test_runner scenario_test_runner.launch.py \
-            architecture_type:=awf/universe/20250130 \
-            scenario:="./sample-scenario.yaml" \
-            --ros-args -p validate_only:=true
+          colcon build --symlink-install
+          source install/setup.bash
         shell: bash
 
-      # 9) Ensure Map Files Exist and Extract if Needed
-      - name: Ensure map files exist
-        run: |
-          if [ ! -d "/home/user/autoware_map" ] || [ -z "$(ls -A /home/user/autoware_map)" ]; then
-            echo "Downloading and extracting map..."
-            gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-            unzip sample-map-planning.zip -d /home/user/autoware_map
-          else
-            echo "Map files found, skipping download."
-          fi
-        shell: bash
-
-      # 10) Launch scenario_test_runner with increased initialization duration
+      # 11) Launch scenario_test_runner and capture its output
       - name: Launch scenario_test_runner
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
@@ -100,7 +100,7 @@ jobs:
               scenario:="$SCENARIO_FILE" \
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
-              initialize_duration:=200 \
+              initialize_duration:=100 \
               output_directory:=./results 2>&1 | tee scenario_output.log || true
           else
             echo "ERROR: sample-scenario.yaml is missing!"
@@ -108,14 +108,7 @@ jobs:
           fi
         shell: bash
 
-      # 11) Capture Logs for Debugging
-      - name: Capture logs
-        run: |
-          echo "Checking logs..."
-          cat /github/home/.ros/log/*/*log | tail -n 50 || echo "No logs found."
-        shell: bash
-
-      # 12) Parse results and detect failure
+      # 12) Parse results and detect failure; if missing, output the captured log for diagnostics.
       - name: Parse results and detect failure
         run: |
           RESULT_FILE="./results/test_results.log"
@@ -150,3 +143,6 @@ jobs:
             exit 1
           fi
         shell: bash
+
+
+
