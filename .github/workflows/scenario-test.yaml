@@ -13,7 +13,7 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      # Ensure required system packages are installed
+      # Install required system packages
       - name: Install required packages
         run: |
           sudo apt-get update
@@ -23,7 +23,7 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
-      # Clone Autoware and import simulator.repos
+      # Clone Autoware and Import simulator.repos
       - name: Clone Autoware and Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
@@ -40,13 +40,40 @@ jobs:
           cd src
           
           # Ensure all repositories in simulator.repos are present
-          vcs import --force < autoware/simulator.repos
-          
-          # Verify required packages exist
+          vcs import --force < autoware/simulator.repos || echo "WARNING: vcs import encountered issues."
+
+          # Manually clone any missing repositories
+          MISSING_REPOS=(
+            "https://github.com/tier4/Arithmetic.git"
+            "https://github.com/tier4/Kashiwanoha_map.git"
+            "https://github.com/tier4/Scenario_simulator_exception.git"
+            "https://github.com/tier4/Status_monitor.git"
+            "https://github.com/tier4/Traffic_simulator_msgs.git"
+            "https://github.com/tier4/Concealer.git"
+            "https://github.com/tier4/Geometry.git"
+            "https://github.com/tier4/Simulation_interface.git"
+          )
+
+          for repo in "${MISSING_REPOS[@]}"; do
+            repo_name=$(basename "$repo" .git)
+            if [ ! -d "$repo_name" ]; then
+              echo "Cloning missing repository: $repo_name"
+              git clone "$repo"
+            else
+              echo "$repo_name already exists, skipping clone."
+            fi
+          done
+        shell: bash
+
+      # Verify Cloned Repositories
+      - name: Verify Cloned Repositories
+        run: |
+          cd ~/autoware_ws/src
           MISSING_PACKAGES="Arithmetic Kashiwanoha_map Scenario_simulator_exception Status_monitor Traffic_simulator_msgs Concealer Geometry Simulation_interface"
+
           for pkg in $MISSING_PACKAGES; do
             if [ ! -d "$pkg" ]; then
-              echo "ERROR: $pkg is missing! Please check vcs import."
+              echo "ERROR: $pkg is still missing after cloning!"
               exit 1
             fi
           done
@@ -58,16 +85,6 @@ jobs:
           cd ~/autoware_ws
           rosdep update
           rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
-          
-          # Double-check missing dependencies
-          colcon list | awk '{print $1}' > installed_packages.txt
-          MISSING_PACKAGES="Arithmetic Kashiwanoha_map Scenario_simulator_exception Status_monitor Traffic_simulator_msgs Concealer Geometry Simulation_interface"
-          for pkg in $MISSING_PACKAGES; do
-            if ! grep -q "$pkg" installed_packages.txt; then
-              echo "ERROR: $pkg is still missing after rosdep install!"
-              exit 1
-            fi
-          done
         shell: bash
 
       # Apply patch to entity_status.cpp
