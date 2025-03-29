@@ -31,6 +31,34 @@ runs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    - name: Cache ccache
+      uses: actions/cache@v4
+      with:
+        path: |
+          root-ccache
+        key: ccache-tools-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
+        restore-keys: |
+          ccache-tools-${{ inputs.platform }}-
+
+    - name: Cache apt-get
+      uses: actions/cache@v4
+      with:
+        path: |
+          var-cache-apt
+        key: apt-get-tools-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
+        restore-keys: |
+          apt-get-tools-${{ inputs.platform }}-
+
+    - name: Inject cache into docker
+      uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+      with:
+        cache-map: |
+          {
+            "root-ccache": "/root/.ccache",
+            "var-cache-apt": "/var/cache/apt"
+          }
+        skip-extraction: ${{ steps.cache-ccache.outputs.cache-hit && steps.cache-apt-get.outputs.cache-hit }}
+
     - name: Get current date
       id: date
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
@@ -74,7 +102,7 @@ runs:
       with:
         push: true
         files: |
-          docker/docker-bake-tools.hcl
+          docker/tools/docker-bake.hcl
           ${{ steps.meta-visualizer.outputs.bake-file }}
           ${{ steps.meta-scenario-simulator.outputs.bake-file }}
         provenance: false
