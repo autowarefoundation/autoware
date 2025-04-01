@@ -147,9 +147,7 @@ ARG ROS_DISTRO
 COPY src/launcher /autoware/src/launcher
 COPY src/param /autoware/src/param
 COPY src/sensor_component /autoware/src/sensor_component
-COPY src/sensor_kit /autoware/src/sensor_kit
 COPY src/universe /autoware/src/universe
-COPY src/vehicle /autoware/src/vehicle
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-depend-packages.txt \
   && cat /rosdep-universe-depend-packages.txt
@@ -459,12 +457,10 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \
   --mount=type=bind,source=src/param,target=/autoware/src/param \
   --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
-  --mount=type=bind,source=src/sensor_kit,target=/autoware/src/sensor_kit \
   --mount=type=bind,source=src/universe/autoware_universe/evaluator,target=/autoware/src/universe/autoware_universe/evaluator \
   --mount=type=bind,source=src/universe/autoware_universe/launch,target=/autoware/src/universe/autoware_universe/launch \
   --mount=type=bind,source=src/universe/autoware_universe/simulator,target=/autoware/src/universe/autoware_universe/simulator \
   --mount=type=bind,source=src/universe/autoware_universe/tools,target=/autoware/src/universe/autoware_universe/tools \
-  --mount=type=bind,source=src/vehicle,target=/autoware/src/vehicle \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
