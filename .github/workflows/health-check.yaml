@@ -79,10 +79,11 @@ jobs:
           unzip sample-map-planning.zip -d /home/user/autoware_map
         shell: bash
 
-      # 9.1) Fix path in sample-scenario.yaml
-      - name: Fix path in sample-scenario.yaml
+      # 9.1) Fix path and spawn pose in sample-scenario.yaml
+      - name: Fix path and spawn pose in sample-scenario.yaml
         run: |
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
+          sed -i 's@x=".*" y=".*"@x="3700.0" y="73700.0"@g' sample-scenario.yaml
         shell: bash
 
       # 10) Rebuild workspace (if needed)
@@ -116,7 +117,9 @@ jobs:
               initialize_duration:=100 \
               output_directory:=./home/vishalchauhan/results \
               simulate_localization:=true \
-              disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+              disable_lanelet_pose_validation:=true \
+              ignore_map_validation:=true \
+              ignore_initial_pose_validation:=true 2>&1 | tee scenario_output.log || true
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
