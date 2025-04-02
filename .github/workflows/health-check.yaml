@@ -1,4 +1,5 @@
 name: scenario-test
+
 on:
   workflow_dispatch:
 
@@ -68,13 +69,13 @@ jobs:
       # 8) Download scenario file
       - name: Download scenario file
         run: |
-          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
+          gdown 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
       # 9) Download and extract sample-map-planning maps
       - name: Download sample-map-planning maps
         run: |
-          gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
+          gdown 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           mkdir -p /home/user/autoware_map
           unzip sample-map-planning.zip -d /home/user/autoware_map
         shell: bash
@@ -83,7 +84,7 @@ jobs:
       - name: Fix path and spawn pose in sample-scenario.yaml
         run: |
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
-          sed -i 's@x=".*" y=".*"@x="3700.0" y="73700.0"@g' sample-scenario.yaml
+          sed -i 's@x=".*" y=".*"@x="3708.22" y="73734.5"@g' sample-scenario.yaml
         shell: bash
 
       # 10) Rebuild workspace (if needed)
