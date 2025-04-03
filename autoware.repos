@@ -116,6 +116,7 @@ repositories:
   # TODO(TIER IV): During the transition period of Agnocast introduction,
   # the Agnocast ROS packages are provided as a source build.
   # Once the transition stabilizes, use the packages released from the official ROS repository.
+  # Issue: https://github.com/autowarefoundation/autoware/issues/5968
   middleware/external/agnocast:
     type: git
     url: https://github.com/tier4/agnocast.git
