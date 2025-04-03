@@ -6,25 +6,33 @@ jobs:
   scenario-test:
     runs-on: ubuntu-24.04
     container: ghcr.io/autowarefoundation/autoware:universe-devel
-
     steps:
-      - name: Step 1: Check out repository
+      # 1) Check out your repository
+      - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Step 2: Free disk space (optional)
+      # 2) Free disk space (optional)
+      - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      - name: Step 3: Install required packages
+      # 3) Install required packages
+      - name: Install required packages
         run: |
-          echo "Step 3: Installing required system packages..."
           apt-get update
-          apt-get install -y unzip curl gnupg2 lsb-release python3-pip git ros-humble-pcl-ros
+          apt-get install -y \
+            unzip \
+            curl \
+            gnupg2 \
+            lsb-release \
+            python3-pip \
+            git \
+            ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
         shell: bash
 
-      - name: Step 4: Clone Autoware and import simulator.repos
+      # 4) Clone Autoware and import simulator.repos
+      - name: Clone Autoware and Import simulator.repos
         run: |
-          echo "Step 4: Cloning Autoware and simulator.repos..."
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
@@ -32,71 +40,73 @@ jobs:
           vcs import < autoware/simulator.repos
         shell: bash
 
-      - name: Step 5: Install ROS dependencies
+      # 5) Install ROS dependencies
+      - name: Install ROS dependencies
         run: |
-          echo "Step 5: Installing ROS dependencies..."
           cd ~/autoware_ws
           rosdep update
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
-      - name: Step 6: Build Autoware
+      # 6) Build Autoware (full workspace build)
+      - name: Build Autoware
         run: |
-          echo "Step 6: Building workspace..."
           cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash
+          source /opt/ros/humble/setup.bash     
           source /opt/autoware/setup.bash
           colcon build --symlink-install
           source install/setup.bash
         shell: bash
 
-      - name: Step 7: Verify Autoware installation
+      # 7) Verify Autoware installation
+      - name: Check Autoware installation
         run: |
-          echo "Step 7: Verifying installation..."
           source ~/autoware_ws/install/setup.bash
           ros2 pkg list | grep autoware
         shell: bash
 
-      - name: Step 8: Download sample scenario YAML
+      # 8) Download scenario file
+      - name: Download scenario file
         run: |
-          echo "Step 8: Downloading scenario YAML..."
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
-      - name: Step 9: Download and extract sample map
+      # 9) Download and extract sample-map-planning maps
+      - name: Download sample-map-planning maps
         run: |
-          echo "Step 9: Downloading and extracting map..."
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           mkdir -p /home/user/autoware_map
           unzip sample-map-planning.zip -d /home/user/autoware_map
         shell: bash
 
-      - name: Step 10: Fix path in sample scenario
+      # 9.1) Fix path in sample-scenario.yaml
+      - name: Fix path in sample-scenario.yaml
         run: |
-          echo "Step 10: Fixing pointcloud_map path in scenario YAML..."
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Step 11: Rebuild workspace
+      # 10) Rebuild workspace (if needed)
+      - name: Build workspace
         run: |
-          echo "Step 11: Rebuilding Autoware workspace (if needed)..."
           source ~/autoware_ws/install/setup.bash
           colcon build --symlink-install
           source install/setup.bash
         shell: bash
 
-      - name: Step 12: Check lanelet parameters in config
+      # 11) Diagnostic: Print lanelet-related parameters from the config file
+      - name: Check lanelet parameters in config file
         run: |
-          echo "Step 12: Checking lanelet parameters..."
-          grep -i "lanelet" ~/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
+          echo "Lanelet-related parameters in the configuration:"
+          grep -i "lanelet" /github/home/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
         shell: bash
 
-      - name: Step 13: Launch scenario_test_runner
+      # 12) Launch scenario_test_runner with diagnostics
+      - name: Launch scenario_test_runner with diagnostics
         run: |
-          echo "Step 13: Running the scenario_test_runner..."
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
+            echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=true \
@@ -108,36 +118,44 @@ jobs:
               simulate_localization:=false \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
           else
-            echo "ERROR: Scenario file missing!"
+            echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
           fi
         shell: bash
 
-      - name: Step 14: Parse test results
+      # 13) Parse results and capture diagnostics if test_results.log is missing
+      - name: Parse results and capture diagnostics
         run: |
-          echo "Step 14: Parsing results and creating JUnit XML..."
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
-
+  
           if [ -f "$RESULT_FILE" ]; then
+            echo "Parsing test results..."
+            FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
+            ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
+            
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
-            echo "<testsuite name='ScenarioTest'>" >> "$XML_FILE"
-
-            grep -iE "error|failure" "$RESULT_FILE" | while read -r line; do
-              if echo "$line" | grep -iq "failure"; then
+            echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
+            
+            while IFS= read -r line; do
+              if echo "$line" | grep -qi "failure"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
                 echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
                 echo "  </testcase>" >> "$XML_FILE"
-              elif echo "$line" | grep -iq "error"; then
+              elif echo "$line" | grep -qi "error"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
                 echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
                 echo "  </testcase>" >> "$XML_FILE"
               fi
-            done
-
+            done < "$RESULT_FILE"
+          
             echo "</testsuite>" >> "$XML_FILE"
+            echo "Results parsed and saved in $XML_FILE"
           else
-            echo "WARNING: test_results.log is missing. Showing scenario output:"
+            echo "WARNING: test_results.log is missing! The simulation might have crashed."
+            echo "Captured scenario output (for diagnostics):"
             cat scenario_output.log
           fi
         shell: bash
+
+
