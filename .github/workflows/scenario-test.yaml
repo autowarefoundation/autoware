@@ -54,7 +54,7 @@ jobs:
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash     
           source /opt/autoware/setup.bash
-          colcon build --symlink-install
+          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
 
@@ -89,7 +89,7 @@ jobs:
       - name: Build workspace
         run: |
           source ~/autoware_ws/install/setup.bash
-          colcon build --symlink-install
+          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
 
@@ -157,5 +157,3 @@ jobs:
             cat scenario_output.log
           fi
         shell: bash
-
-
