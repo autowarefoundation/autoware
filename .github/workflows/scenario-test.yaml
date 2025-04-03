@@ -5,8 +5,7 @@ on:
 jobs:
   scenario-test:
     runs-on: ubuntu-24.04
-    container:
-      image: ghcr.io/autowarefoundation/autoware:universe-devel
+    container: ghcr.io/autowarefoundation/autoware:universe-devel
 
     steps:
       - name: Step 1: Check out repository
@@ -89,7 +88,7 @@ jobs:
       - name: Step 12: Check lanelet parameters in config
         run: |
           echo "Step 12: Checking lanelet parameters..."
-          grep -i "lanelet" /github/home/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
+          grep -i "lanelet" ~/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
         shell: bash
 
       - name: Step 13: Launch scenario_test_runner
