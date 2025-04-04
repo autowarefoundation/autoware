@@ -1,9 +1,3 @@
-- name: Install linux headers for the running kernel
-  ansible.builtin.apt:
-    name: linux-headers-{{ ansible_kernel }}
-    state: present
-  become: true
-
 - name: Add agnocast PPA repository
   ansible.builtin.apt_repository:
     repo: ppa:t4-system-software/agnocast
