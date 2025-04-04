@@ -33,10 +33,3 @@
     state: absent
   become: true
   when: dkms_status.rc != 0
-
-- name: Install agnocast-kmod if not found in dkms for version v{{ agnocast_version }}
-  ansible.builtin.apt:
-    name: agnocast-kmod={{ agnocast_version }}*
-    state: present
-  become: true
-  when: dkms_status.rc != 0
