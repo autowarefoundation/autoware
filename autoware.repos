@@ -112,11 +112,3 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_individual_params.git
     version: 70000825155182d9261ce0980076b0e2c6dc3f51
-  # middleware
-  # TODO(TIER IV): During the transition period of Agnocast introduction,
-  # the Agnocast ROS packages are provided as a source build.
-  # Once the transition stabilizes, use the packages released from the official ROS repository.
-  middleware/external/agnocast:
-    type: git
-    url: https://github.com/tier4/agnocast.git
-    version: 1.0.2
