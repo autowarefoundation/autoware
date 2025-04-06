@@ -37,7 +37,7 @@ print_help() {
     echo -e "Options:"
     echo -e "  ${GREEN}--help/-h${NC}       Display this help message"
     echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory for runtime)"
-    echo -e "  ${GREEN}--data-path${NC}     Specify to mount data files into /root/autoware_data (mandatory for runtime)"
+    echo -e "  ${GREEN}--data-path${NC}     Specify to mount data files into /autoware_data (mandatory for runtime)"
     echo -e "  ${GREEN}--devel${NC}         Launch the latest Autoware development environment with shell access"
     echo -e "  ${GREEN}--workspace${NC}     (--devel only)Specify the directory to mount into /workspace, by default it uses current directory (pwd)"
     echo -e "  ${GREEN}--no-nvidia${NC}     Disable NVIDIA GPU support"
@@ -115,7 +115,7 @@ set_variables() {
 
         # Set data path
         if [ "$DATA_PATH" != "" ]; then
-            DATA="-v ${DATA_PATH}:/root/autoware_data:rw"
+            DATA="-v ${DATA_PATH}:/autoware_data:rw"
         fi
 
         # Set launch command
@@ -134,7 +134,7 @@ set_variables() {
             exit 1
         else
             MAP="-v ${MAP_PATH}:/autoware_map:ro"
-            DATA="-v ${DATA_PATH}:/root/autoware_data:rw"
+            DATA="-v ${DATA_PATH}:/autoware_data:rw"
         fi
 
         # Set default launch command if not provided
