@@ -20,6 +20,7 @@ fi
 option_no_nvidia=false
 option_devel=false
 option_headless=false
+option_pull_latest_image=false
 MAP_PATH=""
 DATA_PATH=""
 WORKSPACE_PATH=""
@@ -35,13 +36,14 @@ print_help() {
     echo -e "------------------------------------------------------------"
     echo -e "${RED}Usage:${NC} run.sh [OPTIONS] [LAUNCH_CMD](optional)"
     echo -e "Options:"
-    echo -e "  ${GREEN}--help/-h${NC}       Display this help message"
-    echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory for runtime)"
-    echo -e "  ${GREEN}--data-path${NC}     Specify to mount data files into /root/autoware_data (mandatory for runtime)"
-    echo -e "  ${GREEN}--devel${NC}         Launch the latest Autoware development environment with shell access"
-    echo -e "  ${GREEN}--workspace${NC}     (--devel only)Specify the directory to mount into /workspace, by default it uses current directory (pwd)"
-    echo -e "  ${GREEN}--no-nvidia${NC}     Disable NVIDIA GPU support"
-    echo -e "  ${GREEN}--headless${NC}      Run Autoware in headless mode (default: false)"
+    echo -e "  ${GREEN}--help/-h${NC}            Display this help message"
+    echo -e "  ${GREEN}--map-path${NC}           Specify to mount map files into /autoware_map (mandatory for runtime)"
+    echo -e "  ${GREEN}--data-path${NC}          Specify to mount data files into /root/autoware_data (mandatory for runtime)"
+    echo -e "  ${GREEN}--devel${NC}              Launch the latest Autoware development environment with shell access"
+    echo -e "  ${GREEN}--workspace${NC}          (--devel only)Specify the directory to mount into /workspace, by default it uses current directory (pwd)"
+    echo -e "  ${GREEN}--no-nvidia${NC}          Disable NVIDIA GPU support"
+    echo -e "  ${GREEN}--headless${NC}           Run Autoware in headless mode (default: false)"
+    echo -e "  ${GREEN}--pull-latest-image${NC}  Pull the latest image before starting the container"
     echo ""
 }
 
@@ -61,6 +63,9 @@ parse_arguments() {
             ;;
         --headless)
             option_headless=true
+            ;;
+        --pull-latest-image)
+            option_pull_latest_image=true
             ;;
         --workspace)
             WORKSPACE_PATH="$2"
@@ -187,6 +192,10 @@ main() {
     fi
     echo -e "${GREEN}LAUNCH CMD:${NC} ${LAUNCH_CMD}"
     echo -e "${GREEN}-----------------------------------------------------------------${NC}"
+
+    if [ "$option_pull_latest_image" = "true" ]; then
+        docker pull ${IMAGE}
+    fi
 
     # Launch the container
     set -x
