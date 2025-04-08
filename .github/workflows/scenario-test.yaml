@@ -27,6 +27,15 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
+      - name: Install additional dependencies for image_geometry and offscreen rendering
+        run: |
+          apt-get update
+          apt-get install -y \
+            ros-humble-image-geometry \
+            libqt5xcbqpa5 \
+            libxcb-xinerama0
+        shell: bash
+
       - name: Clone Autoware and Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
@@ -75,7 +84,7 @@ jobs:
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Build workspace
+      - name: Build workspace again
         run: |
           cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
@@ -91,15 +100,19 @@ jobs:
 
       - name: Launch scenario_test_runner with diagnostics
         run: |
+          # Export to force offscreen rendering for headless environments
+          export QT_QPA_PLATFORM=offscreen
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
             # -----------------------------------------------------------------
             # Changes made:
-            # 1. Changed output_directory from "./home/vishalchauhan/results" 
-            #    to "./results" so that the later parsing step finds the log file.
-            # 2. Set global_real_time_factor to 1.0 instead of 0.5 to ease CPU load.
+            # 1. Updated output_directory to "./results" instead of a home-based path.
+            # 2. Set global_real_time_factor to 1.0 (from 0.5) so that the simulation isn’t too
+            #    CPU-bound in the GitHub runner environment.
+            # 3. Set QT_QPA_PLATFORM=offscreen to avoid errors from graphical apps (e.g. RViz) when
+            #    running in headless mode.
             # -----------------------------------------------------------------
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
