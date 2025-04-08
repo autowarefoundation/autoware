@@ -95,6 +95,12 @@ jobs:
           source ~/autoware_ws/install/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
+            # -----------------------------------------------------------------
+            # Changes made:
+            # 1. Changed output_directory from "./home/vishalchauhan/results" 
+            #    to "./results" so that the later parsing step finds the log file.
+            # 2. Set global_real_time_factor to 1.0 instead of 0.5 to ease CPU load.
+            # -----------------------------------------------------------------
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=true \
@@ -102,10 +108,10 @@ jobs:
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=100 \
-              output_directory:=./home/vishalchauhan/results \
+              output_directory:=./results \
               simulate_localization:=false \
               disable_lanelet_pose_validation:=true \
-              global_real_time_factor:=0.5 \
+              global_real_time_factor:=1.0 \
               global_frame_rate:=15.0 \
               launch_rviz:=false 2>&1 | tee scenario_output.log || true
           else
