@@ -105,7 +105,9 @@ jobs:
               output_directory:=./home/vishalchauhan/results \
               simulate_localization:=false \
               disable_lanelet_pose_validation:=true \
-              global_real_time_factor:=1.0 2>&1 | tee scenario_output.log || true
+              global_real_time_factor:=0.5 \
+              global_frame_rate:=15.0 \
+              launch_rviz:=false 2>&1 | tee scenario_output.log || true
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
