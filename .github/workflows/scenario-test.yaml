@@ -104,7 +104,8 @@ jobs:
               initialize_duration:=100 \
               output_directory:=./home/vishalchauhan/results \
               simulate_localization:=false \
-              disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+              disable_lanelet_pose_validation:=true \
+              global_real_time_factor:=1.0 2>&1 | tee scenario_output.log || true
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
