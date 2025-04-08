@@ -41,9 +41,9 @@ CMD ["/bin/bash"]
 FROM base AS base-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Set up CUDA runtime environment and artifacts
+# Set up CUDA runtime environment
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module base --download-artifacts --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module base --no-cuda-drivers --runtime openadkit \
   && pip uninstall -y ansible ansible-core \
   && /autoware/cleanup_apt.sh true

@@ -26,6 +26,7 @@ runs:
       run: |
         mkdir src
         vcs import src < autoware.repos
+        vcs import src < extra-packages.repos
       shell: bash
 
     - name: Setup Docker Buildx
@@ -64,6 +65,32 @@ runs:
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       shell: bash
 
+    - name: Docker meta for autoware:core-common-devel
+      id: meta-core-common-devel
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=core-common-devel-${{ inputs.platform }}
+          type=raw,value=core-common-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=core-common-devel-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-core-common-devel
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:core
+      id: meta-core
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=core-${{ inputs.platform }}
+          type=raw,value=core-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=core-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-core
+        flavor: |
+          latest=false
+
     - name: Docker meta for autoware:core-devel
       id: meta-core-devel
       uses: docker/metadata-action@v5
@@ -74,6 +101,19 @@ runs:
           type=raw,value=core-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
           type=ref,event=tag,prefix=core-devel-,suffix=-${{ inputs.platform }}
         bake-target: docker-metadata-action-core-devel
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:universe-common-devel
+      id: meta-universe-common-devel
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=universe-common-devel-${{ inputs.platform }}
+          type=raw,value=universe-common-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-common-devel-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-common-devel
         flavor: |
           latest=false
 
@@ -181,6 +221,32 @@ runs:
         flavor: |
           latest=false
 
+    - name: Docker meta for autoware:universe-visualization-devel
+      id: meta-universe-visualization-devel
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=universe-visualization-devel-${{ inputs.platform }}
+          type=raw,value=universe-visualization-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-visualization-devel-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-visualization-devel
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:universe-visualization
+      id: meta-universe-visualization
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=universe-visualization-${{ inputs.platform }}
+          type=raw,value=universe-visualization-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-visualization-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-visualization
+        flavor: |
+          latest=false
+
     - name: Docker meta for autoware:universe-devel
       id: meta-universe-devel
       uses: docker/metadata-action@v5
@@ -220,7 +286,10 @@ runs:
         push: true
         files: |
           docker/docker-bake.hcl
+          ${{ steps.meta-core-common-devel.outputs.bake-file }}
+          ${{ steps.meta-core.outputs.bake-file }}
           ${{ steps.meta-core-devel.outputs.bake-file }}
+          ${{ steps.meta-universe-common-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception-devel.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception.outputs.bake-file }}
           ${{ steps.meta-universe-localization-mapping-devel.outputs.bake-file }}
@@ -229,6 +298,8 @@ runs:
           ${{ steps.meta-universe-planning-control.outputs.bake-file }}
           ${{ steps.meta-universe-vehicle-system-devel.outputs.bake-file }}
           ${{ steps.meta-universe-vehicle-system.outputs.bake-file }}
+          ${{ steps.meta-universe-visualization-devel.outputs.bake-file }}
+          ${{ steps.meta-universe-visualization.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
         provenance: false
