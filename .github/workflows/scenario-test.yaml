@@ -1,5 +1,4 @@
 name: scenario-test
-
 on:
   workflow_dispatch:
 
@@ -7,14 +6,11 @@ jobs:
   scenario-test:
     runs-on: ubuntu-24.04
     container: ghcr.io/autowarefoundation/autoware:universe-devel
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Free disk space (optional)
-        # If you have a custom action to free up disk space, keep it;
-        # otherwise, remove this step
+      - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
       - name: Install required packages
@@ -27,27 +23,25 @@ jobs:
             lsb-release \
             python3-pip \
             git \
-            ros-humble-pcl-ros \
+            ros-humble-pcl-ros
+          pip install --upgrade gdown vcstool
+        shell: bash
+
+      - name: Install additional dependencies for image_geometry and offscreen rendering
+        run: |
+          apt-get update
+          apt-get install -y \
             ros-humble-image-geometry \
             ros-humble-image-transport-plugins \
             ros-humble-camera-info-manager \
             ros-humble-cv-bridge \
             ros-humble-image-pipeline \
-            # Minimal Qt libs for offscreen usage:
-            qtbase5-dev \
+            libqt5gui5 \
+            libqt5gui5-gles \
             libxcb-xinerama0
-
-          # Install vcstool via pip so we can run `vcs import`
-          pip install --upgrade gdown vcstool
-
-      # ----------------------------------------------------------------------
-      # If you DO NOT have or need random_test_runner, you must remove it from
-      # your workspace or comment it out of your simulator.repos file, so it won't
-      # fail the build. If you DO need it, clone its repository:
-      #
-      #   cd ~/autoware_ws/src
-      #   git clone https://github.com/your-org/random_test_runner.git
-      # ----------------------------------------------------------------------
+          # Source ROS so that newly installed packages become available
+          source /opt/ros/humble/setup.bash
+        shell: bash
 
       - name: Clone Autoware and Import simulator.repos
         run: |
@@ -55,8 +49,6 @@ jobs:
           cd ~/autoware_ws
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
-          # if 'random_test_runner' is not needed, remove it from simulator.repos or
-          # comment out references in that .repos file
           vcs import < autoware/simulator.repos
         shell: bash
 
@@ -64,17 +56,14 @@ jobs:
         run: |
           cd ~/autoware_ws
           rosdep update
-          # Skip unknown or unavailable packages and auto-confirm
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash
+          source /opt/ros/humble/setup.bash     
           source /opt/autoware/setup.bash
-          # if random_test_runner is missing, remove that package from the workspace
-          # or comment it out from the colcon build package list
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
@@ -82,12 +71,11 @@ jobs:
       - name: Check Autoware installation
         run: |
           source ~/autoware_ws/install/setup.bash
-          ros2 pkg list | grep autoware || true
+          ros2 pkg list | grep autoware
         shell: bash
 
       - name: Download scenario file
         run: |
-          # Adjust the file ID for your scenario
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
@@ -113,18 +101,25 @@ jobs:
 
       - name: Check lanelet parameters in config file
         run: |
-          echo "Lanelet-related parameters in scenario_test_runner config:"
-          grep -i "lanelet" ~/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
+          echo "Lanelet-related parameters in the configuration:"
+          grep -i "lanelet" /github/home/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
         shell: bash
 
       - name: Launch scenario_test_runner with diagnostics
         run: |
+          # Set offscreen rendering to avoid issues with graphical environments in CI:
           export QT_QPA_PLATFORM=offscreen
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
-
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
+            # -----------------------------------------------------------------
+            # Changes made:
+            # 1. Updated output_directory to "./results" so that subsequent parsing finds logs.
+            # 2. Set global_real_time_factor:=0.5 to slow the simulation,
+            #    and global_frame_rate:=15.0 to reduce per-frame processing load.
+            # 3. Set launch_rviz:=false to disable resource-heavy visualization.
+            # -----------------------------------------------------------------
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=true \
@@ -148,7 +143,7 @@ jobs:
         run: |
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
-
+  
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
