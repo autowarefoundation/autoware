@@ -5,8 +5,8 @@ on:
 
 jobs:
   scenario-test:
-    # If you must use ubuntu-24.04, set runs-on: ubuntu-24.04
-    # but be aware you might need additional repos for certain ROS packages
+    # If you must use ubuntu-24.04, you can set runs-on: ubuntu-24.04 here,
+    # but the below apt packages work best with ubuntu-22.04 environment.
     runs-on: ubuntu-22.04  
     container: ghcr.io/autowarefoundation/autoware:universe-devel
 
@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Free disk space
-        # This is optional if you have your own free-disk-space action
+        # Optional: remove if you do not have this custom action
         uses: ./.github/actions/free-disk-space
 
       - name: Install required packages
@@ -34,12 +34,13 @@ jobs:
             ros-humble-camera-info-manager \
             ros-humble-cv-bridge \
             ros-humble-image-pipeline \
-            # Qt libraries for offscreen usage
             qtbase5-dev \
-            # Commonly needed if some XCB plugins are missing
-            libxcb-xinerama0
-          pip install --upgrade gdown vcstool
-        shell: bash
+            libxcb-xinerama0 \
+            # Added below line to ensure 'vcs import' works:
+            python3-vcstool 
+
+          # If you still want pip-based tools:
+          pip install --upgrade gdown
 
       - name: Clone Autoware and Import simulator.repos
         run: |
@@ -47,6 +48,7 @@ jobs:
           cd ~/autoware_ws
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
+          # Use vcs import from python3-vcstool
           vcs import < autoware/simulator.repos
         shell: bash
 
@@ -60,7 +62,7 @@ jobs:
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash
+          source /opt/ros/humble/setup.bash     
           source /opt/autoware/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
@@ -105,7 +107,9 @@ jobs:
 
       - name: Launch scenario_test_runner with diagnostics
         run: |
+          # Force offscreen for Qt-based apps (like RViz) in headless CI
           export QT_QPA_PLATFORM=offscreen
+
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
 
@@ -121,6 +125,7 @@ jobs:
               output_directory:=./results \
               simulate_localization:=false \
               disable_lanelet_pose_validation:=true \
+              # Adjust these two if your runner is still CPU-limited
               global_real_time_factor:=0.5 \
               global_frame_rate:=15.0 \
               launch_rviz:=false \
@@ -135,15 +140,15 @@ jobs:
         run: |
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
-
+  
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
             ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
-
+            
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-
+            
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
@@ -155,7 +160,7 @@ jobs:
                 echo "  </testcase>" >> "$XML_FILE"
               fi
             done < "$RESULT_FILE"
-
+          
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
           else
