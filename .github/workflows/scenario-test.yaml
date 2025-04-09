@@ -6,13 +6,15 @@ jobs:
   scenario-test:
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/autowarefoundation/autoware:humble-latest
-
+      image: ghcr.io/autowarefoundation/autoware:universe-devel
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install required system dependencies
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+
+      - name: Install required packages
         run: |
           apt-get update
           apt-get install -y \
@@ -22,25 +24,24 @@ jobs:
             lsb-release \
             python3-pip \
             git \
+            ros-humble-pcl-ros \
             ros-humble-image-geometry \
             ros-humble-image-transport-plugins \
             ros-humble-camera-info-manager \
             ros-humble-cv-bridge \
             ros-humble-image-pipeline \
             libxcb-xinerama0 \
-            qtbase5-dev \
-            libqt5gui5 \
-            libqt5widgets5 \
-            ros-humble-pcl-ros \
-            python3-vcstool
+            libqt5gui5-gles \
+            libqt5x11extras5
           pip install --upgrade gdown vcstool
         shell: bash
 
       - name: Clone Autoware and Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
-          cd ~/autoware_ws/src
-          git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git autoware
+          cd ~/autoware_ws
+          git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
+          cd src
           vcs import < autoware/simulator.repos
         shell: bash
 
@@ -56,6 +57,7 @@ jobs:
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+          source install/setup.bash
         shell: bash
 
       - name: Download scenario file
@@ -80,25 +82,32 @@ jobs:
           cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+          source install/setup.bash
         shell: bash
 
       - name: Launch scenario_test_runner with diagnostics
         run: |
-          export QT_QPA_PLATFORM=offscreen
+          SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
-          ros2 launch scenario_test_runner scenario_test_runner.launch.py \
-            architecture_type:=awf/universe/20250130 \
-            record:=true \
-            scenario:=./sample-scenario.yaml \
-            sensor_model:=sample_sensor_kit \
-            vehicle_model:=sample_vehicle \
-            initialize_duration:=100 \
-            output_directory:=./results \
-            simulate_localization:=false \
-            disable_lanelet_pose_validation:=true \
-            global_real_time_factor:=1.0 \
-            global_frame_rate:=15.0 \
-            launch_rviz:=false 2>&1 | tee scenario_output.log || true
+          if [ -f "$SCENARIO_FILE" ]; then
+            echo "Launching scenario_test_runner..."
+            ros2 launch scenario_test_runner scenario_test_runner.launch.py \
+              architecture_type:=awf/universe/20250130 \
+              record:=true \
+              scenario:="$SCENARIO_FILE" \
+              sensor_model:=sample_sensor_kit \
+              vehicle_model:=sample_vehicle \
+              initialize_duration:=100 \
+              output_directory:=./results \
+              simulate_localization:=false \
+              disable_lanelet_pose_validation:=true \
+              global_real_time_factor:=1.0 \
+              global_frame_rate:=15.0 \
+              launch_rviz:=false 2>&1 | tee scenario_output.log || true
+          else
+            echo "ERROR: sample-scenario.yaml is missing!"
+            exit 1
+          fi
         shell: bash
 
       - name: Parse results and capture diagnostics
@@ -111,7 +120,7 @@ jobs:
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
             ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
 
-            echo "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?>" > "$XML_FILE"
+            echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
 
             while IFS= read -r line; do
