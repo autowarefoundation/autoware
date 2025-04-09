@@ -36,7 +36,7 @@ jobs:
             ros-humble-camera-info-manager \
             ros-humble-cv-bridge \
             ros-humble-image-pipeline \
-            libqt5xcbqpa5 \
+            libqt5gui5 \
             libxcb-xinerama0
           # Source ROS so that newly installed packages are available:
           source /opt/ros/humble/setup.bash
