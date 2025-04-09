@@ -3,7 +3,7 @@ repositories:
   core/autoware_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
-    version: 1.5.0
+    version: 1.6.0
   # TODO (isamu-takagi): Use a released version when autoware_universe uses a released version.
   core/autoware_adapi_msgs:
     type: git
@@ -12,11 +12,11 @@ repositories:
   core/autoware_internal_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_internal_msgs.git
-    version: 1.8.0
+    version: 1.8.1
   core/autoware_cmake:
     type: git
     url: https://github.com/autowarefoundation/autoware_cmake.git
-    version: 1.0.1
+    version: 1.0.2
   core/autoware_utils:
     type: git
     url: https://github.com/autowarefoundation/autoware_utils.git
@@ -24,7 +24,7 @@ repositories:
   core/autoware_lanelet2_extension:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
-    version: 0.6.4
+    version: 0.7.0
   core/autoware_core:
     type: git
     url: https://github.com/autowarefoundation/autoware_core.git
