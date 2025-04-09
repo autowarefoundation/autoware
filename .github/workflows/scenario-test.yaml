@@ -14,7 +14,7 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      - name: Install required packages
+      - name: Install required system dependencies
         run: |
           apt-get update
           apt-get install -y \
@@ -31,8 +31,9 @@ jobs:
             ros-humble-cv-bridge \
             ros-humble-image-pipeline \
             libxcb-xinerama0 \
-            libqt5gui5-gles \
-            libqt5x11extras5
+            libqt5gui5 \
+            libqt5widgets5 \
+            qtbase5-dev
           pip install --upgrade gdown vcstool
         shell: bash
 
@@ -57,7 +58,6 @@ jobs:
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
-          source install/setup.bash
         shell: bash
 
       - name: Download scenario file
@@ -77,20 +77,12 @@ jobs:
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Build workspace again
-        run: |
-          cd ~/autoware_ws
-          source ~/autoware_ws/install/setup.bash
-          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
-          source install/setup.bash
-        shell: bash
-
       - name: Launch scenario_test_runner with diagnostics
         run: |
-          SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
+          export QT_QPA_PLATFORM=offscreen
+          SCENARIO_FILE="./sample-scenario.yaml"
           if [ -f "$SCENARIO_FILE" ]; then
-            echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=true \
@@ -105,7 +97,7 @@ jobs:
               global_frame_rate:=15.0 \
               launch_rviz:=false 2>&1 | tee scenario_output.log || true
           else
-            echo "ERROR: sample-scenario.yaml is missing!"
+            echo "Scenario file not found!"
             exit 1
           fi
         shell: bash
@@ -114,32 +106,19 @@ jobs:
         run: |
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
-
           if [ -f "$RESULT_FILE" ]; then
-            echo "Parsing test results..."
-            FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
-            ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
-
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
-            echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-
+            echo "<testsuite name='ScenarioTest'>" >> "$XML_FILE"
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
-                echo "  <testcase name='$line'>" >> "$XML_FILE"
-                echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
-                echo "  </testcase>" >> "$XML_FILE"
+                echo "  <testcase name='$line'><failure>$line</failure></testcase>" >> "$XML_FILE"
               elif echo "$line" | grep -qi "error"; then
-                echo "  <testcase name='$line'>" >> "$XML_FILE"
-                echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
-                echo "  </testcase>" >> "$XML_FILE"
+                echo "  <testcase name='$line'><error>$line</error></testcase>" >> "$XML_FILE"
               fi
             done < "$RESULT_FILE"
-
             echo "</testsuite>" >> "$XML_FILE"
-            echo "Results parsed and saved in $XML_FILE"
           else
-            echo "WARNING: test_results.log is missing! The simulation might have crashed."
-            echo "Captured scenario output (for diagnostics):"
+            echo "No test result file found. Simulation may have crashed."
             cat scenario_output.log
           fi
         shell: bash
