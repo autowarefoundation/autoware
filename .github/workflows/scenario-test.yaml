@@ -5,16 +5,16 @@ on:
 
 jobs:
   scenario-test:
-    # If your environment truly must be ubuntu-24.04, you can keep it here:
-    runs-on: ubuntu-24.04  
+    runs-on: ubuntu-24.04
     container: ghcr.io/autowarefoundation/autoware:universe-devel
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Free disk space
-        # (Optional custom step) remove if not needed
+      - name: Free disk space (optional)
+        # If you have a custom action to free up disk space, keep it;
+        # otherwise, remove this step
         uses: ./.github/actions/free-disk-space
 
       - name: Install required packages
@@ -33,11 +33,21 @@ jobs:
             ros-humble-camera-info-manager \
             ros-humble-cv-bridge \
             ros-humble-image-pipeline \
+            # Minimal Qt libs for offscreen usage:
             qtbase5-dev \
             libxcb-xinerama0
 
-          # Instead of apt-get install python3-vcstool, do pip:
+          # Install vcstool via pip so we can run `vcs import`
           pip install --upgrade gdown vcstool
+
+      # ----------------------------------------------------------------------
+      # If you DO NOT have or need random_test_runner, you must remove it from
+      # your workspace or comment it out of your simulator.repos file, so it won't
+      # fail the build. If you DO need it, clone its repository:
+      #
+      #   cd ~/autoware_ws/src
+      #   git clone https://github.com/your-org/random_test_runner.git
+      # ----------------------------------------------------------------------
 
       - name: Clone Autoware and Import simulator.repos
         run: |
@@ -45,7 +55,8 @@ jobs:
           cd ~/autoware_ws
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
-          # Use the pip-installed 'vcs' command
+          # if 'random_test_runner' is not needed, remove it from simulator.repos or
+          # comment out references in that .repos file
           vcs import < autoware/simulator.repos
         shell: bash
 
@@ -53,15 +64,17 @@ jobs:
         run: |
           cd ~/autoware_ws
           rosdep update
-          # '-r -y' -> continue on unknown packages, automatically confirm
+          # Skip unknown or unavailable packages and auto-confirm
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash     
+          source /opt/ros/humble/setup.bash
           source /opt/autoware/setup.bash
+          # if random_test_runner is missing, remove that package from the workspace
+          # or comment it out from the colcon build package list
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
@@ -74,7 +87,7 @@ jobs:
 
       - name: Download scenario file
         run: |
-          # Replace with your desired scenario file ID
+          # Adjust the file ID for your scenario
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
@@ -106,9 +119,7 @@ jobs:
 
       - name: Launch scenario_test_runner with diagnostics
         run: |
-          # Force offscreen for Qt-based apps (like RViz) in headless CI
           export QT_QPA_PLATFORM=offscreen
-
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
 
@@ -126,8 +137,7 @@ jobs:
               disable_lanelet_pose_validation:=true \
               global_real_time_factor:=0.5 \
               global_frame_rate:=15.0 \
-              launch_rviz:=false \
-              2>&1 | tee scenario_output.log || true
+              launch_rviz:=false 2>&1 | tee scenario_output.log || true
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
@@ -138,7 +148,7 @@ jobs:
         run: |
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
-  
+
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
