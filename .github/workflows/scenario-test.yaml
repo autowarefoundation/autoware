@@ -2,11 +2,6 @@ name: scenario-test
 on:
   workflow_dispatch:
 
-env:
-  AUTOWARE_WS: /github/home/autoware_ws
-  AUTOWARE_MAP: /github/home/autoware_map
-  RESULTS_DIR: /github/home/results
-
 jobs:
   scenario-test:
     runs-on: ubuntu-24.04
@@ -18,143 +13,120 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      - name: Install required packages
+      - name: Install base packages
         run: |
-          apt-get update
-          apt-get install -y \
+          sudo apt-get update
+          sudo apt-get install -y \
             unzip \
             curl \
             gnupg2 \
             lsb-release \
             python3-pip \
             git \
-            ros-humble-pcl-ros
-          pip install --upgrade gdown vcstool
+            ros-humble-pcl-ros \
+            ros-humble-tinyxml2-vendor
+          python3 -m pip install --user --upgrade gdown vcstool
         shell: bash
 
-      - name: Clone Autoware and Import simulator.repos
+      - name: Configure environment
         run: |
-          mkdir -p $AUTOWARE_WS/src
-          cd $AUTOWARE_WS
+          echo "PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
+          mkdir -p /etc/ros/rosdep/sources.list.d/
+          echo "yaml https://raw.githubusercontent.com/autowarefoundation/autoware/main/rosdep/autoware.yaml" | sudo tee /etc/ros/rosdep/sources.list.d/51-autoware.list
+
+      - name: Clone Autoware stack
+        run: |
+          mkdir -p ~/autoware_ws/src
+          cd ~/autoware_ws
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
           vcs import < autoware/simulator.repos
+          vcs import < autoware/core.repos
         shell: bash
 
-      - name: Install ROS dependencies
+      - name: Resolve dependencies
         run: |
-          cd $AUTOWARE_WS
+          cd ~/autoware_ws
+          sudo rosdep fix-permissions
           rosdep update
-          rosdep install --from-paths src --ignore-src -r -y
+          rosdep install --from-paths src --ignore-src -r -y \
+            --skip-keys "libopengl-dev" \
+            --skip-keys "libx11-dev" \
+            --skip-keys "opengl"
         shell: bash
 
-      - name: Build Autoware
+      - name: Build Autoware core
         run: |
-          cd $AUTOWARE_WS
+          cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+          source install/setup.bash
         shell: bash
 
-      - name: Source ROS and Autoware
+      - name: Setup scenario files
         run: |
-          echo "source /opt/ros/humble/setup.bash" >> $GITHUB_ENV
-          echo "source $AUTOWARE_WS/install/setup.bash" >> $GITHUB_ENV
+          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
+          gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
+          mkdir -p /home/user/autoware_map
+          unzip sample-map-planning.zip -d /home/user/autoware_map
+          sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Check Autoware installation
+      - name: Build simulation components
         run: |
-          source $AUTOWARE_WS/install/setup.bash
-          ros2 pkg list | grep autoware
+          cd ~/autoware_ws
+          source install/setup.bash
+          colcon build --packages-select \
+            scenario_test_runner \
+            traffic_simulator \
+            openscenario_interpreter \
+            simple_sensor_simulator \
+            --cmake-args -DCMAKE_BUILD_TYPE=Release
         shell: bash
 
-      - name: Download scenario file
+      - name: Run scenario tests
         run: |
-          gdown --fuzzy --quiet --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
-        shell: bash
-
-      - name: Download sample-map-planning maps
-        run: |
-          gdown --fuzzy --quiet --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-          mkdir -p $AUTOWARE_MAP
-          unzip sample-map-planning.zip -d $AUTOWARE_MAP
-        shell: bash
-
-      - name: Fix path in sample-scenario.yaml
-        run: |
-          sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@$AUTOWARE_MAP/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
-        shell: bash
-
-      - name: Create results directory
-        run: mkdir -p $RESULTS_DIR
-
-      - name: Build workspace again (safety)
-        run: |
-          cd $AUTOWARE_WS
-          source $AUTOWARE_WS/install/setup.bash
-          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
-        shell: bash
-
-      - name: Check lanelet parameters in config file
-        continue-on-error: true
-        run: |
-          echo "Lanelet-related parameters in the configuration:"
-          grep -Ei "lanelet|pose|map" $AUTOWARE_WS/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
-        shell: bash
-
-      - name: Launch scenario_test_runner with diagnostics
-        continue-on-error: true
-        run: |
+          mkdir -p ./results
           SCENARIO_FILE="./sample-scenario.yaml"
-          source $AUTOWARE_WS/install/setup.bash
-          if [ -f "$SCENARIO_FILE" ]; then
-            echo "Launching scenario_test_runner..."
-            ros2 launch scenario_test_runner scenario_test_runner.launch.py \
-              architecture_type:=awf/universe/20250130 \
-              record:=true \
-              scenario:="$SCENARIO_FILE" \
-              sensor_model:=sample_sensor_kit \
-              vehicle_model:=sample_vehicle \
-              initialize_duration:=100 \
-              output_directory:=$RESULTS_DIR \
-              simulate_localization:=false \
-              disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
-          else
-            echo "ERROR: sample-scenario.yaml is missing!"
-            exit 1
-          fi
+          source ~/autoware_ws/install/setup.bash
+          ros2 launch scenario_test_runner scenario_test_runner.launch.py \
+            architecture_type:=awf/universe/20250130 \
+            record:=true \
+            scenario:="$SCENARIO_FILE" \
+            sensor_model:=sample_sensor_kit \
+            vehicle_model:=sample_vehicle \
+            initialize_duration:=100 \
+            output_directory:=./results \
+            simulate_localization:=false \
+            disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log
         shell: bash
 
-      - name: Parse results and capture diagnostics
-        continue-on-error: true
+      - name: Process results
         run: |
-          RESULT_FILE="$RESULTS_DIR/test_results.log"
-          XML_FILE="$RESULTS_DIR/result.junit.xml"
-
+          RESULT_FILE="./results/test_results.log"
+          XML_FILE="./results/junit_results.xml"
+          
           if [ -f "$RESULT_FILE" ]; then
-            echo "Parsing test results..."
-            FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
-            ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
-
-            echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
-            echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-
-            while IFS= read -r line; do
-              if echo "$line" | grep -qi "failure"; then
-                echo "  <testcase name='$line'>" >> "$XML_FILE"
-                echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
-                echo "  </testcase>" >> "$XML_FILE"
-              elif echo "$line" | grep -qi "error"; then
-                echo "  <testcase name='$line'>" >> "$XML_FILE"
-                echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
-                echo "  </testcase>" >> "$XML_FILE"
-              fi
-            done < "$RESULT_FILE"
-
+            echo "Processing test results..."
+            FAILURES=$(grep -ci "failure" "$RESULT_FILE" || true)
+            ERRORS=$(grep -ci "error" "$RESULT_FILE" || true)
+            
+            echo '<?xml version="1.0" encoding="UTF-8"?>' > "$XML_FILE"
+            echo "<testsuite name='ScenarioTests' tests='1' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
+            echo "  <testcase name='IntegrationTest' classname='ScenarioRunner'>" >> "$XML_FILE"
+            
+            if [ $FAILURES -gt 0 ] || [ $ERRORS -gt 0 ]; then
+              echo "    <failure message='Scenario test failures detected'>" >> "$XML_FILE"
+              cat "$RESULT_FILE" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' >> "$XML_FILE"
+              echo "    </failure>" >> "$XML_FILE"
+            fi
+            
+            echo "  </testcase>" >> "$XML_FILE"
             echo "</testsuite>" >> "$XML_FILE"
-            echo "Results parsed and saved in $XML_FILE"
           else
-            echo "WARNING: test_results.log is missing! The simulation might have crashed."
-            echo "Captured scenario output (for diagnostics):"
+            echo "##[error] No test results found - simulation likely failed"
+            echo "Debug output:"
             cat scenario_output.log
+            exit 1
           fi
         shell: bash
