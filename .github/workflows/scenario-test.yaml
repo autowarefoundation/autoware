@@ -30,7 +30,7 @@ jobs:
         pip install --upgrade gdown vcstool
       shell: bash
 
-    - name: Clone Autoware and import simulator.repos
+    - name: Clone Autoware
       run: |
         mkdir -p ~/autoware_ws/src
         cd ~/autoware_ws/src
@@ -40,7 +40,6 @@ jobs:
     - name: Patch simulator.repos to include missing tier4_external_api_msgs
       run: |
         cat <<EOT >> ~/autoware_ws/src/autoware/simulator.repos
-
 - type: git
   url: https://github.com/tier4/external_api_msgs.git
   version: main
