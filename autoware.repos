@@ -86,7 +86,7 @@ repositories:
   universe/external/managed_transform_buffer:
     type: git
     url: https://github.com/autowarefoundation/ManagedTransformBuffer.git
-    version: main
+    version: 0.1.0
   # launcher
   launcher/autoware_launch:
     type: git
