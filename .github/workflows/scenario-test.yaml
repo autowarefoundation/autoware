@@ -1,4 +1,5 @@
 name: scenario-test
+
 on:
   workflow_dispatch:
 
@@ -6,92 +7,123 @@ jobs:
   scenario-test:
     runs-on: ubuntu-24.04
     container: ghcr.io/autowarefoundation/autoware:universe-devel
+
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v4
+      # 1. Check out your repository
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-    - name: Free disk space (optional)
-      uses: ./.github/actions/free-disk-space
+      # 2. Free up disk space if needed
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
 
-    - name: Install system dependencies
-      run: |
-        apt-get update
-        apt-get install -y \
-          unzip \
-          curl \
-          gnupg2 \
-          lsb-release \
-          python3-pip \
-          git \
-          libtinyxml2-dev \
-          ros-humble-pcl-ros
-        pip install --upgrade gdown vcstool
+      # 3. Install system dependencies
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            unzip \
+            curl \
+            gnupg2 \
+            lsb-release \
+            python3-pip \
+            git \
+            ros-humble-pcl-ros \
+            libtinyxml2-dev
+          pip install --upgrade gdown vcstool
+        shell: bash
 
-    - name: Clone Autoware and import simulator.repos
-      run: |
-        mkdir -p ~/autoware_ws/src
-        cd ~/autoware_ws/src
-        git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git autoware
-        vcs import < autoware/simulator.repos
+      # 4. Clone Autoware + simulator dependencies
+      - name: Clone Autoware and import simulator.repos
+        run: |
+          mkdir -p ~/autoware_ws/src
+          cd ~/autoware_ws/src
+          git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git autoware
+          vcs import < autoware/simulator.repos
+        shell: bash
 
-    - name: Install ROS dependencies
-      run: |
-        cd ~/autoware_ws
-        rosdep update
-        rosdep install --from-paths src --ignore-src -r -y
+      # 5. Install ROS dependencies
+      - name: Install ROS dependencies
+        run: |
+          cd ~/autoware_ws
+          rosdep update
+          rosdep install --from-paths src --ignore-src -r -y
+        shell: bash
 
-    - name: Build only necessary Autoware packages
-      run: |
-        cd ~/autoware_ws
-        source /opt/ros/humble/setup.bash
-        colcon build --symlink-install --packages-up-to scenario_test_runner
-        source install/setup.bash
+      # 6. Build only what's needed
+      - name: Build only necessary Autoware packages
+        run: |
+          cd ~/autoware_ws
+          source /opt/ros/humble/setup.bash
+          colcon build --symlink-install --packages-up-to scenario_test_runner
+          source install/setup.bash
+        shell: bash
 
-    - name: Check important packages
-      run: |
-        source ~/autoware_ws/install/setup.bash
-        ros2 pkg list | grep scenario_test_runner
+      # 7. Check important packages
+      - name: Check important packages
+        run: |
+          source ~/autoware_ws/install/setup.bash
+          ros2 pkg list | grep scenario_test_runner
+        shell: bash
 
-    - name: Download scenario file
-      run: |
-        gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
+      # 8. Download scenario file
+      - name: Download scenario file
+        run: |
+          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
+        shell: bash
 
-    - name: Download and extract sample map
-      run: |
-        gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-        mkdir -p /home/user/autoware_map
-        unzip sample-map-planning.zip -d /home/user/autoware_map
+      # 9. Download and extract map
+      - name: Download and extract sample map
+        run: |
+          gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
+          mkdir -p /home/user/autoware_map
+          unzip sample-map-planning.zip -d /home/user/autoware_map
+        shell: bash
 
-    - name: Fix scenario file paths
-      run: |
-        sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
+      # 9.1 Fix map path in scenario file
+      - name: Fix scenario file paths
+        run: |
+          sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
+        shell: bash
 
-    - name: Launch scenario_test_runner
-      run: |
-        source ~/autoware_ws/install/setup.bash
-        ros2 launch scenario_test_runner scenario_test_runner.launch.py \
-          architecture_type:=awf/universe/20250130 \
-          record:=true \
-          scenario:=./sample-scenario.yaml \
-          sensor_model:=sample_sensor_kit \
-          vehicle_model:=sample_vehicle \
-          initialize_duration:=100 \
-          output_directory:=./results \
-          simulate_localization:=false \
-          disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+      # 10. Run the simulation
+      - name: Launch scenario_test_runner
+        run: |
+          SCENARIO_FILE="./sample-scenario.yaml"
+          source ~/autoware_ws/install/setup.bash
+          if [ -f "$SCENARIO_FILE" ]; then
+            echo "Launching scenario_test_runner..."
+            ros2 launch scenario_test_runner scenario_test_runner.launch.py \
+              architecture_type:=awf/universe/20250130 \
+              record:=true \
+              scenario:="$SCENARIO_FILE" \
+              sensor_model:=sample_sensor_kit \
+              vehicle_model:=sample_vehicle \
+              initialize_duration:=100 \
+              output_directory:=./results \
+              simulate_localization:=false \
+              disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+          else
+            echo "ERROR: Scenario file not found!"
+            exit 1
+          fi
+        shell: bash
 
-    - name: Parse and report test results
-      run: |
-        RESULT_FILE="./results/test_results.log"
-        XML_FILE="./results/scenario_test_runner/result.junit.xml"
-        if [ -f "$RESULT_FILE" ]; then
-          echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
-          echo "<testsuite name='ScenarioTest'>" >> "$XML_FILE"
-          while IFS= read -r line; do
-            echo "<testcase name=\"$line\"/>" >> "$XML_FILE"
-          done < "$RESULT_FILE"
-          echo "</testsuite>" >> "$XML_FILE"
-        else
-          echo "WARNING: No test results found. Simulation may have failed."
-          cat scenario_output.log
-        fi
+      # 11. Parse results (optional)
+      - name: Parse and report test results
+        run: |
+          RESULT_FILE="./results/test_results.log"
+          XML_FILE="./results/scenario_test_runner/result.junit.xml"
+          if [ -f "$RESULT_FILE" ]; then
+            echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
+            echo "<testsuite name='ScenarioTest'>" >> "$XML_FILE"
+            while IFS= read -r line; do
+              echo "<testcase name=\"$line\"/>" >> "$XML_FILE"
+            done < "$RESULT_FILE"
+            echo "</testsuite>" >> "$XML_FILE"
+            echo "Parsed test results saved to $XML_FILE"
+          else
+            echo "WARNING: No test results found. Simulation might have failed."
+            cat scenario_output.log
+          fi
+        shell: bash
