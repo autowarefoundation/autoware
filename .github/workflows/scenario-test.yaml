@@ -36,13 +36,18 @@ jobs:
           vcs import < autoware/simulator.repos
         shell: bash
 
-      - name: Clone missing tier4 and vendor dependencies
+      - name: Clone missing Tier IV message packages
         run: |
           cd ~/autoware_ws/src
           git clone https://github.com/tier4/tier4_debug_msgs.git || true
           git clone https://github.com/tier4/tier4_rtc_msgs.git || true
           git clone https://github.com/tier4/tier4_simulation_msgs.git || true
-          git clone https://github.com/ros2/tinyxml2_vendor.git || true
+        shell: bash
+
+      - name: Install tinyxml2_vendor from apt
+        run: |
+          apt-get update
+          apt-get install -y ros-humble-tinyxml2-vendor
         shell: bash
 
       - name: Install ROS dependencies
@@ -124,7 +129,7 @@ jobs:
         run: |
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
-  
+
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
@@ -132,7 +137,7 @@ jobs:
             
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-            
+
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
@@ -144,7 +149,7 @@ jobs:
                 echo "  </testcase>" >> "$XML_FILE"
               fi
             done < "$RESULT_FILE"
-          
+
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
           else
