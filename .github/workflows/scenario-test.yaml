@@ -7,15 +7,12 @@ jobs:
     runs-on: ubuntu-24.04
     container: ghcr.io/autowarefoundation/autoware:universe-devel
     steps:
-      # 1) Check out your repository
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # 2) Free disk space (optional)
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
-      # 3) Install required packages
       - name: Install required packages
         run: |
           apt-get update
@@ -30,7 +27,6 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
-      # 4) Clone Autoware and import simulator.repos
       - name: Clone Autoware and Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
@@ -40,7 +36,15 @@ jobs:
           vcs import < autoware/simulator.repos
         shell: bash
 
-      # 5) Install ROS dependencies
+      - name: Clone missing tier4 and vendor dependencies
+        run: |
+          cd ~/autoware_ws/src
+          git clone https://github.com/tier4/tier4_debug_msgs.git || true
+          git clone https://github.com/tier4/tier4_rtc_msgs.git || true
+          git clone https://github.com/tier4/tier4_simulation_msgs.git || true
+          git clone https://github.com/ros2/tinyxml2_vendor.git || true
+        shell: bash
+
       - name: Install ROS dependencies
         run: |
           cd ~/autoware_ws
@@ -48,30 +52,26 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
-      # 6) Build Autoware (full workspace build)
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash     
           source /opt/autoware/setup.bash
-          colcon build --symlink-install
+          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
 
-      # 7) Verify Autoware installation
       - name: Check Autoware installation
         run: |
           source ~/autoware_ws/install/setup.bash
           ros2 pkg list | grep autoware
         shell: bash
 
-      # 8) Download scenario file
       - name: Download scenario file
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
-      # 9) Download and extract sample-map-planning maps
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
@@ -79,22 +79,25 @@ jobs:
           unzip sample-map-planning.zip -d /home/user/autoware_map
         shell: bash
 
-      # 10) Rebuild workspace (if needed)
-      - name: Build workspace
+      - name: Fix path in sample-scenario.yaml
         run: |
+          sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
+        shell: bash
+
+      - name: Build workspace (again after scenario/map additions)
+        run: |
+          cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
-          colcon build --symlink-install
+          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
 
-      # 11) Diagnostic: Print lanelet-related parameters from the config file
       - name: Check lanelet parameters in config file
         run: |
           echo "Lanelet-related parameters in the configuration:"
           grep -i "lanelet" /github/home/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
         shell: bash
 
-      # 12) Launch scenario_test_runner with additional parameters and capture full output
       - name: Launch scenario_test_runner with diagnostics
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
@@ -117,7 +120,6 @@ jobs:
           fi
         shell: bash
 
-      # 13) Parse results and capture diagnostics if test_results.log is missing
       - name: Parse results and capture diagnostics
         run: |
           RESULT_FILE="./results/test_results.log"
@@ -151,5 +153,3 @@ jobs:
             cat scenario_output.log
           fi
         shell: bash
-
-
