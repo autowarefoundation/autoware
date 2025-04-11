@@ -36,18 +36,13 @@ jobs:
           vcs import < autoware/simulator.repos
         shell: bash
 
-      - name: Clone missing Tier IV message packages
+      - name: Clone missing Tier IV message packages and tinyxml2_vendor
         run: |
           cd ~/autoware_ws/src
           git clone https://github.com/tier4/tier4_debug_msgs.git || true
           git clone https://github.com/tier4/tier4_rtc_msgs.git || true
           git clone https://github.com/tier4/tier4_simulation_msgs.git || true
-        shell: bash
-
-      - name: Install tinyxml2_vendor from apt
-        run: |
-          apt-get update
-          apt-get install -y ros-humble-tinyxml2-vendor
+          git clone https://github.com/ros2/tinyxml2_vendor.git || true
         shell: bash
 
       - name: Install ROS dependencies
