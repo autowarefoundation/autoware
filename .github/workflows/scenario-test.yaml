@@ -23,7 +23,8 @@ jobs:
             lsb-release \
             python3-pip \
             git \
-            ros-humble-pcl-ros
+            ros-humble-pcl-ros \
+            librange-v3-dev
           pip install --upgrade gdown vcstool
         shell: bash
 
@@ -34,12 +35,6 @@ jobs:
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
           vcs import < autoware/simulator.repos
-        shell: bash
-
-      - name: Add tier4_autoware_msgs repository
-        run: |
-          cd ~/autoware_ws/src
-          git clone https://github.com/tier4/tier4_autoware_msgs.git
         shell: bash
 
       - name: Install ROS dependencies
