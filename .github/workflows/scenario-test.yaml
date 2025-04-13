@@ -23,8 +23,7 @@ jobs:
             lsb-release \
             python3-pip \
             git \
-            ros-humble-pcl-ros \
-            librange-v3-dev
+            ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
         shell: bash
 
@@ -145,3 +144,5 @@ jobs:
             cat scenario_output.log
           fi
         shell: bash
+
+
