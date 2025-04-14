@@ -51,8 +51,6 @@ jobs:
           source /opt/autoware/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
-        shell: bash
-
       - name: Check Autoware installation
         run: |
           source ~/autoware_ws/install/setup.bash
