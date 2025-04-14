@@ -217,3 +217,27 @@ jobs:
         if: always()
         run: |
           df -h
+
+  update-docker-manifest:
+    needs: [docker-build-and-push, docker-build-and-push-cuda]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Combine multi arch images for 'autoware'
+        uses: ./.github/actions/combine-multi-arch-images
+        with:
+          package-name: autoware
+
+  update-docker-manifest-tools:
+    needs: docker-build-and-push-tools
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Combine multi arch images for 'autoware-tools'
+        uses: ./.github/actions/combine-multi-arch-images
+        with:
+          package-name: autoware-tools
