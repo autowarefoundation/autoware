@@ -23,8 +23,7 @@ jobs:
             lsb-release \
             python3-pip \
             git \
-            ros-humble-pcl-ros \
-            libtinyxml2-dev
+            ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
         shell: bash
 
@@ -51,6 +50,8 @@ jobs:
           source /opt/autoware/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
+        shell: bash
+
       - name: Check Autoware installation
         run: |
           source ~/autoware_ws/install/setup.bash
@@ -101,7 +102,7 @@ jobs:
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=100 \
-              output_directory:=./results \
+              output_directory:=./home/vishalchauhan/results \
               simulate_localization:=false \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
           else
@@ -143,3 +144,5 @@ jobs:
             cat scenario_output.log
           fi
         shell: bash
+
+
