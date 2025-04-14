@@ -18,7 +18,7 @@ jobs:
       label: run:health-check
 
   load-env:
-    needs: [label-check]
+    needs: label-check
     if: ${{ needs.label-check.outputs.result == 'true' ||
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' }}
