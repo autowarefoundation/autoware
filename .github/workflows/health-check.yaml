@@ -15,11 +15,17 @@ jobs:
   label-check:
     uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
     with:
+      label: run:health-check
+
+  # TODO(youtalk): Remove this after the transition to the new label is complete
+  deprecated-label-check:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
+    with:
       label: tag:run-health-check
 
   load-env:
-    needs: label-check
-    if: ${{ needs.label-check.outputs.result == 'true' ||
+    needs: [label-check, deprecated-label-check]
+    if: ${{ needs.label-check.outputs.result == 'true' || needs.deprecated-label-check.outputs.result == 'true' ||
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/load-env.yaml
