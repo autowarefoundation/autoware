@@ -45,7 +45,7 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
-      - name: Patch tinyxml2_vendor to accept single‑.so installs
+      - name: Patch tinyxml2_vendor to accept single-.so installs
         run: |
           sudo sed -i -e '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a \
 # Workaround for single-.so installs: replicate the one path\
@@ -55,6 +55,12 @@ if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)\
   list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)\
 endif()' \
             /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
+        shell: bash
+
+      - name: Debug: show tinyxml2_vendor-extras.cmake around the patch
+        run: |
+          echo "==== Showing lines 20–35 of tinyxml2_vendor-extras.cmake ===="
+          sed -n '20,35p' /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
         shell: bash
 
       - name: Build Autoware
