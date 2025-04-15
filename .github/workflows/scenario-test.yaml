@@ -48,14 +48,13 @@ jobs:
       - name: Patch tinyxml2_vendor to accept single-.so installs
         run: |
           FILE=/opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
-
-          # insert our workaround immediately after the original two‑space indented list(...)
-          sudo sed -i '/^  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a # workaround for single-.so installs: replicate the one path' "$FILE"
-          sudo sed -i '/^  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)' "$FILE"
-          sudo sed -i '/^  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a   set(_libpath ${TINYXML2_LIBRARY})' "$FILE"
-          sudo sed -i '/^  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a   set(TINYXML2_LIBRARY debug;${_libpath};optimized;${_libpath})' "$FILE"
-          sudo sed -i '/^  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a    list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)' "$FILE"
-          sudo sed -i '/^  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a endif()' "$FILE"
+          sudo sed -i '/^  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/ s|$|\
+  # workaround for single-.so installs: replicate the one path\
+  if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)\
+    set(_libpath ${TINYXML2_LIBRARY})\
+    set(TINYXML2_LIBRARY debug;${_libpath};optimized;${_libpath})\
+    list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)\
+  endif()|' "$FILE"
         shell: bash
 
       - name: Build Autoware
