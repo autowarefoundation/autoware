@@ -111,8 +111,3 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/ros2_socketcan
     version: e39a814180b03f00a5692b6951a5d4e9f0463486
-  # param
-  param/autoware_individual_params:
-    type: git
-    url: https://github.com/autowarefoundation/autoware_individual_params.git
-    version: 70000825155182d9261ce0980076b0e2c6dc3f51
