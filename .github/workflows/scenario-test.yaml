@@ -1,4 +1,5 @@
 name: scenario-test
+
 on:
   workflow_dispatch:
 
@@ -7,112 +8,78 @@ jobs:
     runs-on: ubuntu-22.04
     container: ghcr.io/autowarefoundation/autoware:universe-devel
 
+    env:
+      ROS_DISTRO: humble
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Free disk space
-        uses: ./.github/actions/free-disk-space
+        run: |
+          sudo rm -rf /usr/local/lib/android /opt/ghc /opt/hostedtoolcache /usr/share/dotnet /opt/google /usr/lib/jvm
 
       - name: Install required packages
         run: |
-          apt-get update
-          apt-get install -y unzip curl gnupg2 lsb-release python3-pip git
-          pip install --upgrade gdown vcstool
-        shell: bash
+          apt-get update && apt-get install -y \
+            unzip \
+            curl \
+            gnupg2 \
+            lsb-release \
+            python3-pip \
+            git \
+            ros-humble-pcl-ros \
+            qtbase5-dev \
+            python3-vcstool \
+            ros-humble-tinyxml2-vendor
+          pip3 install --upgrade gdown
 
       - name: Setup Autoware workspace
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
-          git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
+          git clone https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
-          vcs import < autoware/simulator.repos
-        shell: bash
+          vcs import < autoware/autoware.repos
 
-      - name: Fix missing dependencies manually
+      - name: Manually add missing dependencies (e.g., tier4_external_api_msgs)
         run: |
           cd ~/autoware_ws/src
-          git clone https://github.com/tier4/tier4_external_api_msgs.git
-        shell: bash
+          git clone https://${GH_TOKEN}@github.com/tier4/tier4_external_api_msgs.git
 
       - name: Install ROS dependencies
         run: |
+          source /opt/ros/${ROS_DISTRO}/setup.bash
           cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash
           rosdep update
-          rosdep install --from-paths src --ignore-src -r -y
-        shell: bash
+          rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO}
 
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash
+          source /opt/ros/${ROS_DISTRO}/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
-        shell: bash
 
-      - name: Download sample-scenario.yaml
+      - name: Download sample scenario
         run: |
-          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
-        shell: bash
+          mkdir -p ~/data/scenarios
+          curl -L -o ~/data/scenarios/sample-scenario.yaml https://example.com/sample-scenario.yaml
 
-      - name: Download sample-map-planning
+      - name: Download sample map-planning
         run: |
-          gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-          mkdir -p /home/user/autoware_map
-          unzip sample-map-planning.zip -d /home/user/autoware_map
-        shell: bash
+          mkdir -p ~/data/maps
+          curl -L -o ~/data/maps/sample-map-planning.zip https://example.com/sample-map.zip
+          unzip ~/data/maps/sample-map-planning.zip -d ~/data/maps/
 
       - name: Fix path in scenario file
         run: |
-          sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
-        shell: bash
+          sed -i 's|PATH_TO_MAP|/home/runner/data/maps/sample-map-planning|g' ~/data/scenarios/sample-scenario.yaml
 
-      - name: Launch scenario_test_runner
+      - name: Run scenario_test_runner
         run: |
-          cd ~/autoware_ws
-          source install/setup.bash
-          ros2 launch scenario_test_runner scenario_test_runner.launch.py \
-            architecture_type:=awf/universe/20250130 \
-            record:=true \
-            scenario:=./sample-scenario.yaml \
-            sensor_model:=sample_sensor_kit \
-            vehicle_model:=sample_vehicle \
-            initialize_duration:=100 \
-            output_directory:=./results \
-            simulate_localization:=false \
-            disable_lanelet_pose_validation:=true
-        shell: bash
+          source /opt/ros/${ROS_DISTRO}/setup.bash
+          source ~/autoware_ws/install/setup.bash
+          ros2 launch scenario_test_runner scenario_test_runner.launch.xml scenario:=/home/runner/data/scenarios/sample-scenario.yaml
 
-      - name: Parse results
-        run: |
-          RESULT_FILE="./results/test_results.log"
-          XML_FILE="./results/scenario_test_runner/result.junit.xml"
-
-          if [ -f "$RESULT_FILE" ]; then
-            echo "Parsing test results..."
-            FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
-            ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
-
-            echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
-            echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-
-            while IFS= read -r line; do
-              if echo "$line" | grep -qi "failure"; then
-                echo "  <testcase name='$line'>" >> "$XML_FILE"
-                echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
-                echo "  </testcase>" >> "$XML_FILE"
-              elif echo "$line" | grep -qi "error"; then
-                echo "  <testcase name='$line'>" >> "$XML_FILE"
-                echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
-                echo "  </testcase>" >> "$XML_FILE"
-              fi
-            done < "$RESULT_FILE"
-
-            echo "</testsuite>" >> "$XML_FILE"
-            echo "Results parsed and saved in $XML_FILE"
-          else
-            echo "WARNING: test_results.log is missing! The simulation might have crashed."
-          fi
-        shell: bash
