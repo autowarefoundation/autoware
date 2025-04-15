@@ -24,7 +24,6 @@ jobs:
             lsb-release \
             python3-pip \
             git \
-            patch \
             libtinyxml2-dev \
             ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
@@ -46,26 +45,16 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
-      - name: Patch tinyxml2_vendor to accept single-.so installs
+      - name: Patch tinyxml2_vendor to accept single‑.so installs
         run: |
-          sudo patch -p0 << 'EOF'
-          *** Begin Patch
-          *** Update File: /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
-          @@ -22,7 +22,14 @@
-           list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)
-          -if(NOT ${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 4)
-          +if(NOT ${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 4)
-          +  # Workaround for single-.so installs: replicate the one path
-          +  if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)
-          +    set(_libpath ${TINYXML2_LIBRARY})
-          +    set(TINYXML2_LIBRARY debug;${_libpath};optimized;${_libpath})
-          +    list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)
-          +  endif()
-          +  if(NOT ${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 4)
-             message(FATAL_ERROR "Unable to extract the library file path from ${TINYXML2_LIBRARY}")
-           endif()
-          *** End Patch
-          EOF
+          sudo sed -i -e '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a \
+# Workaround for single-.so installs: replicate the one path\
+if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)\
+  set(_libpath ${TINYXML2_LIBRARY})\
+  set(TINYXML2_LIBRARY debug;${_libpath};optimized;${_libpath})\
+  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)\
+endif()' \
+            /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
         shell: bash
 
       - name: Build Autoware
