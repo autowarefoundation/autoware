@@ -6,6 +6,7 @@ jobs:
   scenario-test:
     runs-on: ubuntu-24.04
     container: ghcr.io/autowarefoundation/autoware:universe-devel
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -15,14 +16,15 @@ jobs:
 
       - name: Install required packages
         run: |
-          apt-get update
-          apt-get install -y \
+          sudo apt-get update
+          sudo apt-get install -y \
             unzip \
             curl \
             gnupg2 \
             lsb-release \
             python3-pip \
             git \
+            libtinyxml2-dev \
             ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
         shell: bash
@@ -43,10 +45,22 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
+      - name: Patch tinyxml2_vendor to accept single-.so installs
+        run: |
+          FILE=/opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
+          sudo sed -i '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a\
+# workaround for single-.so installs: replicate the one path\
+if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)\
+  set(_libpath ${TINYXML2_LIBRARY})\
+  set(TINYXML2_LIBRARY debug;${_libpath};optimized;${_libpath})\
+  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)\
+endif()' "$FILE"
+        shell: bash
+
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash     
+          source /opt/ros/humble/setup.bash
           source /opt/autoware/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
@@ -86,7 +100,7 @@ jobs:
       - name: Check lanelet parameters in config file
         run: |
           echo "Lanelet-related parameters in the configuration:"
-          grep -i "lanelet" /github/home/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
+          grep -i "lanelet" ~/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
         shell: bash
 
       - name: Launch scenario_test_runner with diagnostics
@@ -115,15 +129,15 @@ jobs:
         run: |
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
-  
+
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
             ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
-            
+
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-            
+
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
@@ -135,7 +149,7 @@ jobs:
                 echo "  </testcase>" >> "$XML_FILE"
               fi
             done < "$RESULT_FILE"
-          
+
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
           else
@@ -144,5 +158,3 @@ jobs:
             cat scenario_output.log
           fi
         shell: bash
-
-
