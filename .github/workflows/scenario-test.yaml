@@ -45,16 +45,29 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
-      - name: Patch tinyxml2_vendor to accept single-.so installs
+      - name: Patch tinyxml2_vendor to accept single‑.so installs
         run: |
           FILE=/opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
-          sudo sed -i '/^  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/ s|$|\
-  # workaround for single-.so installs: replicate the one path\
-  if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)\
-    set(_libpath ${TINYXML2_LIBRARY})\
-    set(TINYXML2_LIBRARY debug;${_libpath};optimized;${_libpath})\
-    list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)\
-  endif()|' "$FILE"
+          sudo python3 - "$FILE" << 'EOF'
+import sys, re
+path = sys.argv[1]
+lines = open(path).read().splitlines()
+out = []
+for L in lines:
+    out.append(L)
+    m = re.match(r'^(\s*)list\(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH\)', L)
+    if m:
+        indent = m.group(1)
+        out += [
+            f'{indent}# workaround for single-.so installs: replicate the one path',
+            f'{indent}if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)',
+            f'{indent}  set(_libpath ${{TINYXML2_LIBRARY}})',
+            f'{indent}  set(TINYXML2_LIBRARY debug;${{_libpath}};optimized;${{_libpath}})',
+            f'{indent}  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)',
+            f'{indent}endif()',
+        ]
+open(path, 'w').write('\n'.join(out) + '\n')
+EOF
         shell: bash
 
       - name: Build Autoware
