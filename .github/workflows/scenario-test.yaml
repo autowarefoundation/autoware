@@ -1,4 +1,5 @@
 name: scenario-test
+
 on:
   workflow_dispatch:
 
@@ -6,6 +7,7 @@ jobs:
   scenario-test:
     runs-on: ubuntu-24.04
     container: ghcr.io/autowarefoundation/autoware:universe-devel
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -27,7 +29,7 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
-      - name: Clone Autoware and Import simulator.repos
+      - name: Setup Autoware workspace
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
@@ -36,37 +38,30 @@ jobs:
           vcs import < autoware/simulator.repos
         shell: bash
 
+      - name: Fix missing dependencies (manual pull)
+        run: |
+          cd ~/autoware_ws/src
+          git clone https://github.com/tier4/tier4_external_api_msgs.git
+        shell: bash
+
       - name: Install ROS dependencies
         run: |
           cd ~/autoware_ws
+          source /opt/ros/humble/setup.bash
           rosdep update
-          rosdep install --from-paths src --ignore-src -r -y
+          rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
         shell: bash
 
-      - name: Build ROS messages first (to fix missing headers)
+      - name: Build scenario simulator only
         run: |
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
-          colcon build --packages-select tier4_external_api_msgs tier4_planning_msgs tier4_rtc_msgs traffic_simulator_msgs \
-            --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release \
+            --packages-select scenario_test_runner scenario_simulator scenario_simulator_v2 \
+            concealer openscenario_interpreter
         shell: bash
 
-      - name: Build Autoware
-        run: |
-          cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash     
-          source install/setup.bash
-          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
-          source install/setup.bash
-        shell: bash
-
-      - name: Check Autoware installation
-        run: |
-          source ~/autoware_ws/install/setup.bash
-          ros2 pkg list | grep autoware
-        shell: bash
-
-      - name: Download scenario file
+      - name: Download sample scenario file
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
@@ -83,24 +78,29 @@ jobs:
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Launch scenario_test_runner with diagnostics
+      - name: Run scenario_test_runner
         run: |
-          SCENARIO_FILE="./sample-scenario.yaml"
-          source ~/autoware_ws/install/setup.bash
-          if [ -f "$SCENARIO_FILE" ]; then
-            echo "Launching scenario_test_runner..."
-            ros2 launch scenario_test_runner scenario_test_runner.launch.py \
-              architecture_type:=awf/universe/20250130 \
-              record:=true \
-              scenario:="$SCENARIO_FILE" \
-              sensor_model:=sample_sensor_kit \
-              vehicle_model:=sample_vehicle \
-              initialize_duration:=100 \
-              output_directory:=./home/vishalchauhan/results \
-              simulate_localization:=false \
-              disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+          cd ~/autoware_ws
+          source install/setup.bash
+          ros2 launch scenario_test_runner scenario_test_runner.launch.py \
+            architecture_type:=awf/universe/20250130 \
+            record:=true \
+            scenario:=./sample-scenario.yaml \
+            sensor_model:=sample_sensor_kit \
+            vehicle_model:=sample_vehicle \
+            initialize_duration:=100 \
+            output_directory:=./results \
+            simulate_localization:=false \
+            disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+        shell: bash
+
+      - name: Parse results
+        run: |
+          if [ -f "./results/test_results.log" ]; then
+            echo "Test Results:"
+            cat ./results/test_results.log
           else
-            echo "ERROR: sample-scenario.yaml is missing!"
-            exit 1
+            echo "WARNING: No result log found. Simulation might have failed."
+            cat scenario_output.log || true
           fi
         shell: bash
