@@ -47,14 +47,12 @@ jobs:
 
       - name: Patch tinyxml2_vendor to accept single-.so installs
         run: |
-          sudo sed -i '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a \
-# workaround for single-.so installs: replicate the one path \
-if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1) \
-  set(_libpath ${TINYXML2_LIBRARY}) \
-  set(TINYXML2_LIBRARY debug;${_libpath};optimized;${_libpath}) \
-  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH) \
-endif()' \
-            /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
+          sudo sed -i '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a # workaround for single-.so installs: replicate the one path' /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
+          sudo sed -i '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)' /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
+          sudo sed -i '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a   set(_libpath ${TINYXML2_LIBRARY})' /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
+          sudo sed -i '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a   set(TINYXML2_LIBRARY debug;${_libpath};optimized;${_libpath})' /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
+          sudo sed -i '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a   list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)' /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
+          sudo sed -i '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a endif()' /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
         shell: bash
 
       - name: Build Autoware
