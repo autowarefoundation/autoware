@@ -16,7 +16,14 @@ jobs:
       - name: Install required packages
         run: |
           apt-get update
-          apt-get install -y unzip curl gnupg2 lsb-release python3-pip git ros-humble-pcl-ros
+          apt-get install -y \
+            unzip \
+            curl \
+            gnupg2 \
+            lsb-release \
+            python3-pip \
+            git \
+            ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
         shell: bash
 
@@ -36,51 +43,64 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
-      - name: Download scenario and map
-        run: |
-          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
-          gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-          mkdir -p /home/user/autoware_map
-          unzip -o sample-map-planning.zip -d /home/user/autoware_map
-          sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
-        shell: bash
-
-      - name: Build Autoware (excluding problematic rviz plugin)
+      - name: Build ROS messages first (to fix missing headers)
         run: |
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
-          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_REAL_TIME_FACTOR_CONTROL_RVIZ_PLUGIN=OFF
+          colcon build --packages-select tier4_external_api_msgs tier4_planning_msgs tier4_rtc_msgs traffic_simulator_msgs \
+            --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+        shell: bash
+
+      - name: Build Autoware
+        run: |
+          cd ~/autoware_ws
+          source /opt/ros/humble/setup.bash     
+          source install/setup.bash
+          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
 
-      - name: Run scenario_test_runner
+      - name: Check Autoware installation
         run: |
-          cd ~/autoware_ws
-          source install/setup.bash
-          if [ -f "./sample-scenario.yaml" ]; then
+          source ~/autoware_ws/install/setup.bash
+          ros2 pkg list | grep autoware
+        shell: bash
+
+      - name: Download scenario file
+        run: |
+          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
+        shell: bash
+
+      - name: Download sample-map-planning maps
+        run: |
+          gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
+          mkdir -p /home/user/autoware_map
+          unzip sample-map-planning.zip -d /home/user/autoware_map
+        shell: bash
+
+      - name: Fix path in sample-scenario.yaml
+        run: |
+          sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
+        shell: bash
+
+      - name: Launch scenario_test_runner with diagnostics
+        run: |
+          SCENARIO_FILE="./sample-scenario.yaml"
+          source ~/autoware_ws/install/setup.bash
+          if [ -f "$SCENARIO_FILE" ]; then
+            echo "Launching scenario_test_runner..."
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=true \
-              scenario:=./sample-scenario.yaml \
+              scenario:="$SCENARIO_FILE" \
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=100 \
-              output_directory:=./results \
+              output_directory:=./home/vishalchauhan/results \
               simulate_localization:=false \
-              disable_lanelet_pose_validation:=true \
-              || echo "Scenario runner failed, but continuing for diagnostics"
+              disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
           else
-            echo "Missing sample-scenario.yaml"
+            echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
-          fi
-        shell: bash
-
-      - name: Print simulation logs if failure
-        run: |
-          if [ -f scenario_output.log ]; then
-            echo "Simulation Output:"
-            cat scenario_output.log
-          else
-            echo "No scenario_output.log found."
           fi
         shell: bash
