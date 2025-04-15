@@ -16,8 +16,8 @@ jobs:
 
       - name: Install required packages
         run: |
-          apt-get update
-          apt-get install -y \
+          sudo apt-get update
+          sudo apt-get install -y \
             unzip \
             curl \
             gnupg2 \
@@ -29,7 +29,7 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
-      - name: Clone Autoware and Import simulator.repos
+      - name: Clone Autoware and import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
@@ -47,19 +47,19 @@ jobs:
 
       - name: Patch tinyxml2_vendor to accept single-.so installs
         run: |
-          sudo sed -i -e '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a \
-# Workaround for single-.so installs: replicate the one path\
-if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)\
-  set(_libpath ${TINYXML2_LIBRARY})\
-  set(TINYXML2_LIBRARY debug;${_libpath};optimized;${_libpath})\
-  list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)\
-endif()' \
+          sudo sed -i \
+            -e '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a # workaround for single-.so installs: replicate the one path' \
+            -e '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)' \
+            -e '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a   set(_libpath ${TINYXML2_LIBRARY})' \
+            -e '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a   set(TINYXML2_LIBRARY debug;${_libpath};optimized;${_libpath})' \
+            -e '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a   list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)' \
+            -e '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a endif()' \
             /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
         shell: bash
 
-      - name: Debug: show tinyxml2_vendor-extras.cmake around the patch
+      - name: Debug: show patched tinyxml2_vendor-extras.cmake snippet
         run: |
-          echo "==== Showing lines 20–35 of tinyxml2_vendor-extras.cmake ===="
+          echo "---- lines 20–35 of tinyxml2_vendor-extras.cmake ----"
           sed -n '20,35p' /opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
         shell: bash
 
