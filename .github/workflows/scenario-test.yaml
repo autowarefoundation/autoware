@@ -47,14 +47,21 @@ jobs:
 
       - name: Patch tinyxml2_vendor to accept single-.so installs
         run: |
+          sudo bash -c '
           FILE=/opt/ros/humble/share/tinyxml2_vendor/cmake/tinyxml2_vendor-extras.cmake
-          sudo sed -i '/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a\
+          if [ -f "$FILE" ]; then
+            sed -i "/list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)/a \
 # workaround for single-.so installs: replicate the one path\
+\
 if(${TINYXML_LIBRARY_LIST_LENGTH} EQUAL 1)\
   set(_libpath ${TINYXML2_LIBRARY})\
   set(TINYXML2_LIBRARY debug;${_libpath};optimized;${_libpath})\
   list(LENGTH TINYXML2_LIBRARY TINYXML_LIBRARY_LIST_LENGTH)\
-endif()' "$FILE"
+endif()" "$FILE"
+          else
+            echo "Skipping patch; file not found: $FILE"
+          fi
+          '
         shell: bash
 
       - name: Build Autoware
@@ -89,7 +96,7 @@ endif()' "$FILE"
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Build workspace
+      - name: Build workspace again
         run: |
           cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
