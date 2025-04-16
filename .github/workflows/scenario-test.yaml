@@ -33,11 +33,12 @@ jobs:
           cd ~/autoware_ws
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
-          # Add missing dependency
-          echo "- type: git" >> autoware/simulator.repos
-          echo "  url: https://github.com/tier4/tier4_external_api_msgs.git" >> autoware/simulator.repos
-          echo "  version: main" >> autoware/simulator.repos
-          echo "  name: tier4_external_api_msgs" >> autoware/simulator.repos
+          echo "
+- type: git
+  url: https://github.com/tier4/tier4_external_api_msgs.git
+  version: main
+  name: tier4_external_api_msgs
+" >> autoware/simulator.repos
           vcs import < autoware/simulator.repos
         shell: bash
 
@@ -80,7 +81,7 @@ jobs:
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Build workspace again (just in case)
+      - name: Build workspace
         run: |
           cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
