@@ -1,3 +1,7 @@
+from pathlib import Path
+
+# Save the user's corrected workflow script to a .yml file
+yml_script = """
 name: scenario-test
 on:
   workflow_dispatch:
@@ -33,12 +37,6 @@ jobs:
           cd ~/autoware_ws
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
-          echo "
-- type: git
-  url: https://github.com/tier4/tier4_external_api_msgs.git
-  version: main
-  name: tier4_external_api_msgs
-" >> autoware/simulator.repos
           vcs import < autoware/simulator.repos
         shell: bash
 
@@ -121,3 +119,38 @@ jobs:
         run: |
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
+
+          if [ -f "$RESULT_FILE" ]; then
+            echo "Parsing test results..."
+            FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
+            ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
+
+            echo "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?>" > "$XML_FILE"
+            echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
+
+            while IFS= read -r line; do
+              if echo "$line" | grep -qi "failure"; then
+                echo "  <testcase name='$line'>" >> "$XML_FILE"
+                echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
+                echo "  </testcase>" >> "$XML_FILE"
+              elif echo "$line" | grep -qi "error"; then
+                echo "  <testcase name='$line'>" >> "$XML_FILE"
+                echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
+                echo "  </testcase>" >> "$XML_FILE"
+              fi
+            done < "$RESULT_FILE"
+
+            echo "</testsuite>" >> "$XML_FILE"
+            echo "Results parsed and saved in $XML_FILE"
+          else
+            echo "WARNING: test_results.log is missing! The simulation might have crashed."
+            echo "Captured scenario output (for diagnostics):"
+            cat scenario_output.log
+          fi
+        shell: bash
+"""
+
+# Save to file
+file_path = Path("/mnt/data/scenario-test.yml")
+file_path.write_text(yml_script)
+file_path.name
