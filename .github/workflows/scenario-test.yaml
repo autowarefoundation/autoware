@@ -1,7 +1,3 @@
-from pathlib import Path
-
-# Save the user's corrected workflow script to a .yml file
-yml_script = """
 name: scenario-test
 on:
   workflow_dispatch:
@@ -119,15 +115,15 @@ jobs:
         run: |
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
-
+  
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
             ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
-
-            echo "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?>" > "$XML_FILE"
+            
+            echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-
+            
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
@@ -139,7 +135,7 @@ jobs:
                 echo "  </testcase>" >> "$XML_FILE"
               fi
             done < "$RESULT_FILE"
-
+          
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
           else
@@ -148,9 +144,5 @@ jobs:
             cat scenario_output.log
           fi
         shell: bash
-"""
 
-# Save to file
-file_path = Path("/mnt/data/scenario-test.yml")
-file_path.write_text(yml_script)
-file_path.name
+
