@@ -27,7 +27,7 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
-      - name: Setup Autoware workspace
+      - name: Clone Autoware and Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
@@ -40,13 +40,14 @@ jobs:
         run: |
           cd ~/autoware_ws
           rosdep update
-          rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
+          rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash     
+          source /opt/autoware/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
@@ -57,35 +58,35 @@ jobs:
           ros2 pkg list | grep autoware
         shell: bash
 
-      - name: Download sample scenario
+      - name: Download scenario file
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
-      - name: Download sample map
+      - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           mkdir -p /home/user/autoware_map
           unzip sample-map-planning.zip -d /home/user/autoware_map
         shell: bash
 
-      - name: Fix map path in scenario file
+      - name: Fix path in sample-scenario.yaml
         run: |
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Rebuild Autoware workspace
+      - name: Build workspace
         run: |
           cd ~/autoware_ws
-          source install/setup.bash
+          source ~/autoware_ws/install/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
 
-      - name: Check lanelet parameters
+      - name: Check lanelet parameters in config file
         run: |
           echo "Lanelet-related parameters in the configuration:"
-          grep -i "lanelet" ~/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
+          grep -i "lanelet" /github/home/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
         shell: bash
 
       - name: Launch scenario_test_runner with diagnostics
@@ -101,7 +102,7 @@ jobs:
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=100 \
-              output_directory:=./results \
+              output_directory:=./home/vishalchauhan/results \
               simulate_localization:=false \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
           else
@@ -143,3 +144,5 @@ jobs:
             cat scenario_output.log
           fi
         shell: bash
+
+
