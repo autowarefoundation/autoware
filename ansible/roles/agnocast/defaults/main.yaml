@@ -1,3 +1,3 @@
-heaphook_package: agnocast-heaphook-v2.1
-kmod_package: agnocast-kmod-v2.1
+agnocast_heaphook_package: agnocast-heaphook-v2.1
+agnocast_kmod_package: agnocast-kmod-v2.1
 agnocast_version: 2.1.0
