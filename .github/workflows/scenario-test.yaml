@@ -23,8 +23,8 @@ jobs:
             lsb-release \
             python3-pip \
             git \
-            ros-humble-pcl-ros \
-            libtinyxml2-dev  # ✅ Fixes tinyxml2_vendor CMake error
+            libtinyxml2-dev \
+            ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
         shell: bash
 
@@ -35,6 +35,13 @@ jobs:
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
           vcs import < autoware/simulator.repos
+          # Overwrite simulator.repos to force version 15.1.1
+          echo "repositories:" > autoware/simulator.repos
+          echo "  simulator/scenario_simulator:" >> autoware/simulator.repos
+          echo "    type: git" >> autoware/simulator.repos
+          echo "    url: https://github.com/tier4/scenario_simulator_v2.git" >> autoware/simulator.repos
+          echo "    version: 15.1.1" >> autoware/simulator.repos
+          vcs import < autoware/simulator.repos
         shell: bash
 
       - name: Install ROS dependencies
@@ -44,11 +51,16 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
+      - name: Clean previous builds
+        run: |
+          rm -rf ~/autoware_ws/build
+          rm -rf ~/autoware_ws/install
+        shell: bash
+
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash     
-          source /opt/autoware/setup.bash
+          source /opt/ros/humble/setup.bash
           colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
@@ -76,7 +88,7 @@ jobs:
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Build workspace again
+      - name: Build workspace again after scenario import
         run: |
           cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
@@ -121,10 +133,10 @@ jobs:
             echo "Parsing test results..."
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
             ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
-            
+
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-            
+
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
