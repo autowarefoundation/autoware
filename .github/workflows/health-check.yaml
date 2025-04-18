@@ -56,7 +56,23 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get changed files
+        id: changed-files
+        uses: step-security/changed-files@v45
+        with:
+          files: |
+            *.env
+            *.repos
+            .github/actions/docker-build/action.yaml
+            .github/workflows/health-check.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+
       - name: Free disk space
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/free-disk-space
 
       - name: Set Swap Space
