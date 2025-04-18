@@ -29,8 +29,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        build-type: [main, nightly, main-arm64]
         include:
-          - build-type: [main, nightly, main-arm64]
           - build-type: main
             platform: amd64
             runner: ubuntu-22.04
