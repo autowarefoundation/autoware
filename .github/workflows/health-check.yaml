@@ -26,11 +26,26 @@ jobs:
 
   docker-build:
     needs: load-env
-    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        build-type: [main, nightly]
+        include:
+          - platform: amd64
+            runner: ubuntu-22.04
+            arch-platform: linux/amd64
+            lib-dir: x86_64
+            build-type: main
+          - platform: amd64
+            runner: ubuntu-22.04
+            arch-platform: linux/amd64
+            lib-dir: x86_64
+            build-type: nightly
+          - platform: arm64
+            runner: ubuntu-22.04-arm
+            arch-platform: linux/arm64
+            lib-dir: aarch64
+            build-type: main
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -43,10 +58,16 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
+      - name: Set Swap Space
+        if: ${{ matrix.platform == 'arm64' }}
+        uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
+        with:
+          swap-size-gb: 16
+
       - name: Build 'Autoware'
         uses: ./.github/actions/docker-build
         with:
-          platform: amd64
+          platform: ${{ matrix.arch-platform }}
           cache-tag-suffix: ${{ matrix.build-type }}
           additional-repos: ${{ matrix.build-type == 'nightly' && 'autoware-nightly.repos' || '' }}
           build-args: |
@@ -54,7 +75,7 @@ jobs:
             BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
-            LIB_DIR=x86_64
+            LIB_DIR=${{ matrix.lib-dir }}
 
       - name: Show disk space
         if: always()
