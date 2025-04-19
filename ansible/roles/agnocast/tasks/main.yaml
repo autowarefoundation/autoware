@@ -1,0 +1,42 @@
+- name: Install linux headers for the running kernel
+  ansible.builtin.apt:
+    name: linux-headers-{{ ansible_kernel }}
+    state: present
+  become: true
+
+- name: Add agnocast PPA repository
+  ansible.builtin.apt_repository:
+    repo: ppa:t4-system-software/agnocast
+    state: present
+  become: true
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+
+- name: Install {{ agnocast_heaphook_package }}
+  ansible.builtin.apt:
+    name: "{{ agnocast_heaphook_package }}"
+    state: present
+  become: true
+
+- name: Check if agnocast-kmod is installed in dkms with version v{{ agnocast_version }}
+  ansible.builtin.shell: dkms status | grep agnocast | grep {{ agnocast_version }} # noqa: risky-shell-pipe
+  register: dkms_status
+  failed_when: false
+  changed_when: false
+
+- name: Purge agnocast-kmod if not found in dkms for version v{{ agnocast_version }}
+  ansible.builtin.apt:
+    name: "{{ agnocast_kmod_package }}"
+    state: absent
+  become: true
+  when: dkms_status.rc != 0
+
+- name: Install agnocast-kmod if not found in dkms for version v{{ agnocast_version }}
+  ansible.builtin.apt:
+    name: "{{ agnocast_kmod_package }}"
+    state: present
+  become: true
+  when: dkms_status.rc != 0
