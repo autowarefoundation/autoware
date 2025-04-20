@@ -49,8 +49,9 @@ runs:
       with:
         path: |
           root-ccache
-        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
+          ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           ccache-${{ inputs.platform }}-
 
     - name: Cache apt-get
@@ -60,8 +61,9 @@ runs:
       with:
         path: |
           var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
+        key: apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
+          apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           apt-get-${{ inputs.platform }}-
 
     - name: Restore ccache
@@ -70,8 +72,9 @@ runs:
       with:
         path: |
           root-ccache
-        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
+          ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           ccache-${{ inputs.platform }}-
 
     - name: Restore apt-get
@@ -80,8 +83,9 @@ runs:
       with:
         path: |
           var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
+        key: apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
+          apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           apt-get-${{ inputs.platform }}-
 
     - name: Inject cache into docker
