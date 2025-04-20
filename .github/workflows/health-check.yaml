@@ -68,6 +68,7 @@ jobs:
             ansible-galaxy-requirements.yaml
             ansible/**
             docker/**
+            setup-dev-env.sh
 
       - name: Free disk space
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
