@@ -1,9 +1,8 @@
-ARG BASE_IMAGE
 ARG AUTOWARE_BASE_IMAGE
 ARG AUTOWARE_BASE_CUDA_IMAGE
 
 # hadolint ignore=DL3006
-FROM $BASE_IMAGE AS rosdep-depend
+FROM $AUTOWARE_BASE_IMAGE AS rosdep-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
