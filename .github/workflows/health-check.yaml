@@ -96,7 +96,6 @@ jobs:
           additional-repos: ${{ matrix.build-type == 'nightly' && 'autoware-nightly.repos' || '' }}
           build-args: |
             ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
