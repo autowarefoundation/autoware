@@ -7,17 +7,21 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_internal_msgs.git
     version: main
-  core/autoware.core:
+  core/autoware_core:
     type: git
-    url: https://github.com/autowarefoundation/autoware.core.git
+    url: https://github.com/autowarefoundation/autoware_core.git
     version: main
   core/autoware_utils: # TODO(mitsudome-r): Remove this repository entry when https://github.com/autowarefoundation/autoware/pull/5700 is merged.
     type: git
     url: https://github.com/autowarefoundation/autoware_utils.git
     version: main
-  universe/autoware.universe:
+  universe/autoware_universe:
     type: git
-    url: https://github.com/autowarefoundation/autoware.universe.git
+    url: https://github.com/autowarefoundation/autoware_universe.git
+    version: main
+  universe/external/managed_transform_buffer:
+    type: git
+    url: https://github.com/autowarefoundation/managed_transform_buffer.git
     version: main
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Migrate to AD API and remove this repository entry.
     type: git
@@ -30,28 +34,4 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
-    version: main
-  sensor_kit/sample_sensor_kit_launch:
-    type: git
-    url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
-    version: main
-  sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
-    type: git
-    url: https://github.com/tier4/awsim_sensor_kit_launch.git
-    version: main
-  sensor_kit/awsim_labs_sensor_kit_launch:
-    type: git
-    url: https://github.com/autowarefoundation/awsim_labs_sensor_kit_launch.git
-    version: main
-  sensor_kit/single_lidar_sensor_kit_launch:
-    type: git
-    url: https://github.com/autowarefoundation/single_lidar_sensor_kit_launch.git
-    version: main
-  vehicle/sample_vehicle_launch:
-    type: git
-    url: https://github.com/autowarefoundation/sample_vehicle_launch.git
-    version: main
-  vehicle/awsim_labs_vehicle_launch:
-    type: git
-    url: https://github.com/autowarefoundation/awsim_labs_vehicle_launch.git
     version: main

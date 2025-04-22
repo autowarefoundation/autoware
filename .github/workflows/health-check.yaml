@@ -3,152 +3,96 @@ on:
   workflow_dispatch:
 
 jobs:
-  scenario-test:
-    runs-on: ubuntu-24.04
-    container: ghcr.io/autowarefoundation/autoware:universe-devel
+  label-check:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
+    with:
+      label: run:health-check
 
+  load-env:
+    needs: label-check
+    if: ${{ needs.label-check.outputs.result == 'true' ||
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/load-env.yaml
+
+  docker-build:
+    needs: load-env
+    strategy:
+      fail-fast: false
+      matrix:
+        build-type: [main, nightly, main-arm64]
+        include:
+          - build-type: main
+            platform: amd64
+            runner: ubuntu-22.04
+            arch-platform: linux/amd64
+            lib-dir: x86_64
+          - build-type: nightly
+            platform: amd64
+            runner: ubuntu-22.04
+            arch-platform: linux/amd64
+            lib-dir: x86_64
+          - build-type: main-arm64
+            platform: arm64
+            runner: ubuntu-22.04-arm
+            arch-platform: linux/arm64
+            lib-dir: aarch64
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Step 1: Check out repository
         uses: actions/checkout@v4
 
-      - name: Step 2: Free disk space
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: step-security/changed-files@v45
+        with:
+          files: |
+            *.env
+            *.repos
+            .github/actions/docker-build/action.yaml
+            .github/workflows/health-check.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+            setup-dev-env.sh
+
+      - name: Free disk space
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/free-disk-space
 
-      - name: Step 3: Install required packages
+      - name: Set Swap Space
+        if: ${{ (steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch') &&
+          matrix.platform == 'arm64' }}
+        uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
+        with:
+          swap-size-gb: 16
+
+      - name: Build 'Autoware'
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
+        uses: ./.github/actions/docker-build
+        with:
+          platform: ${{ matrix.arch-platform }}
+          cache-tag-suffix: ${{ matrix.build-type }}
+          additional-repos: ${{ matrix.build-type == 'nightly' && 'autoware-nightly.repos' || '' }}
+          build-args: |
+            ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
+            AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
+            LIB_DIR=${{ matrix.lib-dir }}
+
+      - name: Show disk space
+        if: always()
         run: |
-          echo "Step 3: Installing system dependencies..."
-          apt-get update
-          apt-get install -y \
-            unzip \
-            curl \
-            gnupg2 \
-            lsb-release \
-            python3-pip \
-            git \
-            ros-humble-pcl-ros
-          pip install --upgrade gdown vcstool
-        shell: bash
+          df -h
 
-      - name: Step 4: Clone Autoware and Import simulator.repos
-        run: |
-          echo "Step 4: Cloning Autoware and simulator.repos..."
-          mkdir -p ~/autoware_ws/src
-          cd ~/autoware_ws
-          git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
-          cd src
-          vcs import < autoware/simulator.repos
-        shell: bash
-
-      - name: Step 5: Install ROS dependencies
-        run: |
-          echo "Step 5: Installing ROS dependencies..."
-          cd ~/autoware_ws
-          rosdep update
-          rosdep install --from-paths src --ignore-src -r -y
-        shell: bash
-
-      - name: Step 6: Build Autoware
-        run: |
-          echo "Step 6: Building Autoware workspace..."
-          cd ~/autoware_ws
-          source /opt/ros/humble/setup.bash     
-          source /opt/autoware/setup.bash
-          colcon build --symlink-install
-          source install/setup.bash
-        shell: bash
-
-      - name: Step 7: Check Autoware installation
-        run: |
-          echo "Step 7: Verifying Autoware installation..."
-          source ~/autoware_ws/install/setup.bash
-          ros2 pkg list | grep autoware
-        shell: bash
-
-      - name: Step 8: Download sample-scenario.yaml
-        run: |
-          echo "Step 8: Downloading scenario file..."
-          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
-        shell: bash
-
-      - name: Step 9: Download and unzip sample-map-planning
-        run: |
-          echo "Step 9: Downloading and extracting map..."
-          gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-          mkdir -p /home/user/autoware_map
-          unzip sample-map-planning.zip -d /home/user/autoware_map
-        shell: bash
-
-      - name: Step 10: Fix map path in sample-scenario.yaml
-        run: |
-          echo "Step 10: Fixing map path in YAML..."
-          sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
-        shell: bash
-
-      - name: Step 11: Rebuild workspace
-        run: |
-          echo "Step 11: Sourcing and rebuilding workspace..."
-          source ~/autoware_ws/install/setup.bash
-          colcon build --symlink-install
-          source install/setup.bash
-        shell: bash
-
-      - name: Step 12: Check lanelet parameters in config
-        run: |
-          echo "Step 12: Checking lanelet references in parameter config..."
-          grep -i "lanelet" /github/home/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
-        shell: bash
-
-      - name: Step 13: Launch scenario_test_runner
-        run: |
-          echo "Step 13: Launching scenario_test_runner..."
-          SCENARIO_FILE="./sample-scenario.yaml"
-          source ~/autoware_ws/install/setup.bash
-          if [ -f "$SCENARIO_FILE" ]; then
-            ros2 launch scenario_test_runner scenario_test_runner.launch.py \
-              architecture_type:=awf/universe/20250130 \
-              record:=true \
-              scenario:="$SCENARIO_FILE" \
-              sensor_model:=sample_sensor_kit \
-              vehicle_model:=sample_vehicle \
-              initialize_duration:=100 \
-              output_directory:=./home/vishalchauhan/results \
-              simulate_localization:=false \
-              disable_lanelet_pose_validation:=true
-          else
-            echo "ERROR: sample-scenario.yaml is missing!"
-            exit 1
-          fi
-        shell: bash
-
-      - name: Step 14: Parse scenario results
-        run: |
-          echo "Step 14: Parsing test results and saving JUnit XML..."
-          RESULT_FILE="./results/test_results.log"
-          XML_FILE="./results/scenario_test_runner/result.junit.xml"
-
-          if [ -f "$RESULT_FILE" ]; then
-            FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
-            ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
-
-            echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
-            echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-
-            while IFS= read -r line; do
-              if echo "$line" | grep -qi "failure"; then
-                echo "  <testcase name='$line'>" >> "$XML_FILE"
-                echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
-                echo "  </testcase>" >> "$XML_FILE"
-              elif echo "$line" | grep -qi "error"; then
-                echo "  <testcase name='$line'>" >> "$XML_FILE"
-                echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
-                echo "  </testcase>" >> "$XML_FILE"
-              fi
-            done < "$RESULT_FILE"
-
-            echo "</testsuite>" >> "$XML_FILE"
-            echo "Results saved to $XML_FILE"
-          else
-            echo "WARNING: test_results.log is missing. Scenario may have crashed."
-            cat scenario_output.log || echo "No scenario output available."
-          fi
-        shell: bash

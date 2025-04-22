@@ -3,8 +3,8 @@ repositories:
   core/autoware_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
-    version: 1.6.0
-  # TODO (isamu-takagi): Use a released version when autoware.universe uses a released version.
+    version: 1.7.0
+  # TODO (isamu-takagi): Use a released version when autoware_universe uses a released version.
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
@@ -25,14 +25,14 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
     version: 0.7.0
-  core/autoware.core:
+  core/autoware_core:
     type: git
-    url: https://github.com/autowarefoundation/autoware.core.git
+    url: https://github.com/autowarefoundation/autoware_core.git
     version: 0.3.0
   # universe
-  universe/autoware.universe:
+  universe/autoware_universe:
     type: git
-    url: https://github.com/autowarefoundation/autoware.universe.git
+    url: https://github.com/autowarefoundation/autoware_universe.git
     version: 0.43.0
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Migrate to AD API and remove this repository entry.
     type: git
@@ -50,15 +50,15 @@ repositories:
   universe/external/muSSP:
     type: git
     url: https://github.com/tier4/muSSP.git
-    version: tier4/main
+    version: c79e98fd5e658f4f90c06d93472faa977bc873b9
   universe/external/pointcloud_to_laserscan:
     type: git
     url: https://github.com/tier4/pointcloud_to_laserscan.git
-    version: tier4/main
+    version: d969ec699f84fad827fbadfa3001c9c657482fbe
   universe/external/eagleye:
     type: git
     url: https://github.com/MapIV/eagleye.git
-    version: autoware-main
+    version: c1919448336e86a8dd9c94a337032c05fcf6c381
   universe/external/rtklib_ros_bridge:
     type: git
     url: https://github.com/MapIV/rtklib_ros_bridge.git
@@ -96,10 +96,6 @@ repositories:
   sensor_component/external/sensor_component_description:
     type: git
     url: https://github.com/tier4/sensor_component_description.git
-    version: main
-  sensor_component/external/tamagawa_imu_driver:
-    type: git
-    url: https://github.com/tier4/tamagawa_imu_driver.git
     version: 03ba094851ec90febfcfc0adb20b64b0e19df7a8
   sensor_component/external/nebula:
     type: git
@@ -119,4 +115,4 @@ repositories:
   param/autoware_individual_params:
     type: git
     url: https://github.com/autowarefoundation/autoware_individual_params.git
-    version:70000825155182d9261ce0980076b0e2c6dc3f51
+    version: 70000825155182d9261ce0980076b0e2c6dc3f51

@@ -20,6 +20,7 @@ fi
 option_no_nvidia=false
 option_devel=false
 option_headless=false
+option_pull_latest_image=false
 MAP_PATH=""
 DATA_PATH=""
 WORKSPACE_PATH=""
@@ -35,13 +36,14 @@ print_help() {
     echo -e "------------------------------------------------------------"
     echo -e "${RED}Usage:${NC} run.sh [OPTIONS] [LAUNCH_CMD](optional)"
     echo -e "Options:"
-    echo -e "  ${GREEN}--help/-h${NC}       Display this help message"
-    echo -e "  ${GREEN}--map-path${NC}      Specify to mount map files into /autoware_map (mandatory for runtime)"
-    echo -e "  ${GREEN}--data-path${NC}     Specify to mount data files into /root/autoware_data (mandatory for runtime)"
-    echo -e "  ${GREEN}--devel${NC}         Launch the latest Autoware development environment with shell access"
-    echo -e "  ${GREEN}--workspace${NC}     (--devel only)Specify the directory to mount into /workspace, by default it uses current directory (pwd)"
-    echo -e "  ${GREEN}--no-nvidia${NC}     Disable NVIDIA GPU support"
-    echo -e "  ${GREEN}--headless${NC}      Run Autoware in headless mode (default: false)"
+    echo -e "  ${GREEN}--help/-h${NC}            Display this help message"
+    echo -e "  ${GREEN}--map-path${NC}           Specify to mount map files into /autoware_map (mandatory for runtime)"
+    echo -e "  ${GREEN}--data-path${NC}          Specify to mount data files into /autoware_data (mandatory for runtime)"
+    echo -e "  ${GREEN}--devel${NC}              Launch the latest Autoware development environment with shell access"
+    echo -e "  ${GREEN}--workspace${NC}          (--devel only)Specify the directory to mount into /workspace, by default it uses current directory (pwd)"
+    echo -e "  ${GREEN}--no-nvidia${NC}          Disable NVIDIA GPU support"
+    echo -e "  ${GREEN}--headless${NC}           Run Autoware in headless mode (default: false)"
+    echo -e "  ${GREEN}--pull-latest-image${NC}  Pull the latest image before starting the container"
     echo ""
 }
 
@@ -61,6 +63,9 @@ parse_arguments() {
             ;;
         --headless)
             option_headless=true
+            ;;
+        --pull-latest-image)
+            option_pull_latest_image=true
             ;;
         --workspace)
             WORKSPACE_PATH="$2"
@@ -95,6 +100,19 @@ parse_arguments() {
 
 # Set the docker image and workspace variables
 set_variables() {
+    # Set user ID and group ID to match the local user
+    USER_ID="-e LOCAL_UID=$(id -u) -e LOCAL_GID=$(id -g) -e LOCAL_USER=$(id -un) -e LOCAL_GROUP=$(id -gn)"
+
+    # Set map path
+    if [ "$MAP_PATH" != "" ]; then
+        MAP="-v ${MAP_PATH}:/autoware_map:ro"
+    fi
+
+    # Set data path
+    if [ "$DATA_PATH" != "" ]; then
+        DATA="-v ${DATA_PATH}:/autoware_data:rw"
+    fi
+
     if [ "$option_devel" = "true" ]; then
         # Set image based on option
         IMAGE="ghcr.io/autowarefoundation/autoware:universe-devel"
@@ -104,19 +122,6 @@ set_variables() {
             WORKSPACE_PATH=$(pwd)
         fi
         WORKSPACE="-v ${WORKSPACE_PATH}:/workspace"
-
-        # Set user ID and group ID to match the local user
-        USER_ID="-e LOCAL_UID=$(id -u) -e LOCAL_GID=$(id -g) -e LOCAL_USER=$(id -un) -e LOCAL_GROUP=$(id -gn)"
-
-        # Set map path
-        if [ "$MAP_PATH" != "" ]; then
-            MAP="-v ${MAP_PATH}:/autoware_map:ro"
-        fi
-
-        # Set data path
-        if [ "$DATA_PATH" != "" ]; then
-            DATA="-v ${DATA_PATH}:/root/autoware_data:rw"
-        fi
 
         # Set launch command
         if [ "$LAUNCH_CMD" = "" ]; then
@@ -132,9 +137,6 @@ set_variables() {
             echo -e "${RED}Note:${NC} The --map-path and --data-path option is mandatory for the universe(runtime image). For development environment with shell access, use --devel option."
             echo -e "------------------------------------------------------------"
             exit 1
-        else
-            MAP="-v ${MAP_PATH}:/autoware_map:ro"
-            DATA="-v ${DATA_PATH}:/root/autoware_data:rw"
         fi
 
         # Set default launch command if not provided
@@ -188,10 +190,14 @@ main() {
     echo -e "${GREEN}LAUNCH CMD:${NC} ${LAUNCH_CMD}"
     echo -e "${GREEN}-----------------------------------------------------------------${NC}"
 
+    if [ "$option_pull_latest_image" = "true" ]; then
+        docker pull ${IMAGE}
+    fi
+
     # Launch the container
     set -x
     docker run -it --rm --net=host ${GPU_FLAG} ${USER_ID} ${MOUNT_X} \
-        -e XAUTHORITY=${XAUTHORITY} -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR -e NVIDIA_DRIVER_CAPABILITIES=all -v /etc/localtime:/etc/localtime:ro \
+        -e XAUTHORITY=${XAUTHORITY} -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR -e NVIDIA_DRIVER_CAPABILITIES=all -e TZ="$(cat /etc/timezone)" \
         ${WORKSPACE} ${MAP} ${DATA} ${IMAGE} \
         ${LAUNCH_CMD}
 }
