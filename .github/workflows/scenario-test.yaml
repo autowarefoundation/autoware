@@ -31,7 +31,7 @@ jobs:
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
-          vcs import . < ~/simulator.repos
+          vcs import src < autoware/simulator.repos
         shell: bash
 
       - name: Install ROS dependencies
