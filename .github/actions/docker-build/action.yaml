@@ -44,44 +44,48 @@ runs:
 
     - name: Cache ccache
       uses: actions/cache@v4
-      if: ${{ github.ref == 'refs/heads/main' && inputs.additional-repos == '' }}
+      if: ${{ github.ref == 'refs/heads/main'}}
       id: cache-ccache
       with:
         path: |
           root-ccache
-        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
+          ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           ccache-${{ inputs.platform }}-
 
     - name: Cache apt-get
       uses: actions/cache@v4
-      if: ${{ github.ref == 'refs/heads/main' && inputs.additional-repos == '' }}
+      if: ${{ github.ref == 'refs/heads/main'}}
       id: cache-apt-get
       with:
         path: |
           var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
+        key: apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
+          apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           apt-get-${{ inputs.platform }}-
 
     - name: Restore ccache
       uses: actions/cache/restore@v4
-      if: ${{ github.ref != 'refs/heads/main' || inputs.additional-repos != '' }}
+      if: ${{ github.ref != 'refs/heads/main'}}
       with:
         path: |
           root-ccache
-        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
+          ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           ccache-${{ inputs.platform }}-
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
-      if: ${{ github.ref != 'refs/heads/main' || inputs.additional-repos != '' }}
+      if: ${{ github.ref != 'refs/heads/main'}}
       with:
         path: |
           var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
+        key: apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
+          apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           apt-get-${{ inputs.platform }}-
 
     - name: Inject cache into docker
