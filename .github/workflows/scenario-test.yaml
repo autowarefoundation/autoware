@@ -32,8 +32,7 @@ jobs:
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
-          cd src
-          vcs import < autoware/simulator.repos
+          vcs import src < autoware/simulator.repos
         shell: bash
 
       - name: Install ROS dependencies
