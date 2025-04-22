@@ -27,13 +27,11 @@ jobs:
           pip install --upgrade gdown vcstool
         shell: bash
 
-      - name: Clone Autoware and Import simulator.repos
+      - name: Import simulator.repos
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
-          git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
-          cd src
-          vcs import < autoware/simulator.repos
+          vcs import . < ~/simulator.repos
         shell: bash
 
       - name: Install ROS dependencies
