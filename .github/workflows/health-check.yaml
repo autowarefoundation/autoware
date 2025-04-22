@@ -1,5 +1,14 @@
-name: scenario-test
+name: health-check
+
 on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+  schedule:
+    - cron: 0 12 * * *
   workflow_dispatch:
 
 jobs:
@@ -39,7 +48,7 @@ jobs:
             lib-dir: aarch64
     runs-on: ${{ matrix.runner }}
     steps:
-      - name: Step 1: Check out repository
+      - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Set git config
@@ -95,4 +104,3 @@ jobs:
         if: always()
         run: |
           df -h
-
