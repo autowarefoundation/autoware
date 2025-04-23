@@ -24,7 +24,7 @@ if [ -n "$CCACHE_DIR" ]; then
 fi
 
 # install xmlschema<4.0.0 before rosdep install as workaround for scenario_simulator_v2
-sudo pip3 install xmlschema==3.4.5
+pip3 install --user xmlschema==3.4.5
 
 sudo -E apt-get -y update
 
