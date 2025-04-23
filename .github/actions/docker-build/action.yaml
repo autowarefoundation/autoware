@@ -91,6 +91,7 @@ runs:
     - name: Inject cache into docker
       uses: reproducible-containers/buildkit-cache-dance@v3.1.2
       with:
+        utility-image: ghcr.io/containerd/busybox:latest
         cache-map: |
           {
             "root-ccache": "/root/.ccache",
