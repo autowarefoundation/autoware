@@ -212,6 +212,7 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Set Swap Space
+        # docker-build-and-push-cuda consumes a lot of memory
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
