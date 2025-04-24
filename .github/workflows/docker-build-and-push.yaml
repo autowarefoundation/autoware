@@ -62,13 +62,12 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Set Swap Space
-        if: ${{ (steps.changed-files.outputs.any_changed == 'true' ||
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && github.ref_type == 'tag')) &&
-          matrix.platform == 'arm64' }}
+          (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
         with:
-          swap-size-gb: 16
+          swap-size-gb: 8
 
       - name: Build 'Autoware' without CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
@@ -138,13 +137,12 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Set Swap Space
-        if: ${{ (steps.changed-files.outputs.any_changed == 'true' ||
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && github.ref_type == 'tag')) &&
-          matrix.platform == 'arm64' }}
+          (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
         with:
-          swap-size-gb: 16
+          swap-size-gb: 8
 
       - name: Build 'autoware-tools'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
@@ -212,13 +210,12 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Set Swap Space
-        # docker-build-and-push-cuda consumes a lot of memory
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
         with:
-          swap-size-gb: 16
+          swap-size-gb: 8
 
       - name: Build 'Autoware' with CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
