@@ -1,8 +1,11 @@
 name: scenario-test
 on:
   schedule:
-    - cron: "0 12 * * *
+    - cron: "0 12 * * *"
   workflow_dispatch:
+  pull_request:
+    paths:
+      - simulator*.repos
 
 jobs:
   scenario-test:
