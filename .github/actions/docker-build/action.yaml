@@ -89,8 +89,10 @@ runs:
           apt-get-${{ inputs.platform }}-
 
     - name: Inject cache into docker
-      uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+      # TODO(youtalk): Use the release version again
+      uses: reproducible-containers/buildkit-cache-dance@7c892679bab8ff382a8c88ab7f973d5e30a8f239
       with:
+        utility-image: ghcr.io/containerd/busybox:latest
         cache-map: |
           {
             "root-ccache": "/root/.ccache",
