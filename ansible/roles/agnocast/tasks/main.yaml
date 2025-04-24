@@ -13,7 +13,7 @@
   become: true
 
 - name: Temporarily disable IPv6
-  ansible.builtin.sysctl:
+  ansible.posix.sysctl:
     name: "{{ item.name }}"
     value: 1
     sysctl_set: true
@@ -30,7 +30,7 @@
     update_cache: false
   become: true
 
-- name: Restore original IPv6 settings
+- name: Restore original IPv6 settings # noqa
   ansible.builtin.command: >
     sysctl -w {{ item }}
   loop: "{{ ipv6_settings.stdout_lines }}"
