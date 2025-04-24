@@ -4,10 +4,13 @@
     state: present
   become: true
 
-- name: Add agnocast PPA repository
+- name: Add agnocast PPA repository with extended retries
   ansible.builtin.apt_repository:
     repo: ppa:t4-system-software/agnocast
     state: present
+    update_cache: true
+    update_cache_retries: 10
+    update_cache_retry_max_delay: 30
   become: true
 
 - name: Update apt cache
