@@ -30,7 +30,7 @@
     update_cache: false
   become: true
 
-- name: Restore original IPv6 settings # noqa
+- name: Restore original IPv6 settings # noqa: command-shell
   ansible.builtin.command: >
     sysctl -w {{ item }}
   loop: "{{ ipv6_settings.stdout_lines }}"
