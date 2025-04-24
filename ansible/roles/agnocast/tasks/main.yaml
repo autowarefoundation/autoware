@@ -10,7 +10,7 @@
     state: present
     update_cache: true
     update_cache_retries: 10
-    update_cache_retry_max_delay: 30
+    update_cache_retry_max_delay: 60
   become: true
 
 - name: Update apt cache
