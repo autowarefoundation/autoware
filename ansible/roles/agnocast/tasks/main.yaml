@@ -4,6 +4,7 @@
     state: present
   become: true
 
+# TODO(rej55, sykwer): IPv6 support
 - name: Save current IPv6 settings
   ansible.builtin.shell: |
     sysctl net.ipv6.conf.all.disable_ipv6
