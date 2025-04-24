@@ -76,15 +76,6 @@ jobs:
           github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/free-disk-space
 
-      - name: Set Swap Space
-        if: ${{ (steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch') &&
-          matrix.platform == 'arm64' }}
-        uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
-        with:
-          swap-size-gb: 16
-
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'schedule' ||
