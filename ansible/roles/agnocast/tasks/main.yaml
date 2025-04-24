@@ -16,7 +16,7 @@
   ansible.builtin.sysctl:
     name: "{{ item.name }}"
     value: 1
-    sysctl_set: yes
+    sysctl_set: true
     state: present
   loop:
     - { name: "net.ipv6.conf.all.disable_ipv6" }
