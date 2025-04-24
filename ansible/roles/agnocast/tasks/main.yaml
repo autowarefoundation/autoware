@@ -8,7 +8,7 @@
   ansible.builtin.apt_repository:
     repo: ppa:t4-system-software/agnocast
     state: present
-    update_cache: true
+    update_cache: false
     update_cache_retries: 10
     update_cache_retry_max_delay: 60
   become: true
