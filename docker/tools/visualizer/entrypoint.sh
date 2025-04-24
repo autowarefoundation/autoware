@@ -10,9 +10,6 @@ if [ -z "$RVIZ_CONFIG" ]; then
 fi
 
 configure_vnc() {
-    # Check if WEB_PASSWORD is provided
-    [ -z "$WEB_PASSWORD" ] && echo -e "\e[31mPassword is needed when WEB_ENABLED is true. Set WEB_PASSWORD environment variable\e[0m" && exit 1
-
     # Create Openbox application configuration
     mkdir -p /etc/xdg/openbox
     cat >/etc/xdg/openbox/rc.xml <<'EOF'
@@ -35,7 +32,7 @@ EOF
     # Create rviz2 start script
     cat >/usr/local/bin/start-rviz2.sh <<'EOF'
 #!/bin/bash
-source /opt/ros/humble/setup.bash
+source /opt/ros/"$ROS_DISTRO"/setup.bash
 source /opt/autoware/setup.bash
 exec rviz2 -d "$RVIZ_CONFIG"
 EOF
