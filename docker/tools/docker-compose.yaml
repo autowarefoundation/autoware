@@ -1,17 +1,33 @@
 services:
-  autoware:
-    image: ghcr.io/autowarefoundation/autoware:universe
+  # autoware:
+  #   image: ghcr.io/autowarefoundation/autoware:universe
+  #   volumes:
+  #     - $HOME/autoware_map:/root/autoware_map
+  #   command: >
+  #     ros2 launch autoware_launch
+  #     planning_simulator.launch.xml
+  #     map_path:="/root/autoware_map/sample-map-planning"
+  #     vehicle_model:=sample_vehicle
+  #     sensor_model:=sample_sensor_kit
+  #     rviz:=false
+
+  # visualizer:
+  #   image: ghcr.io/autowarefoundation/autoware-tools:visualizer
+  #   ports:
+  #     - 6080:6080
+
+  scenario-simulator:
+    image: ghcr.io/autowarefoundation/autoware-tools:scenario-simulator
     volumes:
       - $HOME/autoware_map:/root/autoware_map
     command: >
-      ros2 launch autoware_launch
-      planning_simulator.launch.xml
-      map_path:="/root/autoware_map/sample-map-planning"
-      vehicle_model:=sample_vehicle
+      ros2 launch scenario_test_runner scenario_test_runner.launch.py
+      record:=false
+      scenario:=/root/autoware_map/scenario-sim/scenario/yield_maneuver_demo.yaml
       sensor_model:=sample_sensor_kit
-      rviz:=false
-
-  visualizer:
-    image: ghcr.io/autowarefoundation/autoware-tools:visualizer
-    ports:
-      - 6080:6080
+      vehicle_model:=sample_vehicle
+      initialize_duration:=90
+      global_timeout:=120
+      global_frame_rate:=20
+      launch_autoware:=false
+      launch_rviz:=false
