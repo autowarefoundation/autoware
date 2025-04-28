@@ -218,7 +218,7 @@ jobs:
           matrix.platform == 'arm64' }}
         uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
         with:
-          swap-size-gb: 8
+          swap-size-gb: 16
 
       - name: Build 'Autoware' with CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
