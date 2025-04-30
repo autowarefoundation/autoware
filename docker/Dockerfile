@@ -1,6 +1,6 @@
 ARG AUTOWARE_BASE_IMAGE
 ARG AUTOWARE_BASE_CUDA_IMAGE
-ARG IMAGE_PREFIX=""
+ARG AUTOWARE_IMAGE_PREFIX=""
 
 # hadolint ignore=DL3006
 FROM $AUTOWARE_BASE_IMAGE AS rosdep-depend
@@ -250,7 +250,8 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM ${IMAGE_PREFIX}universe-common-devel AS universe-common-devel-cuda
+# hadolint ignore=DL3006
+FROM ${AUTOWARE_IMAGE_PREFIX}universe-common-devel AS universe-common-devel-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set up CUDA development environment
@@ -263,7 +264,8 @@ RUN --mount=type=ssh \
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM universe-common-devel AS universe-sensing-perception-devel
+# hadolint ignore=DL3006
+FROM ${AUTOWARE_IMAGE_PREFIX}universe-common-devel AS universe-sensing-perception-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -483,8 +485,9 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_apt.sh
 
+# hadolint ignore=DL3022
+COPY --from=${AUTOWARE_IMAGE_PREFIX}universe-devel /opt/autoware /opt/autoware
 COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
-COPY --from=universe-devel /opt/autoware /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]

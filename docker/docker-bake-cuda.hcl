@@ -15,7 +15,7 @@ target "docker-metadata-action-universe-sensing-perception-cuda" {}
 target "docker-metadata-action-universe-devel-cuda" {}
 target "docker-metadata-action-universe-cuda" {}
 
-variable "IMAGE_PREFIX" {
+variable "AUTOWARE_IMAGE_PREFIX" {
   default = ""
 }
 
@@ -24,7 +24,7 @@ target "universe-common-devel-cuda" {
   dockerfile = "docker/Dockerfile"
   target = "universe-common-devel-cuda"
   args = {
-    IMAGE_PREFIX = "${IMAGE_PREFIX}"
+    AUTOWARE_IMAGE_PREFIX = "${AUTOWARE_IMAGE_PREFIX}"
   }
 }
 
