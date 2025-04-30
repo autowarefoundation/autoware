@@ -265,7 +265,7 @@ ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
 # hadolint ignore=DL3006
-FROM ${AUTOWARE_IMAGE_PREFIX}universe-common-devel AS universe-sensing-perception-devel
+FROM universe-common-devel AS universe-sensing-perception-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -308,7 +308,8 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-sensing-perception-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_apt.sh
 
-COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
+# hadolint ignore=DL3022
+COPY --from=${AUTOWARE_IMAGE_PREFIX}universe-sensing-perception-devel /opt/autoware /opt/autoware
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
