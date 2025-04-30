@@ -1,5 +1,6 @@
 ARG AUTOWARE_BASE_IMAGE
 ARG AUTOWARE_BASE_CUDA_IMAGE
+ARG IMAGE_PREFIX=""
 
 # hadolint ignore=DL3006
 FROM $AUTOWARE_BASE_IMAGE AS rosdep-depend
@@ -249,7 +250,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM universe-common-devel AS universe-common-devel-cuda
+FROM ${IMAGE_PREFIX}universe-common-devel AS universe-common-devel-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set up CUDA development environment
