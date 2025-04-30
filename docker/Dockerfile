@@ -265,7 +265,7 @@ ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
 # hadolint ignore=DL3006
-FROM universe-common-devel AS universe-sensing-perception-devel
+FROM ${AUTOWARE_IMAGE_PREFIX}universe-common-devel AS universe-sensing-perception-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
@@ -438,7 +438,8 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM universe-common-devel AS universe-devel
+# hadolint ignore=DL3006
+FROM ${AUTOWARE_IMAGE_PREFIX}universe-common-devel AS universe-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
