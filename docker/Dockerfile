@@ -296,7 +296,7 @@ CMD ["/bin/bash"]
 
 FROM universe-common-devel-cuda AS universe-sensing-perception-devel-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG UNIVERSE_SENSING_PERCEPTION_DEVEL_IMAGE = ${AUTOWARE_IMAGE_PREFIX}universe-sensing-perception-devel
+ARG UNIVERSE_SENSING_PERCEPTION_DEVEL_IMAGE=${AUTOWARE_IMAGE_PREFIX}universe-sensing-perception-devel
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
 
@@ -476,7 +476,7 @@ ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
 FROM universe-common-devel-cuda AS universe-devel-cuda
-ARG UNIVERSE_DEVEL_IMAGE = ${AUTOWARE_IMAGE_PREFIX}universe-devel
+ARG UNIVERSE_DEVEL_IMAGE=${AUTOWARE_IMAGE_PREFIX}universe-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install rosdep dependencies
