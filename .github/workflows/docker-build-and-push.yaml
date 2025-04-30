@@ -61,15 +61,6 @@ jobs:
           (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/free-disk-space
 
-      - name: Set Swap Space
-        if: ${{ (steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && github.ref_type == 'tag')) &&
-          matrix.platform == 'arm64' }}
-        uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
-        with:
-          swap-size-gb: 16
-
       - name: Build 'Autoware' without CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
@@ -137,15 +128,6 @@ jobs:
           (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/free-disk-space
 
-      - name: Set Swap Space
-        if: ${{ (steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && github.ref_type == 'tag')) &&
-          matrix.platform == 'arm64' }}
-        uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
-        with:
-          swap-size-gb: 16
-
       - name: Build 'autoware-tools'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
@@ -174,11 +156,11 @@ jobs:
         platform: [amd64, arm64]
         include:
           - platform: amd64
-            runner: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
+            runner: ubuntu-22.04
             arch-platform: linux/amd64
             lib-dir: x86_64
           - platform: arm64
-            runner: [self-hosted, linux, ARM64]
+            runner: ubuntu-22.04-arm
             arch-platform: linux/arm64
             lib-dir: aarch64
     runs-on: ${{ matrix.runner }}
@@ -210,15 +192,6 @@ jobs:
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
         uses: ./.github/actions/free-disk-space
-
-      - name: Set Swap Space
-        if: ${{ (steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && github.ref_type == 'tag')) &&
-          matrix.platform == 'arm64' }}
-        uses: pierotofy/set-swap-space@0404882bc4666c0ff2f6fd8b3d32af69a730183c
-        with:
-          swap-size-gb: 16
 
       - name: Build 'Autoware' with CUDA
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
