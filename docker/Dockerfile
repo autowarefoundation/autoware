@@ -296,6 +296,7 @@ CMD ["/bin/bash"]
 
 FROM universe-common-devel-cuda AS universe-sensing-perception-devel-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG UNIVERSE_SENSING_PERCEPTION_DEVEL_IMAGE = ${AUTOWARE_IMAGE_PREFIX}universe-sensing-perception-devel
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
 
@@ -309,7 +310,7 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # hadolint ignore=DL3022
-COPY --from=${AUTOWARE_IMAGE_PREFIX}universe-sensing-perception-devel /opt/autoware /opt/autoware
+COPY --from=${UNIVERSE_SENSING_PERCEPTION_DEVEL_IMAGE} /opt/autoware /opt/autoware
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
@@ -475,6 +476,7 @@ ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
 FROM universe-common-devel-cuda AS universe-devel-cuda
+ARG UNIVERSE_DEVEL_IMAGE = ${AUTOWARE_IMAGE_PREFIX}universe-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install rosdep dependencies
@@ -487,7 +489,7 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # hadolint ignore=DL3022
-COPY --from=${AUTOWARE_IMAGE_PREFIX}universe-devel /opt/autoware /opt/autoware
+COPY --from=${UNIVERSE_DEVEL_IMAGE} /opt/autoware /opt/autoware
 COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
