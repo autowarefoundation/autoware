@@ -19,11 +19,11 @@ jobs:
         platform: [amd64, arm64]
         include:
           - platform: amd64
-            runner: ubuntu-22.04
+            runner: buildjet-16vcpu-ubuntu-2204
             arch-platform: linux/amd64
             lib-dir: x86_64
           - platform: arm64
-            runner: ubuntu-22.04-arm
+            runner: buildjet-16vcpu-ubuntu-2204-arm
             arch-platform: linux/arm64
             lib-dir: aarch64
     runs-on: ${{ matrix.runner }}
@@ -100,11 +100,11 @@ jobs:
         platform: [amd64, arm64]
         include:
           - platform: amd64
-            runner: ubuntu-22.04
+            runner: buildjet-16vcpu-ubuntu-2204
             arch-platform: linux/amd64
             lib-dir: x86_64
           - platform: arm64
-            runner: ubuntu-22.04-arm
+            runner: buildjet-16vcpu-ubuntu-2204-arm
             arch-platform: linux/arm64
             lib-dir: aarch64
     runs-on: ${{ matrix.runner }}
@@ -174,11 +174,11 @@ jobs:
         platform: [amd64, arm64]
         include:
           - platform: amd64
-            runner: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
+            runner: buildjet-16vcpu-ubuntu-2204
             arch-platform: linux/amd64
             lib-dir: x86_64
           - platform: arm64
-            runner: [self-hosted, linux, ARM64]
+            runner: buildjet-16vcpu-ubuntu-2204-arm
             arch-platform: linux/arm64
             lib-dir: aarch64
     runs-on: ${{ matrix.runner }}
