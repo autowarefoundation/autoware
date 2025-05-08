@@ -69,11 +69,12 @@ jobs:
         shell: bash
 
       - name: Download sample-map-planning maps
-        # cspell:disable-next-line
+        # cspell:disable
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           mkdir -p /home/user/autoware_map
           unzip sample-map-planning.zip -d /home/user/autoware_map
+        # cspell:enable
         shell: bash
 
       - name: Fix path in sample-scenario.yaml
