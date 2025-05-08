@@ -69,6 +69,7 @@ jobs:
         shell: bash
 
       - name: Download sample-map-planning maps
+        # cspell:disable-next-line
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           mkdir -p /home/user/autoware_map
