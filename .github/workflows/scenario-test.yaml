@@ -132,23 +132,32 @@ jobs:
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
 
+            FOUND_ISSUES=0
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
                 echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
                 echo "  </testcase>" >> "$XML_FILE"
+                FOUND_ISSUES=1
               elif echo "$line" | grep -qi "error"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
                 echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
                 echo "  </testcase>" >> "$XML_FILE"
+                FOUND_ISSUES=1
               fi
             done < "$RESULT_FILE"
 
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
+
+            if [ $FOUND_ISSUES -eq 1 ]; then
+              echo "ERROR: Detected failures or errors in the simulation."
+              exit 1
+            fi
           else
-            echo "WARNING: test_results.log is missing! The simulation might have crashed."
+            echo "ERROR: test_results.log is missing! The simulation might have crashed."
             echo "Captured scenario output (for diagnostics):"
             cat scenario_output.log
+            exit 1
           fi
         shell: bash
