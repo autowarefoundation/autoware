@@ -48,6 +48,12 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
+      - name: Work around scenario_simulator_v2 XSD error
+        run: |
+          # install the older xmlschema that the simulator expects
+          pip3 install --user xmlschema==3.4.5
+        shell: bash
+
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
@@ -100,6 +106,7 @@ jobs:
           source ~/autoware_ws/install/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
+            mkdir -p "${{ github.workspace }}/results"
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=true \
@@ -107,7 +114,7 @@ jobs:
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=100 \
-              output_directory:=./results \
+              output_directory:=${{ github.workspace }}/results \
               simulate_localization:=false \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
           else
