@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
       - simulator*.repos
+      - .github/workflows/scenario-test.yaml
 
 jobs:
   scenario-test:
