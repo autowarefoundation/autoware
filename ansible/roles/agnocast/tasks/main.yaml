@@ -1,6 +1,11 @@
-- name: Install linux headers for the running kernel
+- name: Get kernel version
+  ansible.builtin.command: uname -r
+  register: kernel_version
+  changed_when: false
+
+- name: Ensure linux headers installed
   ansible.builtin.apt:
-    name: linux-headers-{{ ansible_kernel }}
+    name: linux-headers-{{ kernel_version.stdout }}
     state: present
   become: true
 
