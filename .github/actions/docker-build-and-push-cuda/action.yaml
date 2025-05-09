@@ -78,6 +78,19 @@ runs:
       run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       shell: bash
 
+    - name: Docker meta for autoware:universe-common-devel-cuda
+      id: meta-universe-common-devel-cuda
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=universe-common-devel-cuda-${{ inputs.platform }}
+          type=raw,value=universe-common-devel-cuda-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-common-devel-cuda-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-common-devel-cuda
+        flavor: |
+          latest=false
+
     - name: Docker meta for autoware:universe-sensing-perception-devel-cuda
       id: meta-universe-sensing-perception-devel-cuda
       uses: docker/metadata-action@v5
@@ -143,6 +156,7 @@ runs:
         push: true
         files: |
           docker/docker-bake-cuda.hcl
+          ${{ steps.meta-universe-common-devel-cuda.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception-devel-cuda.outputs.bake-file }}
           ${{ steps.meta-universe-sensing-perception-cuda.outputs.bake-file }}
           ${{ steps.meta-universe-devel-cuda.outputs.bake-file }}
