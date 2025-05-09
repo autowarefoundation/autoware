@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
       - simulator*.repos
+      - .github/workflows/scenario-test.yaml
 
 jobs:
   scenario-test:
@@ -47,10 +48,9 @@ jobs:
           rosdep update
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
-
-      - name: Work around scenario_simulator_v2 XSD error
+        
+      - name: Downgrade xmlschema 
         run: |
-          # install the older xmlschema that the simulator expects
           pip3 install --user xmlschema==3.4.5
         shell: bash
 
@@ -70,15 +70,18 @@ jobs:
         shell: bash
 
       - name: Download scenario file
+
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
       - name: Download sample-map-planning maps
+      # cspell:disable
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           mkdir -p /home/user/autoware_map
           unzip sample-map-planning.zip -d /home/user/autoware_map
+      # cspell:enable
         shell: bash
 
       - name: Fix path in sample-scenario.yaml
@@ -106,7 +109,7 @@ jobs:
           source ~/autoware_ws/install/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
-            mkdir -p "${{ github.workspace }}/results"
+            mkdir -p ./results
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=true \
@@ -114,14 +117,22 @@ jobs:
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=100 \
-              output_directory:=${{ github.workspace }}/results \
+              output_directory:=./results \
               simulate_localization:=false \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+               
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
           fi
         shell: bash
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-test-results
+          path: ./results
+
+       
 
       - name: Parse results and capture diagnostics
         run: |
@@ -133,11 +144,13 @@ jobs:
             ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
+            FOUND_ISSUES=0
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
                 echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
                 echo "  </testcase>" >> "$XML_FILE"
+                FOUND_ISSUES=1
               elif echo "$line" | grep -qi "error"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
                 echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
@@ -146,8 +159,14 @@ jobs:
             done < "$RESULT_FILE"
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
+            
+            if [ $FOUND_ISSUES -eq 1 ]; then
+              echo "ERROR: Detected failures or errors in the simulation."
+              exit 1
+            fi
+            
           else
-            echo "WARNING: test_results.log is missing! The simulation might have crashed."
+            echo "ERROR: test_results.log is missing! The simulation might have crashed."
             echo "Captured scenario output (for diagnostics):"
             cat scenario_output.log
           fi
