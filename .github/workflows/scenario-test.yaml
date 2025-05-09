@@ -103,7 +103,7 @@ jobs:
           source ~/autoware_ws/install/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
-            mkdir -p results
+            mkdir -p ./results
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=true \
@@ -111,20 +111,26 @@ jobs:
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=100 \
-              output_directory:=results \
+              output_directory:=./results \
               simulate_localization:=false \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
-            ls -la results
+            ls -laR ./results
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
           fi
         shell: bash
 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-test-results
+          path: ./results
+
       - name: Parse results and capture diagnostics
         run: |
-          RESULT_FILE="results/test_results.log"
-          XML_FILE="results/scenario_test_runner/result.junit.xml"
+          RESULT_FILE="./results/scenario_test_runner/test_results.log"
+          XML_FILE="./results/scenario_test_runner/result.junit.xml"
 
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
