@@ -32,14 +32,14 @@ runs:
     - name: Run vcs import
       run: |
         mkdir src
-        vcs import src < autoware.repos
-        vcs import src < extra-packages.repos
+        vcs import --shallow src < autoware.repos
+        vcs import --shallow src < extra-packages.repos
       shell: bash
 
     - name: Import additional repositories
       if: ${{ inputs.additional-repos != '' }}
       run: |
-        vcs import --force src < ${{ inputs.additional-repos }}
+        vcs import --shallow --force src < ${{ inputs.additional-repos }}
       shell: bash
 
     - name: Cache ccache
