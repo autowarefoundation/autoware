@@ -10,9 +10,6 @@ if [ -z "$RVIZ_CONFIG" ]; then
 fi
 
 configure_vnc() {
-    # Check if WEB_PASSWORD is provided
-    [ -z "$WEB_PASSWORD" ] && echo -e "\e[31mPassword is needed when WEB_ENABLED is true. Set WEB_PASSWORD environment variable\e[0m" && exit 1
-
     # Create Openbox application configuration
     mkdir -p /etc/xdg/openbox
     cat >/etc/xdg/openbox/rc.xml <<'EOF'
@@ -35,7 +32,7 @@ EOF
     # Create rviz2 start script
     cat >/usr/local/bin/start-rviz2.sh <<'EOF'
 #!/bin/bash
-source /opt/ros/humble/setup.bash
+source /opt/ros/"$ROS_DISTRO"/setup.bash
 source /opt/autoware/setup.bash
 exec rviz2 -d "$RVIZ_CONFIG"
 EOF
@@ -44,8 +41,12 @@ EOF
     echo "/usr/local/bin/start-rviz2.sh" >>/etc/xdg/openbox/autostart
 
     # Configure VNC password
+    if [ -z "$REMOTE_PASSWORD" ]; then
+        echo -e "\e[31mREMOTE_PASSWORD is not set, using *openadkit* as default\e[0m"
+        REMOTE_PASSWORD="openadkit"
+    fi
     mkdir -p ~/.vnc
-    echo "$WEB_PASSWORD" | vncpasswd -f >~/.vnc/passwd && chmod 600 ~/.vnc/passwd
+    echo "$REMOTE_PASSWORD" | vncpasswd -f >~/.vnc/passwd && chmod 600 ~/.vnc/passwd
 
     # Start VNC server with Openbox
     echo "Starting VNC server with Openbox..."
@@ -68,9 +69,9 @@ EOF
 
     # Print info
     echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
-    echo -e "\033[32mBrowser interface available at local address http://$(hostname -I | cut -d' ' -f1):6080/vnc.html?resize=scale&password=${WEB_PASSWORD}&autoconnect=true\033[0m"
+    echo -e "\033[32mBrowser interface available at local address http://$(hostname -I | cut -d' ' -f1):6080/vnc.html?resize=scale&password=${REMOTE_PASSWORD}&autoconnect=true\033[0m"
     if curl -s --head 1.1.1.1 >/dev/null 2>&1; then
-        echo -e "\033[32mIf you have a static public ip you can access it on WEB at http://$(curl -s ifconfig.me):6080/vnc.html?resize=scale&password=${WEB_PASSWORD}&autoconnect=true\033[0m"
+        echo -e "\033[32mIf you have a static public ip you can access it on WEB at http://$(curl -s ifconfig.me):6080/vnc.html?resize=scale&password=${REMOTE_PASSWORD}&autoconnect=true\033[0m"
     else
         echo -e "\033[31mNo internet connection available\033[0m"
     fi
@@ -82,11 +83,11 @@ source "/opt/ros/$ROS_DISTRO/setup.bash"
 source "/opt/autoware/setup.bash"
 
 # Execute passed command if provided, otherwise launch rviz2
-if [ "$WEB_ENABLED" == "true" ]; then
-    configure_vnc
-    [ $# -eq 0 ] && sleep infinity
+if [ "$REMOTE_DISPLAY" == "false" ]; then
+    [ $# -eq 0 ] && rviz2 -d "$RVIZ_CONFIG"
     exec "$@"
 else
-    [ $# -eq 0 ] && rviz2 -d "$RVIZ_CONFIG"
+    configure_vnc
+    [ $# -eq 0 ] && sleep infinity
     exec "$@"
 fi

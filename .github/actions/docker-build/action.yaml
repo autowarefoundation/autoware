@@ -32,14 +32,14 @@ runs:
     - name: Run vcs import
       run: |
         mkdir src
-        vcs import src < autoware.repos
-        vcs import src < extra-packages.repos
+        vcs import --shallow src < autoware.repos
+        vcs import --shallow src < extra-packages.repos
       shell: bash
 
     - name: Import additional repositories
       if: ${{ inputs.additional-repos != '' }}
       run: |
-        vcs import --force src < ${{ inputs.additional-repos }}
+        vcs import --shallow --force src < ${{ inputs.additional-repos }}
       shell: bash
 
     - name: Cache ccache
@@ -89,8 +89,10 @@ runs:
           apt-get-${{ inputs.platform }}-
 
     - name: Inject cache into docker
-      uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+      # TODO(youtalk): Use the release version again
+      uses: reproducible-containers/buildkit-cache-dance@7c892679bab8ff382a8c88ab7f973d5e30a8f239
       with:
+        utility-image: ghcr.io/containerd/busybox:latest
         cache-map: |
           {
             "root-ccache": "/root/.ccache",
@@ -112,4 +114,4 @@ runs:
         context: .
         push: false
         build-args: ${{ inputs.build-args }}
-        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}
+        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-main
