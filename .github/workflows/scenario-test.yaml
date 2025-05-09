@@ -128,7 +128,7 @@ jobs:
 
       - name: Parse results and capture diagnostics
         run: |
-          RESULT_FILE="./results/scenario_test_runner/test_results.log"
+          RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
 
           if [ -f "$RESULT_FILE" ]; then
