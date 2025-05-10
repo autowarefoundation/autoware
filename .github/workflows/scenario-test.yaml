@@ -48,6 +48,11 @@ jobs:
           rosdep update
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
+        
+      - name: Downgrade xmlschema 
+        run: |
+          pip3 install --user xmlschema==3.4.5
+        shell: bash
 
       - name: Build Autoware
         run: |
@@ -65,6 +70,7 @@ jobs:
         shell: bash
 
       - name: Download scenario file
+
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
@@ -75,6 +81,7 @@ jobs:
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           mkdir -p /home/user/autoware_map
           unzip sample-map-planning.zip -d /home/user/autoware_map
+
         # cspell:enable
         shell: bash
 
@@ -114,11 +121,19 @@ jobs:
               output_directory:=./results \
               simulate_localization:=false \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+               
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
           fi
         shell: bash
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-test-results
+          path: ./results
+
+       
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -130,15 +145,12 @@ jobs:
         run: |
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
-
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
             ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
-
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-
             FOUND_ISSUES=0
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
@@ -153,7 +165,6 @@ jobs:
                 FOUND_ISSUES=1
               fi
             done < "$RESULT_FILE"
-
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
 
@@ -161,6 +172,7 @@ jobs:
               echo "ERROR: Detected failures or errors in the simulation."
               exit 1
             fi
+
           else
             echo "ERROR: test_results.log is missing! The simulation might have crashed."
             echo "Captured scenario output (for diagnostics):"
