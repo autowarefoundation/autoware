@@ -76,12 +76,13 @@ jobs:
         shell: bash
 
       - name: Download sample-map-planning maps
-      # cspell:disable
+        # cspell:disable
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           mkdir -p /home/user/autoware_map
           unzip sample-map-planning.zip -d /home/user/autoware_map
-      # cspell:enable
+
+        # cspell:enable
         shell: bash
 
       - name: Fix path in sample-scenario.yaml
@@ -134,6 +135,12 @@ jobs:
 
        
 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-test-results
+          path: ./results
+
       - name: Parse results and capture diagnostics
         run: |
           RESULT_FILE="./results/test_results.log"
@@ -155,19 +162,21 @@ jobs:
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
                 echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
                 echo "  </testcase>" >> "$XML_FILE"
+                FOUND_ISSUES=1
               fi
             done < "$RESULT_FILE"
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
-            
+
             if [ $FOUND_ISSUES -eq 1 ]; then
               echo "ERROR: Detected failures or errors in the simulation."
               exit 1
             fi
-            
+
           else
             echo "ERROR: test_results.log is missing! The simulation might have crashed."
             echo "Captured scenario output (for diagnostics):"
             cat scenario_output.log
+            exit 1
           fi
         shell: bash
