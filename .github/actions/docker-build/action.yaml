@@ -32,61 +32,67 @@ runs:
     - name: Run vcs import
       run: |
         mkdir src
-        vcs import src < autoware.repos
-        vcs import src < extra-packages.repos
+        vcs import --shallow src < autoware.repos
+        vcs import --shallow src < extra-packages.repos
       shell: bash
 
     - name: Import additional repositories
       if: ${{ inputs.additional-repos != '' }}
       run: |
-        vcs import --force src < ${{ inputs.additional-repos }}
+        vcs import --shallow --force src < ${{ inputs.additional-repos }}
       shell: bash
 
     - name: Cache ccache
       uses: actions/cache@v4
-      if: ${{ github.ref == 'refs/heads/main' && inputs.additional-repos == '' }}
+      if: ${{ github.ref == 'refs/heads/main'}}
       id: cache-ccache
       with:
         path: |
           root-ccache
-        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
+          ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           ccache-${{ inputs.platform }}-
 
     - name: Cache apt-get
       uses: actions/cache@v4
-      if: ${{ github.ref == 'refs/heads/main' && inputs.additional-repos == '' }}
+      if: ${{ github.ref == 'refs/heads/main'}}
       id: cache-apt-get
       with:
         path: |
           var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
+        key: apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
+          apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           apt-get-${{ inputs.platform }}-
 
     - name: Restore ccache
       uses: actions/cache/restore@v4
-      if: ${{ github.ref != 'refs/heads/main' || inputs.additional-repos != '' }}
+      if: ${{ github.ref != 'refs/heads/main'}}
       with:
         path: |
           root-ccache
-        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
+          ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           ccache-${{ inputs.platform }}-
 
     - name: Restore apt-get
       uses: actions/cache/restore@v4
-      if: ${{ github.ref != 'refs/heads/main' || inputs.additional-repos != '' }}
+      if: ${{ github.ref != 'refs/heads/main'}}
       with:
         path: |
           var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
+        key: apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
+          apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           apt-get-${{ inputs.platform }}-
 
     - name: Inject cache into docker
-      uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+      # TODO(youtalk): Use the release version again
+      uses: reproducible-containers/buildkit-cache-dance@7c892679bab8ff382a8c88ab7f973d5e30a8f239
       with:
+        utility-image: ghcr.io/containerd/busybox:latest
         cache-map: |
           {
             "root-ccache": "/root/.ccache",
@@ -108,4 +114,4 @@ runs:
         context: .
         push: false
         build-args: ${{ inputs.build-args }}
-        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}
+        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-main

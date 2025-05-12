@@ -15,7 +15,7 @@ jobs:
   label-check:
     uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
     with:
-      label: tag:run-health-check
+      label: run:health-check
 
   load-env:
     needs: label-check
@@ -26,9 +26,24 @@ jobs:
 
   docker-build:
     needs: load-env
-    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
+      matrix:
+        build-type: [main, nightly, main-arm64]
+        include:
+          - build-type: main
+            platform: amd64
+            runner: ubuntu-22.04
+            lib-dir: x86_64
+          - build-type: nightly
+            platform: amd64
+            runner: ubuntu-22.04
+            lib-dir: x86_64
+          - build-type: main-arm64
+            platform: arm64
+            runner: ubuntu-22.04-arm
+            lib-dir: aarch64
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -38,20 +53,40 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get changed files
+        id: changed-files
+        uses: step-security/changed-files@v45
+        with:
+          files: |
+            *.env
+            *.repos
+            .github/actions/docker-build/action.yaml
+            .github/workflows/health-check.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+            setup-dev-env.sh
+
       - name: Free disk space
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware'
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/docker-build
         with:
-          platform: amd64
-          cache-tag-suffix: main
+          platform: ${{ matrix.platform }}
+          cache-tag-suffix: ${{ matrix.build-type }}
+          additional-repos: ${{ matrix.build-type == 'nightly' && 'autoware-nightly.repos' || '' }}
           build-args: |
             ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
-            LIB_DIR=x86_64
+            LIB_DIR=${{ matrix.lib-dir }}
 
       - name: Show disk space
         if: always()

@@ -1,0 +1,70 @@
+- name: Install linux headers for the running kernel
+  ansible.builtin.apt:
+    name: linux-headers-{{ ansible_kernel }}
+    state: present
+  become: true
+
+# TODO(rej55, sykwer): IPv6 support
+- name: Save current IPv6 settings
+  ansible.builtin.shell: |
+    sysctl net.ipv6.conf.all.disable_ipv6
+    sysctl net.ipv6.conf.default.disable_ipv6
+  register: ipv6_settings
+  changed_when: false
+  become: true
+
+- name: Temporarily disable IPv6
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: 1
+    sysctl_set: true
+    state: present
+  loop:
+    - { name: net.ipv6.conf.all.disable_ipv6 }
+    - { name: net.ipv6.conf.default.disable_ipv6 }
+  become: true
+
+- name: Add agnocast PPA repository while IPv6 is disabled
+  ansible.builtin.apt_repository:
+    repo: ppa:t4-system-software/agnocast
+    state: present
+    update_cache: false
+  become: true
+
+- name: Restore original IPv6 settings # noqa: no-changed-when
+  ansible.builtin.command: >
+    sysctl -w {{ item }}
+  loop: "{{ ipv6_settings.stdout_lines }}"
+  when: item is search('=0')
+  become: true
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+
+- name: Install {{ agnocast_heaphook_package }}
+  ansible.builtin.apt:
+    name: "{{ agnocast_heaphook_package }}"
+    state: present
+  become: true
+
+- name: Check if agnocast-kmod is installed in dkms with version v{{ agnocast_version }}
+  ansible.builtin.shell: dkms status | grep agnocast | grep {{ agnocast_version }} # noqa: risky-shell-pipe
+  register: dkms_status
+  failed_when: false
+  changed_when: false
+
+- name: Purge agnocast-kmod if not found in dkms for version v{{ agnocast_version }}
+  ansible.builtin.apt:
+    name: "{{ agnocast_kmod_package }}"
+    state: absent
+  become: true
+  when: dkms_status.rc != 0
+
+- name: Install agnocast-kmod if not found in dkms for version v{{ agnocast_version }}
+  ansible.builtin.apt:
+    name: "{{ agnocast_kmod_package }}"
+    state: present
+  become: true
+  when: dkms_status.rc != 0

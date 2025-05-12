@@ -151,7 +151,6 @@ build_images() {
         --set "*.ssh=default" \
         --set "*.platform=$platform" \
         --set "*.args.ROS_DISTRO=$rosdistro" \
-        --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.AUTOWARE_BASE_IMAGE=$autoware_base_image" \
         --set "*.args.AUTOWARE_BASE_CUDA_IMAGE=$autoware_base_cuda_image" \
         --set "*.args.SETUP_ARGS=$setup_args" \

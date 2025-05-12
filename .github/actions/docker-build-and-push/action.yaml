@@ -11,6 +11,10 @@ inputs:
   build-args:
     description: Additional build args.
     required: false
+  max-parallelism:
+    default: 2
+    description: Maximum parallelism for buildkitd.
+    required: false
 
 runs:
   using: composite
@@ -25,34 +29,42 @@ runs:
     - name: Run vcs import
       run: |
         mkdir src
-        vcs import src < autoware.repos
+        vcs import --shallow src < autoware.repos
         vcs import src < extra-packages.repos
       shell: bash
 
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        buildkitd-config-inline: |
+          [worker.oci]
+            max-parallelism = ${{ inputs.max-parallelism }}
+        install: true
 
     - name: Restore ccache
       uses: actions/cache/restore@v4
       with:
         path: |
           root-ccache
-        key: ccache-${{ inputs.platform }}-${{ hashFiles('src/**/*.cpp') }}
+        key: ccache-${{ inputs.platform }}-main-${{ inputs.platform == 'arm64' && 'arm64-' || '' }}${{ hashFiles('src/**/*.cpp') }}
         restore-keys: |
+          ccache-${{ inputs.platform }}-main-${{ inputs.platform == 'arm64' && 'arm64-' || '' }}
           ccache-${{ inputs.platform }}-
-
     - name: Restore apt-get
       uses: actions/cache/restore@v4
       with:
         path: |
           var-cache-apt
-        key: apt-get-${{ inputs.platform }}-${{ hashFiles('src/**/package.xml') }}
+        key: apt-get-${{ inputs.platform }}-main-${{ inputs.platform == 'arm64' && 'arm64-' || '' }}${{ hashFiles('src/**/package.xml') }}
         restore-keys: |
+          apt-get-${{ inputs.platform }}-main-${{ inputs.platform == 'arm64' && 'arm64-' || '' }}
           apt-get-${{ inputs.platform }}-
 
     - name: Inject cache into docker
-      uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+      # TODO(youtalk): Use the release version again
+      uses: reproducible-containers/buildkit-cache-dance@7c892679bab8ff382a8c88ab7f973d5e30a8f239
       with:
+        utility-image: ghcr.io/containerd/busybox:latest
         cache-map: |
           {
             "root-ccache": "/root/.ccache",

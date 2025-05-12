@@ -18,6 +18,53 @@
     src: "{{ data_dir }}/yabloc_pose_initializer/resources.tar.gz"
     dest: "{{ data_dir }}/yabloc_pose_initializer/"
 
+# bevfusion
+- name: Create bevfusion directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/bevfusion"
+    mode: "755"
+    state: directory
+
+- name: Download bevfusion/bevfusion_lidar.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v1/bevfusion_lidar.onnx
+    dest: "{{ data_dir }}/bevfusion/bevfusion_lidar.onnx"
+    mode: "644"
+    checksum: sha256:9c3f5fbcda4fd162075464b3ad01b0fcdb96ebff99cee7fc07b4ffb4a5682b95
+
+- name: Download bevfusion/bevfusion_camera_lidar.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v1/bevfusion_camera_lidar.onnx
+    dest: "{{ data_dir }}/bevfusion/bevfusion_camera_lidar.onnx"
+    mode: "644"
+    checksum: sha256:27ae64a33b8080d504ac4a75659bab9766f9f98bfdd226665e44a60a385106f0
+
+- name: Download bevfusion/ml_package_bevfusion_lidar.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v1/ml_package_bevfusion_lidar.param.yaml
+    dest: "{{ data_dir }}/bevfusion/ml_package_bevfusion_lidar.param.yaml"
+    mode: "644"
+    checksum: sha256:4c07293e13b0f3ba7a1ef50158bffa44bc4d8b8d5aec991d5f2bb8ab4e8bb21b
+
+- name: Download bevfusion/ml_package_bevfusion_camera_lidar.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v1/ml_package_bevfusion_camera_lidar.param.yaml
+    dest: "{{ data_dir }}/bevfusion/ml_package_bevfusion_camera_lidar.param.yaml"
+    mode: "644"
+    checksum: sha256:426dd08a029b1005f26597d3a4f56ec80f22ff1746724bbd2fcdf8ff3b906b3e
+
+- name: Download bevfusion/detection_class_remapper.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v1/detection_class_remapper.param.yaml
+    dest: "{{ data_dir }}/bevfusion/detection_class_remapper.param.yaml"
+    mode: "644"
+    checksum: sha256:928f9eb14ac042d725909f12b2be1532c16b09a683485c5936cf04fb04728520
+
 # image_projection_based_fusion
 - name: Create image_projection_based_fusion directory inside {{ data_dir }}
   ansible.builtin.file:
