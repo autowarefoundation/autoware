@@ -130,17 +130,20 @@ jobs:
         with:
           name: scenario-test-results
           path: ./results
-          
+
       - name: Parse results and capture diagnostics
         run: |
           RESULT_FILE="./results/test_results.log"
           XML_FILE="./results/scenario_test_runner/result.junit.xml"
+
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
             ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
+
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
+
             FOUND_ISSUES=0
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
@@ -155,8 +158,10 @@ jobs:
                 FOUND_ISSUES=1
               fi
             done < "$RESULT_FILE"
+
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
+
             if [ $FOUND_ISSUES -eq 1 ]; then
               echo "ERROR: Detected failures or errors in the simulation."
               exit 1
