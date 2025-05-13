@@ -71,7 +71,7 @@
     path: "{{ data_dir }}/tensorrt_bevdet"
     mode: "755"
     state: directory
- 
+
 - name: Download tensorrt_bevdet/bevdet_one_lt_d.onnx
   become: true
   ansible.builtin.get_url:
