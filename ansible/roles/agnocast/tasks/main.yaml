@@ -35,7 +35,7 @@
   ansible.builtin.command: >
     sysctl -w {{ item }}
   loop: "{{ ipv6_settings.stdout_lines }}"
-  when: item is search('=0')
+  when: item is search('=\\s*0')
   become: true
 
 - name: Update apt cache
