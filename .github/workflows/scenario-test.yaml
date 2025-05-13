@@ -49,6 +49,11 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y
         shell: bash
 
+      - name: Downgrade xmlschema
+        run: |
+          pip3 install --user xmlschema==3.4.5
+        shell: bash
+
       - name: Build Autoware
         run: |
           cd ~/autoware_ws
