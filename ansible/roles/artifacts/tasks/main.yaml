@@ -65,6 +65,21 @@
     mode: "644"
     checksum: sha256:928f9eb14ac042d725909f12b2be1532c16b09a683485c5936cf04fb04728520
 
+# bevdet
+- name: Create bevfusion directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/tensorrt_bevdet"
+    mode: "755"
+    state: directory
+ 
+- name: Download tensorrt_bevdet/bevdet_one_lt_d.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: # Yet to place url post reply for https://discord.com/channels/953808765935816715/953846504865533983/1371754007265017950
+    dest: "{{ data_dir }}/tensorrt_bevdet/bevdet_one_lt_d.onnx"
+    mode: "644"
+    checksum: # will be completed once the url is ready
+
 # image_projection_based_fusion
 - name: Create image_projection_based_fusion directory inside {{ data_dir }}
   ansible.builtin.file:
