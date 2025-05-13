@@ -32,8 +32,11 @@
   become: true
 
 - name: Restore original IPv6 settings # noqa: no-changed-when
-  ansible.builtin.command: >
-    sysctl -w {{ item }}
+  ansible.posix.sysctl:
+    name: "{{ item.split('=')[0] | trim }}"
+    value: 0
+    sysctl_set: true
+    state: present
   loop: "{{ ipv6_settings.stdout_lines }}"
   when: item is search('=\\s*0')
   become: true
