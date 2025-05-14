@@ -10,7 +10,7 @@ on:
 
 jobs:
   scenario-test:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, Linux, X64]
     container: ghcr.io/autowarefoundation/autoware:universe-devel
     steps:
       - name: Check out repository
@@ -18,6 +18,9 @@ jobs:
 
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
+
+      - name: Show machine specs
+        run: lscpu && free -h
 
       - name: Install required packages
         run: |
