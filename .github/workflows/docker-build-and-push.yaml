@@ -69,7 +69,7 @@ jobs:
         with:
           platform: ${{ matrix.platform }}
           target-image: autoware
-          max-parallelism: 8
+          max-parallelism: 4
           build-args: |
             *.platform=${{ matrix.arch-platform }}
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
@@ -137,7 +137,7 @@ jobs:
         with:
           platform: ${{ matrix.platform }}
           target-image: autoware-tools
-          max-parallelism: 8
+          max-parallelism: 4
           build-args: |
             *.platform=${{ matrix.arch-platform }}
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
@@ -203,7 +203,7 @@ jobs:
         with:
           platform: ${{ matrix.platform }}
           target-image: autoware
-          max-parallelism: 8
+          max-parallelism: 4
           build-args: |
             *.platform=${{ matrix.arch-platform }}
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
