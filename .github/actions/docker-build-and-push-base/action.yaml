@@ -22,7 +22,7 @@ runs:
         buildkitd-config-inline: |
           [worker.oci]
             max-parallelism = ${{ inputs.max-parallelism }}
-      install: true
+        install: true
 
     - name: Get current date
       id: date
