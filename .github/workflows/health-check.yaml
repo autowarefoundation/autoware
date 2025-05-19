@@ -33,11 +33,11 @@ jobs:
         include:
           - build-type: main
             platform: amd64
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             lib-dir: x86_64
           - build-type: nightly
             platform: amd64
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             lib-dir: x86_64
           - build-type: main-arm64
             platform: arm64
