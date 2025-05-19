@@ -3,3 +3,7 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_tools.git
     version: main
+  plotjuggler_ros:
+    type: git
+    url: https://github.com/PlotJuggler/plotjuggler-ros-plugins.git
+    version: main
