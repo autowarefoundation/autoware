@@ -12,7 +12,7 @@ configure_vnc() {
     echo "$REMOTE_PASSWORD" | vncpasswd -f >~/.vnc/passwd && chmod 600 ~/.vnc/passwd
 
     # Create X startup script
-    cat > ~/.vnc/xstartup << 'EOF'
+    cat >~/.vnc/xstartup <<'EOF'
 #!/bin/bash
 export PATH="/usr/bin:/usr/local/bin:$PATH"
 unset SESSION_MANAGER
@@ -86,7 +86,7 @@ EOF
     fi
     if curl -s --head --connect-timeout 2 1.1.1.1 >/dev/null 2>&1; then # Check internet with timeout
         PUBLIC_IP=$(curl -s --connect-timeout 2 ifconfig.me 2>/dev/null)
-        if [ -n "$PUBLIC_IP" ]; then 
+        if [ -n "$PUBLIC_IP" ]; then
             echo -e "\033[32mIf publicly accessible, try http://${PUBLIC_IP}:6080/vnc.html?resize=scale&password=${REMOTE_PASSWORD}&autoconnect=true\033[0m"
         fi
     else
