@@ -85,7 +85,7 @@ jobs:
           df -h
 
   docker-build-and-push-tools:
-    needs: [load-env]
+    needs: [load-env, docker-build-and-push]
     strategy:
       matrix:
         platform: [amd64, arm64]
