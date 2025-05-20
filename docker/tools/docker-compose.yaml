@@ -3,7 +3,7 @@ services:
     image: ghcr.io/autowarefoundation/autoware:universe
     depends_on:
       - visualizer
-    network_mode: "service:visualizer"
+    network_mode: service:visualizer
     environment:
       - DISPLAY=:99
       - XAUTHORITY=/root/.Xauthority
@@ -11,7 +11,6 @@ services:
       - $HOME/autoware_map:/root/autoware_map
       - /dev/shm:/dev/shm
       - xauthority_vol:/root/.Xauthority:ro
-
     command: >
       ros2 launch autoware_launch
       planning_simulator.launch.xml
