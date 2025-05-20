@@ -17,9 +17,9 @@ docker run --rm --name visualizer -p 6080:6080 ghcr.io/autowarefoundation/autowa
 
 The following environment variables can be configured with `-e` while launching the visualizer container:
 
-| Variable          | Default Value                  | Possible Values | Description                                                                                                                              |
-| ----------------- | ------------------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `PASSWORD`        | `openadkit`                    | Any string      | Password for remote display                                                                       |
+| Variable   | Default Value | Possible Values | Description                 |
+| ---------- | ------------- | --------------- | --------------------------- |
+| `PASSWORD` | `openadkit`   | Any string      | Password for remote display |
 
 ## Scenario Simulator
 
