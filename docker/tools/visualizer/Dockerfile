@@ -1,4 +1,4 @@
-# cspell:ignore VNC, tigervnc, novnc, websockify, newkey, keyout
+# cspell:ignore VNC, openbox, dbus-x11, tigervnc, novnc, websockify, newkey, keyout
 FROM ubuntu:22.04 AS visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cspell:ignore openbox, VNC, novnc, websockify, pixelformat, vncserver, autoconnect, vncpasswd
+# cspell:ignore openbox, xstartup, VNC, novnc, websockify, pixelformat, vncserver, autoconnect, vncpasswd
 # shellcheck disable=SC1090,SC1091
 
 configure_vnc() {
