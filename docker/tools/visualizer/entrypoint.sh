@@ -4,12 +4,12 @@
 
 configure_vnc() {
     # Configure VNC password
-    if [ -z "$REMOTE_PASSWORD" ]; then
-        echo -e "\e[31mREMOTE_PASSWORD is not set, using *openadkit* as default\e[0m"
-        REMOTE_PASSWORD="openadkit"
+    if [ -z "$PASSWORD" ]; then
+        echo -e "\e[31mPASSWORD is not set, using *openadkit* as default\e[0m"
+        PASSWORD="openadkit"
     fi
     mkdir -p ~/.vnc
-    echo "$REMOTE_PASSWORD" | vncpasswd -f >~/.vnc/passwd && chmod 600 ~/.vnc/passwd
+    echo "$PASSWORD" | vncpasswd -f >~/.vnc/passwd && chmod 600 ~/.vnc/passwd
 
     # Create X startup script
     cat >~/.vnc/xstartup <<'EOF'
@@ -78,16 +78,16 @@ EOF
 
     # Print connection info
     echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
-    echo -e "\033[32mBrowser interface available at http://localhost:6080/vnc.html?resize=scale&password=${REMOTE_PASSWORD}&autoconnect=true\033[0m"
+    echo -e "\033[32mBrowser interface available at http://localhost:6080/vnc.html?resize=scale&password=${PASSWORD}&autoconnect=true\033[0m"
     # Attempt to print container IP for convenience, if 'hostname -I' is available and works
     CONTAINER_IP=$(hostname -I | awk '{print $1}' 2>/dev/null)
     if [ -n "$CONTAINER_IP" ]; then
-        echo -e "\033[32mBrowser interface also at http://${CONTAINER_IP}:6080/vnc.html?resize=scale&password=${REMOTE_PASSWORD}&autoconnect=true\033[0m"
+        echo -e "\033[32mBrowser interface also at http://${CONTAINER_IP}:6080/vnc.html?resize=scale&password=${PASSWORD}&autoconnect=true\033[0m"
     fi
     if curl -s --head --connect-timeout 2 1.1.1.1 >/dev/null 2>&1; then # Check internet with timeout
         PUBLIC_IP=$(curl -s --connect-timeout 2 ifconfig.me 2>/dev/null)
         if [ -n "$PUBLIC_IP" ]; then
-            echo -e "\033[32mIf publicly accessible, try http://${PUBLIC_IP}:6080/vnc.html?resize=scale&password=${REMOTE_PASSWORD}&autoconnect=true\033[0m"
+            echo -e "\033[32mIf publicly accessible, try http://${PUBLIC_IP}:6080/vnc.html?resize=scale&password=${PASSWORD}&autoconnect=true\033[0m"
         fi
     else
         echo -e "\033[33mNo internet connection detected or ifconfig.me unreachable.\033[0m"

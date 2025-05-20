@@ -2,7 +2,7 @@
 
 This directory offers tools for [Open AD Kit](https://autoware.org/open-ad-kit/) containers to make deployment and simulation easier.
 
-- `visualizer`: a container which visualizes the Autoware with RViz.
+- `visualizer`: a container which visualizes the RViz through a web browser.
 - `scenario-simulator`: a container which runs scenario-simulator.
 
 ## Visualizer
@@ -19,9 +19,7 @@ The following environment variables can be configured with `-e` while launching 
 
 | Variable          | Default Value                  | Possible Values | Description                                                                                                                              |
 | ----------------- | ------------------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `RVIZ_CONFIG`     | `/autoware/rviz/autoware.rviz` | Any valid path  | The full path to the RViz configuration file inside the container                                                                        |
-| `REMOTE_DISPLAY`  | `true`                         | `true`, `false` | By default, the rviz2 is redirected to a URL to enable browser-based visualization. Set this to `false` to launch a local rviz2 display. |
-| `REMOTE_PASSWORD` | `openadkit`                    | Any string      | Password for remote display (only used when `REMOTE_DISPLAY=true`)                                                                       |
+| `PASSWORD`        | `openadkit`                    | Any string      | Password for remote display                                                                       |
 
 ## Scenario Simulator
 
