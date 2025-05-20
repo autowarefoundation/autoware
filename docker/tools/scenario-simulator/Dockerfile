@@ -33,7 +33,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
     && find /opt/autoware/share -type f -name "*.py" -exec chmod +x {} \;
 
 ### Scenario Simulator
-FROM ghcr.io/autowarefoundation/autoware:core AS scenario-simulator
+FROM ghcr.io/autowarefoundation/autoware:universe AS scenario-simulator
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
