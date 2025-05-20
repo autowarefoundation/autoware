@@ -1,17 +1,33 @@
 services:
   autoware:
     image: ghcr.io/autowarefoundation/autoware:universe
+    depends_on:
+      - visualizer
+    network_mode: "service:visualizer"
+    environment:
+      - DISPLAY=:99
+      - XAUTHORITY=/root/.Xauthority
     volumes:
       - $HOME/autoware_map:/root/autoware_map
+      - /dev/shm:/dev/shm
+      - xauthority_vol:/root/.Xauthority:ro
+
     command: >
       ros2 launch autoware_launch
       planning_simulator.launch.xml
       map_path:="/root/autoware_map/sample-map-planning"
       vehicle_model:=sample_vehicle
       sensor_model:=sample_sensor_kit
-      rviz:=false
 
   visualizer:
     image: ghcr.io/autowarefoundation/autoware-tools:visualizer
     ports:
       - 6080:6080
+    environment:
+      - DISPLAY=:99
+    volumes:
+      - /dev/shm:/dev/shm
+      - xauthority_vol:/root/.Xauthority
+
+volumes:
+  xauthority_vol: {}
