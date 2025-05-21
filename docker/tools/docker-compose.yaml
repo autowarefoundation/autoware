@@ -1,4 +1,4 @@
-services:  
+services:
   autoware:
     image: ghcr.io/autowarefoundation/autoware:universe
     depends_on:
