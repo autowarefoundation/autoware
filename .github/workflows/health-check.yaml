@@ -41,7 +41,7 @@ jobs:
             lib-dir: x86_64
           - build-type: main-arm64
             platform: arm64
-            runner: ubuntu-22.04-arm
+            runner: ubuntu-24.04-arm
             lib-dir: aarch64
     runs-on: ${{ matrix.runner }}
     steps:
