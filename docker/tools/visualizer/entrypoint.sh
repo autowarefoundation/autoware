@@ -100,10 +100,10 @@ configure_vnc
 # Open visualizer URL in browser if local display is found
 if [ "$AUTOSHOW" != "false" ]; then
     if [ "$(find /tmp/.X11-unix -maxdepth 1 -mindepth 1 | wc -l)" -gt 1 ]; then
-    echo -e "\033[32mLocal display found. Opening visualizer URL in browser...\033[0m"
-    sleep 1
-    export DISPLAY=:0
-    falkon  --no-sandbox --portable --no-extensions --fullscreen \
+        echo -e "\033[32mLocal display found. Opening visualizer URL in browser...\033[0m"
+        sleep 1
+        export DISPLAY=:0
+        falkon --no-sandbox --portable --no-extensions --fullscreen \
             --open-window "http://localhost:6080/vnc.html?resize=scale&password=openadkit&autoconnect=true"
     fi
 fi
