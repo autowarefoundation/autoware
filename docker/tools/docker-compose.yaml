@@ -21,6 +21,7 @@ services:
       - .env
     volumes:
       - xauthority_vol:/root/.Xauthority
+      - /tmp/.X11-unix:/tmp/.X11-unix
     ports:
       - 6080:6080
 

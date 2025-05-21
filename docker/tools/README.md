@@ -20,6 +20,7 @@ The following environment variables can be configured with `-e` while launching 
 | Variable   | Default Value | Possible Values | Description                 |
 | ---------- | ------------- | --------------- | --------------------------- |
 | `PASSWORD` | `openadkit`   | Any string      | Password for remote display |
+| `AUTOSHOW` | `true`        | `true`, `false` | Whether to open the browser automatically, if local display is found |
 
 ## Scenario Simulator
 

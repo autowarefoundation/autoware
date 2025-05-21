@@ -17,6 +17,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   x11-xserver-utils \
   xauth \
   dbus-x11 \
+  falkon \
   && rm -rf /var/lib/apt/lists/*
 
 # Create SSL certificate for NoVNC
