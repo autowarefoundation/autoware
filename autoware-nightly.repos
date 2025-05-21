@@ -15,6 +15,10 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_utils.git
     version: main
+  core/autoware_rviz_plugins:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_rviz_plugins.git
+    version: main
   universe/autoware_universe:
     type: git
     url: https://github.com/autowarefoundation/autoware_universe.git
