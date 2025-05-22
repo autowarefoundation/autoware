@@ -10,7 +10,7 @@ run_scenario_simulator() {
     SENSOR_MODEL=${SENSOR_MODEL:-sample_sensor_kit}
     VEHICLE_MODEL=${VEHICLE_MODEL:-sample_vehicle}
     LAUNCH_AUTOWARE=${LAUNCH_AUTOWARE:-false}
-    LAUNCH_RVIZ=${LAUNCH_RVIZ:-true}
+    LAUNCH_RVIZ=${LAUNCH_RVIZ:-false}
     INITIALIZE_DURATION=${INITIALIZE_DURATION:-90}
     GLOBAL_FRAME_RATE=${GLOBAL_FRAME_RATE:-30}
     OUTPUT_DIRECTORY=${OUTPUT_DIRECTORY:-/autoware/scenario-sim/output}
