@@ -66,7 +66,7 @@
     checksum: sha256:928f9eb14ac042d725909f12b2be1532c16b09a683485c5936cf04fb04728520
 
 # bevdet
-- name: Create bevfusion directory inside {{ data_dir }}
+- name: Create tensorrt_bevdet directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/tensorrt_bevdet"
     mode: "755"
