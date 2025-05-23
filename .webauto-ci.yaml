@@ -21,6 +21,8 @@ artifacts:
         AUTOWARE_PATH: /opt/autoware
         DEBIAN_FRONTEND: noninteractive
         LANG: C.UTF-8
+      linux_parameters:
+        kernel_version: 5.19.0-50-generic
       phases:
         - name: environment-setup
           user: root
