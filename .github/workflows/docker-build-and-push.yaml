@@ -156,7 +156,7 @@ jobs:
         platform: [amd64, arm64]
         include:
           - platform: amd64
-            runner: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
+            runner: [self-hosted, Linux, X64]
             arch-platform: linux/amd64
             lib-dir: x86_64
           - platform: arm64
