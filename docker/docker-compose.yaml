@@ -75,8 +75,6 @@ services:
       - USE_SIM_TIME=${USE_SIM_TIME:-true}
     networks:
       - autoware-net
-    depends_on:
-      - control
     command: >
       bash -c "
       source /opt/autoware/setup.bash &&
