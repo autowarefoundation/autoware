@@ -153,12 +153,12 @@ services:
       - USE_SIM_TIME=${USE_SIM_TIME:-true}
     networks:
       - autoware-net
-    depends_on:
-      - system
     command: >
       bash -c "
       source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_autoware_api_component.launch.xml
+      scenario_simulation:=${SCENARIO_SIMULATION:-false}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
       "
     restart: unless-stopped
 
