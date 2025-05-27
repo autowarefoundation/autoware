@@ -1,0 +1,31 @@
+name: bump-repo-versions-simulator
+
+on:
+  schedule:
+    - cron: 0 0,6,12,18 * * *
+  workflow_dispatch:
+
+jobs:
+  create-version-update-pr:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate GitHub App token
+        id: generate-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Create PRs to update VCS repositories for simulator.repos
+        uses: autowarefoundation/autoware-github-actions/create-prs-to-update-vcs-repositories@v1
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          repo_name: autowarefoundation/autoware
+          parent_dir: .
+          targets: major minor
+          base_branch: main
+          new_branch_prefix: feat/update-
+          autoware_repos_file_name: simulator.repos
+          verbosity: 0
