@@ -127,20 +127,21 @@ services:
       bash -c "
       source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_simulator_component.launch.xml
+      initial_engage_state:=${INITIAL_ENGAGE_STATE:-true}
+      launch_dummy_doors:=${LAUNCH_DUMMY_DOORS:-true}
       launch_dummy_perception:=${LAUNCH_DUMMY_PERCEPTION:-true}
       launch_dummy_vehicle:=${LAUNCH_DUMMY_VEHICLE:-true}
-      localization_sim_mode:=${LOCALIZATION_SIM_MODE:-api}
-      launch_dummy_doors:=${LAUNCH_DUMMY_DOORS:-true}
       launch_scenario_simulator_v2_adapter:=${LAUNCH_SCENARIO_SIMULATOR_V2_ADAPTER:-false}
+      localization_sim_mode:=${LOCALIZATION_SIM_MODE:-api}
       perception/enable_detection_failure:=${PERCEPTION_ENABLE_DETECTION_FAILURE:-true}
       perception/enable_object_recognition:=${PERCEPTION_ENABLE_OBJECT_RECOGNITION:-true}
       perception/enable_traffic_light:=${PERCEPTION_ENABLE_TRAFFIC_LIGHT:-false}
       perception/use_base_link_z:=${PERCEPTION_USE_BASE_LINK_Z:-true}
-      sensing/visible_range:=${SENSING_VISIBLE_RANGE:-300.0}
-      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
-      initial_engage_state:=${INITIAL_ENGAGE_STATE:-true}
-      vehicle_info_param_file:=/opt/autoware/share/${VEHICLE_MODEL:-sample_vehicle}_description/config/vehicle_info.param.yaml
       raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
+      scenario_simulation:=${SCENARIO_SIMULATION:-false}
+      sensing/visible_range:=${SENSING_VISIBLE_RANGE:-300.0}
+      vehicle_info_param_file:=/opt/autoware/share/${VEHICLE_MODEL:-sample_vehicle}_description/config/vehicle_info.param.yaml
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
       "
     restart: unless-stopped
 
