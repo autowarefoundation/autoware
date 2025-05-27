@@ -57,13 +57,12 @@ services:
       bash -c "
       source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_control_component.launch.xml
-      vehicle_param_file:=/opt/autoware/share/${VEHICLE_MODEL:-sample_vehicle}_description/config/vehicle_info.param.yaml
-      vehicle_id:=${VEHICLE_ID:-default}
-      enable_obstacle_collision_checker:=false
+      check_external_emergency_heartbeat:=${CHECK_EXTERNAL_EMERGENCY_HEARTBEAT:-false}
       lateral_controller_mode:=${LATERAL_CONTROLLER_MODE:-mpc}
       longitudinal_controller_mode:=${LONGITUDINAL_CONTROLLER_MODE:-pid}
-      check_external_emergency_heartbeat:=${CHECK_EXTERNAL_EMERGENCY_HEARTBEAT:-false}
       module_preset:=${CONTROL_MODULE_PRESET:-default}
+      vehicle_id:=${VEHICLE_ID:-default}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
       "
     restart: unless-stopped
 
