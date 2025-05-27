@@ -44,7 +44,7 @@ services:
 
   rviz:
     image: ghcr.io/autowarefoundation/autoware:universe
-    container_name: autoware-rviz
+    container_name: autoware-visualization
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
       - USE_SIM_TIME=true
