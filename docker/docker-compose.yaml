@@ -6,7 +6,7 @@ services:
     container_name: autoware-planning-simulator
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - USE_SIM_TIME=true
+      - USE_SIM_TIME=${USE_SIM_TIME:-true}
     volumes:
       - ${MAP_PATH:-$HOME/autoware_map}:/autoware_map:ro
       - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
