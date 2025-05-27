@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  autoware:
-    image: ghcr.io/autowarefoundation/autoware:universe
-    container_name: autoware-planning-simulator
+  map:
+    image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
+    container_name: autoware-map
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
       - USE_SIM_TIME=${USE_SIM_TIME:-true}
@@ -15,39 +15,169 @@ services:
     command: >
       bash -c "
       source /opt/autoware/setup.bash &&
-      ros2 launch autoware_launch planning_simulator.launch.xml
-      map_path:=/autoware_map
+      ros2 launch autoware_launch tier4_map_component.launch.xml
+      pointcloud_map_path:=/autoware_map/${POINTCLOUD_MAP_FILE:-pointcloud_map.pcd}
+      pointcloud_map_metadata_path:=/autoware_map/pointcloud_map_metadata.yaml
+      lanelet2_map_path:=/autoware_map/${LANELET2_MAP_FILE:-lanelet2_map.osm}
+      map_projector_info_path:=/autoware_map/map_projector_info.yaml
+      "
+    restart: unless-stopped
+
+  system:
+    image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
+    container_name: autoware-system
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - USE_SIM_TIME=${USE_SIM_TIME:-true}
+    volumes:
+      - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
+    networks:
+      - autoware-net
+    command: >
+      bash -c "
+      source /opt/autoware/setup.bash &&
+      ros2 launch autoware_launch tier4_system_component.launch.xml
+      run_mode:=planning_simulation
+      launch_system_monitor:=${LAUNCH_SYSTEM_MONITOR:-false}
+      launch_dummy_diag_publisher:=${LAUNCH_DUMMY_DIAG_PUBLISHER:-true}
+      sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
+      "
+    restart: unless-stopped
+
+  planning:
+    image: ghcr.io/autowarefoundation/autoware:universe-planning-control
+    container_name: autoware-planning
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - USE_SIM_TIME=${USE_SIM_TIME:-true}
+    volumes:
+      - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+      - system
+    command: >
+      bash -c "
+      source /opt/autoware/setup.bash &&
+      ros2 launch autoware_launch tier4_planning_component.launch.xml
+      vehicle_param_file:=/opt/autoware/share/${VEHICLE_MODEL:-sample_vehicle}_description/config/vehicle_info.param.yaml
+      pointcloud_container_name:=/pointcloud_container
+      enable_all_modules_auto_mode:=${ENABLE_ALL_MODULES_AUTO_MODE:-false}
+      is_simulation:=true
+      module_preset:=${PLANNING_MODULE_PRESET:-default}
+      "
+    restart: unless-stopped
+
+  control:
+    image: ghcr.io/autowarefoundation/autoware:universe-planning-control
+    container_name: autoware-control
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - USE_SIM_TIME=${USE_SIM_TIME:-true}
+    volumes:
+      - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
+    networks:
+      - autoware-net
+    depends_on:
+      - planning
+    command: >
+      bash -c "
+      source /opt/autoware/setup.bash &&
+      ros2 launch autoware_launch tier4_control_component.launch.xml
+      vehicle_param_file:=/opt/autoware/share/${VEHICLE_MODEL:-sample_vehicle}_description/config/vehicle_info.param.yaml
+      vehicle_id:=${VEHICLE_ID:-default}
+      enable_obstacle_collision_checker:=false
+      lateral_controller_mode:=${LATERAL_CONTROLLER_MODE:-mpc}
+      longitudinal_controller_mode:=${LONGITUDINAL_CONTROLLER_MODE:-pid}
+      check_external_emergency_heartbeat:=${CHECK_EXTERNAL_EMERGENCY_HEARTBEAT:-false}
+      module_preset:=${CONTROL_MODULE_PRESET:-default}
+      "
+    restart: unless-stopped
+
+  vehicle:
+    image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
+    container_name: autoware-vehicle
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - USE_SIM_TIME=${USE_SIM_TIME:-true}
+    volumes:
+      - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
+    networks:
+      - autoware-net
+    depends_on:
+      - control
+    command: >
+      bash -c "
+      source /opt/autoware/setup.bash &&
+      ros2 launch tier4_vehicle_launch vehicle.launch.xml
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
       sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
-      data_path:=/autoware_data
-      planning_module_preset:=${PLANNING_MODULE_PRESET:-default}
-      control_module_preset:=${CONTROL_MODULE_PRESET:-default}
-      lanelet2_map_file:=${LANELET2_MAP_FILE:-lanelet2_map.osm}
-      pointcloud_map_file:=${POINTCLOUD_MAP_FILE:-pointcloud_map.pcd}
-      rviz:=false
-      scenario_simulation:=false
-      initial_engage_state:=${INITIAL_ENGAGE_STATE:-true}
-      enable_all_modules_auto_mode:=${ENABLE_ALL_MODULES_AUTO_MODE:-false}
+      vehicle_id:=${VEHICLE_ID:-default}
+      launch_vehicle_interface:=${LAUNCH_VEHICLE_INTERFACE:-false}
+      config_dir:=/opt/autoware/share/${SENSOR_MODEL:-sample_sensor_kit}_description/config
+      raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
+      "
+    restart: unless-stopped
+
+  simulator:
+    image: ghcr.io/autowarefoundation/autoware:universe
+    container_name: autoware-simulator
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - USE_SIM_TIME=${USE_SIM_TIME:-true}
+    volumes:
+      - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+      - system
+      - vehicle
+    command: >
+      bash -c "
+      source /opt/autoware/setup.bash &&
+      ros2 launch autoware_launch tier4_simulator_component.launch.xml
       launch_dummy_perception:=${LAUNCH_DUMMY_PERCEPTION:-true}
       launch_dummy_vehicle:=${LAUNCH_DUMMY_VEHICLE:-true}
-      launch_dummy_doors:=${LAUNCH_DUMMY_DOORS:-true}
       localization_sim_mode:=${LOCALIZATION_SIM_MODE:-api}
+      launch_dummy_doors:=${LAUNCH_DUMMY_DOORS:-true}
+      launch_scenario_simulator_v2_adapter:=${LAUNCH_SCENARIO_SIMULATOR_V2_ADAPTER:-false}
       perception/enable_detection_failure:=${PERCEPTION_ENABLE_DETECTION_FAILURE:-true}
       perception/enable_object_recognition:=${PERCEPTION_ENABLE_OBJECT_RECOGNITION:-true}
       perception/enable_traffic_light:=${PERCEPTION_ENABLE_TRAFFIC_LIGHT:-false}
       perception/use_base_link_z:=${PERCEPTION_USE_BASE_LINK_Z:-true}
       sensing/visible_range:=${SENSING_VISIBLE_RANGE:-300.0}
-      launch_system_monitor:=${LAUNCH_SYSTEM_MONITOR:-false}
-      launch_dummy_diag_publisher:=${LAUNCH_DUMMY_DIAG_PUBLISHER:-true}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
+      initial_engage_state:=${INITIAL_ENGAGE_STATE:-true}
+      vehicle_info_param_file:=/opt/autoware/share/${VEHICLE_MODEL:-sample_vehicle}_description/config/vehicle_info.param.yaml
+      raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
       "
     restart: unless-stopped
 
-  rviz:
+  api:
     image: ghcr.io/autowarefoundation/autoware:universe
+    container_name: autoware-api
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - USE_SIM_TIME=${USE_SIM_TIME:-true}
+    networks:
+      - autoware-net
+    depends_on:
+      - system
+    command: >
+      bash -c "
+      source /opt/autoware/setup.bash &&
+      ros2 launch autoware_launch tier4_autoware_api_component.launch.xml
+      "
+    restart: unless-stopped
+
+  visualization:
+    image: ghcr.io/autowarefoundation/autoware:universe-visualization
     container_name: autoware-visualization
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - USE_SIM_TIME=true
+      - USE_SIM_TIME=${USE_SIM_TIME:-true}
       - DISPLAY=${DISPLAY}
       - QT_QPA_PLATFORMTHEME=qt5ct
     volumes:
@@ -56,13 +186,16 @@ services:
     networks:
       - autoware-net
     depends_on:
-      - autoware
+      - map
+      - planning
+      - control
+      - simulator
     profiles:
       - visualization
     command: >
       bash -c "
       source /opt/autoware/setup.bash &&
-      ros2 run rviz2 rviz2 -d /opt/autoware/share/autoware_launch/rviz/autoware.rviz
+      ros2 run rviz2 rviz2 -d /opt/autoware/share/autoware_launch/rviz/${RVIZ_CONFIG_NAME:-autoware.rviz}
       "
     restart: unless-stopped
 
