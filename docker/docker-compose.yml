@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  autoware:
+    image: ghcr.io/autowarefoundation/autoware:universe-latest
+    container_name: autoware-planning-simulator
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - USE_SIM_TIME=true
+    volumes:
+      - ${MAP_PATH:-$HOME/autoware_map}:/autoware_map:ro
+      - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
+    networks:
+      - autoware-net
+    command: >
+      bash -c "
+      source /opt/autoware/setup.bash &&
+      ros2 launch autoware_launch planning_simulator.launch.xml
+      map_path:=/autoware_map
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
+      sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
+      data_path:=/autoware_data
+      planning_module_preset:=${PLANNING_MODULE_PRESET:-default}
+      control_module_preset:=${CONTROL_MODULE_PRESET:-default}
+      lanelet2_map_file:=${LANELET2_MAP_FILE:-lanelet2_map.osm}
+      pointcloud_map_file:=${POINTCLOUD_MAP_FILE:-pointcloud_map.pcd}
+      rviz:=false
+      scenario_simulation:=false
+      initial_engage_state:=${INITIAL_ENGAGE_STATE:-true}
+      enable_all_modules_auto_mode:=${ENABLE_ALL_MODULES_AUTO_MODE:-false}
+      launch_dummy_perception:=${LAUNCH_DUMMY_PERCEPTION:-true}
+      launch_dummy_vehicle:=${LAUNCH_DUMMY_VEHICLE:-true}
+      launch_dummy_doors:=${LAUNCH_DUMMY_DOORS:-true}
+      localization_sim_mode:=${LOCALIZATION_SIM_MODE:-api}
+      perception/enable_detection_failure:=${PERCEPTION_ENABLE_DETECTION_FAILURE:-true}
+      perception/enable_object_recognition:=${PERCEPTION_ENABLE_OBJECT_RECOGNITION:-true}
+      perception/enable_traffic_light:=${PERCEPTION_ENABLE_TRAFFIC_LIGHT:-false}
+      perception/use_base_link_z:=${PERCEPTION_USE_BASE_LINK_Z:-true}
+      sensing/visible_range:=${SENSING_VISIBLE_RANGE:-300.0}
+      launch_system_monitor:=${LAUNCH_SYSTEM_MONITOR:-false}
+      launch_dummy_diag_publisher:=${LAUNCH_DUMMY_DIAG_PUBLISHER:-true}
+      "
+    restart: unless-stopped
+
+  rviz:
+    image: ghcr.io/autowarefoundation/autoware:universe-latest
+    container_name: autoware-rviz
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - USE_SIM_TIME=true
+      - DISPLAY=${DISPLAY}
+      - QT_QPA_PLATFORMTHEME=qt5ct
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
+    networks:
+      - autoware-net
+    depends_on:
+      - autoware
+    profiles:
+      - visualization
+    command: >
+      bash -c "
+      source /opt/autoware/setup.bash &&
+      ros2 run rviz2 rviz2 -d /opt/autoware/share/autoware_launch/rviz/autoware.rviz
+      "
+    restart: unless-stopped
+
+networks:
+  autoware-net:
+    driver: bridge
