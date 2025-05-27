@@ -9,38 +9,15 @@ services:
       - USE_SIM_TIME=${USE_SIM_TIME:-true}
     volumes:
       - ${MAP_PATH:-$HOME/autoware_map}:/autoware_map:ro
-      - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
     networks:
       - autoware-net
     command: >
       bash -c "
       source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_map_component.launch.xml
-      pointcloud_map_path:=/autoware_map/${POINTCLOUD_MAP_FILE:-pointcloud_map.pcd}
-      pointcloud_map_metadata_path:=/autoware_map/pointcloud_map_metadata.yaml
-      lanelet2_map_path:=/autoware_map/${LANELET2_MAP_FILE:-lanelet2_map.osm}
-      map_projector_info_path:=/autoware_map/map_projector_info.yaml
-      "
-    restart: unless-stopped
-
-  system:
-    image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
-    container_name: autoware-system
-    environment:
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - USE_SIM_TIME=${USE_SIM_TIME:-true}
-    volumes:
-      - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
-    networks:
-      - autoware-net
-    command: >
-      bash -c "
-      source /opt/autoware/setup.bash &&
-      ros2 launch autoware_launch tier4_system_component.launch.xml
-      run_mode:=planning_simulation
-      launch_system_monitor:=${LAUNCH_SYSTEM_MONITOR:-false}
-      launch_dummy_diag_publisher:=${LAUNCH_DUMMY_DIAG_PUBLISHER:-true}
-      sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
+      map_path:=/autoware_map
+      lanelet2_map_file:=${LANELET2_MAP_FILE:-lanelet2_map.osm}
+      pointcloud_map_file:=${POINTCLOUD_MAP_FILE:-pointcloud_map.pcd}
       "
     restart: unless-stopped
 
@@ -56,7 +33,6 @@ services:
       - autoware-net
     depends_on:
       - map
-      - system
     command: >
       bash -c "
       source /opt/autoware/setup.bash &&
@@ -117,6 +93,32 @@ services:
       launch_vehicle_interface:=${LAUNCH_VEHICLE_INTERFACE:-false}
       config_dir:=/opt/autoware/share/${SENSOR_MODEL:-sample_sensor_kit}_description/config
       raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
+      "
+    restart: unless-stopped
+
+  system:
+    image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
+    container_name: autoware-system
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - USE_SIM_TIME=${USE_SIM_TIME:-true}
+    volumes:
+      - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+      - planning
+      - control
+      - vehicle
+    command: >
+      bash -c "
+      source /opt/autoware/setup.bash &&
+      ros2 launch autoware_launch tier4_system_component.launch.xml
+      system_run_mode:=${SYSTEM_RUN_MODE:-planning_simulation}
+      launch_system_monitor:=${LAUNCH_SYSTEM_MONITOR:-false}
+      launch_dummy_diag_publisher:=${LAUNCH_DUMMY_DIAG_PUBLISHER:-true}
+      sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
       "
     restart: unless-stopped
 
