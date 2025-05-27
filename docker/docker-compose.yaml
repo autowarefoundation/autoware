@@ -83,8 +83,7 @@ services:
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
       sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
       vehicle_id:=${VEHICLE_ID:-default}
-      launch_vehicle_interface:=${LAUNCH_VEHICLE_INTERFACE:-false}
-      config_dir:=/opt/autoware/share/${SENSOR_MODEL:-sample_sensor_kit}_description/config
+      launch_vehicle_interface:=${LAUNCH_VEHICLE_INTERFACE:-true}
       raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
       "
     restart: unless-stopped
