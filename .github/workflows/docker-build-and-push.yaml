@@ -156,7 +156,7 @@ jobs:
         platform: [amd64, arm64]
         include:
           - platform: amd64
-            runner: codebuild-autoware-us-east-1-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
+            runner: [self-hosted, Linux, X64]
             arch-platform: linux/amd64
             lib-dir: x86_64
           - platform: arm64
@@ -188,9 +188,10 @@ jobs:
             docker/**
 
       - name: Free disk space
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+        if: ${{ runner.environment == 'github-hosted' &&
+          (steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && github.ref_type == 'tag') }}
+          (github.event_name == 'push' && github.ref_type == 'tag')) }}
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware' with CUDA
