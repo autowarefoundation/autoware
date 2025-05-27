@@ -241,6 +241,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/external/tier4_ad_api_adaptor,target=/autoware/src/universe/external/tier4_ad_api_adaptor \
   --mount=type=bind,source=src/universe/external/tier4_autoware_msgs,target=/autoware/src/universe/external/tier4_autoware_msgs \
   --mount=type=bind,source=src/middleware/external,target=/autoware/src/middleware/external \
+  --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
@@ -455,7 +456,6 @@ COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
 COPY --from=universe-visualization-devel /opt/autoware /opt/autoware
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \
   --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
   --mount=type=bind,source=src/universe/autoware_universe/evaluator,target=/autoware/src/universe/autoware_universe/evaluator \
   --mount=type=bind,source=src/universe/autoware_universe/launch,target=/autoware/src/universe/autoware_universe/launch \
