@@ -15,8 +15,8 @@ services:
       bash -c "
       source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_map_component.launch.xml
-      map_path:=/autoware_map
       lanelet2_map_file:=${LANELET2_MAP_FILE:-lanelet2_map.osm}
+      map_path:=/autoware_map
       pointcloud_map_file:=${POINTCLOUD_MAP_FILE:-pointcloud_map.pcd}
       "
     restart: unless-stopped
@@ -35,11 +35,11 @@ services:
       bash -c "
       source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_planning_component.launch.xml
-      vehicle_param_file:=/opt/autoware/share/${VEHICLE_MODEL:-sample_vehicle}_description/config/vehicle_info.param.yaml
-      pointcloud_container_name:=/pointcloud_container
       enable_all_modules_auto_mode:=${ENABLE_ALL_MODULES_AUTO_MODE:-false}
-      is_simulation:=true
+      is_simulation:=${IS_SIMULATION:-true}
       module_preset:=${PLANNING_MODULE_PRESET:-default}
+      pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME:-pointcloud_container}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
       "
     restart: unless-stopped
 
@@ -49,8 +49,6 @@ services:
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
       - USE_SIM_TIME=${USE_SIM_TIME:-true}
-    volumes:
-      - ${DATA_PATH:-$HOME/autoware_data}:/autoware_data:ro
     networks:
       - autoware-net
     depends_on:
