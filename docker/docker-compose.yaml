@@ -67,7 +67,8 @@ services:
     restart: unless-stopped
 
   vehicle:
-    image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
+    # TODO(youtalk): Use autoware:universe-vehicle-system image
+    image: ghcr.io/autowarefoundation/autoware:universe
     container_name: autoware-vehicle
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
