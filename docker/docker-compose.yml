@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   autoware:
-    image: ghcr.io/autowarefoundation/autoware:universe-latest
+    image: ghcr.io/autowarefoundation/autoware:universe
     container_name: autoware-planning-simulator
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
@@ -43,7 +43,7 @@ services:
     restart: unless-stopped
 
   rviz:
-    image: ghcr.io/autowarefoundation/autoware:universe-latest
+    image: ghcr.io/autowarefoundation/autoware:universe
     container_name: autoware-rviz
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
