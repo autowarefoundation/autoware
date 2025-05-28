@@ -1,19 +1,6 @@
 version: "3.8"
 
 services:
-  global-params:
-    # TODO(youtalk): Create autoware:universe-common image
-    image: ghcr.io/autowarefoundation/autoware:universe
-    container_name: autoware-global-params
-    environment:
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-    networks:
-      - autoware-net
-    command: >
-      ros2 launch autoware_global_parameter_loader global_params.launch.py
-      use_sim_time:=${USE_SIM_TIME:-true}
-      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
-
   map:
     image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
     container_name: autoware-map
@@ -58,7 +45,6 @@ services:
       - autoware-net
     depends_on:
       - planning
-      - global-params
     command: >
       ros2 launch autoware_launch tier4_control_component.launch.xml
       check_external_emergency_heartbeat:=${CHECK_EXTERNAL_EMERGENCY_HEARTBEAT:-false}
