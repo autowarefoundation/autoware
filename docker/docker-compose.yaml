@@ -10,13 +10,9 @@ services:
     networks:
       - autoware-net
     command: >
-      bash -c "
-      source /opt/autoware/setup.bash &&
       ros2 launch autoware_global_parameter_loader global_params.launch.py
       use_sim_time:=${USE_SIM_TIME:-true}
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
-      "
-    restart: unless-stopped
 
   map:
     image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
@@ -28,13 +24,10 @@ services:
     networks:
       - autoware-net
     command: >
-      bash -c "
-      source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_map_component.launch.xml
       lanelet2_map_file:=${LANELET2_MAP_FILE:-lanelet2_map.osm}
       map_path:=/autoware_map
       pointcloud_map_file:=${POINTCLOUD_MAP_FILE:-pointcloud_map.pcd}
-      "
     restart: unless-stopped
 
   planning:
@@ -47,8 +40,6 @@ services:
     depends_on:
       - map
     command: >
-      bash -c "
-      source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_planning_component.launch.xml
       enable_all_modules_auto_mode:=${ENABLE_ALL_MODULES_AUTO_MODE:-false}
       is_simulation:=${IS_SIMULATION:-true}
@@ -56,7 +47,6 @@ services:
       pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME:-pointcloud_container}
       use_sim_time:=${USE_SIM_TIME:-true}
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
-      "
     restart: unless-stopped
 
   control:
@@ -70,8 +60,6 @@ services:
       - planning
       - global-params
     command: >
-      bash -c "
-      source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_control_component.launch.xml
       check_external_emergency_heartbeat:=${CHECK_EXTERNAL_EMERGENCY_HEARTBEAT:-false}
       lateral_controller_mode:=${LATERAL_CONTROLLER_MODE:-mpc}
@@ -80,7 +68,6 @@ services:
       use_sim_time:=${USE_SIM_TIME:-true}
       vehicle_id:=${VEHICLE_ID:-default}
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
-      "
     restart: unless-stopped
 
   vehicle:
@@ -91,8 +78,6 @@ services:
     networks:
       - autoware-net
     command: >
-      bash -c "
-      source /opt/autoware/setup.bash &&
       ros2 launch tier4_vehicle_launch vehicle.launch.xml
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
       sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
@@ -100,7 +85,6 @@ services:
       launch_vehicle_interface:=${LAUNCH_VEHICLE_INTERFACE:-true}
       raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
       use_sim_time:=${USE_SIM_TIME:-true}
-      "
     restart: unless-stopped
 
   system:
@@ -116,15 +100,12 @@ services:
       - control
       - vehicle
     command: >
-      bash -c "
-      source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_system_component.launch.xml
       system_run_mode:=${SYSTEM_RUN_MODE:-planning_simulation}
       launch_system_monitor:=${LAUNCH_SYSTEM_MONITOR:-false}
       launch_dummy_diag_publisher:=${LAUNCH_DUMMY_DIAG_PUBLISHER:-true}
       sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
       use_sim_time:=${USE_SIM_TIME:-true}
-      "
     restart: unless-stopped
 
   simulator:
@@ -140,8 +121,6 @@ services:
       - system
       - vehicle
     command: >
-      bash -c "
-      source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_simulator_component.launch.xml
       initial_engage_state:=${INITIAL_ENGAGE_STATE:-true}
       launch_dummy_doors:=${LAUNCH_DUMMY_DOORS:-true}
@@ -159,7 +138,6 @@ services:
       use_sim_time:=${USE_SIM_TIME:-true}
       vehicle_info_param_file:=/opt/autoware/share/${VEHICLE_MODEL:-sample_vehicle}_description/config/vehicle_info.param.yaml
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
-      "
     restart: unless-stopped
 
   api:
@@ -171,13 +149,10 @@ services:
     networks:
       - autoware-net
     command: >
-      bash -c "
-      source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_autoware_api_component.launch.xml
       scenario_simulation:=${SCENARIO_SIMULATION:-false}
       use_sim_time:=${USE_SIM_TIME:-true}
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
-      "
     restart: unless-stopped
 
   visualization:
@@ -200,11 +175,8 @@ services:
     profiles:
       - visualization
     command: >
-      bash -c "
-      source /opt/autoware/setup.bash &&
       ros2 run rviz2 rviz2 -d ${RVIZ_CONFIG:-/opt/autoware/share/autoware_launch/rviz/autoware.rviz}
       use_sim_time:=${USE_SIM_TIME:-true}
-      "
     restart: unless-stopped
 
 networks:
