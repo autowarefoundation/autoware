@@ -1,12 +1,28 @@
 version: "3.8"
 
 services:
+  global-params:
+    # TODO(youtalk): Create autoware:universe-common image
+    image: ghcr.io/autowarefoundation/autoware:universe
+    container_name: autoware-global-params
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    networks:
+      - autoware-net
+    command: >
+      bash -c "
+      source /opt/autoware/setup.bash &&
+      ros2 launch autoware_global_parameter_loader global_params.launch.py
+      use_sim_time:=${USE_SIM_TIME:-true}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
+      "
+    restart: unless-stopped
+
   map:
     image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
     container_name: autoware-map
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - USE_SIM_TIME=${USE_SIM_TIME:-true}
     volumes:
       - ${MAP_PATH:-$HOME/autoware_map}:/autoware_map:ro
     networks:
@@ -26,7 +42,6 @@ services:
     container_name: autoware-planning
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - USE_SIM_TIME=${USE_SIM_TIME:-true}
     networks:
       - autoware-net
     depends_on:
@@ -39,6 +54,7 @@ services:
       is_simulation:=${IS_SIMULATION:-true}
       module_preset:=${PLANNING_MODULE_PRESET:-default}
       pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME:-pointcloud_container}
+      use_sim_time:=${USE_SIM_TIME:-true}
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
       "
     restart: unless-stopped
@@ -48,11 +64,11 @@ services:
     container_name: autoware-control
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - USE_SIM_TIME=${USE_SIM_TIME:-true}
     networks:
       - autoware-net
     depends_on:
       - planning
+      - global-params
     command: >
       bash -c "
       source /opt/autoware/setup.bash &&
@@ -61,6 +77,7 @@ services:
       lateral_controller_mode:=${LATERAL_CONTROLLER_MODE:-mpc}
       longitudinal_controller_mode:=${LONGITUDINAL_CONTROLLER_MODE:-pid}
       module_preset:=${CONTROL_MODULE_PRESET:-default}
+      use_sim_time:=${USE_SIM_TIME:-true}
       vehicle_id:=${VEHICLE_ID:-default}
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
       "
@@ -71,7 +88,6 @@ services:
     container_name: autoware-vehicle
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - USE_SIM_TIME=${USE_SIM_TIME:-true}
     networks:
       - autoware-net
     command: >
@@ -83,6 +99,7 @@ services:
       vehicle_id:=${VEHICLE_ID:-default}
       launch_vehicle_interface:=${LAUNCH_VEHICLE_INTERFACE:-true}
       raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
+      use_sim_time:=${USE_SIM_TIME:-true}
       "
     restart: unless-stopped
 
@@ -91,7 +108,6 @@ services:
     container_name: autoware-system
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - USE_SIM_TIME=${USE_SIM_TIME:-true}
     networks:
       - autoware-net
     depends_on:
@@ -107,6 +123,7 @@ services:
       launch_system_monitor:=${LAUNCH_SYSTEM_MONITOR:-false}
       launch_dummy_diag_publisher:=${LAUNCH_DUMMY_DIAG_PUBLISHER:-true}
       sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
+      use_sim_time:=${USE_SIM_TIME:-true}
       "
     restart: unless-stopped
 
@@ -116,7 +133,6 @@ services:
     container_name: autoware-simulator
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - USE_SIM_TIME=${USE_SIM_TIME:-true}
     networks:
       - autoware-net
     depends_on:
@@ -140,6 +156,7 @@ services:
       raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
       scenario_simulation:=${SCENARIO_SIMULATION:-false}
       sensing/visible_range:=${SENSING_VISIBLE_RANGE:-300.0}
+      use_sim_time:=${USE_SIM_TIME:-true}
       vehicle_info_param_file:=/opt/autoware/share/${VEHICLE_MODEL:-sample_vehicle}_description/config/vehicle_info.param.yaml
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
       "
@@ -151,7 +168,6 @@ services:
     container_name: autoware-api
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - USE_SIM_TIME=${USE_SIM_TIME:-true}
     networks:
       - autoware-net
     command: >
@@ -159,6 +175,7 @@ services:
       source /opt/autoware/setup.bash &&
       ros2 launch autoware_launch tier4_autoware_api_component.launch.xml
       scenario_simulation:=${SCENARIO_SIMULATION:-false}
+      use_sim_time:=${USE_SIM_TIME:-true}
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
       "
     restart: unless-stopped
@@ -169,7 +186,6 @@ services:
     container_name: autoware-visualization
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - USE_SIM_TIME=${USE_SIM_TIME:-true}
       - DISPLAY=${DISPLAY}
       - QT_QPA_PLATFORMTHEME=qt5ct
     volumes:
@@ -187,6 +203,7 @@ services:
       bash -c "
       source /opt/autoware/setup.bash &&
       ros2 run rviz2 rviz2 -d ${RVIZ_CONFIG:-/opt/autoware/share/autoware_launch/rviz/autoware.rviz}
+      use_sim_time:=${USE_SIM_TIME:-true}
       "
     restart: unless-stopped
 
