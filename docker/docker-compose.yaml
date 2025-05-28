@@ -112,6 +112,7 @@ services:
     restart: unless-stopped
 
   simulator:
+    # TODO(youtalk): Use autoware-tools:scenario-simulator image
     image: ghcr.io/autowarefoundation/autoware:universe
     container_name: autoware-simulator
     environment:
@@ -146,6 +147,7 @@ services:
     restart: unless-stopped
 
   api:
+    # TODO(youtalk): Create autoware:universe-api image
     image: ghcr.io/autowarefoundation/autoware:universe
     container_name: autoware-api
     environment:
@@ -163,6 +165,7 @@ services:
     restart: unless-stopped
 
   visualization:
+    # TODO(youtalk): Use autoware-tools:visualizer image
     image: ghcr.io/autowarefoundation/autoware:universe-visualization
     container_name: autoware-visualization
     environment:
@@ -184,7 +187,7 @@ services:
     command: >
       bash -c "
       source /opt/autoware/setup.bash &&
-      ros2 run rviz2 rviz2 -d /opt/autoware/share/autoware_launch/rviz/${RVIZ_CONFIG_NAME:-autoware.rviz}
+      ros2 run rviz2 rviz2 -d ${RVIZ_CONFIG:-/opt/autoware/share/autoware_launch/rviz/autoware.rviz}
       "
     restart: unless-stopped
 
