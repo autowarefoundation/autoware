@@ -160,7 +160,8 @@ jobs:
 
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
-
+            cat $RESULT_FILE
+            cat $XML_FILE     
             if [ $FOUND_ISSUES -eq 1 ]; then
               echo "ERROR: Detected failures or errors in the simulation."
               exit 1
