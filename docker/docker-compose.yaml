@@ -15,6 +15,8 @@ services:
       lanelet2_map_file:=${LANELET2_MAP_FILE:-lanelet2_map.osm}
       map_path:=/autoware_map
       pointcloud_map_file:=${POINTCLOUD_MAP_FILE:-pointcloud_map.pcd}
+      use_sim_time:=${USE_SIM_TIME:-true}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
     restart: unless-stopped
 
   planning:
@@ -44,6 +46,7 @@ services:
     networks:
       - autoware-net
     depends_on:
+      - map
       - planning
     command: >
       ros2 launch autoware_launch tier4_control_component.launch.xml
@@ -63,14 +66,16 @@ services:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
     networks:
       - autoware-net
+    depends_on:
+      - map
     command: >
       ros2 launch tier4_vehicle_launch vehicle.launch.xml
-      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
-      sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
-      vehicle_id:=${VEHICLE_ID:-default}
       launch_vehicle_interface:=${LAUNCH_VEHICLE_INTERFACE:-true}
       raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
+      sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
       use_sim_time:=${USE_SIM_TIME:-true}
+      vehicle_id:=${VEHICLE_ID:-default}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
     restart: unless-stopped
 
   system:
@@ -87,11 +92,12 @@ services:
       - vehicle
     command: >
       ros2 launch autoware_launch tier4_system_component.launch.xml
-      system_run_mode:=${SYSTEM_RUN_MODE:-planning_simulation}
       launch_system_monitor:=${LAUNCH_SYSTEM_MONITOR:-false}
       launch_dummy_diag_publisher:=${LAUNCH_DUMMY_DIAG_PUBLISHER:-true}
       sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
+      system_run_mode:=${SYSTEM_RUN_MODE:-planning_simulation}
       use_sim_time:=${USE_SIM_TIME:-true}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
     restart: unless-stopped
 
   simulator:
@@ -134,6 +140,8 @@ services:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
     networks:
       - autoware-net
+    depends_on:
+      - map
     command: >
       ros2 launch autoware_launch tier4_autoware_api_component.launch.xml
       scenario_simulation:=${SCENARIO_SIMULATION:-false}
