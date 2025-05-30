@@ -30,6 +30,7 @@ services:
       - map
     command: >
       ros2 launch autoware_launch tier4_planning_component.launch.xml
+      component_wise_launch:=true
       enable_all_modules_auto_mode:=${ENABLE_ALL_MODULES_AUTO_MODE:-false}
       is_simulation:=${IS_SIMULATION:-true}
       module_preset:=${PLANNING_MODULE_PRESET:-default}
@@ -52,6 +53,7 @@ services:
     command: >
       ros2 launch autoware_launch tier4_control_component.launch.xml
       check_external_emergency_heartbeat:=${CHECK_EXTERNAL_EMERGENCY_HEARTBEAT:-false}
+      component_wise_launch:=true
       lateral_controller_mode:=${LATERAL_CONTROLLER_MODE:-mpc}
       longitudinal_controller_mode:=${LONGITUDINAL_CONTROLLER_MODE:-pid}
       module_preset:=${CONTROL_MODULE_PRESET:-default}
@@ -142,6 +144,7 @@ services:
       - map
     command: >
       ros2 launch autoware_launch tier4_autoware_api_component.launch.xml
+      component_wise_launch:=true
       scenario_simulation:=${SCENARIO_SIMULATION:-false}
       use_sim_time:=${USE_SIM_TIME:-true}
       vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
