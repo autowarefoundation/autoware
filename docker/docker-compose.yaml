@@ -48,6 +48,7 @@ services:
     depends_on:
       - map
       - planning
+      - system
     command: >
       ros2 launch autoware_launch tier4_control_component.launch.xml
       check_external_emergency_heartbeat:=${CHECK_EXTERNAL_EMERGENCY_HEARTBEAT:-false}
@@ -87,9 +88,6 @@ services:
       - autoware-net
     depends_on:
       - map
-      - planning
-      - control
-      - vehicle
     command: >
       ros2 launch autoware_launch tier4_system_component.launch.xml
       launch_system_monitor:=${LAUNCH_SYSTEM_MONITOR:-false}
