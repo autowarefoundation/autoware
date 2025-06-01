@@ -2,7 +2,7 @@
   ansible.builtin.uri:
     url: https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest
     method: GET
-    return_content: yes
+    return_content: true
   register: ros_apt_release_info
 
 - name: Extract latest version of ros-apt-source package
@@ -16,14 +16,14 @@
 
 - name: Get ros2-apt-source package
   ansible.builtin.get_url:
-    url: "https://github.com/ros-infrastructure/ros-apt-source/releases/download/{{ ros_apt_source_version }}/ros2-apt-source_{{ ros_apt_source_version }}.{{ ros2__ubuntu_codename.stdout }}_all.deb"
+    url: https://github.com/ros-infrastructure/ros-apt-source/releases/download/{{ ros_apt_source_version }}/ros2-apt-source_{{ ros_apt_source_version }}.{{ ros2__ubuntu_codename.stdout }}_all.deb
     dest: /tmp/ros2-apt-source.deb
 
 - name: Install ros2-apt-source package
   ansible.builtin.apt:
     deb: /tmp/ros2-apt-source.deb
     state: present
-  become: yes
+  become: true
 
 - name: Delete installed .deb file
   ansible.builtin.file:
