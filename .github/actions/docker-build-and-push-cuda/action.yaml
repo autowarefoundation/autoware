@@ -22,8 +22,15 @@ runs:
     - name: Install jq and vcstool
       run: |
         sudo apt-get -y update
-        sudo apt-get -y install jq python3-pip
-        pip install --no-cache-dir vcstool
+        sudo apt-get -y install curl gnupg lsb-release
+
+        # Add the ROS 2 GPG key and repository
+        sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | \
+          sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+        sudo apt-get update
+        sudo apt-get install -y jq python3-pip python3-vcstool
       shell: bash
 
     - name: Run vcs import
