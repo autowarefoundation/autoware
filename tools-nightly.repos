@@ -7,4 +7,4 @@ repositories:
   plotjuggler_ros:
     type: git
     url: https://github.com/PlotJuggler/plotjuggler-ros-plugins.git
-    version: main
+    version: humble

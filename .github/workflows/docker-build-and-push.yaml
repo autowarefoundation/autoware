@@ -190,9 +190,10 @@ jobs:
             docker/**
 
       - name: Free disk space
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+        if: ${{ runner.environment == 'github-hosted' &&
+          (steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && github.ref_type == 'tag') }}
+          (github.event_name == 'push' && github.ref_type == 'tag')) }}
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware' with CUDA
