@@ -1,38 +1,35 @@
-- name: Install dependencies for setting up apt sources
-  become: true
-  ansible.builtin.apt:
-    name:
-      - curl
-      - gnupg
-      - lsb-release
-    update_cache: true
+- name: Get latest release information of ros-apt-source package
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest
+    method: GET
+    return_content: true
+  register: ros_apt_release_info
 
-# sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-- name: Authorize ROS GPG key
-  become: true
-  ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.key
-    dest: /usr/share/keyrings/ros-archive-keyring.gpg
-    mode: 644
-
-- name: Save result of 'dpkg --print-architecture'
-  ansible.builtin.command: dpkg --print-architecture
-  register: ros2__deb_architecture
-  changed_when: false
+- name: Extract latest version of ros-apt-source package
+  ansible.builtin.set_fact:
+    ros_apt_source_version: "{{ (ros_apt_release_info.content | from_json).tag_name }}"
 
 - name: Save result of 'source /etc/os-release && echo $UBUNTU_CODENAME'
   ansible.builtin.shell: bash -c 'source /etc/os-release && echo $UBUNTU_CODENAME'
   register: ros2__ubuntu_codename
   changed_when: false
 
-# echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(source /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-- name: Add ROS 2 apt repository to source list
-  become: true
-  ansible.builtin.apt_repository:
-    repo: deb [arch={{ ros2__deb_architecture.stdout }} signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu {{ ros2__ubuntu_codename.stdout }} main
-    filename: ros2
+- name: Get ros2-apt-source package
+  ansible.builtin.get_url:
+    url: https://github.com/ros-infrastructure/ros-apt-source/releases/download/{{ ros_apt_source_version }}/ros2-apt-source_{{ ros_apt_source_version }}.{{ ros2__ubuntu_codename.stdout }}_all.deb
+    dest: /tmp/ros2-apt-source.deb
+    mode: "0644"
+
+- name: Install ros2-apt-source package
+  ansible.builtin.apt:
+    deb: /tmp/ros2-apt-source.deb
     state: present
-    update_cache: true
+  become: true
+
+- name: Delete installed .deb file
+  ansible.builtin.file:
+    path: /tmp/ros2-apt-source.deb
+    state: absent
 
 - name: Hold check of ros-{{ rosdistro + '-' + ros2_installation_type }}
   ansible.builtin.command: apt-mark showhold
