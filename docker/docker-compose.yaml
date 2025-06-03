@@ -156,7 +156,7 @@ services:
     container_name: autoware-visualization
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - DISPLAY=${DISPLAY}
+      - DISPLAY=${DISPLAY:-:0}
       - QT_QPA_PLATFORMTHEME=qt5ct
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
