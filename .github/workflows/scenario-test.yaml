@@ -118,6 +118,7 @@ jobs:
               initialize_duration:=100 \
               output_directory:=./results \
               simulate_localization:=false \
+              frame_rate:=15 \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
           else
             echo "ERROR: sample-scenario.yaml is missing!"
