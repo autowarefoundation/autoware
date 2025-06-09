@@ -124,6 +124,15 @@ jobs:
             exit 1
           fi
         shell: bash
+        
+      - name: Kill lingering ROS nodes (cleanup)
+        if: always()
+        run: |
+          echo "Killing lingering ROS processes..."
+          pkill -9 -f ros2 || true
+          pkill -9 -f scenario_test_runner || true
+          pkill -9 -f openscenario_interpreter_node || true
+          pkill -9 -f python || true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
