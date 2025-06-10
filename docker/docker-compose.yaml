@@ -115,10 +115,6 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-    volumes:
-      - $HOME/src/autoware/src/launcher/autoware_launch/autoware_launch/launch/components:/opt/autoware/share/autoware_launch/launch/components:ro
-      - $HOME/src/autoware/src/universe/autoware_universe/launch/tier4_perception_launch/launch:/opt/autoware/share/tier4_perception_launch/launch:ro
-      - $HOME/src/autoware/src/universe/autoware_universe/launch/tier4_simulator_launch/launch:/opt/autoware/share/tier4_simulator_launch/launch:ro
     networks:
       - autoware-net
     depends_on:
