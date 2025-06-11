@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-24.04
     container:
       image: ghcr.io/autowarefoundation/autoware:universe-devel
-      options: --memory=5g --cpus=2
+      options: --memory=8g --cpus=2
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -98,7 +98,7 @@ jobs:
         run: |
           cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
-          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --parallel-workers 1
           source install/setup.bash
         shell: bash
 
