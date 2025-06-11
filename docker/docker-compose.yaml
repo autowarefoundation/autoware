@@ -1,0 +1,190 @@
+services:
+  map:
+    image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
+    container_name: autoware-map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    volumes:
+      - ${MAP_PATH:-$HOME/autoware_map}:/autoware_map:ro
+    networks:
+      - autoware-net
+    command: >
+      ros2 launch autoware_launch tier4_map_component.launch.xml
+      lanelet2_map_file:=${LANELET2_MAP_FILE:-lanelet2_map.osm}
+      map_path:=/autoware_map
+      pointcloud_map_file:=${POINTCLOUD_MAP_FILE:-pointcloud_map.pcd}
+      use_sim_time:=${USE_SIM_TIME:-true}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
+    restart: unless-stopped
+
+  planning:
+    image: ghcr.io/autowarefoundation/autoware:universe-planning-control
+    container_name: autoware-planning
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+    command: >
+      ros2 launch autoware_launch tier4_planning_component.launch.xml
+      component_wise_launch:=true
+      enable_all_modules_auto_mode:=${ENABLE_ALL_MODULES_AUTO_MODE:-false}
+      is_simulation:=${IS_SIMULATION:-true}
+      module_preset:=${PLANNING_MODULE_PRESET:-default}
+      pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME:-pointcloud_container}
+      use_sim_time:=${USE_SIM_TIME:-true}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
+    restart: unless-stopped
+
+  control:
+    image: ghcr.io/autowarefoundation/autoware:universe-planning-control
+    container_name: autoware-control
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+      - planning
+      - system
+    command: >
+      ros2 launch autoware_launch tier4_control_component.launch.xml
+      check_external_emergency_heartbeat:=${CHECK_EXTERNAL_EMERGENCY_HEARTBEAT:-false}
+      component_wise_launch:=true
+      lateral_controller_mode:=${LATERAL_CONTROLLER_MODE:-mpc}
+      longitudinal_controller_mode:=${LONGITUDINAL_CONTROLLER_MODE:-pid}
+      module_preset:=${CONTROL_MODULE_PRESET:-default}
+      use_sim_time:=${USE_SIM_TIME:-true}
+      vehicle_id:=${VEHICLE_ID:-default}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
+    restart: unless-stopped
+
+  vehicle:
+    image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
+    container_name: autoware-vehicle
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+    command: >
+      ros2 launch tier4_vehicle_launch vehicle.launch.xml
+      launch_vehicle_interface:=${LAUNCH_VEHICLE_INTERFACE:-true}
+      raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
+      sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
+      use_sim_time:=${USE_SIM_TIME:-true}
+      vehicle_id:=${VEHICLE_ID:-default}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
+    restart: unless-stopped
+
+  system:
+    image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
+    container_name: autoware-system
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+    command: >
+      ros2 launch autoware_launch tier4_system_component.launch.xml
+      launch_system_monitor:=${LAUNCH_SYSTEM_MONITOR:-false}
+      launch_dummy_diag_publisher:=${LAUNCH_DUMMY_DIAG_PUBLISHER:-true}
+      sensor_model:=${SENSOR_MODEL:-sample_sensor_kit}
+      system_run_mode:=${SYSTEM_RUN_MODE:-planning_simulation}
+      use_sim_time:=${USE_SIM_TIME:-true}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
+    restart: unless-stopped
+
+  simulator:
+    # TODO(youtalk): Use autoware-tools:scenario-simulator image
+    image: ghcr.io/autowarefoundation/autoware:universe
+    container_name: autoware-simulator
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+      - system
+      - vehicle
+    command: >
+      ros2 launch autoware_launch tier4_simulator_component.launch.xml
+      initial_engage_state:=${INITIAL_ENGAGE_STATE:-true}
+      launch_dummy_doors:=${LAUNCH_DUMMY_DOORS:-true}
+      launch_dummy_perception:=${LAUNCH_DUMMY_PERCEPTION:-true}
+      launch_dummy_vehicle:=${LAUNCH_DUMMY_VEHICLE:-true}
+      launch_scenario_simulator_v2_adapter:=${LAUNCH_SCENARIO_SIMULATOR_V2_ADAPTER:-false}
+      localization_sim_mode:=${LOCALIZATION_SIM_MODE:-api}
+      perception/enable_detection_failure:=${PERCEPTION_ENABLE_DETECTION_FAILURE:-true}
+      perception/enable_object_recognition:=${PERCEPTION_ENABLE_OBJECT_RECOGNITION:-true}
+      perception/enable_traffic_light:=${PERCEPTION_ENABLE_TRAFFIC_LIGHT:-false}
+      perception/use_base_link_z:=${PERCEPTION_USE_BASE_LINK_Z:-true}
+      raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
+      scenario_simulation:=${SCENARIO_SIMULATION:-false}
+      sensing/visible_range:=${SENSING_VISIBLE_RANGE:-300.0}
+      use_sim_time:=${USE_SIM_TIME:-true}
+      use_pointcloud_container:=${USE_POINTCLOUD_CONTAINER:-false}
+      vehicle_info_param_file:=/opt/autoware/share/${VEHICLE_MODEL:-sample_vehicle}_description/config/vehicle_info.param.yaml
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
+    restart: unless-stopped
+
+  api:
+    # TODO(youtalk): Create autoware:universe-api image
+    image: ghcr.io/autowarefoundation/autoware:universe
+    container_name: autoware-api
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+    command: >
+      ros2 launch autoware_launch tier4_autoware_api_component.launch.xml
+      component_wise_launch:=true
+      scenario_simulation:=${SCENARIO_SIMULATION:-false}
+      use_sim_time:=${USE_SIM_TIME:-true}
+      vehicle_model:=${VEHICLE_MODEL:-sample_vehicle}
+    restart: unless-stopped
+
+  visualization:
+    image: ghcr.io/autowarefoundation/autoware-tools:visualizer
+    container_name: autoware-visualization
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - REMOTE_DISPLAY=${REMOTE_DISPLAY:-true}
+    ports:
+      - 6080:6080
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+      - planning
+      - control
+      - vehicle
+      - system
+      - api
+      - simulator
+    profiles:
+      - visualization
+
+networks:
+  autoware-net:
+    driver: bridge
