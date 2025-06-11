@@ -11,7 +11,9 @@ on:
 jobs:
   scenario-test:
     runs-on: ubuntu-24.04
-    container: ghcr.io/autowarefoundation/autoware:universe-devel
+    container:
+      image: ghcr.io/autowarefoundation/autoware:universe-devel
+      options: --memory=5g --cpus=2
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -31,6 +33,10 @@ jobs:
             git \
             ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
+        shell: bash
+
+      - name: Show memory info
+        run: free -h
         shell: bash
 
       - name: Clone Autoware and Import simulator.repos
