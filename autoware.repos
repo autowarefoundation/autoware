@@ -120,3 +120,8 @@ repositories:
     type: git
     url: https://github.com/tier4/agnocast.git
     version: 2.1.1
+  # TODO(TIER IV): Remove the source build once the digestible vendor package is released in the official ROS repository.
+  vendor/digestible:
+    type: git
+    url: https://github.com/tier4/digestible.git
+    version: 0.1.0
