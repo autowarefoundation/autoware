@@ -1,0 +1,10 @@
+repositories:
+  tools:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_tools.git
+    version: 2e3d069c4108edcd48ce62ac9a16310dad450a47
+  # This should be removed after merged PR (https://github.com/PlotJuggler/plotjuggler-ros-plugins/pull/94)
+  plotjuggler_ros:
+    type: git
+    url: https://github.com/PlotJuggler/plotjuggler-ros-plugins.git
+    version: 2e3d069c4108edcd48ce62ac9a16310dad450a47
