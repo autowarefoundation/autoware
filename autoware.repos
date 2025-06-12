@@ -28,7 +28,7 @@ repositories:
   core/autoware_core:
     type: git
     url: https://github.com/autowarefoundation/autoware_core.git
-    version: 1.1.0
+    version: 1.2.0
   # universe
   universe/autoware_universe:
     type: git
