@@ -41,6 +41,11 @@ repos:
     hooks:
       - id: yamllint
 
+  - repo: https://github.com/autowarefoundation/autoware-guideline-check
+    rev: 0.1.0
+    hooks:
+      - id: check-package-depends
+
   - repo: https://github.com/tier4/pre-commit-hooks-ros
     rev: v0.10.0
     hooks:
