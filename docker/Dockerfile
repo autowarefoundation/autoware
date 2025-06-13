@@ -23,12 +23,8 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # Generate install package lists
-COPY src/core/autoware_adapi_msgs /autoware/src/core/autoware_adapi_msgs
-COPY src/core/autoware_cmake /autoware/src/core/autoware_cmake
-COPY src/core/autoware_internal_msgs /autoware/src/core/autoware_internal_msgs
-COPY src/core/autoware_lanelet2_extension /autoware/src/core/autoware_lanelet2_extension
-COPY src/core/autoware_msgs /autoware/src/core/autoware_msgs
-COPY src/core/autoware_utils /autoware/src/core/autoware_utils
+COPY src/core /autoware/src/core
+RUN rm -rf /autoware/src/core/autoware_core
 RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-core-common-depend-packages.txt \
   && cat /rosdep-core-common-depend-packages.txt
@@ -231,19 +227,11 @@ RUN --mount=type=ssh \
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware_universe/common,target=/autoware/src/universe/autoware_universe/common \
-  --mount=type=bind,source=src/universe/external/eagleye,target=/autoware/src/universe/external/eagleye \
-  --mount=type=bind,source=src/universe/external/glog,target=/autoware/src/universe/external/glog \
-  --mount=type=bind,source=src/universe/external/llh_converter,target=/autoware/src/universe/external/llh_converter \
-  --mount=type=bind,source=src/universe/external/managed_transform_buffer,target=/autoware/src/universe/external/managed_transform_buffer \
-  --mount=type=bind,source=src/universe/external/morai_msgs,target=/autoware/src/universe/external/morai_msgs \
-  --mount=type=bind,source=src/universe/external/muSSP,target=/autoware/src/universe/external/muSSP \
-  --mount=type=bind,source=src/universe/external/pointcloud_to_laserscan,target=/autoware/src/universe/external/pointcloud_to_laserscan \
-  --mount=type=bind,source=src/universe/external/rtklib_ros_bridge,target=/autoware/src/universe/external/rtklib_ros_bridge \
-  --mount=type=bind,source=src/universe/external/tier4_ad_api_adaptor,target=/autoware/src/universe/external/tier4_ad_api_adaptor \
-  --mount=type=bind,source=src/universe/external/tier4_autoware_msgs,target=/autoware/src/universe/external/tier4_autoware_msgs \
+  --mount=type=bind,source=src/universe/external,target=/autoware/src/universe/external \
   --mount=type=bind,source=src/middleware/external,target=/autoware/src/middleware/external \
   --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \
-  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  rm -rf /autoware/src/universe/external/trt_batched_nms \
+  && source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
 
