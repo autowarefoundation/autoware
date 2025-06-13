@@ -242,12 +242,7 @@ services:
       - autoware-net
     depends_on:
       - map
-      - planning
-      - control
-      - vehicle
-      - system
       - api
-      - simulator
     profiles:
       - visualization
 
