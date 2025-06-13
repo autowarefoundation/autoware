@@ -247,7 +247,7 @@ services:
       - visualization
 
   rosbag:
-    image: ghcr.io/autowarefoundation/autoware:core
+    image: ghcr.io/autowarefoundation/autoware:universe
     container_name: autoware-rosbag
     pid: service:map
     init: true
