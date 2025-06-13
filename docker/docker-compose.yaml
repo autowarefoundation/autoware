@@ -33,7 +33,7 @@ services:
       ros2 launch autoware_launch tier4_planning_component.launch.xml
       component_wise_launch:=true
       enable_all_modules_auto_mode:=${ENABLE_ALL_MODULES_AUTO_MODE}
-      is_simulation:=${IS_SIMULATION}
+      is_simulation:=${IS_SIMULATION_MODE}
       module_preset:=${PLANNING_MODULE_PRESET}
       pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
       use_sim_time:=${USE_SIM_TIME}
@@ -107,6 +107,70 @@ services:
       vehicle_model:=${VEHICLE_MODEL}
     restart: unless-stopped
 
+  sensing:
+    image: ghcr.io/autowarefoundation/autoware:universe-sensing
+    container_name: autoware-sensing
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+      - system
+    command: >
+      ros2 launch autoware_launch tier4_sensing_component.launch.xml
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_model:=${VEHICLE_MODEL}
+      sensor_model:=${SENSOR_MODEL}
+    restart: unless-stopped
+    profiles:
+      - logging-simulation
+
+  localization:
+    image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
+    container_name: autoware-localization
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+      - system
+      - sensing
+    command: >
+      ros2 launch autoware_launch tier4_localization_component.launch.xml
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_model:=${VEHICLE_MODEL}
+    restart: unless-stopped
+    profiles:
+      - logging-simulation
+
+  perception:
+    image: ghcr.io/autowarefoundation/autoware:universe-perception
+    container_name: autoware-perception
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+      - system
+      - sensing
+      - localization
+    command: >
+      ros2 launch autoware_launch tier4_perception_component.launch.xml
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_model:=${VEHICLE_MODEL}
+    restart: unless-stopped
+    profiles:
+      - logging-simulation
+
   simulator:
     # TODO(youtalk): Use autoware-tools:scenario-simulator image
     image: ghcr.io/autowarefoundation/autoware:universe
@@ -141,6 +205,8 @@ services:
       vehicle_info_param_file:=/opt/autoware/share/${VEHICLE_MODEL}_description/config/vehicle_info.param.yaml
       vehicle_model:=${VEHICLE_MODEL}
     restart: unless-stopped
+    profiles:
+      - planning-simulation
 
   api:
     # TODO(youtalk): Create autoware:universe-api image
