@@ -108,7 +108,7 @@ services:
     restart: unless-stopped
 
   sensing:
-    image: ghcr.io/autowarefoundation/autoware:universe-sensing
+    image: ghcr.io/autowarefoundation/autoware:universe-sensing-perception
     container_name: autoware-sensing
     pid: service:map
     init: true
@@ -150,7 +150,7 @@ services:
       - logging-simulation
 
   perception:
-    image: ghcr.io/autowarefoundation/autoware:universe-perception
+    image: ghcr.io/autowarefoundation/autoware:universe-sensing-perception
     container_name: autoware-perception
     pid: service:map
     init: true
@@ -245,6 +245,25 @@ services:
       - api
     profiles:
       - visualization
+
+  rosbag:
+    image: ghcr.io/autowarefoundation/autoware:core
+    container_name: autoware-rosbag
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    volumes:
+      - ${ROSBAG_PATH}:/autoware_map/rosbag:ro
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+    command: >
+      ros2 bag play /autoware_map/rosbag -r ${ROSBAG_RATE} -s ${ROSBAG_FORMAT}
+    restart: no
+    profiles:
+      - logging-simulation
 
 networks:
   autoware-net:
