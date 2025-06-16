@@ -121,11 +121,16 @@ jobs:
               scenario:="$SCENARIO_FILE" \
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
-              initialize_duration:=100 \
+              initialize_duration:=150 \
               output_directory:=./results \
               simulate_localization:=false \
-              frame_rate:=15 \
+              frame_rate:=5 \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+              
+          - name: Print last 100 lines of scenario output
+            if: failure()
+            run: tail -n 100 scenario_output.log || true
+
 
             echo "Zipping log files..."
             zip -r scenario_test_runner_logs.zip /github/home/.ros/log || true
