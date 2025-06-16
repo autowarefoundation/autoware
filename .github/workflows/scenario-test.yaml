@@ -113,6 +113,7 @@ jobs:
             --parallel-workers 1
       
           source install/setup.bash
+          shell: bash
 
 
 
