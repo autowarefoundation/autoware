@@ -94,13 +94,27 @@ jobs:
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Build workspace
+      - name: Build workspace (limited memory safe)
         run: |
           cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
-          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --parallel-workers 1
+      
+          # Disable precompiled headers to save memory during build
+          export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+      
+          # Build core packages only (skip some heavy optional ones)
+          colcon build --symlink-install \
+            --packages-skip \
+              openscenario_visualization \
+              behavior_tree_plugin \
+              simple_sensor_simulator \
+              do_nothing_plugin \
+            --cmake-args -DCMAKE_BUILD_TYPE=Release \
+            --parallel-workers 1
+      
           source install/setup.bash
-        shell: bash
+
+
 
       - name: Check lanelet parameters in config file
         run: |
