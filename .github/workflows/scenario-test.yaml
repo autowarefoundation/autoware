@@ -81,12 +81,10 @@ jobs:
         shell: bash
 
       - name: Download sample-map-planning maps
-        # cspell:disable
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           mkdir -p /home/user/autoware_map
           unzip sample-map-planning.zip -d /home/user/autoware_map
-        # cspell:enable
         shell: bash
 
       - name: Fix path in sample-scenario.yaml
@@ -94,30 +92,21 @@ jobs:
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Build workspace (limited memory safe)
+      - name: Build workspace (safe for CI)
         run: |
           cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
-      
-          # Disable precompiled headers to save memory during build
+
+          # Disable precompiled headers to reduce memory
           export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
-      
-          # Build core packages only (skip some heavy optional ones)
+
+          # Build all with sequential executor to reduce RAM spikes
           colcon build --symlink-install \
-            --packages-skip \
-              embree_vendor \
-              openscenario_visualization \
-              behavior_tree_plugin \
-              simple_sensor_simulator \
-              do_nothing_plugin \
-              openscenario_interpreter \
             --cmake-args -DCMAKE_BUILD_TYPE=Release \
-            --parallel-workers 1
-      
+            --executor sequential
+
           source install/setup.bash
         shell: bash
-
-
 
       - name: Check lanelet parameters in config file
         run: |
@@ -143,11 +132,6 @@ jobs:
               simulate_localization:=false \
               frame_rate:=5 \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
-              
-          - name: Print last 100 lines of scenario output
-            if: failure()
-            run: tail -n 100 scenario_output.log || true
-
 
             echo "Zipping log files..."
             zip -r scenario_test_runner_logs.zip /github/home/.ros/log || true
@@ -160,6 +144,10 @@ jobs:
             exit 1
           fi
         shell: bash
+
+      - name: Print last 100 lines of scenario output
+        if: failure()
+        run: tail -n 100 scenario_output.log || true
 
       - name: Upload scenario_test_runner logs
         uses: actions/upload-artifact@v4
@@ -212,7 +200,7 @@ jobs:
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
             cat $RESULT_FILE
-            cat $XML_FILE     
+            cat $XML_FILE
             if [ $FOUND_ISSUES -eq 1 ]; then
               echo "ERROR: Detected failures or errors in the simulation."
               exit 1
