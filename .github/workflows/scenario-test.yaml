@@ -105,6 +105,7 @@ jobs:
           # Build core packages only (skip some heavy optional ones)
           colcon build --symlink-install \
             --packages-skip \
+              embree_vendor \
               openscenario_visualization \
               behavior_tree_plugin \
               simple_sensor_simulator \
