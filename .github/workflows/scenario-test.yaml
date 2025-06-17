@@ -109,6 +109,7 @@ jobs:
               behavior_tree_plugin \
               simple_sensor_simulator \
               do_nothing_plugin \
+              openscenario_interpreter \
             --cmake-args -DCMAKE_BUILD_TYPE=Release \
             --parallel-workers 1
       
