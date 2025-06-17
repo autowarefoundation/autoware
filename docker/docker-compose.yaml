@@ -249,7 +249,6 @@ services:
   rosbag:
     image: ghcr.io/autowarefoundation/autoware:universe
     container_name: autoware-rosbag
-    pid: service:map
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
@@ -257,10 +256,9 @@ services:
       - ${ROSBAG_PATH}:/autoware_map/rosbag:ro
     networks:
       - autoware-net
-    depends_on:
-      - map
     command: >
-      ros2 bag play /autoware_map/rosbag -r ${ROSBAG_RATE} -s ${ROSBAG_FORMAT}
+      bash -c "ros2 bag info /autoware_map/rosbag -s ${ROSBAG_FORMAT} &&
+      ros2 bag play /autoware_map/rosbag -r ${ROSBAG_RATE} -s ${ROSBAG_FORMAT}"
     restart: no
     profiles:
       - logging-simulation
