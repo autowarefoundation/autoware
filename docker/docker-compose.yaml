@@ -160,9 +160,7 @@ services:
       - autoware-net
     depends_on:
       - map
-      - system
       - sensing
-      - localization
     command: >
       ros2 launch autoware_launch tier4_perception_component.launch.xml
       use_sim_time:=${USE_SIM_TIME}
