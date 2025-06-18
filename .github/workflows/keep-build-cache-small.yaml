@@ -2,6 +2,7 @@ name: keep-build-cache-small
 
 on:
   workflow_call:
+  workflow_dispatch:
   schedule:
     - cron: 0 6 * * *
 
@@ -55,7 +56,7 @@ jobs:
         if: steps.check_image.outputs.exists == 'true'
         run: |
           echo "🔍 Inspecting build cache size for image: ${{ env.BUILD_CACHE_IMAGE }}..."
-          SIZE_BYTES=$(skopeo inspect --raw docker://${{ env.BUILD_CACHE_IMAGE }} | jq '[.manifests[].size] | add')
+          SIZE_BYTES=$(skopeo inspect --raw docker://${{ env.BUILD_CACHE_IMAGE }} | jq '.layers | map(.size) | add')
           SIZE_GB=$(echo "scale=2; $SIZE_BYTES / (1024 * 1024 * 1024)" | bc)
           echo "Cache size: ${SIZE_GB} GB"
           echo "size_gb=${SIZE_GB}" >> "$GITHUB_OUTPUT"
