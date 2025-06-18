@@ -55,7 +55,7 @@ jobs:
 
       - name: Get changed files
         id: changed-files
-        uses: step-security/changed-files@v45
+        uses: step-security/changed-files@v46
         with:
           files: |
             *.env
