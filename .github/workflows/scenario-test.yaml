@@ -26,6 +26,7 @@ jobs:
           apt-get update
           apt-get install -y \
             unzip \
+            zip \
             curl \
             gnupg2 \
             lsb-release \
@@ -127,10 +128,10 @@ jobs:
               scenario:="$SCENARIO_FILE" \
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
-              initialize_duration:=150 \
+              initialize_duration:=50 \
               output_directory:=./results \
               simulate_localization:=false \
-              frame_rate:=5 \
+              frame_rate:=1 \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
 
             echo "Zipping log files..."
