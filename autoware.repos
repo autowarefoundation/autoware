@@ -3,7 +3,7 @@ repositories:
   core/autoware_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
-    version: 1.8.0
+    version: 1.9.0
   # TODO (isamu-takagi): Use a released version when autoware_universe uses a released version.
   core/autoware_adapi_msgs:
     type: git
