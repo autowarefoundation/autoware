@@ -285,6 +285,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware_universe/perception,target=/autoware/src/universe/autoware_universe/perception \
   --mount=type=bind,source=src/universe/autoware_universe/sensing,target=/autoware/src/universe/autoware_universe/sensing \
   --mount=type=bind,source=src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator,target=/autoware/src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator \
+  --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
