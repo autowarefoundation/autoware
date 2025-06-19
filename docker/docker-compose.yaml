@@ -241,7 +241,7 @@ services:
     depends_on:
       - map
       - api
-    restart: false
+    restart: "no"
     profiles:
       - visualization
 
@@ -258,7 +258,7 @@ services:
     command: >
       bash -c "ros2 bag info /autoware_map/rosbag -s ${ROSBAG_FORMAT} &&
       ros2 bag play /autoware_map/rosbag -r ${ROSBAG_RATE} -s ${ROSBAG_FORMAT}"
-    restart: false
+    restart: "no"
     profiles:
       - logging-simulation
 
