@@ -16,7 +16,7 @@ services:
       pointcloud_map_file:=${POINTCLOUD_MAP_FILE}
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
-    restart: unless-stopped
+    restart: on-failure
 
   planning:
     image: ghcr.io/autowarefoundation/autoware:universe-planning-control
@@ -38,7 +38,7 @@ services:
       pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
-    restart: unless-stopped
+    restart: on-failure
 
   control:
     image: ghcr.io/autowarefoundation/autoware:universe-planning-control
@@ -63,7 +63,7 @@ services:
       use_sim_time:=${USE_SIM_TIME}
       vehicle_id:=${VEHICLE_ID}
       vehicle_model:=${VEHICLE_MODEL}
-    restart: unless-stopped
+    restart: on-failure
 
   vehicle:
     image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
@@ -84,7 +84,7 @@ services:
       use_sim_time:=${USE_SIM_TIME}
       vehicle_id:=${VEHICLE_ID}
       vehicle_model:=${VEHICLE_MODEL}
-    restart: unless-stopped
+    restart: on-failure
 
   system:
     image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
@@ -105,7 +105,7 @@ services:
       system_run_mode:=${SYSTEM_RUN_MODE}
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
-    restart: unless-stopped
+    restart: on-failure
 
   sensing:
     image: ghcr.io/autowarefoundation/autoware:universe-sensing-perception
@@ -124,7 +124,7 @@ services:
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
       sensor_model:=${SENSOR_MODEL}
-    restart: unless-stopped
+    restart: on-failure
     profiles:
       - logging-simulation
 
@@ -145,7 +145,7 @@ services:
       ros2 launch autoware_launch tier4_localization_component.launch.xml
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
-    restart: unless-stopped
+    restart: on-failure
     profiles:
       - logging-simulation
 
@@ -165,7 +165,7 @@ services:
       ros2 launch autoware_launch tier4_perception_component.launch.xml
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
-    restart: unless-stopped
+    restart: on-failure
     profiles:
       - logging-simulation
 
@@ -202,7 +202,7 @@ services:
       use_pointcloud_container:=${USE_POINTCLOUD_CONTAINER}
       vehicle_info_param_file:=/opt/autoware/share/${VEHICLE_MODEL}_description/config/vehicle_info.param.yaml
       vehicle_model:=${VEHICLE_MODEL}
-    restart: unless-stopped
+    restart: on-failure
     profiles:
       - planning-simulation
 
@@ -224,7 +224,7 @@ services:
       scenario_simulation:=${SCENARIO_SIMULATION}
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
-    restart: unless-stopped
+    restart: on-failure
 
   visualization:
     image: ghcr.io/autowarefoundation/autoware-tools:visualizer
@@ -241,6 +241,7 @@ services:
     depends_on:
       - map
       - api
+    restart: false
     profiles:
       - visualization
 
@@ -257,7 +258,7 @@ services:
     command: >
       bash -c "ros2 bag info /autoware_map/rosbag -s ${ROSBAG_FORMAT} &&
       ros2 bag play /autoware_map/rosbag -r ${ROSBAG_RATE} -s ${ROSBAG_FORMAT}"
-    restart: no
+    restart: false
     profiles:
       - logging-simulation
 
