@@ -108,7 +108,7 @@ services:
     restart: on-failure
 
   sensing:
-    image: ghcr.io/autowarefoundation/autoware:universe-sensing-perception
+    image: ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel
     container_name: autoware-sensing
     pid: service:map
     init: true
@@ -150,7 +150,7 @@ services:
       - logging-simulation
 
   perception:
-    image: ghcr.io/autowarefoundation/autoware:universe-sensing-perception
+    image: ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel
     container_name: autoware-perception
     pid: service:map
     init: true
