@@ -103,6 +103,7 @@ jobs:
 
           # Build all with sequential executor to reduce RAM spikes
           colcon build --symlink-install \
+            --packages-up-to scenario_test_runner \
             --cmake-args -DCMAKE_BUILD_TYPE=Release \
             --executor sequential
 
