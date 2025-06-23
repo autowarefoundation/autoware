@@ -10,7 +10,7 @@ on:
 
 jobs:
   scenario-test:
-    runs-on: "['self-hosted', 'Linux', 'X64']"
+    runs-on: [self-hosted, Linux, X64]
     container:
       image: ghcr.io/autowarefoundation/autoware:universe-devel
       options: --memory=8g --cpus=2
