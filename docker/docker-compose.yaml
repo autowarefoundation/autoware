@@ -114,6 +114,8 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    volumes:
+      - ${HOME}/src/autoware/src/launcher/autoware_launch/autoware_launch:/opt/autoware/share/autoware_launch:ro
     networks:
       - autoware-net
     depends_on:
@@ -122,7 +124,7 @@ services:
     command: >
       ros2 launch autoware_launch tier4_sensing_component.launch.xml
       launch_sensing_driver:=${LAUNCH_SENSING_DRIVER}
-      launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER}
+      launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER_SENSING}
       pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
@@ -138,6 +140,8 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    volumes:
+      - ${HOME}/src/autoware/src/launcher/autoware_launch/autoware_launch:/opt/autoware/share/autoware_launch:ro
     networks:
       - autoware-net
     depends_on:
@@ -145,7 +149,7 @@ services:
       - sensing
     command: >
       ros2 launch autoware_launch tier4_perception_component.launch.xml
-      launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER}
+      launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER_PERCEPTION}
       pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
