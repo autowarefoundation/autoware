@@ -146,6 +146,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
 COPY src/launcher /autoware/src/launcher
+COPY src/sensor_component /autoware/src/sensor_component
 COPY src/universe /autoware/src/universe
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-depend-packages.txt \
@@ -459,6 +460,7 @@ COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
 COPY --from=universe-visualization-devel /opt/autoware /opt/autoware
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
   --mount=type=bind,source=src/universe/autoware_universe/evaluator,target=/autoware/src/universe/autoware_universe/evaluator \
   --mount=type=bind,source=src/universe/autoware_universe/launch,target=/autoware/src/universe/autoware_universe/launch \
   --mount=type=bind,source=src/universe/autoware_universe/simulator,target=/autoware/src/universe/autoware_universe/simulator \
