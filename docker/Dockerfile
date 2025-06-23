@@ -532,6 +532,8 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
+# TODO(youtalk): Fix https://github.com/autowarefoundation/autoware/pull/6235 workaround
+COPY --from=universe-common-devel /opt/autoware/share/autoware_launch /opt/autoware/share/autoware_launch
 
 # Copy bash aliases
 COPY docker/etc/.bash_aliases /root/.bash_aliases
