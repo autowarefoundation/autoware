@@ -13,13 +13,13 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     container:
       image: ghcr.io/autowarefoundation/autoware:universe-devel
-      options: --memory=8g --cpus=2
+      # options: --memory=8g --cpus=2
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
+      # - name: Free disk space
+      #   uses: ./.github/actions/free-disk-space
 
       - name: Install required packages
         run: |
