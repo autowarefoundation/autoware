@@ -122,9 +122,33 @@ services:
     command: >
       ros2 launch autoware_launch tier4_sensing_component.launch.xml
       launch_sensing_driver:=${LAUNCH_SENSING_DRIVER}
+      launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER}
+      pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
       sensor_model:=${SENSOR_MODEL}
+    restart: on-failure
+    profiles:
+      - logging-simulation
+
+  perception:
+    image: ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel
+    container_name: autoware-perception
+    pid: service:map
+    init: true
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    networks:
+      - autoware-net
+    depends_on:
+      - map
+      - sensing
+    command: >
+      ros2 launch autoware_launch tier4_perception_component.launch.xml
+      launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER}
+      pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_model:=${VEHICLE_MODEL}
     restart: on-failure
     profiles:
       - logging-simulation
@@ -144,26 +168,6 @@ services:
       - sensing
     command: >
       ros2 launch autoware_launch tier4_localization_component.launch.xml
-      use_sim_time:=${USE_SIM_TIME}
-      vehicle_model:=${VEHICLE_MODEL}
-    restart: on-failure
-    profiles:
-      - logging-simulation
-
-  perception:
-    image: ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel
-    container_name: autoware-perception
-    pid: service:map
-    init: true
-    environment:
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
-    networks:
-      - autoware-net
-    depends_on:
-      - map
-      - sensing
-    command: >
-      ros2 launch autoware_launch tier4_perception_component.launch.xml
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
     restart: on-failure
