@@ -106,7 +106,7 @@ jobs:
               scenario:="$SCENARIO_FILE" \
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
-              initialize_duration:=100 \
+              initialize_duration:=300 \
               output_directory:=./home/vishalchauhan/results \
               simulate_localization:=false \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
