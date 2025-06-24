@@ -117,9 +117,11 @@ jobs:
         shell: bash
 
       - name: List available ROS2 services (debug)
-        run: ros2 service list
+        run: |
+         source ~/autoware_ws/install/setup.bash
+         ros2 service list
         shell: bash
-       
+
         
       - name: Wait for /api/routing/clear_route service
         run: |
