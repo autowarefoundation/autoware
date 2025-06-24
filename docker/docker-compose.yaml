@@ -149,7 +149,9 @@ services:
       - sensing
     command: >
       ros2 launch autoware_launch tier4_perception_component.launch.xml
+      data_path:=${DATA_PATH}
       launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER_PERCEPTION}
+      lidar_detection_model:=${LIDAR_DETECTION_MODEL}
       perception_mode:=${PERCEPTION_MODE}
       pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
       use_sim_time:=${USE_SIM_TIME}
