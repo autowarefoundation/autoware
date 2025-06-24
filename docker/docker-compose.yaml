@@ -123,12 +123,12 @@ services:
       - system
     command: >
       ros2 launch autoware_launch tier4_sensing_component.launch.xml
-      launch_sensing_driver:=${LAUNCH_SENSING_DRIVER}
       launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER_SENSING}
+      launch_sensing_driver:=${LAUNCH_SENSING_DRIVER}
       pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
+      sensor_model:=${SENSOR_MODEL}
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
-      sensor_model:=${SENSOR_MODEL}
     restart: on-failure
     profiles:
       - logging-simulation
@@ -150,6 +150,7 @@ services:
     command: >
       ros2 launch autoware_launch tier4_perception_component.launch.xml
       launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER_PERCEPTION}
+      perception_mode:=${PERCEPTION_MODE}
       pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
