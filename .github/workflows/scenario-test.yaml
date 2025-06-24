@@ -118,13 +118,13 @@ jobs:
 
       - name: List available ROS2 services (debug)
         run: |
-         source ~/autoware_ws/install/setup.bash
-         ros2 service list
+          source ~/autoware_ws/install/setup.bash
+          ros2 service list
         shell: bash
 
-        
       - name: Wait for /api/routing/clear_route service
         run: |
+          source ~/autoware_ws/install/setup.bash
           echo "Waiting for /api/routing/clear_route service to be available..."
           timeout=30
           until ros2 service list | grep /api/routing/clear_route; do
@@ -138,6 +138,10 @@ jobs:
           echo "/api/routing/clear_route is now available."
         shell: bash
 
+
+
+
+      
       - name: Launch scenario_test_runner with diagnostics
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
