@@ -163,6 +163,7 @@ services:
       - sensing-perception
     command: >
       ros2 launch autoware_launch tier4_localization_component.launch.xml
+      system_run_mode:=${SYSTEM_RUN_MODE}
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
     restart: on-failure
@@ -241,9 +242,6 @@ services:
       - 6080:6080
     networks:
       - autoware-net
-    depends_on:
-      - map
-      - api
     restart: "no"
     profiles:
       - visualization
@@ -264,7 +262,7 @@ services:
       ros2 bag play /autoware_map/rosbag -r ${ROSBAG_RATE} -s ${ROSBAG_FORMAT}"
     restart: "no"
     profiles:
-      - logging-simulation
+      - rosbag
 
 networks:
   autoware-net:
