@@ -3,6 +3,7 @@ services:
     image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
     container_name: autoware-map
     init: true
+    ipc: shareable
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     volumes:
