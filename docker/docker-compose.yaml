@@ -135,7 +135,7 @@ services:
       pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
       sensor_model:=${SENSOR_MODEL}
       use_sim_time:=${USE_SIM_TIME}
-      vehicle_model:=${VEHICLE_MODEL} &&
+      vehicle_model:=${VEHICLE_MODEL} &
       ros2 launch autoware_launch tier4_perception_component.launch.xml
       data_path:=${DATA_PATH}
       launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER_PERCEPTION}
