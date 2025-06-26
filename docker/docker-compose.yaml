@@ -3,11 +3,13 @@ services:
     image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
     container_name: autoware-map
     init: true
-    ipc: shareable
+    ipc: host
+    shm_size: 2gb
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     volumes:
       - ${MAP_PATH}:/autoware_map:ro
+      - /dev/shm:/dev/shm
     networks:
       - autoware-net
     command: >
@@ -23,7 +25,7 @@ services:
     image: ghcr.io/autowarefoundation/autoware:universe-planning-control
     container_name: autoware-planning
     pid: service:map
-    ipc: service:map
+    ipc: host
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
@@ -46,7 +48,7 @@ services:
     image: ghcr.io/autowarefoundation/autoware:universe-planning-control
     container_name: autoware-control
     pid: service:map
-    ipc: service:map
+    ipc: host
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
@@ -72,7 +74,7 @@ services:
     image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
     container_name: autoware-vehicle
     pid: service:map
-    ipc: service:map
+    ipc: host
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
@@ -94,7 +96,7 @@ services:
     image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
     container_name: autoware-system
     pid: service:map
-    ipc: service:map
+    ipc: host
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
@@ -116,12 +118,14 @@ services:
     image: ghcr.io/autowarefoundation/autoware:universe-sensing-perception
     container_name: autoware-sensing-perception
     pid: service:map
-    ipc: service:map
+    ipc: host
     init: true
+    shm_size: 2gb
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     volumes:
       - ${HOME}/src/autoware/src/launcher/autoware_launch/autoware_launch:/opt/autoware/share/autoware_launch:ro
+      - /dev/shm:/dev/shm
     networks:
       - autoware-net
     depends_on:
@@ -153,7 +157,7 @@ services:
     image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
     container_name: autoware-localization
     pid: service:map
-    ipc: service:map
+    ipc: host
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
@@ -177,7 +181,7 @@ services:
     image: ghcr.io/autowarefoundation/autoware:universe
     container_name: autoware-simulator
     pid: service:map
-    ipc: service:map
+    ipc: host
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
@@ -215,7 +219,7 @@ services:
     image: ghcr.io/autowarefoundation/autoware:universe
     container_name: autoware-api
     pid: service:map
-    ipc: service:map
+    ipc: host
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
@@ -235,7 +239,7 @@ services:
     image: ghcr.io/autowarefoundation/autoware-tools:visualizer
     container_name: autoware-visualization
     pid: service:map
-    ipc: service:map
+    ipc: host
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
@@ -251,7 +255,7 @@ services:
   rosbag:
     image: ghcr.io/autowarefoundation/autoware:universe
     container_name: autoware-rosbag
-    ipc: service:map
+    ipc: host
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
