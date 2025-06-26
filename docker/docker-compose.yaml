@@ -128,6 +128,7 @@ services:
       - map
       - system
     command: >
+      bash -c "
       ros2 launch autoware_launch tier4_sensing_component.launch.xml
       launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER_SENSING}
       launch_sensing_driver:=${LAUNCH_SENSING_DRIVER}
@@ -143,6 +144,7 @@ services:
       pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL}
+      "
     restart: on-failure
     profiles:
       - logging-simulation
