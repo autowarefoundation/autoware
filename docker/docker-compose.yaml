@@ -4,12 +4,10 @@ services:
     container_name: autoware-map
     init: true
     ipc: host
-    shm_size: 2gb
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     volumes:
       - ${MAP_PATH}:/autoware_map:ro
-      - /dev/shm:/dev/shm
     networks:
       - autoware-net
     command: >
@@ -120,12 +118,10 @@ services:
     pid: service:map
     ipc: host
     init: true
-    shm_size: 2gb
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     volumes:
       - ${HOME}/src/autoware/src/launcher/autoware_launch/autoware_launch:/opt/autoware/share/autoware_launch:ro
-      - /dev/shm:/dev/shm
     networks:
       - autoware-net
     depends_on:
