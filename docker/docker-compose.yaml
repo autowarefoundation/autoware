@@ -120,8 +120,6 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
-    volumes:
-      - ${HOME}/src/autoware/src/launcher/autoware_launch/autoware_launch:/opt/autoware/share/autoware_launch:ro
     networks:
       - autoware-net
     depends_on:
