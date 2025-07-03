@@ -1,13 +1,6 @@
 #!/usr/bin/env bash
-# cspell:ignore openbox, VNC, tigervnc, novnc, websockify, newkey, xstartup, pixelformat, AUTHTOKEN, authtoken, vncserver, autoconnect, vncpasswd
+# cspell:ignore openbox, VNC, tigervnc, novnc, qwindowgeometry, websockify, newkey, xstartup, pixelformat, AUTHTOKEN, authtoken, vncserver, autoconnect, vncpasswd
 # shellcheck disable=SC1090,SC1091
-
-# Check if RVIZ_CONFIG is provided
-if [ -z "$RVIZ_CONFIG" ]; then
-    echo -e "\e[31mRVIZ_CONFIG is not set defaulting to /autoware/rviz/autoware.rviz\e[0m"
-    RVIZ_CONFIG="/autoware/rviz/autoware.rviz"
-    export RVIZ_CONFIG
-fi
 
 configure_vnc() {
     # Create Openbox application configuration
@@ -41,15 +34,14 @@ EOF
     echo "/usr/local/bin/start-rviz2.sh" >>/etc/xdg/openbox/autostart
 
     # Configure VNC password
-    if [ -z "$REMOTE_PASSWORD" ]; then
-        echo -e "\e[31mREMOTE_PASSWORD is not set, using *openadkit* as default\e[0m"
-        REMOTE_PASSWORD="openadkit"
-    fi
     mkdir -p ~/.vnc
     echo "$REMOTE_PASSWORD" | vncpasswd -f >~/.vnc/passwd && chmod 600 ~/.vnc/passwd
 
     # Start VNC server with Openbox
     echo "Starting VNC server with Openbox..."
+    vncserver -kill :99 2>/dev/null
+    rm -f /tmp/.X11-unix/X99
+    rm -f /tmp/.X99-lock
     vncserver :99 -geometry 1024x768 -depth 16 -pixelformat rgb565
     VNC_RESULT=$?
 
@@ -78,16 +70,39 @@ EOF
     echo -e "\033[32m-------------------------------------------------------------------------\033[0m"
 }
 
-# Source ROS and Autoware setup files
-source "/opt/ros/$ROS_DISTRO/setup.bash"
-source "/opt/autoware/setup.bash"
+parse_params() {
+    if [ -z "$REMOTE_PASSWORD" ]; then
+        echo -e "\033[33mREMOTE_PASSWORD is not set, using *openadkit* as default\033[0m"
+        REMOTE_PASSWORD="openadkit"
+    fi
 
-# Execute passed command if provided, otherwise launch rviz2
-if [ "$REMOTE_DISPLAY" == "false" ]; then
-    [ $# -eq 0 ] && rviz2 -d "$RVIZ_CONFIG"
-    exec "$@"
-else
-    configure_vnc
-    [ $# -eq 0 ] && sleep infinity
-    exec "$@"
-fi
+    if [ -z "$RVIZ_CONFIG" ]; then
+        echo -e "\033[33mRVIZ_CONFIG is not set defaulting to /autoware/rviz/autoware.rviz\033[0m"
+        RVIZ_CONFIG="/autoware/rviz/autoware.rviz"
+        export RVIZ_CONFIG
+    fi
+
+    REMOTE_DISPLAY=${REMOTE_DISPLAY:-true}
+    LOCAL_DISPLAY=${LOCAL_DISPLAY:-false}
+}
+
+launch_display() {
+    if [ "$REMOTE_DISPLAY" == "true" ]; then
+        echo -e "\033[32mSetting up remote RViz display...\033[0m"
+        configure_vnc
+    fi
+
+    if [ "$LOCAL_DISPLAY" == "true" ]; then
+        echo -e "\033[32mSetting up local RViz display...\033[0m"
+        source "/opt/ros/$ROS_DISTRO/setup.bash"
+        source "/opt/autoware/setup.bash"
+        DISPLAY=:0 rviz2 --qwindowgeometry 800x600+0+0 -d "$RVIZ_CONFIG" &
+    fi
+}
+
+parse_params
+launch_display
+
+# Execute passed command if provided, otherwise sleep infinity
+[ $# -eq 0 ] && sleep infinity
+exec "$@"

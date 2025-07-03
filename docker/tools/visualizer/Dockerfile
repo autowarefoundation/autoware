@@ -46,6 +46,7 @@ RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /root/.bashrc && \
   echo "source /opt/autoware/setup.bash" >> /root/.bashrc
 
 # Copy startup scripts
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 COPY docker/tools/visualizer/xstartup /root/.vnc/xstartup
 COPY docker/tools/visualizer/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && chmod +x /root/.vnc/xstartup
