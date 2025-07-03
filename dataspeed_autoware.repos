@@ -107,3 +107,16 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/trt_batched_nms.git
     version: 1a9df130b4a5d96c25019b5793abbfde42d237ac
+  launcher/autoware_launch/vehicle:
+    type: git
+    url: https://github.com/DataspeedInc/pacifica_vehicle_launch.git
+    version: pacifica_vehicle_launch_docker
+  launcher/autoware_launch/sensor_kit:
+    type: git
+    url: https://github.com/DataspeedInc/pacifica_sensor_kit_launch.git
+    version: pacifica_sensor_kit_launch_docker
+  dataspeed_autoware_docker/src:
+    type: git
+    url: https://github.com/DataspeedInc/BELIV_vehicle_interface.git
+    version: dbw2_vehicle_interface
+  
