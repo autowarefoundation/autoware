@@ -459,6 +459,29 @@
     mode: "644"
     checksum: sha256:5427e1b7c2e33acd9565ede29e77992c38137bcf7d7074c73ebbc38080c6bcac
 
+# diffusion_planner
+- name: Create diffusion_planner directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/diffusion_planner"
+    mode: "755"
+    state: directory
+
+- name: Download diffusion_planner/diffusion_planner.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v0.1/diffusion_planner.onnx
+    dest: "{{ data_dir }}/diffusion_planner/diffusion_planner.onnx"
+    mode: "644"
+    checksum: sha256:7028f68639abc9a3fb96f2ef73cb3f7795e0471a9a1e88201527331168abe8c1
+
+- name: Download diffusion_planner/diffusion_planner.param.json
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v0.1/diffusion_planner.param.json
+    dest: "{{ data_dir }}/diffusion_planner/diffusion_planner.param.json"
+    mode: "644"
+    checksum: sha256:346bbd953551206dabcb02198269371dc336ea552b71cbc96105f1fa7f134264
+
 # traffic_light_fine_detector
 - name: Create traffic_light_fine_detector directory inside {{ data_dir }}
   ansible.builtin.file:
