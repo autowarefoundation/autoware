@@ -75,6 +75,10 @@ repositories:
     type: git
     url: https://github.com/tier4/glog.git
     version: ea36766fdc2ac8e8c8e3ac988ae69acd6d09bb30
+  universe/external/bevdet_vendor: # TODO: wrap the original bevdet-tensorrt-cpp source code as a vendor package and provode it to autoware_tensorrt_bevdet package
+    type: git
+    url: https://github.com/autowarefoundation/bevdet_vendor.git
+    version: bevdet_vendor-ros2
   universe/external/trt_batched_nms:
     type: git
     url: https://github.com/autowarefoundation/trt_batched_nms.git
