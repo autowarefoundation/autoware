@@ -39,21 +39,21 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check if build cache image exists
-        id: check_image
-        run: |
-          echo "🔍 Checking if build cache image exists..."
-          if skopeo inspect --raw docker://${{ env.BUILD_CACHE_IMAGE }} > /dev/null 2>&1; then
-            echo "✅ Build cache image found. Proceeding..."
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "⚠️ Build cache image does not exist. Skipping remaining steps."
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
+      # - name: Check if build cache image exists
+      #   id: check_image
+      #   run: |
+      #     echo "🔍 Checking if build cache image exists..."
+      #     if skopeo inspect --raw docker://${{ env.BUILD_CACHE_IMAGE }} > /dev/null 2>&1; then
+      #       echo "✅ Build cache image found. Proceeding..."
+      #       echo "exists=true" >> "$GITHUB_OUTPUT"
+      #     else
+      #       echo "⚠️ Build cache image does not exist. Skipping remaining steps."
+      #       echo "exists=false" >> "$GITHUB_OUTPUT"
+      #     fi
 
       - name: Calculate cache size
         id: calc_size
-        if: steps.check_image.outputs.exists == 'true'
+        # if: steps.check_image.outputs.exists == 'true'
         run: |
           echo "🔍 Inspecting build cache size for image: ${{ env.BUILD_CACHE_IMAGE }}..."
           SIZE_BYTES=$(skopeo inspect --raw docker://${{ env.BUILD_CACHE_IMAGE }} | jq '.layers | map(.size) | add')
@@ -63,7 +63,7 @@ jobs:
 
       - name: Compare cache size with threshold
         id: check_threshold
-        if: steps.check_image.outputs.exists == 'true'
+        # if: steps.check_image.outputs.exists == 'true'
         run: |
           echo "📊 Checking cache size against threshold..."
           THRESHOLD_GB=${{ env.CACHE_THRESHOLD_GB }}
@@ -107,21 +107,17 @@ jobs:
           SUMMARY="# 📦 Build Cache Size Check\n"
           SUMMARY+="- **Image**: \`${{ env.BUILD_CACHE_IMAGE }}\`\n"
 
-          if [[ "${{ steps.check_image.outputs.exists }}" == "false" ]]; then
-            SUMMARY+="⚠️ **Build cache image does not exist. Skipping checks.**\n"
-          else
-            SUMMARY+="- **Cache Size**: ${{ steps.calc_size.outputs.size_gb }} GB\n"
-            SUMMARY+="- **Threshold**: ${{ env.CACHE_THRESHOLD_GB }} GB\n"
+          SUMMARY+="- **Cache Size**: ${{ steps.calc_size.outputs.size_gb }} GB\n"
+          SUMMARY+="- **Threshold**: ${{ env.CACHE_THRESHOLD_GB }} GB\n"
 
-            if [[ "${{ steps.check_threshold.outputs.status }}" == "exceeded" ]]; then
-              if [[ "${{ steps.verify_deletion.outputs.status }}" != "success" ]]; then
-                SUMMARY+="❌ **Cache size exceeded, but deletion failed!**\n"
-              else
-                SUMMARY+="🗑️✅ **Cache size exceeded. Image deleted successfully!**\n"
-              fi
+          if [[ "${{ steps.check_threshold.outputs.status }}" == "exceeded" ]]; then
+            if [[ "${{ steps.verify_deletion.outputs.status }}" != "success" ]]; then
+              SUMMARY+="❌ **Cache size exceeded, but deletion failed!**\n"
             else
-              SUMMARY+="👌✅ **Cache size is within acceptable limits.**\n"
+              SUMMARY+="🗑️✅ **Cache size exceeded. Image deleted successfully!**\n"
             fi
+          else
+            SUMMARY+="👌✅ **Cache size is within acceptable limits.**\n"
           fi
 
           echo -e "$SUMMARY"
