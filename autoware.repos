@@ -95,7 +95,7 @@ repositories:
   launcher/autoware_launch.APS:
     type: git
     url: https://github.com/libpet-co/autoware_launch.APS.git
-    version: main
+    version: 0.45.2
 
   # sensor_component
   sensor_component/external/sensor_component_description:
