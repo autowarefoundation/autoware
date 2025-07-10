@@ -100,7 +100,7 @@ jobs:
           sed -i "s@/home/user/@${HOME}/@g" sample-scenario.yaml
         shell: bash
 
-      - name: Debug:Check scenario and map files
+      - name: Debug Check scenario and map files
         run: |
           echo "HOME=$HOME"
           ls -lh ${HOME}/autoware_map/sample-map-planning/
