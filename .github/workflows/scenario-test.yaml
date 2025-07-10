@@ -1,22 +1,3 @@
-Skip to content
-Navigation Menu
-vish0012
-autowarefoundation
-
-Type / to search
-Code
-Pull requests
-Actions
-Projects
-Security
-Insights
-Settings
-scenario-test
-scenario-test #312
-Jobs
-Run details
-Workflow file for this run
-.github/workflows/scenario-test.yaml at 275562a
 name: scenario-test
 on:
   schedule:
@@ -116,13 +97,16 @@ jobs:
         run: |
           cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
+
           # Disable precompiled headers to reduce memory
           export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+
           # Build all with sequential executor to reduce RAM spikes
           colcon build --symlink-install \
             --packages-up-to scenario_test_runner \
             --cmake-args -DCMAKE_BUILD_TYPE=Release \
             --executor sequential
+
           source install/setup.bash
         shell: bash
 
@@ -153,8 +137,10 @@ jobs:
               launch_rviz:=false \
               frame_rate:=1 \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+
             echo "Zipping log files..."
             zip -r scenario_test_runner_logs.zip /github/home/.ros/log || true
+
             echo "Uploading log files as artifact..."
             mkdir -p artifacts
             mv scenario_test_runner_logs.zip artifacts/
@@ -182,6 +168,7 @@ jobs:
           pkill -9 -f scenario_test_runner || true
           pkill -9 -f openscenario_interpreter_node || true
           pkill -9 -f python || true
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -196,8 +183,10 @@ jobs:
             echo "Parsing test results..."
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
             ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
+
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
+
             FOUND_ISSUES=0
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
@@ -212,6 +201,7 @@ jobs:
                 FOUND_ISSUES=1
               fi
             done < "$RESULT_FILE"
+
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
             cat $RESULT_FILE
@@ -227,4 +217,3 @@ jobs:
             exit 1
           fi
         shell: bash
-Update scenario-test.yaml · vish0012/autowarefoundation@275562a
