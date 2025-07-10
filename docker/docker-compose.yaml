@@ -120,6 +120,8 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    volumes:
+      - ${DATA_PATH}:/autoware_data:ro
     networks:
       - autoware-net
     depends_on:
@@ -135,7 +137,7 @@ services:
       use_sim_time:=${USE_SIM_TIME}
       vehicle_model:=${VEHICLE_MODEL} &
       ros2 launch autoware_launch tier4_perception_component.launch.xml
-      data_path:=${DATA_PATH}
+      data_path:=/autoware_data
       launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER_PERCEPTION}
       lidar_detection_model:=${LIDAR_DETECTION_MODEL}
       occupancy_grid_map_method:=${OCCUPANCY_GRID_MAP_METHOD}
