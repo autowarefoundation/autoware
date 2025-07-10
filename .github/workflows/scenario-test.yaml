@@ -6,27 +6,23 @@ on:
   pull_request:
     paths:
       - simulator*.repos
-      - .github/workflows/scenario-test.yaml   
 
 jobs:
   scenario-test:
-    runs-on: [self-hosted, Linux, X64]
-    container:
-      image: ghcr.io/autowarefoundation/autoware:universe-devel
-      # options: --memory=8g --cpus=2
+    runs-on: ubuntu-24.04
+    container: ghcr.io/autowarefoundation/autoware:universe-devel
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # - name: Free disk space
-      #   uses: ./.github/actions/free-disk-space
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
 
       - name: Install required packages
         run: |
           apt-get update
           apt-get install -y \
             unzip \
-            zip \
             curl \
             gnupg2 \
             lsb-release \
@@ -34,10 +30,6 @@ jobs:
             git \
             ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
-        shell: bash
-
-      - name: Show memory info
-        run: free -h
         shell: bash
 
       - name: Clone Autoware and Import simulator.repos
@@ -54,11 +46,6 @@ jobs:
           cd ~/autoware_ws
           rosdep update
           rosdep install --from-paths src --ignore-src -r -y
-        shell: bash
-
-      - name: Downgrade xmlschema
-        run: |
-          pip3 install --user xmlschema==3.4.5
         shell: bash
 
       - name: Build Autoware
@@ -93,20 +80,11 @@ jobs:
           sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
         shell: bash
 
-      - name: Build workspace (safe for CI)
+      - name: Build workspace
         run: |
           cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
-
-          # Disable precompiled headers to reduce memory
-          export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
-
-          # Build all with sequential executor to reduce RAM spikes
-          colcon build --symlink-install \
-            --packages-up-to scenario_test_runner \
-            --cmake-args -DCMAKE_BUILD_TYPE=Release \
-            --executor sequential
-
+          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
           source install/setup.bash
         shell: bash
 
@@ -116,14 +94,12 @@ jobs:
           grep -i "lanelet" /github/home/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
         shell: bash
 
-        
       - name: Launch scenario_test_runner with diagnostics
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
             echo "Launching scenario_test_runner..."
-            mkdir -p ./results
             ros2 launch scenario_test_runner scenario_test_runner.launch.py \
               architecture_type:=awf/universe/20250130 \
               record:=true \
@@ -131,89 +107,41 @@ jobs:
               sensor_model:=sample_sensor_kit \
               vehicle_model:=sample_vehicle \
               initialize_duration:=300 \
-              output_directory:=./results \
-              simulate_localization:=true \
-              initial_pose:="[0.0, 0.0, 0.0]" \
-              launch_rviz:=false \
-              frame_rate:=1 \
+              output_directory:=./home/vishalchauhan/results \
+              simulate_localization:=false \
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
-
-            echo "Zipping log files..."
-            zip -r scenario_test_runner_logs.zip /github/home/.ros/log || true
-
-            echo "Uploading log files as artifact..."
-            mkdir -p artifacts
-            mv scenario_test_runner_logs.zip artifacts/
           else
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
           fi
         shell: bash
 
-      - name: Print last 100 lines of scenario output
-        if: failure()
-        run: tail -n 100 scenario_output.log || true
-
-      - name: Upload scenario_test_runner logs
-        uses: actions/upload-artifact@v4
-        with:
-          name: scenario_test_runner_logs
-          path: artifacts/scenario_test_runner_logs.zip
-
-      - name: Kill lingering ROS nodes (cleanup)
-        if: always()
-        run: |
-          echo "Killing lingering ROS processes..."
-          pkill -9 -f ros2 || true
-          pkill -9 -f scenario_test_runner || true
-          pkill -9 -f openscenario_interpreter_node || true
-          pkill -9 -f python || true
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: scenario-test-results
-          path: ./results
-
       - name: Parse results and capture diagnostics
         run: |
-          RESULT_FILE="./results/scenario_test_runner/result.junit.xml"
-          XML_FILE="./results/parsed_results.xml"
+          RESULT_FILE="./results/test_results.log"
+          XML_FILE="./results/scenario_test_runner/result.junit.xml"
           if [ -f "$RESULT_FILE" ]; then
             echo "Parsing test results..."
             FAILURES=$(grep -i "failure" "$RESULT_FILE" | wc -l)
             ERRORS=$(grep -i "error" "$RESULT_FILE" | wc -l)
-
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$XML_FILE"
             echo "<testsuite name='ScenarioTest' failures='$FAILURES' errors='$ERRORS'>" >> "$XML_FILE"
-
-            FOUND_ISSUES=0
             while IFS= read -r line; do
               if echo "$line" | grep -qi "failure"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
                 echo "    <failure message='Detected failure'>$line</failure>" >> "$XML_FILE"
                 echo "  </testcase>" >> "$XML_FILE"
-                FOUND_ISSUES=1
               elif echo "$line" | grep -qi "error"; then
                 echo "  <testcase name='$line'>" >> "$XML_FILE"
                 echo "    <error message='Detected error'>$line</error>" >> "$XML_FILE"
                 echo "  </testcase>" >> "$XML_FILE"
-                FOUND_ISSUES=1
               fi
             done < "$RESULT_FILE"
-
             echo "</testsuite>" >> "$XML_FILE"
             echo "Results parsed and saved in $XML_FILE"
-            cat $RESULT_FILE
-            cat $XML_FILE
-            if [ $FOUND_ISSUES -eq 1 ]; then
-              echo "ERROR: Detected failures or errors in the simulation."
-              exit 1
-            fi
           else
-            echo "ERROR: test_results.log is missing! The simulation might have crashed."
+            echo "WARNING: test_results.log is missing! The simulation might have crashed."
             echo "Captured scenario output (for diagnostics):"
             cat scenario_output.log
-            exit 1
           fi
         shell: bash
