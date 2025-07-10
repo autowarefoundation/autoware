@@ -13,7 +13,6 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     container:
       image: ghcr.io/autowarefoundation/autoware:universe-devel
-      # options: --memory=8g --cpus=2
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -66,9 +65,15 @@ jobs:
           cd ~/autoware_ws
           source /opt/ros/humble/setup.bash
           source /opt/autoware/setup.bash
-          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+          colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release 2>&1 | tee build.log
           source install/setup.bash
         shell: bash
+
+      - name: Upload build log
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: ~/autoware_ws/build.log
 
       - name: Check Autoware installation
         run: |
@@ -83,40 +88,43 @@ jobs:
 
       - name: Download sample-map-planning maps
         run: |
+          mkdir -p ${HOME}/autoware_map
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-          mkdir -p /home/user/autoware_map
-          unzip sample-map-planning.zip -d /home/user/autoware_map
+          unzip sample-map-planning.zip -d ${HOME}/autoware_map
         shell: bash
 
-      - name: Fix path in sample-scenario.yaml
+      - name: Patch scenario paths for CI
         run: |
-          sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
+          sed -i "s@/home/vishalchauhan/@${HOME}/@g" sample-scenario.yaml
+          sed -i "s@/home/user/@${HOME}/@g" sample-scenario.yaml
+        shell: bash
+
+      - name: Debug: Check scenario and map files
+        run: |
+          echo "HOME=$HOME"
+          ls -lh ${HOME}/autoware_map/sample-map-planning/
+          ls -lh ./sample-scenario.yaml
+          cat ./sample-scenario.yaml | grep -E '/home|autoware_map'
         shell: bash
 
       - name: Build workspace (safe for CI)
         run: |
           cd ~/autoware_ws
           source ~/autoware_ws/install/setup.bash
-
-          # Disable precompiled headers to reduce memory
           export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
-
-          # Build all with sequential executor to reduce RAM spikes
           colcon build --symlink-install \
             --packages-up-to scenario_test_runner \
             --cmake-args -DCMAKE_BUILD_TYPE=Release \
             --executor sequential
-
           source install/setup.bash
         shell: bash
 
       - name: Check lanelet parameters in config file
         run: |
           echo "Lanelet-related parameters in the configuration:"
-          grep -i "lanelet" /github/home/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
+          grep -i "lanelet" ${HOME}/autoware_ws/install/scenario_test_runner/share/scenario_test_runner/config/parameters.yaml || true
         shell: bash
 
-        
       - name: Launch scenario_test_runner with diagnostics
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
@@ -139,7 +147,7 @@ jobs:
               disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
 
             echo "Zipping log files..."
-            zip -r scenario_test_runner_logs.zip /github/home/.ros/log || true
+            zip -r scenario_test_runner_logs.zip ${HOME}/.ros/log || true
 
             echo "Uploading log files as artifact..."
             mkdir -p artifacts
@@ -150,9 +158,19 @@ jobs:
           fi
         shell: bash
 
+      - name: Check essential ROS topics (diagnostics)
+        run: |
+          source ~/autoware_ws/install/setup.bash
+          ros2 topic list
+          ros2 topic info /planning/scenario_planning/trajectory || true
+          ros2 topic info /control/trajectory_follower/control_cmd || true
+          ros2 topic info /perception/object_recognition/objects || true
+        shell: bash
+
       - name: Print last 100 lines of scenario output
         if: failure()
         run: tail -n 100 scenario_output.log || true
+        shell: bash
 
       - name: Upload scenario_test_runner logs
         uses: actions/upload-artifact@v4
@@ -168,6 +186,7 @@ jobs:
           pkill -9 -f scenario_test_runner || true
           pkill -9 -f openscenario_interpreter_node || true
           pkill -9 -f python || true
+        shell: bash
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
