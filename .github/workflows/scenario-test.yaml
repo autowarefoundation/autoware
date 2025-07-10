@@ -36,7 +36,8 @@ jobs:
         shell: bash
 
       - name: Show memory info
-        run: free -h
+        run: |
+          free -h
         shell: bash
 
       - name: Clone Autoware and Import simulator.repos
@@ -99,7 +100,7 @@ jobs:
           sed -i "s@/home/user/@${HOME}/@g" sample-scenario.yaml
         shell: bash
 
-      - name: Debug: Check scenario and map files
+      - name: Debug:Check scenario and map files
         run: |
           echo "HOME=$HOME"
           ls -lh ${HOME}/autoware_map/sample-map-planning/
@@ -169,7 +170,8 @@ jobs:
 
       - name: Print last 100 lines of scenario output
         if: failure()
-        run: tail -n 100 scenario_output.log || true
+        run: |
+          tail -n 100 scenario_output.log || true
         shell: bash
 
       - name: Upload scenario_test_runner logs
