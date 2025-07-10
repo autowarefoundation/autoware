@@ -100,14 +100,6 @@ jobs:
           sed -i "s@/home/user/@${HOME}/@g" sample-scenario.yaml
         shell: bash
 
-      - name: Debug Check scenario and map files
-        run: |
-          echo "HOME=$HOME"
-          ls -lh ${HOME}/autoware_map/sample-map-planning/
-          ls -lh ./sample-scenario.yaml
-          cat ./sample-scenario.yaml | grep -E '/home|autoware_map'
-        shell: bash
-
       - name: Build workspace (safe for CI)
         run: |
           cd ~/autoware_ws
