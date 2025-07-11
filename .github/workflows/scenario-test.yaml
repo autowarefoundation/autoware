@@ -68,19 +68,10 @@ jobs:
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
-      - name: PATCH selectTriggeringEntities bools in YAML (all styles)
+      - name: Patch OpenSCENARIO bools to lowercase
         run: |
-          sed -i 's/selectTriggeringEntities: "False"/selectTriggeringEntities: "false"/g' sample-scenario.yaml
-          sed -i "s/selectTriggeringEntities: 'False'/selectTriggeringEntities: 'false'/g" sample-scenario.yaml
-          sed -i 's/selectTriggeringEntities: False/selectTriggeringEntities: false/g' sample-scenario.yaml
-          sed -i 's/selectTriggeringEntities: "True"/selectTriggeringEntities: "true"/g' sample-scenario.yaml
-          sed -i "s/selectTriggeringEntities: 'True'/selectTriggeringEntities: 'true'/g" sample-scenario.yaml
-          sed -i 's/selectTriggeringEntities: True/selectTriggeringEntities: true/g' sample-scenario.yaml
-        shell: bash
-
-      - name: DEBUG: Show all selectTriggeringEntities in YAML after patch
-        run: |
-          grep -in selectTriggeringEntities sample-scenario.yaml || true
+          sed -i 's/selectTriggeringEntities="False"/selectTriggeringEntities="false"/g' sample-scenario.yaml
+          sed -i 's/selectTriggeringEntities="True"/selectTriggeringEntities="true"/g' sample-scenario.yaml
         shell: bash
 
       - name: Download sample-map-planning maps
