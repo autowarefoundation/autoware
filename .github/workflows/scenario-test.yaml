@@ -61,6 +61,9 @@ jobs:
       - name: Build Autoware Workspace
         run: |
           cd ~/autoware_ws
+          # Clean the workspace before building to prevent errors from old files
+          rm -rf build install log
+          
           source /opt/ros/humble/setup.bash
           source /opt/autoware/setup.bash
           # Disable precompiled headers to reduce memory
