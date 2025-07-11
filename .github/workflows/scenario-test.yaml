@@ -68,6 +68,12 @@ jobs:
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
         shell: bash
 
+      - name: Patch OpenSCENARIO bools to lowercase
+        run: |
+          sed -i 's/selectTriggeringEntities="False"/selectTriggeringEntities="false"/g' sample-scenario.yaml
+          sed -i 's/selectTriggeringEntities="True"/selectTriggeringEntities="true"/g' sample-scenario.yaml
+        shell: bash
+
       - name: Download sample-map-planning maps
         run: |
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
