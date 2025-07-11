@@ -92,10 +92,10 @@ repositories:
     url: https://github.com/autowarefoundation/managed_transform_buffer.git
     version: 0.1.0
   # launcher
-  launcher/autoware_launch.APS:
+  launcher/autoware_launch_APS:
     type: git
-    url: https://github.com/libpet-co/autoware_launch.APS.git
-    version: devel/libpet_APS
+    url: https://github.com/libpet-co/autoware_launch_APS.git
+    version: main
 
   # sensor_component
   sensor_component/external/sensor_component_description:
