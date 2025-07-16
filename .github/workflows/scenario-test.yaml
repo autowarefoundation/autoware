@@ -1,5 +1,4 @@
 name: scenario-test
-
 on:
   schedule:
     - cron: '0 12 * * *'
@@ -19,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install required packages
+        shell: bash
         run: |
           apt-get update
           apt-get install -y \
@@ -31,74 +31,75 @@ jobs:
             git \
             ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
-        shell: bash
 
       - name: Show memory info
-        run: free -h
         shell: bash
+        run: free -h
 
       - name: Clone Autoware and Import simulator.repos
+        shell: bash
         run: |
           mkdir -p ~/autoware_ws/src
           cd ~/autoware_ws
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
           vcs import < autoware/simulator.repos
-        shell: bash
 
       - name: Install ROS dependencies
+        shell: bash
         run: |
           cd ~/autoware_ws
           rosdep update
           rosdep install --from-paths src --ignore-src -r -y
-        shell: bash
 
       - name: Downgrade xmlschema
+        shell: bash
         run: |
           pip3 install --user xmlschema==3.4.5
-        shell: bash
 
       - name: Build Autoware Workspace
+        shell: bash
         run: |
           cd ~/autoware_ws
           # Clean the workspace before building to prevent errors from old files
           rm -rf build install log
-          
           source /opt/ros/humble/setup.bash
           source /opt/autoware/setup.bash
           # Disable precompiled headers to reduce memory
           export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
           # Build all with sequential executor to reduce RAM spikes
           colcon build --symlink-install \
-            --packages-up-to scenario_test_runner \
             --cmake-args -DCMAKE_BUILD_TYPE=Release \
             --executor sequential
-        shell: bash
 
       - name: Check Autoware installation
+        shell: bash
         run: |
           source ~/autoware_ws/install/setup.bash
           ros2 pkg list | grep autoware
-        shell: bash
 
       - name: Download scenario file
+        shell: bash
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
-        shell: bash
 
       - name: Download sample-map-planning maps
+        shell: bash
         run: |
+          mkdir -p $HOME/autoware_map
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
-          mkdir -p /home/user/autoware_map
-          unzip sample-map-planning.zip -d /home/user/autoware_map
-        shell: bash
+          unzip sample-map-planning.zip -d $HOME/autoware_map
 
-      - name: Fix path in sample-scenario.yaml
-        run: |
-          sed -i "s@/home/user/sample-map-planning/pointcloud_map.pcd@/home/user/autoware_map/sample-map-planning/pointcloud_map.pcd@g" sample-scenario.yaml
+      - name: Fix paths in sample-scenario.yaml
         shell: bash
+        run: |
+          # Replace any hardcoded user paths with the dynamic $HOME variable
+          sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
+          sed -i "s@/home/vishalchauhan/@$HOME/@g" sample-scenario.yaml
+          # You can add more sed commands here for other potential hardcoded paths
 
       - name: Launch scenario_test_runner with diagnostics
+        shell: bash
         run: |
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
@@ -122,9 +123,9 @@ jobs:
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
           fi
-        shell: bash
 
       - name: Check for Test Failures
+        shell: bash
         run: |
           RESULT_FILE="./results/scenario_test_runner/result.junit.xml"
           if [ ! -f "$RESULT_FILE" ]; then
@@ -141,7 +142,6 @@ jobs:
           else
             echo "Test successfully passed."
           fi
-        shell: bash
 
       - name: Upload Artifacts
         if: always()
@@ -155,10 +155,10 @@ jobs:
 
       - name: Kill lingering ROS nodes (cleanup)
         if: always()
+        shell: bash
         run: |
           echo "Killing lingering ROS processes..."
           pkill -9 -f ros2 || true
           pkill -9 -f scenario_test_runner || true
           pkill -9 -f openscenario_interpreter_node || true
           pkill -9 -f python || true
-        shell: bash
