@@ -101,6 +101,9 @@ jobs:
       - name: Launch scenario_test_runner with diagnostics
         shell: bash
         run: |
+          # Force a stable DDS implementation for CI to prevent crashes
+          export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
