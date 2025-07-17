@@ -232,6 +232,7 @@ services:
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
       - REMOTE_DISPLAY=${REMOTE_DISPLAY}
+      - USE_SIM_TIME=${USE_SIM_TIME}
     ports:
       - 6080:6080
     network_mode: host
