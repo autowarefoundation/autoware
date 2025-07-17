@@ -8,8 +8,7 @@ services:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     volumes:
       - ${MAP_PATH}:/autoware_map:ro
-    networks:
-      - autoware-net
+    network_mode: host
     command: >
       ros2 launch autoware_launch tier4_map_component.launch.xml
       lanelet2_map_file:=${LANELET2_MAP_FILE}
@@ -27,8 +26,7 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
-    networks:
-      - autoware-net
+    network_mode: host
     depends_on:
       - map
     command: >
@@ -50,8 +48,7 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
-    networks:
-      - autoware-net
+    network_mode: host
     depends_on:
       - map
       - planning
@@ -76,8 +73,7 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
-    networks:
-      - autoware-net
+    network_mode: host
     depends_on:
       - map
     command: >
@@ -98,8 +94,7 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
-    networks:
-      - autoware-net
+    network_mode: host
     depends_on:
       - map
     command: >
@@ -122,8 +117,7 @@ services:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     volumes:
       - ${DATA_PATH}:/autoware_data:ro
-    networks:
-      - autoware-net
+    network_mode: host
     depends_on:
       - map
       - system
@@ -158,8 +152,7 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
-    networks:
-      - autoware-net
+    network_mode: host
     depends_on:
       - map
       - system
@@ -182,8 +175,7 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
-    networks:
-      - autoware-net
+    network_mode: host
     depends_on:
       - map
       - system
@@ -220,8 +212,7 @@ services:
     init: true
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
-    networks:
-      - autoware-net
+    network_mode: host
     depends_on:
       - map
     command: >
@@ -243,8 +234,7 @@ services:
       - REMOTE_DISPLAY=${REMOTE_DISPLAY}
     ports:
       - 6080:6080
-    networks:
-      - autoware-net
+    network_mode: host
     restart: "no"
     profiles:
       - visualization
@@ -258,8 +248,7 @@ services:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     volumes:
       - ${ROSBAG_PATH}:/autoware_map/rosbag:ro
-    networks:
-      - autoware-net
+    network_mode: host
     command: >
       bash -c "ros2 bag info /autoware_map/rosbag -s ${ROSBAG_FORMAT} &&
       ros2 bag play /autoware_map/rosbag -r ${ROSBAG_RATE} -s ${ROSBAG_FORMAT}"
@@ -267,6 +256,3 @@ services:
     profiles:
       - rosbag
 
-networks:
-  autoware-net:
-    driver: bridge
