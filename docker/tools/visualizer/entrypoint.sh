@@ -40,7 +40,7 @@ EOF
 #!/bin/bash
 source /opt/ros/"$ROS_DISTRO"/setup.bash
 source /opt/autoware/setup.bash
-exec rviz2 -d "$RVIZ_CONFIG" --ros-args -p use_sim_time:=$USE_SIM_TIME
+exec rviz2 -d "$RVIZ_CONFIG" --ros-args -p use_sim_time:="$USE_SIM_TIME"
 EOF
     chmod +x /usr/local/bin/start-rviz2.sh
     echo "echo 'Autostart executed at $(date)' >> /tmp/autostart.log" >>/etc/xdg/openbox/autostart
@@ -90,7 +90,7 @@ source "/opt/autoware/setup.bash"
 
 # Execute passed command if provided, otherwise launch rviz2
 if [ "$REMOTE_DISPLAY" == "false" ]; then
-    [ $# -eq 0 ] && rviz2 -d "$RVIZ_CONFIG" --ros-args -p use_sim_time:=$USE_SIM_TIME
+    [ $# -eq 0 ] && rviz2 -d "$RVIZ_CONFIG" --ros-args -p use_sim_time:="$USE_SIM_TIME"
     exec "$@"
 else
     configure_vnc
