@@ -88,11 +88,11 @@ jobs:
           # Replace any hardcoded user paths with the dynamic $HOME variable
           sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
           sed -i "s@/home/vishalchauhan/@$HOME/@g" sample-scenario.yaml
-          # You can add more sed commands here for other potential hardcoded paths
+          
       - name: Launch scenario_test_runner with diagnostics
         shell: bash
         run: |
-          # Force a stable DDS implementation for CI to prevent crashes
+          #  a stable DDS implementation for CI to prevent crashes
           export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
