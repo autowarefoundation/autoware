@@ -5,6 +5,7 @@ services:
     init: true
     ipc: host
     environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     volumes:
       - ${MAP_PATH}:/autoware_map:ro
@@ -25,6 +26,7 @@ services:
     ipc: host
     init: true
     environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     network_mode: host
     depends_on:
@@ -47,6 +49,7 @@ services:
     ipc: host
     init: true
     environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     network_mode: host
     depends_on:
@@ -72,6 +75,7 @@ services:
     ipc: host
     init: true
     environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     network_mode: host
     depends_on:
@@ -93,6 +97,7 @@ services:
     ipc: host
     init: true
     environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     network_mode: host
     depends_on:
@@ -114,6 +119,7 @@ services:
     ipc: host
     init: true
     environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     volumes:
       - ${DATA_PATH}:/autoware_data:ro
@@ -151,6 +157,7 @@ services:
     ipc: host
     init: true
     environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     network_mode: host
     depends_on:
@@ -174,6 +181,7 @@ services:
     ipc: host
     init: true
     environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     network_mode: host
     depends_on:
@@ -211,6 +219,7 @@ services:
     ipc: host
     init: true
     environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     network_mode: host
     depends_on:
@@ -230,6 +239,7 @@ services:
     ipc: host
     init: true
     environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
       - REMOTE_DISPLAY=${REMOTE_DISPLAY}
       - USE_SIM_TIME=${USE_SIM_TIME}
@@ -246,6 +256,7 @@ services:
     ipc: host
     init: true
     environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
     volumes:
       - ${ROSBAG_PATH}:/autoware_map/rosbag:ro
