@@ -31,7 +31,6 @@ jobs:
             git \
             ros-humble-pcl-ros
           pip install --upgrade gdown vcstool
-
       - name: Show memory info
         shell: bash
         run: free -h
@@ -44,19 +43,16 @@ jobs:
           git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
           cd src
           vcs import < autoware/simulator.repos
-
       - name: Install ROS dependencies
         shell: bash
         run: |
           cd ~/autoware_ws
           rosdep update
           rosdep install --from-paths src --ignore-src -r -y
-
       - name: Downgrade xmlschema
         shell: bash
         run: |
           pip3 install --user xmlschema==3.4.5
-
       - name: Build Autoware Workspace
         shell: bash
         run: |
@@ -71,25 +67,21 @@ jobs:
           colcon build --symlink-install \
             --cmake-args -DCMAKE_BUILD_TYPE=Release \
             --executor sequential
-
       - name: Check Autoware installation
         shell: bash
         run: |
           source ~/autoware_ws/install/setup.bash
           ros2 pkg list | grep autoware
-
       - name: Download scenario file
         shell: bash
         run: |
           gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
-
       - name: Download sample-map-planning maps
         shell: bash
         run: |
           mkdir -p $HOME/autoware_map
           gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
           unzip sample-map-planning.zip -d $HOME/autoware_map
-
       - name: Fix paths in sample-scenario.yaml
         shell: bash
         run: |
@@ -97,13 +89,11 @@ jobs:
           sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
           sed -i "s@/home/vishalchauhan/@$HOME/@g" sample-scenario.yaml
           # You can add more sed commands here for other potential hardcoded paths
-
       - name: Launch scenario_test_runner with diagnostics
         shell: bash
         run: |
           # Force a stable DDS implementation for CI to prevent crashes
           export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
           if [ -f "$SCENARIO_FILE" ]; then
@@ -126,7 +116,6 @@ jobs:
             echo "ERROR: sample-scenario.yaml is missing!"
             exit 1
           fi
-
       - name: Check for Test Failures
         shell: bash
         run: |
@@ -145,7 +134,6 @@ jobs:
           else
             echo "Test successfully passed."
           fi
-
       - name: Upload Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -155,7 +143,6 @@ jobs:
             ./results/
             ./scenario_output.log
             ~/.ros/log/
-
       - name: Kill lingering ROS nodes (cleanup)
         if: always()
         shell: bash
