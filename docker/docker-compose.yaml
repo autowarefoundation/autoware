@@ -255,4 +255,3 @@ services:
     restart: "no"
     profiles:
       - rosbag
-
