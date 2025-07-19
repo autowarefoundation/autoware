@@ -2,21 +2,22 @@
   "name": "autoware:universe-devel-cuda",
   "build": {
     "dockerfile": "../Dockerfile",
-    "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware:universe-devel-cuda" }
+    "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware@sha256:1654cfbe28b8a6ac833defd456f39ddf0f08202c4c2333192c21aa0cfb866d9e" }  // <---- Frozen image will not update
   },
   "remoteUser": "autoware",
   "hostRequirements": {
     "gpu": true
   },
   "runArgs": [
-    "--cap-add=SYS_PTRACE",
-    "--security-opt",
-    "seccomp=unconfined",
-    "--net=host",
-    "--volume=/etc/localtime:/etc/localtime:ro",
-    "--gpus",
-    "all"
-  ],
+  "--cap-add=SYS_PTRACE",
+  "--security-opt", "seccomp=unconfined",
+  "--net=host",
+  "--volume=/etc/localtime:/etc/localtime:ro",
+  "--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw",
+  "--env=DISPLAY",
+  "--gpus=all",
+  "--device=/dev/video0:/dev/video0"
+],
   "customizations": {
     "vscode": {
       "settings.json": {
