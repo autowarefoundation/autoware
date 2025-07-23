@@ -61,7 +61,7 @@ jobs:
           rm -rf build install log
           source /opt/ros/humble/setup.bash
           source /opt/autoware/setup.bash
-          # Disable precompiled headers to reduce memory
+          #  For Disable precompiled headers to reduce memory
           export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
           # Build all with sequential executor to reduce RAM spikes
           colcon build --symlink-install \
@@ -85,14 +85,14 @@ jobs:
       - name: Fix paths in sample-scenario.yaml
         shell: bash
         run: |
-          # Replace any hardcoded user paths with the dynamic $HOME variable
+          # I Replace hardcoded user paths with the dynamic $HOME variable
           sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
           sed -i "s@/home/vishalchauhan/@$HOME/@g" sample-scenario.yaml
           
       - name: Launch scenario_test_runner with diagnostics
         shell: bash
         run: |
-          #  a stable DDS implementation for CI to prevent crashes
+          #  a stable DDS implementation for CI to prevent crashes that happen before 
           export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
           SCENARIO_FILE="./sample-scenario.yaml"
           source ~/autoware_ws/install/setup.bash
