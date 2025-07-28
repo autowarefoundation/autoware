@@ -152,3 +152,4 @@ jobs:
           pkill -9 -f scenario_test_runner || true
           pkill -9 -f openscenario_interpreter_node || true
           pkill -9 -f python || true
+
