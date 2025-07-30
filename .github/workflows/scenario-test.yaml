@@ -84,7 +84,6 @@ jobs:
         run: |
           # I Replace hardcoded user paths with the dynamic $HOME variable
           sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
-          sed -i "s@/home/vishalchauhan/@$HOME/@g" sample-scenario.yaml
       - name: Launch scenario_test_runner with diagnostics
         shell: bash
         run: |
