@@ -1,0 +1,269 @@
+services:
+  map:
+    image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
+    container_name: autoware-map
+    init: true
+    ipc: host
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    volumes:
+      - ${MAP_PATH}:/autoware_map:ro
+    network_mode: host
+    command: >
+      ros2 launch autoware_launch tier4_map_component.launch.xml
+      lanelet2_map_file:=${LANELET2_MAP_FILE}
+      map_path:=/autoware_map
+      pointcloud_map_file:=${POINTCLOUD_MAP_FILE}
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_model:=${VEHICLE_MODEL}
+    restart: on-failure
+
+  planning:
+    image: ghcr.io/autowarefoundation/autoware:universe-planning-control
+    container_name: autoware-planning
+    pid: service:map
+    ipc: host
+    init: true
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    network_mode: host
+    depends_on:
+      - map
+    command: >
+      ros2 launch autoware_launch tier4_planning_component.launch.xml
+      component_wise_launch:=true
+      enable_all_modules_auto_mode:=${ENABLE_ALL_MODULES_AUTO_MODE}
+      is_simulation:=${IS_SIMULATION_MODE}
+      module_preset:=${PLANNING_MODULE_PRESET}
+      pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_model:=${VEHICLE_MODEL}
+    restart: on-failure
+
+  control:
+    image: ghcr.io/autowarefoundation/autoware:universe-planning-control
+    container_name: autoware-control
+    pid: service:map
+    ipc: host
+    init: true
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    network_mode: host
+    depends_on:
+      - map
+      - planning
+      - system
+    command: >
+      ros2 launch autoware_launch tier4_control_component.launch.xml
+      check_external_emergency_heartbeat:=${CHECK_EXTERNAL_EMERGENCY_HEARTBEAT}
+      component_wise_launch:=true
+      lateral_controller_mode:=${LATERAL_CONTROLLER_MODE}
+      longitudinal_controller_mode:=${LONGITUDINAL_CONTROLLER_MODE}
+      module_preset:=${CONTROL_MODULE_PRESET}
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_id:=${VEHICLE_ID}
+      vehicle_model:=${VEHICLE_MODEL}
+    restart: on-failure
+
+  vehicle:
+    image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
+    container_name: autoware-vehicle
+    pid: service:map
+    ipc: host
+    init: true
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    network_mode: host
+    depends_on:
+      - map
+    command: >
+      ros2 launch tier4_vehicle_launch vehicle.launch.xml
+      launch_vehicle_interface:=${LAUNCH_VEHICLE_INTERFACE}
+      raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
+      sensor_model:=${SENSOR_MODEL}
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_id:=${VEHICLE_ID}
+      vehicle_model:=${VEHICLE_MODEL}
+    restart: on-failure
+
+  system:
+    image: ghcr.io/autowarefoundation/autoware:universe-vehicle-system
+    container_name: autoware-system
+    pid: service:map
+    ipc: host
+    init: true
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    network_mode: host
+    depends_on:
+      - map
+    command: >
+      ros2 launch autoware_launch tier4_system_component.launch.xml
+      launch_system_monitor:=${LAUNCH_SYSTEM_MONITOR}
+      launch_dummy_diag_publisher:=${LAUNCH_DUMMY_DIAG_PUBLISHER}
+      sensor_model:=${SENSOR_MODEL}
+      system_run_mode:=${SYSTEM_RUN_MODE}
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_model:=${VEHICLE_MODEL}
+    restart: on-failure
+
+  sensing-perception:
+    image: ghcr.io/autowarefoundation/autoware:universe-sensing-perception
+    container_name: autoware-sensing-perception
+    pid: service:map
+    ipc: host
+    init: true
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    volumes:
+      - ${DATA_PATH}:/autoware_data:ro
+    network_mode: host
+    depends_on:
+      - map
+      - system
+    command: >
+      bash -c "
+      ros2 launch autoware_launch tier4_sensing_component.launch.xml
+      launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER_SENSING}
+      launch_sensing_driver:=${LAUNCH_SENSING_DRIVER}
+      pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
+      sensor_model:=${SENSOR_MODEL}
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_model:=${VEHICLE_MODEL} &
+      ros2 launch autoware_launch tier4_perception_component.launch.xml
+      data_path:=/autoware_data
+      launch_pointcloud_container:=${LAUNCH_POINTCLOUD_CONTAINER_PERCEPTION}
+      lidar_detection_model:=${LIDAR_DETECTION_MODEL}
+      occupancy_grid_map_method:=${OCCUPANCY_GRID_MAP_METHOD}
+      perception_mode:=${PERCEPTION_MODE}
+      pointcloud_container_name:=${POINTCLOUD_CONTAINER_NAME}
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_model:=${VEHICLE_MODEL}
+      "
+    restart: on-failure
+    profiles:
+      - logging-simulation
+
+  localization:
+    image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
+    container_name: autoware-localization
+    pid: service:map
+    ipc: host
+    init: true
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    network_mode: host
+    depends_on:
+      - map
+      - system
+      - sensing-perception
+    command: >
+      ros2 launch autoware_launch tier4_localization_component.launch.xml
+      system_run_mode:=${SYSTEM_RUN_MODE}
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_model:=${VEHICLE_MODEL}
+    restart: on-failure
+    profiles:
+      - logging-simulation
+
+  simulator:
+    # TODO(youtalk): Use autoware-tools:scenario-simulator image
+    image: ghcr.io/autowarefoundation/autoware:universe
+    container_name: autoware-simulator
+    pid: service:map
+    ipc: host
+    init: true
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    network_mode: host
+    depends_on:
+      - map
+      - system
+      - vehicle
+    command: >
+      ros2 launch autoware_launch tier4_simulator_component.launch.xml
+      initial_engage_state:=${INITIAL_ENGAGE_STATE}
+      launch_dummy_doors:=${LAUNCH_DUMMY_DOORS}
+      launch_dummy_perception:=${LAUNCH_DUMMY_PERCEPTION}
+      launch_dummy_vehicle:=${LAUNCH_DUMMY_VEHICLE}
+      launch_scenario_simulator_v2_adapter:=${LAUNCH_SCENARIO_SIMULATOR_V2_ADAPTER}
+      localization_sim_mode:=${LOCALIZATION_SIM_MODE}
+      perception/enable_detection_failure:=${PERCEPTION_ENABLE_DETECTION_FAILURE}
+      perception/enable_object_recognition:=${PERCEPTION_ENABLE_OBJECT_RECOGNITION}
+      perception/enable_traffic_light:=${PERCEPTION_ENABLE_TRAFFIC_LIGHT}
+      perception/use_base_link_z:=${PERCEPTION_USE_BASE_LINK_Z}
+      raw_vehicle_cmd_converter_param_path:=/opt/autoware/share/autoware_launch/config/vehicle/raw_vehicle_cmd_converter/raw_vehicle_cmd_converter.param.yaml
+      scenario_simulation:=${SCENARIO_SIMULATION}
+      sensing/visible_range:=${SENSING_VISIBLE_RANGE}
+      use_sim_time:=${USE_SIM_TIME}
+      use_pointcloud_container:=${USE_POINTCLOUD_CONTAINER}
+      vehicle_info_param_file:=/opt/autoware/share/${VEHICLE_MODEL}_description/config/vehicle_info.param.yaml
+      vehicle_model:=${VEHICLE_MODEL}
+    restart: on-failure
+    profiles:
+      - planning-simulation
+
+  api:
+    # TODO(youtalk): Create autoware:universe-api image
+    image: ghcr.io/autowarefoundation/autoware:universe
+    container_name: autoware-api
+    pid: service:map
+    ipc: host
+    init: true
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    network_mode: host
+    depends_on:
+      - map
+    command: >
+      ros2 launch autoware_launch tier4_autoware_api_component.launch.xml
+      component_wise_launch:=true
+      scenario_simulation:=${SCENARIO_SIMULATION}
+      use_sim_time:=${USE_SIM_TIME}
+      vehicle_model:=${VEHICLE_MODEL}
+    restart: on-failure
+
+  visualization:
+    image: ghcr.io/autowarefoundation/autoware-tools:visualizer
+    container_name: autoware-visualization
+    pid: service:map
+    ipc: host
+    init: true
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+      - REMOTE_DISPLAY=${REMOTE_DISPLAY}
+      - USE_SIM_TIME=${USE_SIM_TIME}
+    ports:
+      - 6080:6080
+    network_mode: host
+    restart: "no"
+    profiles:
+      - visualization
+
+  rosbag:
+    image: ghcr.io/autowarefoundation/autoware:universe
+    container_name: autoware-rosbag
+    ipc: host
+    init: true
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+    volumes:
+      - ${ROSBAG_PATH}:/autoware_map/rosbag:ro
+    network_mode: host
+    command: >
+      bash -c "ros2 bag info /autoware_map/rosbag -s ${ROSBAG_FORMAT} &&
+      ros2 bag play /autoware_map/rosbag -r ${ROSBAG_RATE} -s ${ROSBAG_FORMAT}"
+    restart: "no"
+    profiles:
+      - rosbag

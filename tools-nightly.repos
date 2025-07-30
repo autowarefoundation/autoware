@@ -3,3 +3,8 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_tools.git
     version: main
+  # This should be removed after merged PR (https://github.com/PlotJuggler/plotjuggler-ros-plugins/pull/94)
+  plotjuggler_ros:
+    type: git
+    url: https://github.com/PlotJuggler/plotjuggler-ros-plugins.git
+    version: 2.1.2-humble

@@ -1,5 +1,5 @@
-ARG AUTOWARE_BASE_IMAGE
-ARG AUTOWARE_BASE_CUDA_IMAGE
+ARG AUTOWARE_BASE_IMAGE=ghcr.io/autowarefoundation/autoware-base:latest
+ARG AUTOWARE_BASE_CUDA_IMAGE=ghcr.io/autowarefoundation/autoware-base:cuda-latest
 
 # hadolint ignore=DL3006
 FROM $AUTOWARE_BASE_IMAGE AS rosdep-depend
@@ -58,6 +58,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
 COPY src/universe/autoware_universe/visualization /autoware/src/universe/autoware_universe/visualization
+COPY src/core/autoware_rviz_plugins /autoware/src/core/autoware_rviz_plugins
+
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-visualization-depend-packages.txt \
   && cat /rosdep-universe-visualization-depend-packages.txt
@@ -74,6 +76,7 @@ COPY src/universe/autoware_universe/launch/tier4_sensing_launch /autoware/src/un
 COPY src/universe/autoware_universe/perception /autoware/src/universe/autoware_universe/perception
 COPY src/universe/autoware_universe/sensing /autoware/src/universe/autoware_universe/sensing
 COPY src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator /autoware/src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator
+COPY src/sensor_component /autoware/src/sensor_component
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-sensing-perception-depend-packages.txt \
   && cat /rosdep-universe-sensing-perception-depend-packages.txt
@@ -132,6 +135,7 @@ COPY src/universe/autoware_universe/vehicle /autoware/src/universe/autoware_univ
 COPY src/universe/autoware_universe/system /autoware/src/universe/autoware_universe/system
 COPY src/universe/autoware_universe/map/autoware_map_height_fitter /autoware/src/universe/autoware_universe/map/autoware_map_height_fitter
 COPY src/universe/autoware_universe/localization/autoware_pose2twist /autoware/src/universe/autoware_universe/localization/autoware_pose2twist
+COPY src/sensor_component/external/sensor_component_description /autoware/src/sensor_component/external/sensor_component_description
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-vehicle-system-depend-packages.txt \
   && cat /rosdep-universe-vehicle-system-depend-packages.txt
@@ -241,6 +245,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/external/tier4_ad_api_adaptor,target=/autoware/src/universe/external/tier4_ad_api_adaptor \
   --mount=type=bind,source=src/universe/external/tier4_autoware_msgs,target=/autoware/src/universe/external/tier4_autoware_msgs \
   --mount=type=bind,source=src/middleware/external,target=/autoware/src/middleware/external \
+  --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
@@ -283,6 +288,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware_universe/perception,target=/autoware/src/universe/autoware_universe/perception \
   --mount=type=bind,source=src/universe/autoware_universe/sensing,target=/autoware/src/universe/autoware_universe/sensing \
   --mount=type=bind,source=src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator,target=/autoware/src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator \
+  --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
@@ -403,6 +409,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware_universe/system,target=/autoware/src/universe/autoware_universe/system \
   --mount=type=bind,source=src/universe/autoware_universe/map/autoware_map_height_fitter,target=/autoware/src/universe/autoware_universe/map/autoware_map_height_fitter \
   --mount=type=bind,source=src/universe/autoware_universe/localization/autoware_pose2twist,target=/autoware/src/universe/autoware_universe/localization/autoware_pose2twist \
+  --mount=type=bind,source=src/sensor_component/external/sensor_component_description,target=/autoware/src/sensor_component/external/sensor_component_description \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
@@ -427,6 +434,7 @@ RUN --mount=type=ssh \
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware_universe/visualization,target=/autoware/src/universe/autoware_universe/visualization \
+  --mount=type=bind,source=src/core/autoware_rviz_plugins,target=/autoware/src/core/autoware_rviz_plugins \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
@@ -455,7 +463,6 @@ COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
 COPY --from=universe-visualization-devel /opt/autoware /opt/autoware
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \
   --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
   --mount=type=bind,source=src/universe/autoware_universe/evaluator,target=/autoware/src/universe/autoware_universe/evaluator \
   --mount=type=bind,source=src/universe/autoware_universe/launch,target=/autoware/src/universe/autoware_universe/launch \
@@ -530,6 +537,8 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
+# TODO(youtalk): Fix https://github.com/autowarefoundation/autoware/pull/6235 workaround
+COPY --from=universe-common-devel /opt/autoware/share/autoware_launch /opt/autoware/share/autoware_launch
 
 # Copy bash aliases
 COPY docker/etc/.bash_aliases /root/.bash_aliases

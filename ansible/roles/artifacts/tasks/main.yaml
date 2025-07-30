@@ -65,6 +65,26 @@
     mode: "644"
     checksum: sha256:928f9eb14ac042d725909f12b2be1532c16b09a683485c5936cf04fb04728520
 
+# bevdet
+- name: Create tensorrt_bevdet directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/tensorrt_bevdet"
+    mode: "755"
+    state: directory
+
+- name: Download tensorrt_bevdet/tensorrt_bevdet.tar.gz
+  become: true
+  ansible.builtin.get_url:
+    url: https://autoware-files.s3.us-west-2.amazonaws.com/models/tensorrt_bevdet.tar.gz
+    dest: "{{ data_dir }}/tensorrt_bevdet/tensorrt_bevdet.tar.gz"
+    mode: "644"
+    checksum: sha256:c7d16ad395e949e7a654ab511fb3294135553f92c50f2595e63a1b3e0d142c6a
+
+- name: Extract tensorrt_bevdet/tensorrt_bevdet.tar.gz
+  ansible.builtin.unarchive:
+    src: "{{ data_dir }}/tensorrt_bevdet/tensorrt_bevdet.tar.gz"
+    dest: "{{ data_dir }}/tensorrt_bevdet/"
+
 # image_projection_based_fusion
 - name: Create image_projection_based_fusion directory inside {{ data_dir }}
   ansible.builtin.file:
@@ -458,6 +478,29 @@
     dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels_ped.txt"
     mode: "644"
     checksum: sha256:5427e1b7c2e33acd9565ede29e77992c38137bcf7d7074c73ebbc38080c6bcac
+
+# diffusion_planner
+- name: Create diffusion_planner directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/diffusion_planner"
+    mode: "755"
+    state: directory
+
+- name: Download diffusion_planner/diffusion_planner.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v0.1/diffusion_planner.onnx
+    dest: "{{ data_dir }}/diffusion_planner/diffusion_planner.onnx"
+    mode: "644"
+    checksum: sha256:7028f68639abc9a3fb96f2ef73cb3f7795e0471a9a1e88201527331168abe8c1
+
+- name: Download diffusion_planner/diffusion_planner.param.json
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v0.1/diffusion_planner.param.json
+    dest: "{{ data_dir }}/diffusion_planner/diffusion_planner.param.json"
+    mode: "644"
+    checksum: sha256:346bbd953551206dabcb02198269371dc336ea552b71cbc96105f1fa7f134264
 
 # traffic_light_fine_detector
 - name: Create traffic_light_fine_detector directory inside {{ data_dir }}
