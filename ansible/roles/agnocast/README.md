@@ -9,7 +9,7 @@ None.
 ## Manual Installation
 
 ```bash
-agnocast_version="2.1.0"
+agnocast_version="2.1.1"
 agnocast_heaphook_package="agnocast-heaphook-v${agnocast_version}"
 agnocast_kmod_package="agnocast-kmod-v${agnocast_version}"
 
