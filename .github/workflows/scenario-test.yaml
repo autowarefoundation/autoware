@@ -3,10 +3,9 @@ on:
   schedule:
     - cron: 0 12 * * *
   workflow_dispatch:
-  pull_request:
-    paths:
-      - simulator*.repos
-      - .github/workflows/scenario-test.yaml
+  push:
+    branches:
+      - main
 jobs:
   scenario-test:
     runs-on: ubuntu-24.04
