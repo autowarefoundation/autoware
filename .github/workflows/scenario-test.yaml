@@ -34,11 +34,12 @@ jobs:
       - name: Clone Autoware and Import simulator.repos
         shell: bash
         run: |
-          mkdir -p ~/autoware_ws/src
+          # Clone the repository directly into autoware_ws
+          git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git ~/autoware_ws
+          # Go into the new directory
           cd ~/autoware_ws
-          git clone --recurse-submodules https://github.com/autowarefoundation/autoware.git src/autoware
-          cd src
-          vcs import < autoware/simulator.repos
+          # The 'src' directory already exists, so we import the simulator repos into it
+          vcs import src < simulator.repos
       - name: Install ROS dependencies
         shell: bash
         run: |
