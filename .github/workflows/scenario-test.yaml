@@ -44,6 +44,8 @@ jobs:
         shell: bash
         run: |
           cd ~/autoware_ws
+          source /opt/ros/humble/setup.bash
+          source /opt/autoware/setup.bash
           rosdep update
           rosdep install --from-paths src --ignore-src -r -y
       - name: Downgrade xmlschema
