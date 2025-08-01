@@ -5,24 +5,38 @@
 run_scenario_simulator() {
     echo -e "\e[32mRunning scenario simulator...\e[0m"
 
+    # Prompt if no scenario is provided
+    if [ -z "$SCENARIO" ]; then
+        echo -e "\e[33mNo scenario provided, using default sample scenario...\e[0m"
+    fi
+
     # Set default values if not provided
+    LAUNCH_AUTOWARE=${LAUNCH_AUTOWARE:-false}
+    LAUNCH_RVIZ=${LAUNCH_RVIZ:-false}
     ARCHITECTURE_TYPE=${ARCHITECTURE_TYPE:-awf/universe/20240605}
     SENSOR_MODEL=${SENSOR_MODEL:-sample_sensor_kit}
     VEHICLE_MODEL=${VEHICLE_MODEL:-sample_vehicle}
-    LAUNCH_AUTOWARE=${LAUNCH_AUTOWARE:-false}
-    LAUNCH_RVIZ=${LAUNCH_RVIZ:-false}
     INITIALIZE_DURATION=${INITIALIZE_DURATION:-90}
     GLOBAL_FRAME_RATE=${GLOBAL_FRAME_RATE:-30}
     OUTPUT_DIRECTORY=${OUTPUT_DIRECTORY:-/autoware/scenario-sim/output}
+    SCENARIO=${SCENARIO:-$(ros2 pkg prefix --share scenario_test_runner)/scenario/sample.yaml}
     GLOBAL_TIMEOUT=${GLOBAL_TIMEOUT:-120}
     RECORD=${RECORD:-false}
     USE_SIM_TIME=${USE_SIM_TIME:-false}
 
-    # Prompt if no scenario is provided
-    if [ -z "$SCENARIO" ]; then
-        echo -e "\e[33mNo scenario provided, using default sample scenario...\e[0m"
-        SCENARIO=$(ros2 pkg prefix --share scenario_test_runner)/scenario/sample.yaml
-    fi
+    # Print all variables
+    echo "LAUNCH_AUTOWARE: $LAUNCH_AUTOWARE"
+    echo "LAUNCH_RVIZ: $LAUNCH_RVIZ"
+    echo "ARCHITECTURE_TYPE: $ARCHITECTURE_TYPE"
+    echo "SENSOR_MODEL: $SENSOR_MODEL"
+    echo "VEHICLE_MODEL: $VEHICLE_MODEL"
+    echo "INITIALIZE_DURATION: $INITIALIZE_DURATION"
+    echo "GLOBAL_FRAME_RATE: $GLOBAL_FRAME_RATE"
+    echo "OUTPUT_DIRECTORY: $OUTPUT_DIRECTORY"
+    echo "SCENARIO: $SCENARIO"
+    echo "GLOBAL_TIMEOUT: $GLOBAL_TIMEOUT"
+    echo "RECORD: $RECORD"
+    echo "USE_SIM_TIME: $USE_SIM_TIME"
 
     # Launch scenario test runner
     ros2 launch scenario_test_runner scenario_test_runner.launch.py \

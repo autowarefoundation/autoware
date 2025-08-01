@@ -52,7 +52,6 @@ RUN --mount=type=ssh \
     && cat /tmp/rosdep-simulator-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
     && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 COPY docker/tools/scenario-simulator/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

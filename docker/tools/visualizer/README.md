@@ -1,11 +1,11 @@
-# Open AD Kit - Visualizer
+# Autoware Tools - Visualizer
 
 Opens a remote RViz display for Autoware.
 
 ## Standalone Run
 
 ```bash
-docker run --rm --name visualizer -p 6080:6080 ghcr.io/autowarefoundation/openadkit:visualizer
+docker run --rm --name visualizer -p 6080:6080 ghcr.io/autowarefoundation/autoware-tools:visualizer
 ```
 
 ## Settings
