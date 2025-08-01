@@ -5,7 +5,14 @@
 run_scenario_simulator() {
     echo -e "\e[32mRunning scenario simulator...\e[0m"
 
+    # Prompt if no scenario is provided
+    if [ -z "$SCENARIO" ]; then
+        echo -e "\e[33mNo scenario provided, using default sample scenario...\e[0m"
+    fi
+
     # Set default values if not provided
+    LAUNCH_AUTOWARE=${LAUNCH_AUTOWARE:-false}
+    LAUNCH_RVIZ=${LAUNCH_RVIZ:-false}
     ARCHITECTURE_TYPE=${ARCHITECTURE_TYPE:-awf/universe/20240605}
     SENSOR_MODEL=${SENSOR_MODEL:-sample_sensor_kit}
     VEHICLE_MODEL=${VEHICLE_MODEL:-sample_vehicle}
@@ -18,6 +25,8 @@ run_scenario_simulator() {
     USE_SIM_TIME=${USE_SIM_TIME:-false}
 
     # Print all variables
+    echo "LAUNCH_AUTOWARE: $LAUNCH_AUTOWARE"
+    echo "LAUNCH_RVIZ: $LAUNCH_RVIZ"
     echo "ARCHITECTURE_TYPE: $ARCHITECTURE_TYPE"
     echo "SENSOR_MODEL: $SENSOR_MODEL"
     echo "VEHICLE_MODEL: $VEHICLE_MODEL"
@@ -31,8 +40,8 @@ run_scenario_simulator() {
 
     # Launch scenario test runner
     ros2 launch scenario_test_runner scenario_test_runner.launch.py \
-        launch_autoware:=false \
-        launch_rviz:=false \
+        launch_autoware:="$LAUNCH_AUTOWARE" \
+        launch_rviz:="$LAUNCH_RVIZ" \
         architecture_type:="$ARCHITECTURE_TYPE" \
         sensor_model:="$SENSOR_MODEL" \
         vehicle_model:="$VEHICLE_MODEL" \
