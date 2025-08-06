@@ -487,8 +487,8 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_apt.sh
 
-COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 COPY --from=universe-devel /opt/autoware /opt/autoware
+COPY --from=universe-sensing-perception-devel-cuda /opt/autoware /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
