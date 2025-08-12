@@ -133,7 +133,7 @@ COPY src/universe/autoware_universe/launch/tier4_vehicle_launch /autoware/src/un
 COPY src/universe/autoware_universe/launch/tier4_system_launch /autoware/src/universe/autoware_universe/launch/tier4_system_launch
 COPY src/universe/autoware_universe/vehicle /autoware/src/universe/autoware_universe/vehicle
 COPY src/universe/autoware_universe/system /autoware/src/universe/autoware_universe/system
-COPY src/universe/autoware_universe/map/autoware_map_height_fitter /autoware/src/universe/autoware_universe/map/autoware_map_height_fitter
+COPY src/core/autoware_core/map/autoware_map_height_fitter /autoware/src/core/autoware_core/map/autoware_map_height_fitter
 COPY src/universe/autoware_universe/localization/autoware_pose2twist /autoware/src/universe/autoware_universe/localization/autoware_pose2twist
 COPY src/sensor_component/external/sensor_component_description /autoware/src/sensor_component/external/sensor_component_description
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
@@ -408,7 +408,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_system_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_system_launch \
   --mount=type=bind,source=src/universe/autoware_universe/vehicle,target=/autoware/src/universe/autoware_universe/vehicle \
   --mount=type=bind,source=src/universe/autoware_universe/system,target=/autoware/src/universe/autoware_universe/system \
-  --mount=type=bind,source=src/universe/autoware_universe/map/autoware_map_height_fitter,target=/autoware/src/universe/autoware_universe/map/autoware_map_height_fitter \
+  --mount=type=bind,source=src/core/autoware_core/map/autoware_map_height_fitter,target=/autoware/src/core/autoware_core/map/autoware_map_height_fitter \
   --mount=type=bind,source=src/universe/autoware_universe/localization/autoware_pose2twist,target=/autoware/src/universe/autoware_universe/localization/autoware_pose2twist \
   --mount=type=bind,source=src/sensor_component/external/sensor_component_description,target=/autoware/src/sensor_component/external/sensor_component_description \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
