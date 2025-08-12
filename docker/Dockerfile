@@ -132,6 +132,7 @@ ARG ROS_DISTRO
 COPY src/universe/autoware_universe/launch/tier4_vehicle_launch /autoware/src/universe/autoware_universe/launch/tier4_vehicle_launch
 COPY src/universe/autoware_universe/launch/tier4_system_launch /autoware/src/universe/autoware_universe/launch/tier4_system_launch
 COPY src/universe/autoware_universe/vehicle /autoware/src/universe/autoware_universe/vehicle
+COPY src/universe/autoware_universe/planning/planning_validator/autoware_planning_validator /autoware/src/universe/autoware_universe/planning/planning_validator/autoware_planning_validator
 COPY src/universe/autoware_universe/system /autoware/src/universe/autoware_universe/system
 COPY src/core/autoware_core/map/autoware_map_height_fitter /autoware/src/core/autoware_core/map/autoware_map_height_fitter
 COPY src/universe/autoware_universe/localization/autoware_pose2twist /autoware/src/universe/autoware_universe/localization/autoware_pose2twist
