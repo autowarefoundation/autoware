@@ -122,7 +122,8 @@ COPY src/universe/autoware_universe/system/autoware_command_mode_types /autoware
 
 # diffusion_planner depends on cuda
 COPY src/universe/autoware_universe/sensing/autoware_cuda_utils /autoware/src/universe/autoware_universe/sensing/autoware_cuda_utils
-COPY src/universe/autoware_universe/perception /autoware/src/universe/autoware_universe/perception
+COPY src/universe/autoware_universe/perception/autoware_tensorrt_common /autoware/src/universe/autoware_universe/perception/autoware_tensorrt_common
+COPY src/universe/autoware_universe/perception/autoware_tensorrt_plugins /autoware/src/universe/autoware_universe/perception/autoware_tensorrt_plugins
 
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-planning-control-depend-packages.txt \
