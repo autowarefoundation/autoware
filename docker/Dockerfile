@@ -132,7 +132,14 @@ ARG ROS_DISTRO
 COPY src/universe/autoware_universe/launch/tier4_vehicle_launch /autoware/src/universe/autoware_universe/launch/tier4_vehicle_launch
 COPY src/universe/autoware_universe/launch/tier4_system_launch /autoware/src/universe/autoware_universe/launch/tier4_system_launch
 COPY src/universe/autoware_universe/vehicle /autoware/src/universe/autoware_universe/vehicle
-COPY src/universe/autoware_universe/planning/planning_validator/autoware_planning_validator /autoware/src/universe/autoware_universe/planning/planning_validator/autoware_planning_validator
+
+# planning_validator and its dependencies
+COPY src/universe/autoware_universe/planning/planning_validator /autoware/src/universe/autoware_universe/planning/planning_validator
+COPY src/core/autoware_core/common /autoware/src/core/autoware_core/common
+COPY src/core/autoware_core/testing /autoware/src/core/autoware_core/testing
+COPY src/core/autoware_core/planning/autoware_planning_factor_interface /autoware/src/core/autoware_core/planning/autoware_planning_factor_interface
+COPY src/core/autoware_core/planning/autoware_route_handler /autoware/src/core/autoware_core/planning/autoware_route_handler
+
 COPY src/universe/autoware_universe/system /autoware/src/universe/autoware_universe/system
 COPY src/core/autoware_core/map/autoware_map_height_fitter /autoware/src/core/autoware_core/map/autoware_map_height_fitter
 COPY src/universe/autoware_universe/localization/autoware_pose2twist /autoware/src/universe/autoware_universe/localization/autoware_pose2twist
