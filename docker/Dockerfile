@@ -118,6 +118,7 @@ COPY src/universe/autoware_universe/sensing/autoware_pcl_extensions /autoware/sr
 COPY src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor
 COPY src/universe/autoware_universe/vehicle/autoware_external_cmd_converter /autoware/src/universe/autoware_universe/vehicle/autoware_external_cmd_converter
 COPY src/universe/autoware_universe/vehicle/autoware_raw_vehicle_cmd_converter /autoware/src/universe/autoware_universe/vehicle/autoware_raw_vehicle_cmd_converter
+COPY src/universe/autoware_universe/system/autoware_command_mode_types /autoware/src/universe/autoware_universe/system/autoware_command_mode_types
 
 # diffusion_planner depends on cuda
 COPY src/universe/autoware_universe/sensing/autoware_cuda_utils /autoware/src/universe/autoware_universe/sensing/autoware_cuda_utils
