@@ -3,11 +3,11 @@
     url: https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest
     method: GET
     return_content: true
-  register: ros_apt_release_info
+  register: ros2__ros_apt_release_info
 
 - name: Extract latest version of ros-apt-source package
   ansible.builtin.set_fact:
-    ros_apt_source_version: "{{ (ros_apt_release_info.content | from_json).tag_name }}"
+    ros2__ros_apt_source_version: "{{ (ros2__ros_apt_release_info.content | from_json).tag_name }}"
 
 - name: Save result of 'source /etc/os-release && echo $UBUNTU_CODENAME'
   ansible.builtin.shell: bash -c 'source /etc/os-release && echo $UBUNTU_CODENAME'
@@ -16,7 +16,7 @@
 
 - name: Get ros2-apt-source package
   ansible.builtin.get_url:
-    url: https://github.com/ros-infrastructure/ros-apt-source/releases/download/{{ ros_apt_source_version }}/ros2-apt-source_{{ ros_apt_source_version }}.{{ ros2__ubuntu_codename.stdout }}_all.deb
+    url: https://github.com/ros-infrastructure/ros-apt-source/releases/download/{{ ros2__ros_apt_source_version }}/ros2-apt-source_{{ ros2__ros_apt_source_version }}.{{ ros2__ubuntu_codename.stdout }}_all.deb
     dest: /tmp/ros2-apt-source.deb
     mode: "0644"
 
@@ -33,7 +33,7 @@
 
 - name: Hold check of ros-{{ rosdistro + '-' + ros2_installation_type }}
   ansible.builtin.command: apt-mark showhold
-  register: held_ros_packages
+  register: ros2_held_ros_packages
   changed_when: false
 
 - name: Install ros-{{ rosdistro + '-' + ros2_installation_type }}
@@ -42,14 +42,14 @@
     name: ros-{{ rosdistro }}-{{ ros2_installation_type }}
     state: latest
     update_cache: true
-  when: "'ros-' + rosdistro + '-' + ros2_installation_type not in held_ros_packages.stdout"
-  register: install_result
+  when: "'ros-' + rosdistro + '-' + ros2_installation_type not in ros2_held_ros_packages.stdout"
+  register: ros2_install_result
   failed_when: false
 
 - name: Display warning if ROS 2 package is held
   ansible.builtin.debug:
     msg: ROS package 'ros-{{ rosdistro + '-' + ros2_installation_type }}' is apt-mark hold. Skipping installation.
-  when: not install_result.changed
+  when: not ros2_install_result.changed
 
 - name: Add PATH to .bashrc
   become: true

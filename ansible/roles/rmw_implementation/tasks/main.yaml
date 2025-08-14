@@ -5,7 +5,7 @@
 
 - name: Hold check of ros-{{ rosdistro + '-' + rmw_implementation__dash_case_rmw_implementation.stdout }}
   ansible.builtin.command: apt-mark showhold
-  register: held_ros_packages
+  register: rmw_implementation_held_ros_packages
   changed_when: false
 
 - name: Install ros-{{ rosdistro + '-' + rmw_implementation__dash_case_rmw_implementation.stdout }}
@@ -14,14 +14,14 @@
     name: ros-{{ rosdistro }}-{{ rmw_implementation__dash_case_rmw_implementation.stdout }}
     state: latest
     update_cache: true
-  when: "'ros-' + rosdistro + '-' + rmw_implementation__dash_case_rmw_implementation.stdout not in held_ros_packages.stdout"
-  register: install_result
+  when: "'ros-' + rosdistro + '-' + rmw_implementation__dash_case_rmw_implementation.stdout not in rmw_implementation_held_ros_packages.stdout"
+  register: rmw_implementation_install_result
   failed_when: false
 
 - name: Display warning if ROS 2 RMW package is held
   ansible.builtin.debug:
     msg: ROS 2 RMW package 'ros-{{ rosdistro + '-' + rmw_implementation__dash_case_rmw_implementation.stdout }}' is apt-mark hold. Skipping installation.
-  when: not install_result.changed
+  when: not rmw_implementation_install_result.changed
 
 - name: Add RMW_IMPLEMENTATION to .bashrc
   become: true
