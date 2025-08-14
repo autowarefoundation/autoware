@@ -9,7 +9,7 @@
   ansible.builtin.shell: |
     sysctl net.ipv6.conf.all.disable_ipv6
     sysctl net.ipv6.conf.default.disable_ipv6
-  register: ipv6_settings
+  register: agnocast_ipv6_settings
   changed_when: false
   become: true
 
@@ -37,7 +37,7 @@
     value: 0
     sysctl_set: true
     state: present
-  loop: "{{ ipv6_settings.stdout_lines }}"
+  loop: "{{ agnocast_ipv6_settings.stdout_lines }}"
   when: item is search('=\\s*0')
   become: true
 
@@ -54,7 +54,7 @@
 
 - name: Check if agnocast-kmod is installed in dkms with version v{{ agnocast_version }}
   ansible.builtin.shell: dkms status | grep agnocast | grep {{ agnocast_version }} # noqa: risky-shell-pipe
-  register: dkms_status
+  register: agnocast_dkms_status
   failed_when: false
   changed_when: false
 
@@ -63,14 +63,14 @@
     name: "{{ agnocast_kmod_package }}"
     state: absent
   become: true
-  when: dkms_status.rc != 0
+  when: agnocast_dkms_status.rc != 0
 
 - name: Install agnocast-kmod if not found in dkms for version v{{ agnocast_version }}
   ansible.builtin.apt:
     name: "{{ agnocast_kmod_package }}"
     state: present
   become: true
-  when: dkms_status.rc != 0
+  when: agnocast_dkms_status.rc != 0
 
 - name: Ensure agnocast module is loaded at boot via modules-load.d
   ansible.builtin.copy:

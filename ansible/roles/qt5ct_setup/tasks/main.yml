@@ -16,13 +16,13 @@
     state: absent
   become: true
 
-- name: Set variable qt5ct_config_dir
+- name: Set variable qt5ct_setup_config_dir
   ansible.builtin.set_fact:
-    qt5ct_config_dir: "{{ ansible_env.HOME }}/.config/qt5ct"
+    qt5ct_setup_config_dir: "{{ ansible_env.HOME }}/.config/qt5ct"
 
-- name: Ensure qt5ct_config_dir exists
+- name: Ensure qt5ct_setup_config_dir exists
   ansible.builtin.file:
-    path: "{{ qt5ct_config_dir }}"
+    path: "{{ qt5ct_setup_config_dir }}"
     state: directory
     mode: "0755"
 
@@ -30,38 +30,38 @@
   ansible.builtin.debug:
     msg: "The role_path is: {{ role_path }}"
 
-- name: Set icons_path variable
+- name: Set qt5ct_setup_icons_path variable
   ansible.builtin.set_fact:
-    icons_path: "{{ qt5ct_config_dir }}/autoware-rviz-icons"
+    qt5ct_setup_icons_path: "{{ qt5ct_setup_config_dir }}/autoware-rviz-icons"
 
 - name: Remove autoware-rviz-icons folder if it exists
   ansible.builtin.file:
-    path: "{{ icons_path }}"
+    path: "{{ qt5ct_setup_icons_path }}"
     state: absent
 
 # Replace rsync with synchronize which is an ansible wrapper for rsync
 - name: Copy autoware-rviz-icons to the qt5ct config directory
   ansible.posix.synchronize:
     src: "{{ role_path }}/files/autoware-rviz-icons/"
-    dest: "{{ icons_path }}/"
+    dest: "{{ qt5ct_setup_icons_path }}/"
     mode: push
 
 - name: Fix the paths in the qss file
   ansible.builtin.replace:
     path: "{{ role_path }}/files/autoware.qss"
     regexp: /icons_path/
-    replace: "{{ icons_path }}/"
+    replace: "{{ qt5ct_setup_icons_path }}/"
 
-- name: Ensure qt5ct_config_dir/qss exists
+- name: Ensure qt5ct_setup_config_dir/qss exists
   ansible.builtin.file:
-    path: "{{ qt5ct_config_dir }}/qss"
+    path: "{{ qt5ct_setup_config_dir }}/qss"
     state: directory
     mode: "0755"
 
 - name: Copy autoware.qss to the qt5ct qss directory
   ansible.builtin.copy:
     src: "{{ role_path }}/files/autoware.qss"
-    dest: "{{ qt5ct_config_dir }}/qss/autoware.qss"
+    dest: "{{ qt5ct_setup_config_dir }}/qss/autoware.qss"
     force: true
     backup: true
     mode: "0644"
@@ -70,7 +70,7 @@
   ansible.builtin.replace:
     path: "{{ role_path }}/files/qt5ct.conf"
     regexp: autoware_stylesheet_path
-    replace: "{{ qt5ct_config_dir }}/qss/autoware.qss"
+    replace: "{{ qt5ct_setup_config_dir }}/qss/autoware.qss"
 
 - name: Copy qt5ct.conf to the config directory
   ansible.builtin.copy:
