@@ -113,7 +113,7 @@ services:
     restart: on-failure
 
   sensing-perception:
-    image: ${PERCEPTION_IMAGE}
+    image: ${SENSING_PERCEPTION_IMAGE}
     container_name: autoware-sensing-perception
     pid: service:map
     ipc: host
