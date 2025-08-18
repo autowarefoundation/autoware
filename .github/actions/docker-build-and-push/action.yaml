@@ -259,6 +259,32 @@ runs:
         flavor: |
           latest=false
 
+    - name: Docker meta for autoware:universe-api-devel
+      id: meta-universe-api-devel
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=universe-api-devel-${{ inputs.platform }}
+          type=raw,value=universe-api-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-api-devel-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-api-devel
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:universe-api
+      id: meta-universe-api
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=universe-api-${{ inputs.platform }}
+          type=raw,value=universe-api-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=universe-api-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-universe-api
+        flavor: |
+          latest=false
+
     - name: Docker meta for autoware:universe-devel
       id: meta-universe-devel
       uses: docker/metadata-action@v5
@@ -312,6 +338,8 @@ runs:
           ${{ steps.meta-universe-vehicle-system.outputs.bake-file }}
           ${{ steps.meta-universe-visualization-devel.outputs.bake-file }}
           ${{ steps.meta-universe-visualization.outputs.bake-file }}
+          ${{ steps.meta-universe-api-devel.outputs.bake-file }}
+          ${{ steps.meta-universe-api.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
         provenance: false

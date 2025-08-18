@@ -190,6 +190,14 @@ This stage installs the dependency packages based on `/rosdep-universe-vehicle-s
 
 This stage is an Autoware Universe Vehicle/System runtime container. It only includes the dependencies given by `/rosdep-universe-vehicle-system-exec-depend-packages.txt` and the binaries built in the `universe-vehicle-system-devel` stage.
 
+### `universe-api-devel`
+
+This stage installs the dependency packages based on `/rosdep-universe-api-depend-packages.txt` and builds the API packages.
+
+### `universe-api`
+
+This stage is a Autoware Universe API runtime container. It only includes the dependencies given by `/rosdep-universe-api-exec-depend-packages.txt` and the binaries built in the `universe-api-devel` stage.
+
 ### `universe-devel`
 
 This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and copies the binaries built in the following stages:
@@ -199,6 +207,7 @@ This stage installs the dependency packages based on `/rosdep-universe-depend-pa
 - `universe-planning-control-devel`
 - `universe-vehicle-system-devel`
 - `universe-visualization-devel`
+- `universe-api-devel`
 
 Then it builds the remaining packages of `autoware.repos`:
 
