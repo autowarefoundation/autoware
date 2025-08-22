@@ -165,6 +165,8 @@ build_images() {
         --set "universe-vehicle-system.tags=ghcr.io/autowarefoundation/autoware:universe-vehicle-system" \
         --set "universe-visualization-devel.tags=ghcr.io/autowarefoundation/autoware:universe-visualization-devel" \
         --set "universe-visualization.tags=ghcr.io/autowarefoundation/autoware:universe-visualization" \
+        --set "universe-api-devel.tags=ghcr.io/autowarefoundation/autoware:universe-api-devel" \
+        --set "universe-api.tags=ghcr.io/autowarefoundation/autoware:universe-api" \
         --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel" \
         --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe" \
         --set "universe-sensing-perception-devel-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel-cuda" \

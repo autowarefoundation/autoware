@@ -212,8 +212,7 @@ services:
       - planning-simulation
 
   api:
-    # TODO(youtalk): Create autoware:universe-api image
-    image: ghcr.io/autowarefoundation/autoware:universe
+    image: ghcr.io/autowarefoundation/autoware:universe-api
     container_name: autoware-api
     pid: service:map
     ipc: host
