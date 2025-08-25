@@ -105,7 +105,7 @@
 
 - name: Display info when skipping agnocast-kmod in container
   ansible.builtin.debug:
-    msg: "INFO: Skipping agnocast-kmod installation in container environment"
+    msg: "WARNING: Running in container environment. Skipping agnocast-kmod installation. Please ensure agnocast-kmod is installed on the host system for proper functionality of agnocast."
   when: agnocast_is_container
 
 - name: Install agnocast-kmod if not found in dkms for version v{{ agnocast_version }}
