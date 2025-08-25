@@ -33,7 +33,7 @@ jobs:
         include:
           - build-type: main
             platform: amd64
-            runner: "['self-hosted','Linux','X64','docker-test']"
+            runner: "['self-hosted','Linux','X64']"
             lib-dir: x86_64
             container: ubuntu:22.04
           - build-type: nightly
