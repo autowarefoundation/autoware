@@ -1,8 +1,39 @@
+# Detect container environment
+- name: Check if running in a container using systemd-detect-virt
+  ansible.builtin.command: systemd-detect-virt -c
+  register: agnocast_container_detection
+  failed_when: false
+  changed_when: false
+
+- name: Set container environment fact
+  ansible.builtin.set_fact:
+    agnocast_is_container: "{{ agnocast_container_detection.rc == 0 }}"
+
+- name: Display environment detection result
+  ansible.builtin.debug:
+    msg: "Running in container: {{ agnocast_is_container }} (detected: {{ agnocast_container_detection.stdout | default('none') }})"
+
+# Check and install linux headers
+- name: Check if linux-headers package is available
+  ansible.builtin.shell: apt-cache search ^linux-headers-{{ ansible_kernel }}$ | grep -q linux-headers-{{ ansible_kernel }}
+  register: agnocast_linux_headers_available
+  failed_when: false
+  changed_when: false
+  become: true
+
+- name: Display warning if linux-headers is not available
+  ansible.builtin.debug:
+    msg: "WARNING: linux-headers-{{ ansible_kernel }} package not found. The agnocast-kmod installation may fail. Please manually install the kernel headers and re-run this role."
+  when: agnocast_linux_headers_available.rc != 0
+
 - name: Install linux headers for the running kernel
   ansible.builtin.apt:
     name: linux-headers-{{ ansible_kernel }}
     state: present
   become: true
+  when:
+    - agnocast_linux_headers_available.rc == 0
+    - not agnocast_is_container
 
 # TODO(rej55, sykwer): IPv6 support
 - name: Save current IPv6 settings
@@ -57,20 +88,30 @@
   register: agnocast_dkms_status
   failed_when: false
   changed_when: false
+  when: not agnocast_is_container
 
 - name: Purge agnocast-kmod if not found in dkms for version v{{ agnocast_version }}
   ansible.builtin.apt:
     name: "{{ agnocast_kmod_package }}"
     state: absent
   become: true
-  when: agnocast_dkms_status.rc != 0
+  when:
+    - not agnocast_is_container
+    - agnocast_dkms_status.rc != 0
+
+- name: Display info when skipping agnocast-kmod in container
+  ansible.builtin.debug:
+    msg: "INFO: Skipping agnocast-kmod installation in container environment"
+  when: agnocast_is_container
 
 - name: Install agnocast-kmod if not found in dkms for version v{{ agnocast_version }}
   ansible.builtin.apt:
     name: "{{ agnocast_kmod_package }}"
     state: present
   become: true
-  when: agnocast_dkms_status.rc != 0
+  when:
+    - not agnocast_is_container
+    - agnocast_dkms_status.rc != 0
 
 - name: Ensure agnocast module is loaded at boot via modules-load.d
   ansible.builtin.copy:
@@ -80,3 +121,4 @@
     group: root
     mode: "0644"
   become: true
+  when: not agnocast_is_container
