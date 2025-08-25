@@ -15,7 +15,11 @@
 
 # Check and install linux headers
 - name: Check if linux-headers package is available
-  ansible.builtin.shell: apt-cache search ^linux-headers-{{ ansible_kernel }}$ | grep -q linux-headers-{{ ansible_kernel }}
+  ansible.builtin.shell: |
+    set -o pipefail
+    apt-cache search ^linux-headers-{{ ansible_kernel }}$ | grep -q linux-headers-{{ ansible_kernel }}
+  args:
+    executable: /bin/bash
   register: agnocast_linux_headers_available
   failed_when: false
   changed_when: false
