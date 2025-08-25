@@ -26,7 +26,7 @@ runs:
       run: |
         sudo apt-get -y update
         sudo apt-get -y install python3-pip
-        pip install --no-cache-dir vcstool
+        pipx install vcstool
       shell: bash
 
     - name: Run vcs import
