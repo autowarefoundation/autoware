@@ -161,10 +161,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
 COPY src/universe/autoware_universe/launch/tier4_autoware_api_launch /autoware/src/universe/autoware_universe/launch/tier4_autoware_api_launch
-COPY src/universe/autoware_universe/system/autoware_default_adapi /autoware/src/universe/autoware_universe/system/autoware_default_adapi
-COPY src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_adapi_adaptors /autoware/src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_adapi_adaptors
+COPY src/universe/autoware_universe/system/autoware_default_adapi_universe /autoware/src/universe/autoware_universe/system/autoware_default_adapi_universe
+COPY src/core/autoware_core/api/autoware_adapi_adaptors /autoware/src/core/autoware_core/api/autoware_adapi_adaptors
 COPY src/universe/autoware_universe/system/autoware_diagnostic_graph_utils /autoware/src/universe/autoware_universe/system/autoware_diagnostic_graph_utils
-COPY src/universe/autoware_universe/map/autoware_map_height_fitter /autoware/src/universe/autoware_universe/map/autoware_map_height_fitter
+COPY src/core/autoware_core/map/autoware_map_height_fitter /autoware/src/core/autoware_core/map/autoware_map_height_fitter
 
 RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
   > /rosdep-universe-api-depend-packages.txt \
@@ -492,10 +492,10 @@ RUN --mount=type=ssh \
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_autoware_api_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_autoware_api_launch \
-  --mount=type=bind,source=src/universe/autoware_universe/system/autoware_default_adapi,target=/autoware/src/universe/autoware_universe/system/autoware_default_adapi \
-  --mount=type=bind,source=src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_adapi_adaptors,target=/autoware/src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_adapi_adaptors \
+  --mount=type=bind,source=src/universe/autoware_universe/system/autoware_default_adapi_universe,target=/autoware/src/universe/autoware_universe/system/autoware_default_adapi_universe \
+  --mount=type=bind,source=src/core/autoware_core/api/autoware_adapi_adaptors,target=/autoware/src/core/autoware_core/api/autoware_adapi_adaptors \
   --mount=type=bind,source=src/universe/autoware_universe/system/autoware_diagnostic_graph_utils,target=/autoware/src/universe/autoware_universe/system/autoware_diagnostic_graph_utils \
-  --mount=type=bind,source=src/universe/autoware_universe/map/autoware_map_height_fitter,target=/autoware/src/universe/autoware_universe/map/autoware_map_height_fitter \
+  --mount=type=bind,source=src/core/autoware_core/map/autoware_map_height_fitter,target=/autoware/src/core/autoware_core/map/autoware_map_height_fitter \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
