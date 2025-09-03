@@ -14,6 +14,8 @@ group "default" {
     "universe-vehicle-system",
     "universe-visualization-devel",
     "universe-visualization",
+    "universe-api-devel",
+    "universe-api",
     "universe-devel",
     "universe"
   ]
@@ -34,6 +36,8 @@ target "docker-metadata-action-universe-vehicle-system-devel" {}
 target "docker-metadata-action-universe-vehicle-system" {}
 target "docker-metadata-action-universe-visualization-devel" {}
 target "docker-metadata-action-universe-visualization" {}
+target "docker-metadata-action-universe-api-devel" {}
+target "docker-metadata-action-universe-api" {}
 target "docker-metadata-action-universe-devel" {}
 target "docker-metadata-action-universe" {}
 
@@ -119,6 +123,18 @@ target "universe-visualization" {
   inherits = ["docker-metadata-action-universe-visualization"]
   dockerfile = "docker/Dockerfile"
   target = "universe-visualization"
+}
+
+target "universe-api-devel" {
+  inherits = ["docker-metadata-action-universe-api-devel"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-api-devel"
+}
+
+target "universe-api" {
+  inherits = ["docker-metadata-action-universe-api"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-api"
 }
 
 target "universe-devel" {
