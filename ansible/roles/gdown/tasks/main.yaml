@@ -1,6 +1,16 @@
+# noqa: risky-shell-pipe, no-changed-when
+
 - name: Install gdown to download files from CMakeLists.txt
+  ansible.builtin.shell: |
+    pip3 list | grep -q gdown || pip3 install --break-system-packages gdown
+  args:
+    executable: /bin/bash
+  when: rosdistro == 'jazzy'
+
+- name: Install gdown to download files from CMakeLists.txt (non-jazzy)
   ansible.builtin.pip:
     name:
       - gdown
     state: latest
     executable: pip3
+  when: rosdistro != 'jazzy'
