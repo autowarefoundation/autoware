@@ -520,7 +520,7 @@
     url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v1.0/diffusion_planner.onnx
     dest: "{{ data_dir }}/diffusion_planner/v1.0/diffusion_planner.onnx"
     mode: "644"
-    checksum: sha256:TODO
+    checksum: sha256:35094c876426655ccd384f1046f84a2bf0ac32a935335c6b659c1364870dc928
 
 - name: Download diffusion_planner/v1.0/diffusion_planner.param.json
   become: true
@@ -528,7 +528,7 @@
     url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v1.0/diffusion_planner.param.json
     dest: "{{ data_dir }}/diffusion_planner/v1.0/diffusion_planner.param.json"
     mode: "644"
-    checksum: sha256:TODO
+    checksum: sha256:https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v1.0/diffusion_planner.param.json
 
 # traffic_light_fine_detector
 - name: Create traffic_light_fine_detector directory inside {{ data_dir }}
