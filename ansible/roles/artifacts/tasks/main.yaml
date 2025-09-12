@@ -528,7 +528,7 @@
     url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v1.0/diffusion_planner.param.json
     dest: "{{ data_dir }}/diffusion_planner/v1.0/diffusion_planner.param.json"
     mode: "644"
-    checksum: sha256:https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v1.0/diffusion_planner.param.json
+    checksum: sha256:215493daac110055990318b7916fbf1a7d6b08feea9c27cdd6403df31557d992
 
 # traffic_light_fine_detector
 - name: Create traffic_light_fine_detector directory inside {{ data_dir }}
