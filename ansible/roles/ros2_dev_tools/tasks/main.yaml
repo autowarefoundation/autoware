@@ -2,7 +2,6 @@
   become: true
   ansible.builtin.apt:
     name:
-      - python3-colcon-mixin
       - python3-flake8-docstrings
       - python3-pip
       - python3-pytest-cov
