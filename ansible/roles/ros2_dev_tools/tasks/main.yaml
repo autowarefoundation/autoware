@@ -1,15 +1,22 @@
-- name: Add universe repository
+- name: Download ROS 2 GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.key
+    dest: /usr/share/keyrings/ros-archive-keyring.gpg
+    mode: '0644'
+
+- name: Add ROS 2 repository
   become: true
   ansible.builtin.apt_repository:
-    repo: "deb http://archive.ubuntu.com/ubuntu jammy universe"
+    repo: "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu jammy main"
     state: present
+    filename: ros2
     update_cache: true
 
 - name: Install apt packages
   become: true
   ansible.builtin.apt:
     name:
-      - python3-colcon-mixin
       - python3-flake8-docstrings
       - python3-pip
       - python3-pytest-cov
@@ -23,6 +30,12 @@
       - python3-flake8-quotes
       - python3-pytest-repeat
       - python3-pytest-rerunfailures
+      - libavcodec-dev
+      - libavformat-dev
+      - libavutil-dev
+      - libjpeg-turbo8-dev
+      - libopencv-dev
+      - libswscale-dev
     state: latest
     update_cache: true
 
