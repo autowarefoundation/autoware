@@ -5,7 +5,6 @@
       - python3-flake8-docstrings
       - python3-pip
       - python3-pytest-cov
-      - ros-dev-tools
       - python3-flake8-blind-except
       - python3-flake8-builtins
       - python3-flake8-class-newline
