@@ -75,6 +75,20 @@ set_cuda_options() {
     fi
 }
 
+# Set image tags based on ROS distro
+set_image_tags() {
+    if [ "$ros_distro" = "jazzy" ]; then
+        base_tag="ghcr.io/autowarefoundation/autoware-base:jazzy-latest"
+        base_cuda_tag="ghcr.io/autowarefoundation/autoware-base:jazzy-cuda-latest"
+        main_tag_suffix="-jazzy"
+    else
+        base_tag="ghcr.io/autowarefoundation/autoware-base:latest"
+        base_cuda_tag="ghcr.io/autowarefoundation/autoware-base:cuda-latest"
+        main_tag_suffix=""
+    fi
+}
+
+
 # Set build options
 set_build_options() {
     if [ -n "$option_target" ]; then
@@ -204,6 +218,7 @@ remove_dangling_images() {
 parse_arguments "$@"
 set_ros_distro
 set_cuda_options
+set_image_tags
 set_build_options
 set_platform
 set_arch_lib_dir
