@@ -1,10 +1,10 @@
 ARG AUTOWARE_BASE_IMAGE=ghcr.io/autowarefoundation/autoware-base:latest
 ARG AUTOWARE_BASE_CUDA_IMAGE=ghcr.io/autowarefoundation/autoware-base:cuda-latest
+ARG ROS_DISTRO=humble
 
 # hadolint ignore=DL3006
 FROM $AUTOWARE_BASE_IMAGE AS rosdep-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
 
 COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
@@ -19,7 +19,7 @@ RUN rm -f /etc/apt/apt.conf.d/docker-clean \
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y rosdep \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && /autoware/cleanup_apt.sh
 
 # Generate install package lists
@@ -29,18 +29,18 @@ COPY src/core/autoware_internal_msgs /autoware/src/core/autoware_internal_msgs
 COPY src/core/autoware_lanelet2_extension /autoware/src/core/autoware_lanelet2_extension
 COPY src/core/autoware_msgs /autoware/src/core/autoware_msgs
 COPY src/core/autoware_utils /autoware/src/core/autoware_utils
-RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" \
   > /rosdep-core-common-depend-packages.txt \
   && cat /rosdep-core-common-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" --dependency-types=exec \
   > /rosdep-core-common-exec-depend-packages.txt \
   && cat /rosdep-core-common-exec-depend-packages.txt
 
 COPY src/core/autoware_core /autoware/src/core/autoware_core
-RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" \
   > /rosdep-core-depend-packages.txt \
   && cat /rosdep-core-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" --dependency-types=exec \
   > /rosdep-core-exec-depend-packages.txt \
   && cat /rosdep-core-exec-depend-packages.txt
 
@@ -49,7 +49,7 @@ COPY src/universe/external /autoware/src/universe/external
 RUN rm -rf /autoware/src/universe/external/trt_batched_nms
 COPY src/universe/autoware_universe/common /autoware/src/universe/autoware_universe/common
 COPY src/middleware/external /autoware/src/middleware/external
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" \
   > /rosdep-universe-common-depend-packages.txt \
   && cat /rosdep-universe-common-depend-packages.txt
 
@@ -60,10 +60,10 @@ ARG ROS_DISTRO
 COPY src/universe/autoware_universe/visualization /autoware/src/universe/autoware_universe/visualization
 COPY src/core/autoware_rviz_plugins /autoware/src/core/autoware_rviz_plugins
 
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" \
   > /rosdep-universe-visualization-depend-packages.txt \
   && cat /rosdep-universe-visualization-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" --dependency-types=exec \
   > /rosdep-universe-visualization-exec-depend-packages.txt \
   && cat /rosdep-universe-visualization-exec-depend-packages.txt
 
@@ -77,10 +77,10 @@ COPY src/universe/autoware_universe/perception /autoware/src/universe/autoware_u
 COPY src/universe/autoware_universe/sensing /autoware/src/universe/autoware_universe/sensing
 COPY src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator /autoware/src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator
 COPY src/sensor_component /autoware/src/sensor_component
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" \
   > /rosdep-universe-sensing-perception-depend-packages.txt \
   && cat /rosdep-universe-sensing-perception-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" --dependency-types=exec \
   > /rosdep-universe-sensing-perception-exec-depend-packages.txt \
   && cat /rosdep-universe-sensing-perception-exec-depend-packages.txt
 
@@ -96,10 +96,10 @@ COPY src/universe/autoware_universe/map /autoware/src/universe/autoware_universe
 COPY src/universe/autoware_universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware_universe/sensing/autoware_pcl_extensions
 COPY src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor
 COPY src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer /autoware/src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" \
   > /rosdep-universe-localization-mapping-depend-packages.txt \
   && cat /rosdep-universe-localization-mapping-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" --dependency-types=exec \
   > /rosdep-universe-localization-mapping-exec-depend-packages.txt \
   && cat /rosdep-universe-localization-mapping-exec-depend-packages.txt
 
@@ -125,10 +125,10 @@ COPY src/universe/autoware_universe/sensing/autoware_cuda_utils /autoware/src/un
 COPY src/universe/autoware_universe/perception/autoware_tensorrt_common /autoware/src/universe/autoware_universe/perception/autoware_tensorrt_common
 COPY src/universe/autoware_universe/perception/autoware_tensorrt_plugins /autoware/src/universe/autoware_universe/perception/autoware_tensorrt_plugins
 
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" \
   > /rosdep-universe-planning-control-depend-packages.txt \
   && cat /rosdep-universe-planning-control-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" --dependency-types=exec \
   > /rosdep-universe-planning-control-exec-depend-packages.txt \
   && cat /rosdep-universe-planning-control-exec-depend-packages.txt
 
@@ -149,10 +149,10 @@ COPY src/core/autoware_core/planning/autoware_route_handler /autoware/src/core/a
 COPY src/core/autoware_core/map/autoware_map_height_fitter /autoware/src/core/autoware_core/map/autoware_map_height_fitter
 COPY src/universe/autoware_universe/localization/autoware_pose2twist /autoware/src/universe/autoware_universe/localization/autoware_pose2twist
 COPY src/sensor_component/external/sensor_component_description /autoware/src/sensor_component/external/sensor_component_description
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" \
   > /rosdep-universe-vehicle-system-depend-packages.txt \
   && cat /rosdep-universe-vehicle-system-depend-packages.txt
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" --dependency-types=exec \
   > /rosdep-universe-vehicle-system-exec-depend-packages.txt \
   && cat /rosdep-universe-vehicle-system-exec-depend-packages.txt
 
@@ -163,11 +163,11 @@ ARG ROS_DISTRO
 COPY src/launcher /autoware/src/launcher
 COPY src/sensor_component /autoware/src/sensor_component
 COPY src/universe /autoware/src/universe
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" \
   > /rosdep-universe-depend-packages.txt \
   && cat /rosdep-universe-depend-packages.txt
 
-RUN /autoware/resolve_rosdep_keys.sh /autoware/src ${ROS_DISTRO} --dependency-types=exec \
+RUN /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" --dependency-types=exec \
   > /rosdep-exec-depend-packages.txt \
   && cat /rosdep-exec-depend-packages.txt
 
@@ -185,7 +185,7 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers openadkit \
   && ./setup-dev-env.sh -y --module dev-tools openadkit \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && /autoware/cleanup_apt.sh
 
 # Install rosdep dependencies
@@ -196,7 +196,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && cat /tmp/rosdep-core-common-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_apt.sh
 
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/core/autoware_adapi_msgs,target=/autoware/src/core/autoware_adapi_msgs \
   --mount=type=bind,source=src/core/autoware_cmake,target=/autoware/src/core/autoware_cmake \
   --mount=type=bind,source=src/core/autoware_internal_msgs,target=/autoware/src/core/autoware_internal_msgs \
@@ -204,7 +204,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/core/autoware_msgs,target=/autoware/src/core/autoware_msgs \
   --mount=type=bind,source=src/core/autoware_utils,target=/autoware/src/core/autoware_utils \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -222,10 +222,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_apt.sh
 
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/core/autoware_core,target=/autoware/src/core/autoware_core \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -245,7 +245,7 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/universe/autoware_universe/common,target=/autoware/src/universe/autoware_universe/common \
   --mount=type=bind,source=src/universe/external/eagleye,target=/autoware/src/universe/external/eagleye \
   --mount=type=bind,source=src/universe/external/glog,target=/autoware/src/universe/external/glog \
@@ -261,7 +261,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -273,7 +273,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && /autoware/cleanup_apt.sh true
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
@@ -294,7 +294,7 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_perception_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_perception_launch \
   --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_sensing_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_sensing_launch \
   --mount=type=bind,source=src/universe/external/trt_batched_nms,target=/autoware/src/universe/external/trt_batched_nms \
@@ -304,7 +304,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -326,7 +326,7 @@ RUN --mount=type=ssh \
 COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 
 # hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/universe/external/negotiated,target=/autoware/src/universe/external/negotiated \
   --mount=type=bind,source=src/universe/external/cuda_blackboard,target=/autoware/src/universe/external/cuda_blackboard \
   --mount=type=bind,source=src/universe/autoware_universe/perception,target=/autoware/src/universe/autoware_universe/perception \
@@ -334,7 +334,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware_universe/common/autoware_cuda_dependency_meta,target=/autoware/src/universe/autoware_universe/common/autoware_cuda_dependency_meta \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware "--packages-above-and-dependencies autoware_cuda_dependency_meta"
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware "--packages-above-and-dependencies autoware_cuda_dependency_meta"
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -354,7 +354,7 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_localization_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_localization_launch \
   --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_map_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_map_launch \
   --mount=type=bind,source=src/universe/autoware_universe/localization,target=/autoware/src/universe/autoware_universe/localization \
@@ -365,7 +365,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer,target=/autoware/src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
 
 FROM universe-common-devel AS universe-planning-control-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -382,7 +382,7 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_control_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_control_launch \
   --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_planning_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_planning_launch \
   --mount=type=bind,source=src/universe/autoware_universe/control,target=/autoware/src/universe/autoware_universe/control \
@@ -397,7 +397,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware_universe/system/autoware_command_mode_types,target=/autoware/src/universe/autoware_universe/system/autoware_command_mode_types \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -417,7 +417,7 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_vehicle_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_vehicle_launch \
   --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_system_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_system_launch \
   --mount=type=bind,source=src/universe/autoware_universe/vehicle,target=/autoware/src/universe/autoware_universe/vehicle \
@@ -428,7 +428,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/sensor_component/external/sensor_component_description,target=/autoware/src/sensor_component/external/sensor_component_description \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -448,12 +448,12 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh
 
 # hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/universe/autoware_universe/visualization,target=/autoware/src/universe/autoware_universe/visualization \
   --mount=type=bind,source=src/core/autoware_rviz_plugins,target=/autoware/src/core/autoware_rviz_plugins \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -478,7 +478,7 @@ COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
 COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
 COPY --from=universe-visualization-devel /opt/autoware /opt/autoware
 # hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
   --mount=type=bind,source=src/universe/autoware_universe/evaluator,target=/autoware/src/universe/autoware_universe/evaluator \
   --mount=type=bind,source=src/universe/autoware_universe/launch,target=/autoware/src/universe/autoware_universe/launch \
@@ -486,7 +486,7 @@ RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,source=src/universe/autoware_universe/tools,target=/autoware/src/universe/autoware_universe/tools \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
-  && /autoware/build_and_clean.sh ${CCACHE_DIR} /opt/autoware
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -521,7 +521,7 @@ COPY --from=rosdep-depend /rosdep-core-exec-depend-packages.txt /tmp/rosdep-core
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-core-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
@@ -547,7 +547,7 @@ COPY --from=rosdep-universe-sensing-perception-depend /rosdep-universe-sensing-p
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-sensing-perception-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
@@ -575,7 +575,7 @@ COPY --from=rosdep-universe-sensing-perception-depend /rosdep-universe-sensing-p
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-sensing-perception-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
@@ -597,7 +597,7 @@ COPY --from=rosdep-universe-localization-mapping-depend /rosdep-universe-localiz
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-localization-mapping-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
@@ -623,7 +623,7 @@ COPY --from=rosdep-universe-planning-control-depend /rosdep-universe-planning-co
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-planning-control-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
@@ -649,7 +649,7 @@ COPY --from=rosdep-universe-vehicle-system-depend /rosdep-universe-vehicle-syste
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-vehicle-system-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
@@ -675,7 +675,7 @@ COPY --from=rosdep-universe-visualization-depend /rosdep-universe-visualization-
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-visualization-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
@@ -701,7 +701,7 @@ COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
@@ -727,7 +727,7 @@ COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
+  && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO

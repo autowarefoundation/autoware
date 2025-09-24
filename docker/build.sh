@@ -12,6 +12,7 @@ print_help() {
     echo "  --platform      Specify the platform (default: current platform)"
     echo "  --devel-only    Build devel image only"
     echo "  --target        Specify the target image (default: universe or universe-devel if --devel-only is set)"
+    echo "  --ros-distro    Specify ROS distribution (humble or jazzy, default: humble)"
     echo ""
     echo "Note: The --platform option should be one of 'linux/amd64' or 'linux/arm64'."
 }
@@ -41,6 +42,10 @@ parse_arguments() {
             option_target="$2"
             shift
             ;;
+        --ros-distro)
+            option_ros_distro="$2"
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             print_help
@@ -49,6 +54,15 @@ parse_arguments() {
         esac
         shift
     done
+}
+
+# Set ROS distribution
+set_ros_distro() {
+    if [ -n "$option_ros_distro" ]; then
+        ros_distro="$option_ros_distro"
+    else
+        ros_distro="humble"
+    fi
 }
 
 # Set CUDA options
@@ -60,6 +74,20 @@ set_cuda_options() {
         image_name_suffix="-cuda"
     fi
 }
+
+# Set image tags based on ROS distro
+set_image_tags() {
+    if [ "$ros_distro" = "jazzy" ]; then
+        base_tag="ghcr.io/autowarefoundation/autoware-base:jazzy-latest"
+        base_cuda_tag="ghcr.io/autowarefoundation/autoware-base:jazzy-cuda-latest"
+        main_tag_suffix="-jazzy"
+    else
+        base_tag="ghcr.io/autowarefoundation/autoware-base:latest"
+        base_cuda_tag="ghcr.io/autowarefoundation/autoware-base:cuda-latest"
+        main_tag_suffix=""
+    fi
+}
+
 
 # Set build options
 set_build_options() {
@@ -101,9 +129,17 @@ set_arch_lib_dir() {
 
 # Load env
 load_env() {
+    export ROS_DISTRO="$ros_distro"
     source "$WORKSPACE_ROOT/amd64.env"
     if [ "$platform" = "linux/arm64" ]; then
         source "$WORKSPACE_ROOT/arm64.env"
+    fi
+    
+    # Override base image variables for jazzy
+    if [ "$ros_distro" = "jazzy" ]; then
+        base_image="$base_image_jazzy"
+        autoware_base_image="$autoware_base_image_jazzy"
+        autoware_base_cuda_image="$autoware_base_cuda_image_jazzy"
     fi
 }
 
@@ -136,42 +172,85 @@ build_images() {
     echo "Target: $target"
 
     set -x
-    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake-base.hcl" \
-        --set "*.context=$WORKSPACE_ROOT" \
-        --set "*.ssh=default" \
-        --set "*.platform=$platform" \
-        --set "*.args.ROS_DISTRO=$rosdistro" \
-        --set "*.args.BASE_IMAGE=$base_image" \
-        --set "*.args.SETUP_ARGS=$setup_args" \
-        --set "*.args.LIB_DIR=$lib_dir" \
-        --set "base.tags=ghcr.io/autowarefoundation/autoware-base:latest" \
-        --set "base-cuda.tags=ghcr.io/autowarefoundation/autoware-base:cuda-latest"
-    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" -f "$SCRIPT_DIR/docker-bake-cuda.hcl" \
-        --set "*.context=$WORKSPACE_ROOT" \
-        --set "*.ssh=default" \
-        --set "*.platform=$platform" \
-        --set "*.args.ROS_DISTRO=$rosdistro" \
-        --set "*.args.AUTOWARE_BASE_IMAGE=$autoware_base_image" \
-        --set "*.args.AUTOWARE_BASE_CUDA_IMAGE=$autoware_base_cuda_image" \
-        --set "*.args.SETUP_ARGS=$setup_args" \
-        --set "*.args.LIB_DIR=$lib_dir" \
-        --set "universe-sensing-perception-devel.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel" \
-        --set "universe-sensing-perception.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception" \
-        --set "universe-localization-mapping-devel.tags=ghcr.io/autowarefoundation/autoware:universe-localization-mapping-devel" \
-        --set "universe-localization-mapping.tags=ghcr.io/autowarefoundation/autoware:universe-localization-mapping" \
-        --set "universe-planning-control-devel.tags=ghcr.io/autowarefoundation/autoware:universe-planning-control-devel" \
-        --set "universe-planning-control.tags=ghcr.io/autowarefoundation/autoware:universe-planning-control" \
-        --set "universe-vehicle-system-devel.tags=ghcr.io/autowarefoundation/autoware:universe-vehicle-system-devel" \
-        --set "universe-vehicle-system.tags=ghcr.io/autowarefoundation/autoware:universe-vehicle-system" \
-        --set "universe-visualization-devel.tags=ghcr.io/autowarefoundation/autoware:universe-visualization-devel" \
-        --set "universe-visualization.tags=ghcr.io/autowarefoundation/autoware:universe-visualization" \
-        --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel" \
-        --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe" \
-        --set "universe-sensing-perception-devel-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel-cuda" \
-        --set "universe-sensing-perception-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception-cuda" \
-        --set "universe-devel-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-devel-cuda" \
-        --set "universe-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-cuda" \
-        "$target$image_name_suffix"
+    if [ "$option_no_cuda" = "true" ]; then
+        # Only build base image when no CUDA is requested
+        docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake-base.hcl" \
+            --set "*.context=$WORKSPACE_ROOT" \
+            --set "*.ssh=default" \
+            --set "*.platform=$platform" \
+            --set "*.args.ROS_DISTRO=$rosdistro" \
+            --set "*.args.BASE_IMAGE=$base_image" \
+            --set "*.args.SETUP_ARGS=$setup_args" \
+            --set "*.args.LIB_DIR=$lib_dir" \
+            --set "base.tags=$base_tag" \
+            base
+    else
+        # Build both base and base-cuda images
+        docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake-base.hcl" \
+            --set "*.context=$WORKSPACE_ROOT" \
+            --set "*.ssh=default" \
+            --set "*.platform=$platform" \
+            --set "*.args.ROS_DISTRO=$rosdistro" \
+            --set "*.args.BASE_IMAGE=$base_image" \
+            --set "*.args.SETUP_ARGS=$setup_args" \
+            --set "*.args.LIB_DIR=$lib_dir" \
+            --set "base.tags=$base_tag" \
+            --set "base-cuda.tags=$base_cuda_tag"
+    fi
+    
+    if [ "$option_no_cuda" = "true" ]; then
+        # Build only non-CUDA images
+        docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" \
+            --set "*.context=$WORKSPACE_ROOT" \
+            --set "*.ssh=default" \
+            --set "*.platform=$platform" \
+            --set "*.args.ROS_DISTRO=$rosdistro" \
+            --set "*.args.AUTOWARE_BASE_IMAGE=$autoware_base_image" \
+            --set "*.args.SETUP_ARGS=$setup_args" \
+            --set "*.args.LIB_DIR=$lib_dir" \
+            --set "universe-sensing-perception-devel.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel$main_tag_suffix" \
+            --set "universe-sensing-perception.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception$main_tag_suffix" \
+            --set "universe-localization-mapping-devel.tags=ghcr.io/autowarefoundation/autoware:universe-localization-mapping-devel$main_tag_suffix" \
+            --set "universe-localization-mapping.tags=ghcr.io/autowarefoundation/autoware:universe-localization-mapping$main_tag_suffix" \
+            --set "universe-planning-control-devel.tags=ghcr.io/autowarefoundation/autoware:universe-planning-control-devel$main_tag_suffix" \
+            --set "universe-planning-control.tags=ghcr.io/autowarefoundation/autoware:universe-planning-control$main_tag_suffix" \
+            --set "universe-vehicle-system-devel.tags=ghcr.io/autowarefoundation/autoware:universe-vehicle-system-devel$main_tag_suffix" \
+            --set "universe-vehicle-system.tags=ghcr.io/autowarefoundation/autoware:universe-vehicle-system$main_tag_suffix" \
+            --set "universe-visualization-devel.tags=ghcr.io/autowarefoundation/autoware:universe-visualization-devel$main_tag_suffix" \
+            --set "universe-visualization.tags=ghcr.io/autowarefoundation/autoware:universe-visualization$main_tag_suffix" \
+            --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel$main_tag_suffix" \
+            --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe$main_tag_suffix" \
+            --set "core-devel.tags=ghcr.io/autowarefoundation/autoware:core-devel$main_tag_suffix" \
+            "$target$image_name_suffix"
+    else
+        # Build both CUDA and non-CUDA images
+        docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" -f "$SCRIPT_DIR/docker-bake-cuda.hcl" \
+            --set "*.context=$WORKSPACE_ROOT" \
+            --set "*.ssh=default" \
+            --set "*.platform=$platform" \
+            --set "*.args.ROS_DISTRO=$rosdistro" \
+            --set "*.args.AUTOWARE_BASE_IMAGE=$autoware_base_image" \
+            --set "*.args.AUTOWARE_BASE_CUDA_IMAGE=$autoware_base_cuda_image" \
+            --set "*.args.SETUP_ARGS=$setup_args" \
+            --set "*.args.LIB_DIR=$lib_dir" \
+            --set "universe-sensing-perception-devel.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel$main_tag_suffix" \
+            --set "universe-sensing-perception.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception$main_tag_suffix" \
+            --set "universe-localization-mapping-devel.tags=ghcr.io/autowarefoundation/autoware:universe-localization-mapping-devel$main_tag_suffix" \
+            --set "universe-localization-mapping.tags=ghcr.io/autowarefoundation/autoware:universe-localization-mapping$main_tag_suffix" \
+            --set "universe-planning-control-devel.tags=ghcr.io/autowarefoundation/autoware:universe-planning-control-devel$main_tag_suffix" \
+            --set "universe-planning-control.tags=ghcr.io/autowarefoundation/autoware:universe-planning-control$main_tag_suffix" \
+            --set "universe-vehicle-system-devel.tags=ghcr.io/autowarefoundation/autoware:universe-vehicle-system-devel$main_tag_suffix" \
+            --set "universe-vehicle-system.tags=ghcr.io/autowarefoundation/autoware:universe-vehicle-system$main_tag_suffix" \
+            --set "universe-visualization-devel.tags=ghcr.io/autowarefoundation/autoware:universe-visualization-devel$main_tag_suffix" \
+            --set "universe-visualization.tags=ghcr.io/autowarefoundation/autoware:universe-visualization$main_tag_suffix" \
+            --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel$main_tag_suffix" \
+            --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe$main_tag_suffix" \
+            --set "universe-sensing-perception-devel-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception-devel-cuda$main_tag_suffix" \
+            --set "universe-sensing-perception-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-sensing-perception-cuda$main_tag_suffix" \
+            --set "universe-devel-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-devel-cuda$main_tag_suffix" \
+            --set "universe-cuda.tags=ghcr.io/autowarefoundation/autoware:universe-cuda$main_tag_suffix" \
+            "$target$image_name_suffix"
+    fi
     set +x
 }
 
@@ -182,7 +261,9 @@ remove_dangling_images() {
 
 # Main script execution
 parse_arguments "$@"
+set_ros_distro
 set_cuda_options
+set_image_tags
 set_build_options
 set_platform
 set_arch_lib_dir

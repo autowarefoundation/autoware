@@ -20,6 +20,7 @@ print_help() {
     echo "  --download-artifacts"
     echo "                  Download artifacts"
     echo "  --module        Specify the module (default: all)"
+    echo "  --ros-distro    Specify ROS distribution (humble or jazzy, default: humble)"
     echo ""
 }
 
@@ -179,7 +180,7 @@ fi
 # Install pipx for ansible
 if ! (python3 -m pipx --version >/dev/null 2>&1); then
     sudo apt-get -y update
-    python3 -m pip install --user pipx
+    python3 -m pip install --user pipx --break-system-packages
 fi
 
 # Install ansible
