@@ -6,21 +6,16 @@
     update_cache: true
 
 - name: Add CCACHE_DIR to .bashrc
-  ansible.builtin.lineinfile:
-    dest: ~/.bashrc
-    line: export CCACHE_DIR="/var/tmp/ccache"
-    state: present
-    create: true
-    mode: 0644
-
-- name: Add CCACHE_DIR to .bashrc of local user
   become: true
   ansible.builtin.lineinfile:
-    dest: /etc/skel/.bashrc
+    dest: "{{ item }}"
     line: export CCACHE_DIR="$HOME/.ccache"
     state: present
     create: true
     mode: 0644
+  loop:
+    - ~/.bashrc
+    - /etc/skel/.bashrc
 
 - name: Export CC to ccache
   ansible.builtin.lineinfile:
@@ -37,12 +32,6 @@
     state: present
     create: true
     mode: 0644
-
-- name: Create ccache directory
-  ansible.builtin.file:
-    path: /var/tmp/ccache
-    state: directory
-    mode: 0755
 
 - name: Source .bashrc
   ansible.builtin.shell: source ~/.bashrc
