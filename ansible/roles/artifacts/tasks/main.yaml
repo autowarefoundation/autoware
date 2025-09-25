@@ -583,3 +583,26 @@
     dest: "{{ data_dir }}/simpl_prediction/simpl.onnx"
     mode: "644"
     checksum: sha256:ad5e03983193c4d188432f314334697d6a216e7ffc91fb651eee5d6e4c42f492
+
+# frnet
+- name: Create lidar_frnet directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/lidar_frnet"
+    mode: "755"
+    state: directory
+
+- name: Download lidar_frnet/frnet.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v1/frnet.onnx
+    dest: "{{ data_dir }}/lidar_frnet/frnet.onnx"
+    mode: "644"
+    checksum: sha256:acaaf0190e9dbf67e4987542fc57bcec4102a842a40ee24a9dc8fa1948bedf04
+
+- name: Download lidar_frnet/ml_package_frnet.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v1/ml_package_frnet.param.yaml
+    dest: "{{ data_dir }}/lidar_frnet/ml_package_frnet.param.yaml"
+    mode: "644"
+    checksum: sha256:34577cc7902acd942a51f401bdcf560da91c3c80df8d553bfdc775f118b499b8
