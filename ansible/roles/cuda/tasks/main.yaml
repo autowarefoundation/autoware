@@ -62,7 +62,7 @@
   become: true
   ansible.builtin.apt:
     name:
-      - cuda-drivers
+      - nvidia-open
     update_cache: true
   when: cuda_install_drivers | bool
 
