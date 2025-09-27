@@ -311,6 +311,46 @@ runs:
         flavor: |
           latest=auto
 
+    # Jazzy Core Images
+    - name: Docker meta for autoware:jazzy-core-common-devel
+      id: meta-jazzy-core-common-devel
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=jazzy-core-common-devel-${{ inputs.platform }}
+          type=raw,value=jazzy-core-common-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=jazzy-core-common-devel-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-jazzy-core-common-devel
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:jazzy-core-devel
+      id: meta-jazzy-core-devel
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=jazzy-core-devel-${{ inputs.platform }}
+          type=raw,value=jazzy-core-devel-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=jazzy-core-devel-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-jazzy-core-devel
+        flavor: |
+          latest=false
+
+    - name: Docker meta for autoware:jazzy-core
+      id: meta-jazzy-core
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=jazzy-core-${{ inputs.platform }}
+          type=raw,value=jazzy-core-${{ steps.date.outputs.date }}-${{ inputs.platform }}
+          type=ref,event=tag,prefix=jazzy-core-,suffix=-${{ inputs.platform }}
+        bake-target: docker-metadata-action-jazzy-core
+        flavor: |
+          latest=false
+
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
@@ -342,6 +382,9 @@ runs:
           ${{ steps.meta-universe-api.outputs.bake-file }}
           ${{ steps.meta-universe-devel.outputs.bake-file }}
           ${{ steps.meta-universe.outputs.bake-file }}
+          ${{ steps.meta-jazzy-core-common-devel.outputs.bake-file }}
+          ${{ steps.meta-jazzy-core-devel.outputs.bake-file }}
+          ${{ steps.meta-jazzy-core.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}

@@ -258,3 +258,82 @@ jobs:
         uses: ./.github/actions/combine-multi-arch-images
         with:
           package-name: autoware-tools
+
+  docker-build-and-push-jazzy:
+    needs: [load-env]
+    strategy:
+      matrix:
+        platform: [amd64]
+        include:
+          - platform: amd64
+            runner: ubuntu-22.04
+            arch-platform: linux/amd64
+            lib-dir: x86_64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      # https://github.com/actions/checkout/issues/211
+      - name: Change permission of workspace
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: step-security/changed-files@v46
+        with:
+          files: |
+            *.env
+            *.repos
+            .github/actions/combine-multi-arch-images/action.yaml
+            .github/actions/docker-build-and-push*/action.yaml
+            .github/workflows/docker-build-and-push.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+
+      - name: Free disk space
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.ref_type == 'tag') }}
+        uses: ./.github/actions/free-disk-space
+
+      - name: Build 'Autoware Jazzy Core' without CUDA
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.ref_type == 'tag') }}
+        uses: ./.github/actions/docker-build-and-push
+        with:
+          platform: ${{ matrix.platform }}
+          target-image: autoware
+          build-args: |
+            *.platform=${{ matrix.arch-platform }}
+            *.args.ROS_DISTRO=jazzy
+            *.args.AUTOWARE_BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/autoware-base:jazzy-latest
+            *.args.LIB_DIR=${{ matrix.lib-dir }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ github.ref_name }},mode=max
+
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
+
+  update-docker-manifest-jazzy:
+    needs: [docker-build-and-push-jazzy]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Combine multi arch images for 'autoware'
+        uses: ./.github/actions/combine-multi-arch-images
+        with:
+          package-name: autoware
