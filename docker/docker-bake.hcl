@@ -15,7 +15,10 @@ group "default" {
     "universe-visualization-devel",
     "universe-visualization",
     "universe-devel",
-    "universe"
+    "universe",
+    "jazzy-core-common-devel",
+    "jazzy-core-devel",
+    "jazzy-core"
   ]
 }
 
@@ -36,6 +39,9 @@ target "docker-metadata-action-universe-visualization-devel" {}
 target "docker-metadata-action-universe-visualization" {}
 target "docker-metadata-action-universe-devel" {}
 target "docker-metadata-action-universe" {}
+target "docker-metadata-action-jazzy-core-common-devel" {}
+target "docker-metadata-action-jazzy-core-devel" {}
+target "docker-metadata-action-jazzy-core" {}
 
 target "core-common-devel" {
   inherits = ["docker-metadata-action-core-common-devel"]
@@ -131,4 +137,37 @@ target "universe" {
   inherits = ["docker-metadata-action-universe"]
   dockerfile = "docker/Dockerfile"
   target = "universe"
+}
+
+target "jazzy-core-common-devel" {
+  inherits = ["docker-metadata-action-jazzy-core-common-devel"]
+  dockerfile = "docker/Dockerfile"
+  target = "jazzy-core-common-devel"
+  args = {
+    ROS_DISTRO = "jazzy"
+    AUTOWARE_BASE_IMAGE = "ghcr.io/autowarefoundation/autoware-base:jazzy-latest"
+    LIB_DIR = "x86_64"
+  }
+}
+
+target "jazzy-core-devel" {
+  inherits = ["docker-metadata-action-jazzy-core-devel"]
+  dockerfile = "docker/Dockerfile"
+  target = "jazzy-core-devel"
+  args = {
+    ROS_DISTRO = "jazzy"
+    AUTOWARE_BASE_IMAGE = "ghcr.io/autowarefoundation/autoware-base:jazzy-latest"
+    LIB_DIR = "x86_64"
+  }
+}
+
+target "jazzy-core" {
+  inherits = ["docker-metadata-action-jazzy-core"]
+  dockerfile = "docker/Dockerfile"
+  target = "jazzy-core"
+  args = {
+    ROS_DISTRO = "jazzy"
+    AUTOWARE_BASE_IMAGE = "ghcr.io/autowarefoundation/autoware-base:jazzy-latest"
+    LIB_DIR = "x86_64"
+  }
 }

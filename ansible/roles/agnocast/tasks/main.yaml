@@ -49,62 +49,9 @@
 # Detect container environment
 - name: Check if running in a container using systemd-detect-virt
   ansible.builtin.command: systemd-detect-virt -c
-  register: agnocast_container_detection
+  register: agnocast_container_detectionus
   failed_when: false
   changed_when: false
-
-- name: Set container environment fact
-  ansible.builtin.set_fact:
-    agnocast_is_container: "{{ agnocast_container_detection.rc == 0 }}"
-
-- name: Display environment detection result
-  ansible.builtin.debug:
-    msg: "Running in container: {{ agnocast_is_container }} (detected: {{ agnocast_container_detection.stdout | default('none') }})"
-
-- name: Display info when skipping agnocast-kmod in container
-  ansible.builtin.debug:
-    msg: "WARNING: Running in container environment. Skipping agnocast-kmod installation. Please ensure agnocast-kmod is installed on the host system for proper functionality of agnocast."
-  when: agnocast_is_container
-
-- name: Handle kernel-related tasks (headers + kmod, non-container only)
-  block:
-    - name: Check if linux-headers package is available
-      ansible.builtin.shell: |
-        set -o pipefail
-        apt-cache search ^linux-headers-{{ ansible_kernel }}$ | grep -q linux-headers-{{ ansible_kernel }}
-      args:
-        executable: /bin/bash
-      register: agnocast_linux_headers_available
-      failed_when: false
-      changed_when: false
-      become: true
-
-    - name: Display warning if linux-headers is not available
-      ansible.builtin.debug:
-        msg: "WARNING: linux-headers-{{ ansible_kernel }} package not found. The agnocast-kmod installation may fail. Please manually install the kernel headers and re-run this role."
-      when: agnocast_linux_headers_available.rc != 0
-
-    - name: Install linux headers for the running kernel
-      ansible.builtin.apt:
-        name: linux-headers-{{ ansible_kernel }}
-        state: present
-      register: agnocast_linux_headers_install
-      ignore_errors: true
-      become: true
-      when: agnocast_linux_headers_available.rc == 0
-
-    - name: Display warning if linux-headers installation failed
-      ansible.builtin.debug:
-        msg: "WARNING: linux-headers-{{ ansible_kernel }} installation failed. DKMS installation may also fail."
-      when:
-        - agnocast_linux_headers_available.rc == 0
-        - agnocast_linux_headers_install.failed | default(false)
-
-    - name: Check if agnocast-kmod is installed in dkms with version v{{ agnocast_version }} # noqa: risky-shell-pipe
-      ansible.builtin.shell: dkms status agnocast/{{ agnocast_version }} | grep -q 'installed'
-      register: agnocast_dkms_status
-      failed_when: false
-      changed_when: false
 
     - name: Purge agnocast-kmod if not found in dkms for version v{{ agnocast_version }}
       ansible.builtin.apt:
