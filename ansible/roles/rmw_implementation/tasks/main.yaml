@@ -7,7 +7,7 @@
 - name: Build target package name
   ansible.builtin.set_fact:
     rmw_implementation__pkg: >-
-      ros-{{ (rmw_implementation__rosdistro | default(rosdistro)) }}-{{ (rmw_implementation__name | default(rmw_implementation)) | replace('_', '-') }}
+      ros-{{ rmw_implementation__rosdistro }}-{{ rmw_implementation__name | replace('_', '-') }}
 
 - name: List held packages
   ansible.builtin.command: apt-mark showhold
@@ -21,18 +21,21 @@
     state: latest
     update_cache: true
     cache_valid_time: 3600
-  when: rmw_implementation__pkg not in (rmw_implementation__held_pkgs.stdout_lines | default([]))
+  when: rmw_implementation__pkg not in rmw_implementation__held_pkgs.stdout_lines
 
-- name: Ensure RMW_IMPLEMENTATION in bashrc files
+- name: Ensure RMW_IMPLEMENTATION in user bashrc
   ansible.builtin.lineinfile:
-    path: "{{ item }}"
-    line: export RMW_IMPLEMENTATION={{ rmw_implementation | default(rmw_implementation__name) }}
+    path: "{{ lookup('env', 'HOME') }}/.bashrc"
+    line: export RMW_IMPLEMENTATION={{ rmw_implementation__name }}
     state: present
     create: true
-    mode: 0644
-  loop:
-    - "{{ lookup('env', 'HOME') }}/.bashrc"
-    - /etc/skel/.bashrc
-  loop_control:
-    label: "{{ item }}"
-  become: "{{ '/etc/skel' in item }}"
+    mode: "0644"
+
+- name: Ensure RMW_IMPLEMENTATION in skeleton bashrc (for new users)
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/skel/.bashrc
+    line: export RMW_IMPLEMENTATION={{ rmw_implementation__name }}
+    state: present
+    create: true
+    mode: "0644"
