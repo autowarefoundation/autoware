@@ -1,0 +1,7 @@
+- name: Install RMW implementation
+  hosts: localhost
+  roles:
+    - role: autoware.dev_env.rmw_implementation
+      vars:
+        rmw_implementation__rosdistro: "{{ rosdistro }}"
+        rmw_implementation__name: "{{ rmw_implementation }}"

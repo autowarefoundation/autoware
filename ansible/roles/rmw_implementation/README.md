@@ -19,8 +19,7 @@ wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/auto
 
 # For details: https://docs.ros.org/en/humble/How-To-Guides/Working-with-multiple-RMW-implementations.html
 sudo apt update
-rmw_implementation_dashed=$(eval sed -e "s/_/-/g" <<< "${rmw_implementation}")
-sudo apt install ros-${rosdistro}-${rmw_implementation_dashed}
+sudo apt install ros-${rosdistro}-${rmw_implementation//_/-}
 
 # (Optional) You set the default RMW implementation in the ~/.bashrc file.
 echo '' >> ~/.bashrc && echo "export RMW_IMPLEMENTATION=${rmw_implementation}" >> ~/.bashrc
