@@ -1,0 +1,90 @@
+# check=skip=InvalidDefaultArgInFrom
+ARG BASE_IMAGE
+
+FROM ${BASE_IMAGE} AS core-dependencies
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+COPY --chown=${USERNAME}:${USERNAME} ansible-galaxy-requirements.yaml /tmp/ansible/
+COPY --chown=${USERNAME}:${USERNAME} ansible/ /tmp/ansible/ansible/
+
+WORKDIR /tmp/ansible
+RUN ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
+    ansible-playbook autoware.dev_env.autoware_requirements \
+      --tags core \
+      --skip-tags base \
+      -e "rosdistro=${ROS_DISTRO}"
+
+WORKDIR /home/${USERNAME}
+RUN rm -rf /tmp/ansible
+
+ENV CC="/usr/lib/ccache/gcc"
+ENV CXX="/usr/lib/ccache/g++"
+ENV CCACHE_DIR="/home/aw/.ccache"
+
+COPY --chown=${USERNAME}:${USERNAME} src/core/ /tmp/autoware/src/core/
+RUN rm -rf /tmp/autoware/src/core/autoware_core /tmp/autoware/src/core/autoware_rviz_plugins
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && \
+    . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
+    rosdep install -y --from-paths /tmp/autoware/src/core \
+      --ignore-src \
+      --rosdistro "${ROS_DISTRO}" \
+      --dependency-types=build \
+      --dependency-types=build_export \
+      --dependency-types=buildtool \
+      --dependency-types=buildtool_export \
+      --dependency-types=test
+
+RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000 \
+    . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
+    colcon build \
+      --base-paths /tmp/autoware/src/core \
+      --install-base /opt/autoware \
+      --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    rm -rf /tmp/autoware
+
+FROM core-dependencies AS core-devel
+
+COPY --chown=${USERNAME}:${USERNAME} src/core/autoware_core /tmp/autoware/src/core/autoware_core
+COPY --chown=${USERNAME}:${USERNAME} src/core/autoware_rviz_plugins /tmp/autoware/src/core/autoware_rviz_plugins
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && \
+    . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
+    . /opt/autoware/setup.sh && \
+    rosdep install -y --from-paths /tmp/autoware/src/core \
+      --ignore-src \
+      --rosdistro "${ROS_DISTRO}" \
+      --dependency-types=build \
+      --dependency-types=build_export \
+      --dependency-types=buildtool \
+      --dependency-types=buildtool_export \
+      --dependency-types=test
+
+RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000 \
+    . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
+    . /opt/autoware/setup.sh && \
+    colcon build \
+      --base-paths /tmp/autoware/src/core/autoware_core \
+      --install-base /opt/autoware \
+      --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    rm -rf /tmp/autoware
+
+FROM ${BASE_IMAGE} AS core
+
+COPY --from=core-devel /opt/autoware /opt/autoware
+
+COPY src/core/ /tmp/src/core/
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && \
+    . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
+    rosdep install -y --from-paths /tmp/src/core \
+      --dependency-types=exec \
+      --ignore-src \
+      --rosdistro "${ROS_DISTRO}" && \
+    rm -rf /tmp/src
