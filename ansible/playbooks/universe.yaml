@@ -43,6 +43,9 @@
     - role: autoware.dev_env.ros2
     - role: autoware.dev_env.ros2_dev_tools
     - role: autoware.dev_env.rmw_implementation
+      vars:
+        rmw_implementation__rosdistro: "{{ rosdistro }}"
+        rmw_implementation__name: "{{ rmw_implementation }}"
     - role: autoware.dev_env.gdown
     - role: autoware.dev_env.build_tools
     - role: autoware.dev_env.agnocast
