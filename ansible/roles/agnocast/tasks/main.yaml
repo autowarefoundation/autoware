@@ -67,6 +67,7 @@
   when: agnocast_is_container
 
 - name: Handle kernel-related tasks (headers + kmod, non-container only)
+  when: not agnocast_is_container
   block:
     - name: Check if linux-headers package is available
       ansible.builtin.shell: |
@@ -137,4 +138,3 @@
         group: root
         mode: "0644"
       become: true
-  when: not agnocast_is_container
