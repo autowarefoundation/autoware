@@ -67,7 +67,6 @@
   when: agnocast_is_container
 
 - name: Handle kernel-related tasks (headers + kmod, non-container only)
-  when: not agnocast_is_container
   block:
     - name: Check if linux-headers package is available
       ansible.builtin.shell: |
@@ -90,7 +89,7 @@
         name: linux-headers-{{ ansible_kernel }}
         state: present
       register: agnocast_linux_headers_install
-      failed_when: false
+      ignore_errors: true
       become: true
       when: agnocast_linux_headers_available.rc == 0
 
@@ -102,7 +101,8 @@
         - agnocast_linux_headers_install.failed | default(false)
 
     - name: Check if agnocast-kmod is installed in dkms with version v{{ agnocast_version }}
-      ansible.builtin.shell: dkms status | grep agnocast | grep {{ agnocast_version }} # noqa: risky-shell-pipe
+      #ansible.builtin.shell: dkms status | grep agnocast | grep {{ agnocast_version }} # noqa: risky-shell-pipe
+      ansible.builtin.shell: dkms status agnocast/{{ agnocast_version }} | grep -q 'installed'
       register: agnocast_dkms_status
       failed_when: false
       changed_when: false
@@ -119,7 +119,7 @@
         name: "{{ agnocast_kmod_package }}"
         state: present
       register: agnocast_kmod_install
-      failed_when: false
+      ignore_errors: true
       become: true
       when: agnocast_dkms_status.rc != 0
 
