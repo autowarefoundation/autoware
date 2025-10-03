@@ -486,21 +486,49 @@
     mode: "755"
     state: directory
 
-- name: Download diffusion_planner/diffusion_planner.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v0.2/diffusion_planner.onnx
-    dest: "{{ data_dir }}/diffusion_planner/diffusion_planner.onnx"
-    mode: "644"
-    checksum: sha256:f8c5734499db27e745a28695b4d85d1425c4668ba5fb125d436d3bcf1cc1f241
+- name: Create diffusion_planner v0.1 directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/diffusion_planner/v0.1"
+    mode: "755"
+    state: directory
 
-- name: Download diffusion_planner/diffusion_planner.param.json
+- name: Download diffusion_planner/v0.1/diffusion_planner.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v0.2/diffusion_planner.param.json
-    dest: "{{ data_dir }}/diffusion_planner/diffusion_planner.param.json"
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v0.1/diffusion_planner.onnx
+    dest: "{{ data_dir }}/diffusion_planner/v0.1/diffusion_planner.onnx"
     mode: "644"
-    checksum: sha256:0f2cd486bf056e1e20e4d7366840703f0b6d92b68be685e3a1b6c5238ad1b778
+    checksum: sha256:7028f68639abc9a3fb96f2ef73cb3f7795e0471a9a1e88201527331168abe8c1
+
+- name: Download diffusion_planner/v0.1/diffusion_planner.param.json
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v0.1/diffusion_planner.param.json
+    dest: "{{ data_dir }}/diffusion_planner/v0.1/diffusion_planner.param.json"
+    mode: "644"
+    checksum: sha256:346bbd953551206dabcb02198269371dc336ea552b71cbc96105f1fa7f134264
+
+- name: Create diffusion_planner v1.0 directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/diffusion_planner/v1.0"
+    mode: "755"
+    state: directory
+
+- name: Download diffusion_planner/v1.0/diffusion_planner.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v1.0/diffusion_planner.onnx
+    dest: "{{ data_dir }}/diffusion_planner/v1.0/diffusion_planner.onnx"
+    mode: "644"
+    checksum: sha256:35094c876426655ccd384f1046f84a2bf0ac32a935335c6b659c1364870dc928
+
+- name: Download diffusion_planner/v1.0/diffusion_planner.param.json
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v1.0/diffusion_planner.param.json
+    dest: "{{ data_dir }}/diffusion_planner/v1.0/diffusion_planner.param.json"
+    mode: "644"
+    checksum: sha256:215493daac110055990318b7916fbf1a7d6b08feea9c27cdd6403df31557d992
 
 # traffic_light_fine_detector
 - name: Create traffic_light_fine_detector directory inside {{ data_dir }}
@@ -555,3 +583,72 @@
     dest: "{{ data_dir }}/simpl_prediction/simpl.onnx"
     mode: "644"
     checksum: sha256:ad5e03983193c4d188432f314334697d6a216e7ffc91fb651eee5d6e4c42f492
+
+# ptv3
+- name: Create ptv3 directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/ptv3"
+    mode: "755"
+    state: directory
+
+- name: Download ptv3/ptv3.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v1/ptv3.onnx
+    dest: "{{ data_dir }}/ptv3/ptv3.onnx"
+    mode: "644"
+    checksum: sha256:b5d8f7f038599de46e66148d46182600155820c6f6f2fd37e787461f97d143ff
+
+- name: Download ptv3/ml_package_ptv3.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v1/ml_package_ptv3.param.yaml
+    dest: "{{ data_dir }}/ptv3/ml_package_ptv3.param.yaml"
+    mode: "644"
+    checksum: sha256:9a3e35648d6eb46771b208a6534a2dcb19d26efca20a9d8df5abc05a9970d0ec
+
+# frnet
+- name: Create lidar_frnet directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/lidar_frnet"
+    mode: "755"
+    state: directory
+
+- name: Download lidar_frnet/frnet.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v1/frnet.onnx
+    dest: "{{ data_dir }}/lidar_frnet/frnet.onnx"
+    mode: "644"
+    checksum: sha256:acaaf0190e9dbf67e4987542fc57bcec4102a842a40ee24a9dc8fa1948bedf04
+
+- name: Download lidar_frnet/ml_package_frnet.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v1/ml_package_frnet.param.yaml
+    dest: "{{ data_dir }}/lidar_frnet/ml_package_frnet.param.yaml"
+    mode: "644"
+    checksum: sha256:34577cc7902acd942a51f401bdcf560da91c3c80df8d553bfdc775f118b499b8
+
+# calibration_status_classifier
+- name: Create calibration_status_classifier directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/calibration_status_classifier"
+    mode: "755"
+    state: directory
+
+- name: Download calibration_status_classifier/calibration_status_classifier.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/sensing/models/calibration_status_classifier/v1/calibration_status_classifier.onnx
+    dest: "{{ data_dir }}/calibration_status_classifier/calibration_status_classifier.onnx"
+    mode: "644"
+    checksum: sha256:86b575c03a25d08b97a295878cf572fdea016bdab1a48e396194c06a6bc28565
+
+- name: Download calibration_status_classifier/ml_package_calibration_status_classifier.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/sensing/models/calibration_status_classifier/v1/ml_package_calibration_status_classifier.param.yaml
+    dest: "{{ data_dir }}/calibration_status_classifier/ml_package_calibration_status_classifier.param.yaml"
+    mode: "644"
+    checksum: sha256:39d99ce065eea608e2bea3e560eeb1bcee18b2636f988c28afed5219e3e69760

@@ -1,36 +1,41 @@
-- name: Get dash-case name of rmw_implementation
-  ansible.builtin.shell: bash -c 'sed -e "s/_/-/g" <<< $(echo {{ rmw_implementation }})'
-  register: rmw_implementation__dash_case_rmw_implementation
-  changed_when: false
+- name: Validate inputs
+  ansible.builtin.assert:
+    that:
+      - rmw_implementation__rosdistro | length > 0
+      - rmw_implementation__name | length > 0
 
-- name: Hold check of ros-{{ rosdistro + '-' + rmw_implementation__dash_case_rmw_implementation.stdout }}
+- name: Build target package name
+  ansible.builtin.set_fact:
+    rmw_implementation__pkg: >-
+      ros-{{ rmw_implementation__rosdistro }}-{{ rmw_implementation__name | replace('_', '-') }}
+
+- name: List held packages
   ansible.builtin.command: apt-mark showhold
-  register: rmw_implementation_held_ros_packages
+  register: rmw_implementation__held_pkgs
   changed_when: false
 
-- name: Install ros-{{ rosdistro + '-' + rmw_implementation__dash_case_rmw_implementation.stdout }}
+- name: Install latest (skip if held) {{ rmw_implementation__pkg }}
   become: true
   ansible.builtin.apt:
-    name: ros-{{ rosdistro }}-{{ rmw_implementation__dash_case_rmw_implementation.stdout }}
+    name: "{{ rmw_implementation__pkg }}"
     state: latest
     update_cache: true
-  when: "'ros-' + rosdistro + '-' + rmw_implementation__dash_case_rmw_implementation.stdout not in rmw_implementation_held_ros_packages.stdout"
-  register: rmw_implementation_install_result
-  failed_when: false
+    cache_valid_time: 3600
+  when: rmw_implementation__pkg not in rmw_implementation__held_pkgs.stdout_lines
 
-- name: Display warning if ROS 2 RMW package is held
-  ansible.builtin.debug:
-    msg: ROS 2 RMW package 'ros-{{ rosdistro + '-' + rmw_implementation__dash_case_rmw_implementation.stdout }}' is apt-mark hold. Skipping installation.
-  when: not rmw_implementation_install_result.changed
-
-- name: Add RMW_IMPLEMENTATION to .bashrc
-  become: true
+- name: Ensure RMW_IMPLEMENTATION in user bashrc
   ansible.builtin.lineinfile:
-    dest: "{{ item }}"
-    line: export RMW_IMPLEMENTATION={{ rmw_implementation }}
+    path: "{{ lookup('env', 'HOME') }}/.bashrc"
+    line: export RMW_IMPLEMENTATION={{ rmw_implementation__name }}
     state: present
     create: true
-    mode: 0644
-  loop:
-    - ~/.bashrc
-    - /etc/skel/.bashrc
+    mode: "0644"
+
+- name: Ensure RMW_IMPLEMENTATION in skeleton bashrc (for new users)
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/skel/.bashrc
+    line: export RMW_IMPLEMENTATION={{ rmw_implementation__name }}
+    state: present
+    create: true
+    mode: "0644"
