@@ -101,7 +101,6 @@
         - agnocast_linux_headers_install.failed | default(false)
 
     - name: Check if agnocast-kmod is installed in dkms with version v{{ agnocast_version }}
-      #ansible.builtin.shell: dkms status | grep agnocast | grep {{ agnocast_version }} # noqa: risky-shell-pipe
       ansible.builtin.shell: dkms status agnocast/{{ agnocast_version }} | grep -q 'installed'
       register: agnocast_dkms_status
       failed_when: false
