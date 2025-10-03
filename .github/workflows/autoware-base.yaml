@@ -36,7 +36,7 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-        with:
+        with: # cSpell:ignore tonistiigi, binfmt
           image: tonistiigi/binfmt:qemu-v7.0.0
 
       - name: Build Autoware's base images
@@ -47,3 +47,27 @@ jobs:
             *.platform=linux/amd64,linux/arm64
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
+
+  autoware-base-jazzy:
+    needs: load-env
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v4
+
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with: # cSpell:ignore tonistiigi, binfmt
+          image: tonistiigi/binfmt:qemu-v7.0.0
+
+      - name: Build Autoware's Jazzy base images
+        uses: ./.github/actions/docker-build-and-push-base
+        with:
+          target-image: autoware-base
+          build-args: |
+            *.platform=linux/amd64
+            *.args.ROS_DISTRO=jazzy
+            *.args.BASE_IMAGE=ros:jazzy-ros-base-noble

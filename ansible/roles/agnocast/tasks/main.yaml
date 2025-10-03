@@ -53,7 +53,9 @@
   become: true
 
 - name: Check if agnocast-kmod is installed in dkms with version v{{ agnocast_version }}
-  ansible.builtin.shell: dkms status | grep agnocast | grep {{ agnocast_version }} # noqa: risky-shell-pipe
+  ansible.builtin.shell: |
+    set -o pipefail
+    dkms status | grep agnocast | grep {{ agnocast_version }}
   register: agnocast_dkms_status
   failed_when: false
   changed_when: false
