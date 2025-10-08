@@ -71,7 +71,7 @@ jobs:
         uses: ./.github/actions/docker-build-and-push
         with:
           platform: ${{ matrix.platform }}
-          target-image: autoware
+          target-image: autoware-test
           build-args: |
             *.platform=${{ matrix.arch-platform }}
             *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
