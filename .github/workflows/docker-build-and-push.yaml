@@ -27,6 +27,7 @@ jobs:
             arch-platform: linux/arm64
             lib-dir: aarch64
     runs-on: ${{ matrix.runner }}
+    container: ubuntu:22.04
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
