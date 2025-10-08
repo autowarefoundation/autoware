@@ -30,11 +30,11 @@ jobs:
     container: ubuntu:22.04
     steps:
       # https://github.com/actions/checkout/issues/211
-      - name: Change permission of workspace
-        run: |
-          apt update && \
-          apt install -y sudo && \
-          sudo chown -R $USER:$USER ${{ github.workspace }}
+      # - name: Change permission of workspace
+      #   run: |
+      #     apt update && \
+      #     apt install -y sudo && \
+      #     sudo chown -R $USER:$USER ${{ github.workspace }}
 
       - name: Check out repository
         uses: actions/checkout@v4
