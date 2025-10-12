@@ -7,7 +7,7 @@ ARG ROS_DISTRO=humble
 FROM $AUTOWARE_BASE_IMAGE AS rosdep-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
+COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env amd64.jazzy.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
 COPY docker/scripts/cleanup_apt.sh /autoware/cleanup_apt.sh
 RUN chmod +x /autoware/cleanup_apt.sh
