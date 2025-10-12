@@ -12,6 +12,14 @@ inputs:
     default: 2
     description: Maximum parallelism for buildkitd.
     required: false
+  set-latest:
+    description: Whether to set the latest flavor for images.
+    required: false
+    default: true
+  suffix:
+    description: Suffix for image tags.
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -35,10 +43,10 @@ runs:
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=${{ steps.date.outputs.date }}
+          type=raw,value=${{ steps.date.outputs.date }}${{ inputs.suffix }}
         bake-target: docker-metadata-action-base
         flavor: |
-          latest=true
+          latest=${{ inputs.set-latest }}
 
     - name: Docker meta for autoware-base:cuda-latest
       id: meta-base-cuda
@@ -46,8 +54,8 @@ runs:
       with:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
-          type=raw,value=cuda-latest
-          type=raw,value=cuda-${{ steps.date.outputs.date }}
+          type=raw,value=cuda-latest${{ inputs.suffix }}
+          type=raw,value=cuda-${{ steps.date.outputs.date }}${{ inputs.suffix }}
         bake-target: docker-metadata-action-base-cuda
         flavor: |
           latest=false

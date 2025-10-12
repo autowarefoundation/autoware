@@ -20,6 +20,7 @@ print_help() {
     echo "  --download-artifacts"
     echo "                  Download artifacts"
     echo "  --module        Specify the module (default: all)"
+    echo "  --ros-distro    Specify ROS distribution (humble or jazzy, default: humble)"
     echo ""
 }
 
@@ -66,6 +67,10 @@ while [ "$1" != "" ]; do
         ;;
     --module)
         option_module="$2"
+        shift
+        ;;
+    --ros-distro)
+        option_ros_distro="$2"
         shift
         ;;
     *)
@@ -148,6 +153,11 @@ fi
 
 # Load env
 source "$SCRIPT_DIR/amd64.env"
+
+if [ "$option_ros_distro" = "jazzy" ]; then
+    source "$SCRIPT_DIR/amd64_jazzy.env"
+fi
+
 if [ "$(uname -m)" = "aarch64" ]; then
     source "$SCRIPT_DIR/arm64.env"
 fi
@@ -170,22 +180,25 @@ if ! (command -v git >/dev/null 2>&1); then
     sudo apt-get -y install git
 fi
 
-# Install pip for ansible
+# # Install pip for ansible
 if ! (python3 -m pip --version >/dev/null 2>&1); then
     sudo apt-get -y update
     sudo apt-get -y install python3-pip python3-venv
 fi
 
+# python3 -m venv --system-site-packages /opt/autoware_venv
+# source /opt/autoware_venv/bin/activate
+
 # Install pipx for ansible
 if ! (python3 -m pipx --version >/dev/null 2>&1); then
     sudo apt-get -y update
-    python3 -m pip install --user pipx
+    sudo apt-get -y install pipx
 fi
 
 # Install ansible
 python3 -m pipx ensurepath
 export PATH="${PIPX_BIN_DIR:=$HOME/.local/bin}:$PATH"
-pipx install --include-deps --force "ansible==6.*"
+pipx install --include-deps --force "ansible==10.*"
 
 # Install ansible collections
 echo -e "\e[36m"ansible-galaxy collection install -f -r "$SCRIPT_DIR/ansible-galaxy-requirements.yaml" "\e[m"
