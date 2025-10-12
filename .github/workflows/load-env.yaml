@@ -2,6 +2,12 @@ name: load-env
 
 on:
   workflow_call:
+    inputs:
+      env_file:
+        description: 'Specify the env file to load (e.g., amd64.env, amd64.jazzy.env)'
+        required: false
+        type: string
+        default: ''
     outputs:
       rosdistro:
         value: ${{ jobs.load-env.outputs.rosdistro }}
@@ -26,8 +32,29 @@ jobs:
 
       - name: Load env
         run: |
-          cat amd64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
+          # Check if env_file is specified
+          if [ -n "${{ inputs.env_file }}" ]; then
+            # Use specified env file
+            echo "Loading specified env file: ${{ inputs.env_file }}"
+            cat ${{ inputs.env_file }} | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
+          else
+            # Auto-detect based on ROS_DISTRO
+            rosdistro=${ROS_DISTRO:-humble}
+            echo "rosdistro=$rosdistro" >> $GITHUB_ENV
+            
+            # Determine which env file to use based on rosdistro
+            if [ "$rosdistro" = "humble" ]; then
+              echo "Loading amd64.env for Humble"
+              cat amd64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
+            else
+              echo "Loading amd64.jazzy.env for Jazzy"
+              cat amd64.jazzy.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
+            fi
+          fi
+          
+          # Load ARM64 specific env if on ARM64 architecture
           if [ "$(uname -m)" = "aarch64" ]; then
+            echo "Loading arm64.env for ARM64 architecture"
             cat arm64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
           fi
 

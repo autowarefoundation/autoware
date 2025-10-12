@@ -151,6 +151,15 @@ if [ "$option_module" != "" ]; then
     ansible_args+=("--extra-vars" "module=$option_module")
 fi
 
+# Check ros-distro option
+if [ "$option_ros_distro" != "" ]; then
+    export ROS_DISTRO="$option_ros_distro"
+    ansible_args+=("--extra-vars" "rosdistro=$option_ros_distro")
+fi
+
+# Determine ROS distro: use option_ros_distro if set, otherwise use ROS_DISTRO env var, default to humble
+effective_ros_distro="${option_ros_distro:-${ROS_DISTRO:-humble}}"
+
 # Load env
 source "$SCRIPT_DIR/amd64.env"
 
@@ -164,7 +173,7 @@ fi
 
 # Add env args
 # shellcheck disable=SC2013
-for env_name in $(sed -e "s/^\s*//" -e "/^#/d" -e "s/=.*//" <amd64.env); do
+for env_name in $(sed -e "s/^\s*//" -e "/^#/d" -e "s/=.*//" <"$env_file"); do
     ansible_args+=("--extra-vars" "${env_name}=${!env_name}")
 done
 

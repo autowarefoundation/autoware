@@ -129,13 +129,11 @@ set_arch_lib_dir() {
 
 # Load env
 load_env() {
-    # Override base image variables for jazzy
-    if [ "$ros_distro" = "jazzy" ]; then
-        source "$WORKSPACE_ROOT/amd64_jazzy.env"
-    else
+    if [ "$ros_distro" = "humble" ]; then
         source "$WORKSPACE_ROOT/amd64.env"
+    else
+        source "$WORKSPACE_ROOT/amd64_jazzy.env"
     fi
-
     if [ "$platform" = "linux/arm64" ]; then
         source "$WORKSPACE_ROOT/arm64.env"
     fi

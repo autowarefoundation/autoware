@@ -11,6 +11,8 @@ on:
 jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
+    with:
+      env_file: amd64.env
 
   docker-build-and-push:
     needs: load-env
@@ -259,14 +261,19 @@ jobs:
         with:
           package-name: autoware-tools
 
+  load-env-jazzy:
+    uses: ./.github/workflows/load-env.yaml
+    with:
+      env_file: amd64.jazzy.env
+
   docker-build-and-push-jazzy:
-    needs: [load-env]
+    needs: [load-env-jazzy]
     strategy:
       matrix:
         platform: [amd64]
         include:
           - platform: amd64
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             arch-platform: linux/amd64
             lib-dir: x86_64
     runs-on: ${{ matrix.runner }}
@@ -314,8 +321,8 @@ jobs:
           target-image: autoware
           build-args: |
             *.platform=${{ matrix.arch-platform }}
-            *.args.ROS_DISTRO=jazzy
-            *.args.AUTOWARE_BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/autoware-base:jazzy-latest
+            *.args.ROS_DISTRO=${{ needs.load-env-jazzy.outputs.rosdistro }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env-jazzy.outputs.autoware_base_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ github.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-main
