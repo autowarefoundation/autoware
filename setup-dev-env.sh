@@ -186,9 +186,6 @@ if ! (python3 -m pip --version >/dev/null 2>&1); then
     sudo apt-get -y install python3-pip python3-venv
 fi
 
-# python3 -m venv --system-site-packages /opt/autoware_venv
-# source /opt/autoware_venv/bin/activate
-
 # Install pipx for ansible
 if ! (python3 -m pipx --version >/dev/null 2>&1); then
     sudo apt-get -y update
