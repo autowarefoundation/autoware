@@ -33,7 +33,7 @@
 - name: Install clang-format
   community.general.pipx:
     name: clang-format
-    executable: /usr/bin/pipx      
+    executable: /usr/bin/pipx
 
 - name: Install Go
   become: true
