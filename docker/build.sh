@@ -204,7 +204,6 @@ remove_dangling_images() {
 parse_arguments "$@"
 set_ros_distro
 set_cuda_options
-set_image_tags
 set_build_options
 set_platform
 set_arch_lib_dir
