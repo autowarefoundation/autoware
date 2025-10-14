@@ -164,8 +164,8 @@ build_images() {
         --set "*.args.BASE_IMAGE=$base_image" \
         --set "*.args.SETUP_ARGS=$setup_args" \
         --set "*.args.LIB_DIR=$lib_dir" \
-        --set "base.tags=ghcr.io/autowarefoundation/autoware-base:latest" \
-        --set "base-cuda.tags=ghcr.io/autowarefoundation/autoware-base:cuda-latest"
+        --set "base.tags=$autoware_base_image" \
+        --set "base-cuda.tags=$autoware_base_cuda_image"
     docker buildx bake --allow=ssh --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" -f "$SCRIPT_DIR/docker-bake-cuda.hcl" \
         --set "*.context=$WORKSPACE_ROOT" \
         --set "*.ssh=default" \
