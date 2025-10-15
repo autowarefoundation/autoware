@@ -88,7 +88,6 @@ set_image_tags() {
     fi
 }
 
-
 # Set build options
 set_build_options() {
     if [ -n "$option_target" ]; then
