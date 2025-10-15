@@ -34,7 +34,7 @@ jobs:
           - platform: jazzy
             runner: ubuntu-24.04
             env-file: amd64_jazzy.env
-            suffix: "-jazzy"
+            suffix: -jazzy
             set-latest: false
     runs-on: ${{ matrix.runner }}
     steps:

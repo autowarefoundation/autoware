@@ -42,7 +42,7 @@ FROM base AS base-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set up CUDA runtime environment
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,SC2086
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module base --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
   && pipx uninstall ansible \
