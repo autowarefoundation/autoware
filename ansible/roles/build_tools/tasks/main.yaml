@@ -8,7 +8,7 @@
 - name: Add CCACHE_DIR to .bashrc
   ansible.builtin.lineinfile:
     dest: ~/.bashrc
-    line: export CCACHE_DIR="/var/tmp/ccache"
+    line: export CCACHE_DIR="$HOME/.ccache"
     state: present
     create: true
     mode: 0644
@@ -37,12 +37,6 @@
     state: present
     create: true
     mode: 0644
-
-- name: Create ccache directory
-  ansible.builtin.file:
-    path: /var/tmp/ccache
-    state: directory
-    mode: 0755
 
 - name: Source .bashrc
   ansible.builtin.shell: source ~/.bashrc
