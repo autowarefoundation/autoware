@@ -88,7 +88,6 @@ set_image_tags() {
     fi
 }
 
-
 # Set build options
 set_build_options() {
     if [ -n "$option_target" ]; then
@@ -194,7 +193,7 @@ build_images() {
             --set "base.tags=$base_tag" \
             --set "base-cuda.tags=$base_cuda_tag"
     fi
-    
+
     if [ "$option_no_cuda" = "true" ]; then
         # Build only non-CUDA images
         docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" \
