@@ -180,7 +180,7 @@ if ! (command -v git >/dev/null 2>&1); then
     sudo apt-get -y install git
 fi
 
-# # Install pip for ansible
+# Install pip for ansible
 if ! (python3 -m pip --version >/dev/null 2>&1); then
     sudo apt-get -y update
     sudo apt-get -y install python3-pip python3-venv

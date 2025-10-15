@@ -1,7 +1,7 @@
 group "default" {
   targets = [
     "base",
-    "base-cuda",
+    "base-cuda"
   ]
 }
 
