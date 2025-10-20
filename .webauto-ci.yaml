@@ -92,6 +92,7 @@ simulations:
         vehicle_model: sample_vehicle
         sensor_model: sample_sensor_kit
         initialize_duration: "90"
+        launch_visualization: "false"
 
 release:
   components:
