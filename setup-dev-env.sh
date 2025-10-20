@@ -20,6 +20,7 @@ print_help() {
     echo "  --download-artifacts"
     echo "                  Download artifacts"
     echo "  --module        Specify the module (default: all)"
+    echo "  --ros-distro    Specify ROS distribution (humble or jazzy, default: humble)"
     echo ""
 }
 
@@ -66,6 +67,10 @@ while [ "$1" != "" ]; do
         ;;
     --module)
         option_module="$2"
+        shift
+        ;;
+    --ros-distro)
+        option_ros_distro="$2"
         shift
         ;;
     *)
@@ -146,15 +151,31 @@ if [ "$option_module" != "" ]; then
     ansible_args+=("--extra-vars" "module=$option_module")
 fi
 
+# Check ros-distro option
+if [ "$option_ros_distro" != "" ]; then
+    export ROS_DISTRO="$option_ros_distro"
+    ansible_args+=("--extra-vars" "rosdistro=$option_ros_distro")
+fi
+
+# Determine ROS distro: use option_ros_distro if set, otherwise use ROS_DISTRO env var, default to humble
+effective_ros_distro="${option_ros_distro:-${ROS_DISTRO:-humble}}"
+
 # Load env
-source "$SCRIPT_DIR/amd64.env"
+if [ "$effective_ros_distro" = "humble" ]; then
+    source "$SCRIPT_DIR/amd64.env"
+    env_file="amd64.env"
+else
+    source "$SCRIPT_DIR/amd64.jazzy.env"
+    env_file="amd64.jazzy.env"
+fi
+
 if [ "$(uname -m)" = "aarch64" ]; then
     source "$SCRIPT_DIR/arm64.env"
 fi
 
 # Add env args
 # shellcheck disable=SC2013
-for env_name in $(sed -e "s/^\s*//" -e "/^#/d" -e "s/=.*//" <amd64.env); do
+for env_name in $(sed -e "s/^\s*//" -e "/^#/d" -e "s/=.*//" <"$env_file"); do
     ansible_args+=("--extra-vars" "${env_name}=${!env_name}")
 done
 
@@ -178,8 +199,7 @@ fi
 
 # Install pipx for ansible
 if ! (python3 -m pipx --version >/dev/null 2>&1); then
-    sudo apt-get -y update
-    python3 -m pip install --user pipx
+    sudo apt-get install -y pipx
 fi
 
 # Install ansible

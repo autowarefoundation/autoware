@@ -52,6 +52,18 @@ runs:
         flavor: |
           latest=false
 
+    - name: Docker meta for autoware-base:jazzy-latest
+      id: meta-base-jazzy
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        tags: |
+          type=raw,value=jazzy-latest
+          type=raw,value=jazzy-${{ steps.date.outputs.date }}
+        bake-target: docker-metadata-action-base-jazzy
+        flavor: |
+          latest=false
+
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
@@ -67,6 +79,7 @@ runs:
           docker/docker-bake-base.hcl
           ${{ steps.meta-base.outputs.bake-file }}
           ${{ steps.meta-base-cuda.outputs.bake-file }}
+          ${{ steps.meta-base-jazzy.outputs.bake-file }}
         provenance: false
         set: |
           ${{ inputs.build-args }}

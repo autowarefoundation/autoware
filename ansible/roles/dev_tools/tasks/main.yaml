@@ -18,17 +18,29 @@
   when: "'filter.lfs.required' not in dev_tools__git_lfs__git_global_config.config_values"
   changed_when: true
 
+- name: Install pre-commit and clang-format
+  become: true
+  ansible.builtin.apt:
+    name:
+      - pre-commit
+      - clang-format-{{ pre_commit_clang_format_version.split('.')[0] }}
+    state: latest
+    update_cache: true
+  when: rosdistro == 'jazzy'
+
 - name: Install pre-commit
   ansible.builtin.pip:
     name: pre-commit
     state: latest
     executable: pip3
+  when: rosdistro != 'jazzy'
 
 - name: Install clang-format
   ansible.builtin.pip:
     name: clang-format
     version: "{{ pre_commit_clang_format_version }}"
     executable: pip3
+  when: rosdistro != 'jazzy'
 
 - name: Install Go
   become: true
