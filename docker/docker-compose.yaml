@@ -174,8 +174,7 @@ services:
       - logging-simulation
 
   simulator:
-    # TODO(youtalk): Use autoware-tools:scenario-simulator image
-    image: ghcr.io/autowarefoundation/autoware:universe
+    image: ghcr.io/autowarefoundation/autoware-tools:scenario-simulator
     container_name: autoware-simulator
     pid: service:map
     ipc: host
