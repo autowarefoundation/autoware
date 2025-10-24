@@ -136,7 +136,7 @@ build_images() {
     echo "Target: $target"
 
     set -x
-    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake-base.hcl" \
+    docker buildx bake --allow=ssh --load --progress=plain -f "$SCRIPT_DIR/docker-bake-base.hcl" \
         --set "*.context=$WORKSPACE_ROOT" \
         --set "*.ssh=default" \
         --set "*.platform=$platform" \
@@ -146,7 +146,7 @@ build_images() {
         --set "*.args.LIB_DIR=$lib_dir" \
         --set "base.tags=ghcr.io/autowarefoundation/autoware-base:latest" \
         --set "base-cuda.tags=ghcr.io/autowarefoundation/autoware-base:cuda-latest"
-    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" -f "$SCRIPT_DIR/docker-bake-cuda.hcl" \
+    docker buildx bake --allow=ssh --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" -f "$SCRIPT_DIR/docker-bake-cuda.hcl" \
         --set "*.context=$WORKSPACE_ROOT" \
         --set "*.ssh=default" \
         --set "*.platform=$platform" \
