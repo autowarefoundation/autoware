@@ -21,12 +21,22 @@ on:
   workflow_dispatch:
 
 jobs:
-  load-env:
-    uses: ./.github/workflows/load-env.yaml
-
   autoware-base:
-    needs: load-env
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        platform: [humble, jazzy]
+        include:
+          - platform: humble
+            runner: ubuntu-22.04
+            env-file: amd64.env
+            suffix: "" # no suffix for humble since it is default
+            set-latest: true
+          - platform: jazzy
+            runner: ubuntu-24.04
+            env-file: amd64_jazzy.env
+            suffix: -jazzy
+            set-latest: false
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Check out this repository
         uses: actions/checkout@v4
@@ -36,8 +46,16 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-        with:
+        with: # cSpell:ignore tonistiigi, binfmt
           image: tonistiigi/binfmt:qemu-v7.0.0
+
+      - name: Load env file
+        id: load-env
+        uses: falti/dotenv-action@v1
+        with:
+          path: ${{ matrix.env-file }}
+          export-variables: true
+          log-variables: true
 
       - name: Build Autoware's base images
         uses: ./.github/actions/docker-build-and-push-base
@@ -45,5 +63,7 @@ jobs:
           target-image: autoware-base
           build-args: |
             *.platform=linux/amd64,linux/arm64
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
+            *.args.ROS_DISTRO=${{ steps.load-env.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ steps.load-env.outputs.base_image }}
+          suffix: ${{ matrix.suffix }}
+          set-latest: ${{ matrix.set-latest }}
