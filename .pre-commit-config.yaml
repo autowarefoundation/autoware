@@ -11,7 +11,7 @@ ci:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-json
       - id: check-merge-conflict
@@ -42,7 +42,7 @@ repos:
       - id: yamllint
 
   - repo: https://github.com/autowarefoundation/autoware-guideline-check
-    rev: 0.1.0
+    rev: 0.2.0
     hooks:
       - id: check-package-depends
 
@@ -57,7 +57,7 @@ repos:
       - id: sort-package-xml
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.10.0.1
+    rev: v0.11.0.1
     hooks:
       - id: shellcheck
 
@@ -68,18 +68,18 @@ repos:
         args: [-w, -s, -i=4]
 
   - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
+    rev: 6.1.0
     hooks:
       - id: isort
 
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 25.9.0
     hooks:
       - id: black
         args: [--line-length=100]
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v20.1.8
+    rev: v21.1.2
     hooks:
       - id: clang-format
         types_or: [c++, c, cuda]
@@ -92,7 +92,7 @@ repos:
         exclude: .cu
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.2
+    rev: 0.34.0
     hooks:
       - id: check-metaschema
         files: ^.+/schema/.*schema\.json$
@@ -108,7 +108,7 @@ repos:
         additional_dependencies: [prettier@2.7.1, "@prettier/plugin-xml@2.2.0"]
 
   - repo: https://github.com/AleksaC/hadolint-py
-    rev: v2.12.1b3
+    rev: v2.14.0
     hooks:
       - id: hadolint
         exclude: .svg$
