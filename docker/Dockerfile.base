@@ -6,7 +6,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
 # Copy files
-COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
+COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env amd64_jazzy.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
 COPY docker/scripts/cleanup_apt.sh /autoware/cleanup_apt.sh
 RUN chmod +x /autoware/cleanup_apt.sh
@@ -28,8 +28,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Set up base environment
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module base --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
+  ./setup-dev-env.sh -y --module base --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
+  && pipx uninstall ansible \
   && /autoware/cleanup_apt.sh \
   && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
 
@@ -42,8 +42,8 @@ FROM base AS base-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set up CUDA runtime environment
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,SC2086
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module base --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core \
+  ./setup-dev-env.sh -y --module base --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
+  && pipx uninstall ansible \
   && /autoware/cleanup_apt.sh true
