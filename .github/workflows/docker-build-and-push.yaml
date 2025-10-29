@@ -264,7 +264,7 @@ jobs:
   load-env-jazzy:
     uses: ./.github/workflows/load-env.yaml
     with:
-      env_file: amd64.jazzy.env
+      env_file: amd64_jazzy.env
 
   docker-build-and-push-jazzy:
     needs: [load-env-jazzy]

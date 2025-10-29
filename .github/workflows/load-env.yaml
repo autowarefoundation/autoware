@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       env_file:
-        description: Specify the env file to load (e.g., amd64.env, amd64.jazzy.env)
+        description: Specify the env file to load (e.g., amd64.env, amd64_jazzy.env)
         required: false
         type: string
         default: ""
@@ -47,8 +47,8 @@ jobs:
               echo "Loading amd64.env for Humble"
               cat amd64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
             else
-              echo "Loading amd64.jazzy.env for Jazzy"
-              cat amd64.jazzy.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
+              echo "Loading amd64_jazzy.env for Jazzy"
+              cat amd64_jazzy.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
             fi
           fi
 

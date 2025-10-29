@@ -17,7 +17,7 @@ ros_distro=${ROS_DISTRO:-humble}
 if [ "$ros_distro" = "humble" ]; then
     source "$WORKSPACE_ROOT/amd64.env"
 else
-    source "$WORKSPACE_ROOT/amd64.jazzy.env"
+    source "$WORKSPACE_ROOT/amd64_jazzy.env"
 fi
 if [ "$(uname -m)" = "aarch64" ]; then
     source "$WORKSPACE_ROOT/arm64.env"
