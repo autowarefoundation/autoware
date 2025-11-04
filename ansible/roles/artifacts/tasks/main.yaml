@@ -545,11 +545,17 @@
     mode: "755"
     state: directory
 
+- name: Create tensorrt_vad v0.1 directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/vad/v0.1"
+    mode: "755"
+    state: directory
+
 - name: Download tensorrt_vad/vad-carla-tiny_backbone.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny_backbone.onnx
-    dest: "{{ data_dir }}/vad/vad-carla-tiny_backbone.onnx"
+    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny_backbone.onnx"
     mode: "644"
     checksum: sha256:04b925f2750fd1c4adf16b5aae9c149d0baa39185e99d141232ebe20bddba4da
 
@@ -557,7 +563,7 @@
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny_head.onnx
-    dest: "{{ data_dir }}/vad/vad-carla-tiny_head.onnx"
+    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny_head.onnx"
     mode: "644"
     checksum: sha256:31f49a592a764ce82bbe6e26d0bfc99dc8a9613628884dc73dd5e67521ff3e9e
 
@@ -565,7 +571,7 @@
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny_head_no_prev.onnx
-    dest: "{{ data_dir }}/vad/vad-carla-tiny_head_no_prev.onnx"
+    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny_head_no_prev.onnx"
     mode: "644"
     checksum: sha256:6a89d479e0717b1e526f1aa3a1137c631a9ef854e810d0328a035aae11818c2a
 
@@ -573,7 +579,7 @@
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny.param.json
-    dest: "{{ data_dir }}/vad/vad-carla-tiny.param.json"
+    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny.param.json"
     mode: "644"
     checksum: sha256:29e4a180bb242b2c0e16ae5da3fae7b12f1faaa5f1883e8c403307ae343accd1
 
