@@ -77,9 +77,6 @@ jobs:
             *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ github.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ github.ref_name }},mode=max
 
       - name: Show disk space
         if: always()
@@ -327,7 +324,9 @@ jobs:
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ github.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-main
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ github.ref_name }},mode=max
-
+          set-latest: false
+          suffix: -jazzy
+          core-only: true
       - name: Show disk space
         if: always()
         run: |
