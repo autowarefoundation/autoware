@@ -162,9 +162,10 @@ effective_ros_distro="${option_ros_distro:-${ROS_DISTRO:-humble}}"
 
 # Load env
 source "$SCRIPT_DIR/amd64.env"
-
+env_file="$SCRIPT_DIR/amd64.env"
 if [ "$option_ros_distro" = "jazzy" ]; then
     source "$SCRIPT_DIR/amd64_jazzy.env"
+    env_file="$SCRIPT_DIR/amd64_jazzy.env"
 fi
 
 if [ "$(uname -m)" = "aarch64" ]; then

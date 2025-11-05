@@ -19,7 +19,7 @@ RUN rm -f /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y rosdep \
+  ./setup-dev-env.sh -y rosdep --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && /autoware/cleanup_apt.sh
 
@@ -201,8 +201,8 @@ RUN chmod +x /autoware/build_and_clean.sh
 # Set up development environment and tools
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers openadkit \
-  && ./setup-dev-env.sh -y --module dev-tools openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers openadkit --ros-distro $ROS_DISTRO \
+  && ./setup-dev-env.sh -y --module dev-tools openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && /autoware/cleanup_apt.sh
 
@@ -290,7 +290,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Set up CUDA development environment
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit \
+  ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && /autoware/cleanup_apt.sh true
 
@@ -568,7 +568,7 @@ COPY --from=rosdep-depend /rosdep-core-exec-depend-packages.txt /tmp/rosdep-core
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-core-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -594,7 +594,7 @@ COPY --from=rosdep-universe-sensing-perception-depend /rosdep-universe-sensing-p
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-sensing-perception-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -622,7 +622,7 @@ COPY --from=rosdep-universe-sensing-perception-depend /rosdep-universe-sensing-p
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-sensing-perception-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -644,7 +644,7 @@ COPY --from=rosdep-universe-localization-mapping-depend /rosdep-universe-localiz
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-localization-mapping-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -670,7 +670,7 @@ COPY --from=rosdep-universe-planning-control-depend /rosdep-universe-planning-co
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-planning-control-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -696,7 +696,7 @@ COPY --from=rosdep-universe-vehicle-system-depend /rosdep-universe-vehicle-syste
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-vehicle-system-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -722,7 +722,7 @@ COPY --from=rosdep-universe-visualization-depend /rosdep-universe-visualization-
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-universe-visualization-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -748,7 +748,7 @@ COPY --from=rosdep-universe-api-depend /rosdep-universe-api-exec-depend-packages
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core \
   && apt-get update \
   && cat /tmp/rosdep-universe-api-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -774,7 +774,7 @@ COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -800,99 +800,13 @@ COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
+  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
   && pip uninstall -y ansible ansible-core --break-system-packages \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-devel-cuda /opt/autoware /opt/autoware
-
-ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["/bin/bash"]
-
-# Jazzy Core Images
-# hadolint ignore=DL3006
-FROM $AUTOWARE_BASE_IMAGE_JAZZY AS jazzy-core-common-devel
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-ENV CCACHE_DIR="/root/.ccache"
-
-COPY docker/scripts/build_and_clean.sh /autoware/build_and_clean.sh
-RUN chmod +x /autoware/build_and_clean.sh
-
-# Set up development environment and tools
-RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers openadkit \
-  && ./setup-dev-env.sh -y --module dev-tools openadkit \
-  && pip uninstall -y ansible ansible-core --break-system-packages \
-  && /autoware/cleanup_apt.sh
-
-# Install rosdep dependencies
-COPY --from=rosdep-depend /rosdep-core-common-depend-packages.txt /tmp/rosdep-core-common-depend-packages.txt
-# hadolint ignore=SC2002
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  apt-get update \
-  && cat /tmp/rosdep-core-common-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_apt.sh
-
-RUN --mount=type=cache,target="${CCACHE_DIR}" \
-  --mount=type=bind,source=src/core/autoware_adapi_msgs,target=/autoware/src/core/autoware_adapi_msgs \
-  --mount=type=bind,source=src/core/autoware_cmake,target=/autoware/src/core/autoware_cmake \
-  --mount=type=bind,source=src/core/autoware_internal_msgs,target=/autoware/src/core/autoware_internal_msgs \
-  --mount=type=bind,source=src/core/autoware_lanelet2_extension,target=/autoware/src/core/autoware_lanelet2_extension \
-  --mount=type=bind,source=src/core/autoware_msgs,target=/autoware/src/core/autoware_msgs \
-  --mount=type=bind,source=src/core/autoware_utils,target=/autoware/src/core/autoware_utils \
-  source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
-
-ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["/bin/bash"]
-
-FROM jazzy-core-common-devel AS jazzy-core-devel
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-ENV CCACHE_DIR="/root/.ccache"
-
-# Install rosdep dependencies
-COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
-# hadolint ignore=SC2002
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  apt-get update \
-  && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_apt.sh
-
-RUN --mount=type=cache,target="${CCACHE_DIR}" \
-  --mount=type=bind,source=src/core/autoware_core,target=/autoware/src/core/autoware_core \
-  source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
-
-ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["/bin/bash"]
-
-# hadolint ignore=DL3006
-FROM $AUTOWARE_BASE_IMAGE_JAZZY AS jazzy-core
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-ARG LIB_DIR
-
-# Set up runtime environment
-COPY --from=rosdep-depend /rosdep-core-exec-depend-packages.txt /tmp/rosdep-core-exec-depend-packages.txt
-# hadolint ignore=SC2002
-RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit \
-  && pip uninstall -y ansible ansible-core --break-system-packages \
-  && apt-get update \
-  && cat /tmp/rosdep-core-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
-
-COPY --from=jazzy-core-devel /opt/autoware /opt/autoware
-
-# Copy bash aliases
-COPY docker/etc/.bash_aliases /root/.bash_aliases
-RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
