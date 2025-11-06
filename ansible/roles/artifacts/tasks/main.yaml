@@ -581,7 +581,7 @@
     url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny.param.json
     dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny.param.json"
     mode: "644"
-    checksum: sha256:29e4a180bb242b2c0e16ae5da3fae7b12f1faaa5f1883e8c403307ae343accd1
+    checksum: sha256:03d3187fed3c70f761456afc2e93e18c1765113b1c1580ffa78ab42b10dbd179
 
 # traffic_light_fine_detector
 - name: Create traffic_light_fine_detector directory inside {{ data_dir }}
