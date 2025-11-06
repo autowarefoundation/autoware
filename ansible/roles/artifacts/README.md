@@ -45,6 +45,8 @@ cd ~/autoware
 git fetch --tags && git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
 ```
 
+Once you've downloaded the artifacts, you can switch back to your desired branch or commit hash.
+
 ### Requirements
 
 Install ansible following the instructions in the [ansible installation guide](../../README.md#ansible-installation).
