@@ -23,6 +23,7 @@ inputs:
     description: Whether to set the latest flavor for images.
     required: false
     default: true
+  # TODO(mitsudome-r): Remove this input after Jazzy porting is complete
   core-only:
     description: Whether to build only the core images.
     required: false
