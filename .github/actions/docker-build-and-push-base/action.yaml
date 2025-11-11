@@ -44,6 +44,7 @@ runs:
         images: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
         tags: |
           type=raw,value=${{ steps.date.outputs.date }}${{ inputs.suffix }}
+          type=raw,value=latest${{ inputs.suffix }}
         bake-target: docker-metadata-action-base
         flavor: |
           latest=${{ inputs.set-latest }}
