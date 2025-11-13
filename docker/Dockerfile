@@ -19,7 +19,7 @@ RUN rm -f /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y rosdep --ros-distro $ROS_DISTRO \
+  ./setup-dev-env.sh -y rosdep --ros-distro "$ROS_DISTRO" \
   && pipx uninstall ansible\
   && /autoware/cleanup_apt.sh
 
@@ -290,7 +290,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Set up CUDA development environment
 # hadolint ignore=SC2002
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit --ros-distro $ROS_DISTRO \
+  ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit --ros-distro "$ROS_DISTRO" \
   && pipx uninstall ansible \
   && /autoware/cleanup_apt.sh true
 
