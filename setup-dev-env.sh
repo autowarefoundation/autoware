@@ -151,11 +151,18 @@ if [ "$option_module" != "" ]; then
     ansible_args+=("--extra-vars" "module=$option_module")
 fi
 
+# Check ros-distro option
+if [ "$option_ros_distro" != "" ]; then
+    export ROS_DISTRO="$option_ros_distro"
+    ansible_args+=("--extra-vars" "rosdistro=$option_ros_distro")
+fi
+
 # Load env
 source "$SCRIPT_DIR/amd64.env"
-
+env_file="$SCRIPT_DIR/amd64.env"
 if [ "$option_ros_distro" = "jazzy" ]; then
     source "$SCRIPT_DIR/amd64_jazzy.env"
+    env_file="$SCRIPT_DIR/amd64_jazzy.env"
 fi
 
 if [ "$(uname -m)" = "aarch64" ]; then
@@ -164,7 +171,7 @@ fi
 
 # Add env args
 # shellcheck disable=SC2013
-for env_name in $(sed -e "s/^\s*//" -e "/^#/d" -e "s/=.*//" <amd64.env); do
+for env_name in $(sed -e "s/^\s*//" -e "/^#/d" -e "s/=.*//" <"$env_file"); do
     ansible_args+=("--extra-vars" "${env_name}=${!env_name}")
 done
 
