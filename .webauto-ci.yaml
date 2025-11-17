@@ -104,3 +104,22 @@ release:
       deployment:
         type: container
         artifact: main
+
+scenario_parameter_groups:
+  # Necessary to update the parameters for each vehicle type
+  - name: common
+    parameters:
+      __ego_center_x__: 1.345
+      __ego_center_y__: 0
+      __ego_center_z__: 1.25
+      __ego_dimensions_width__: 1.896
+      __ego_dimensions_length__: 4.89
+      __ego_dimensions_height__: 2.5
+      wheel_radius: 0.383
+      wheel_width: 0.235
+      wheel_base: 2.79 # between front wheel center and rear wheel center
+      wheel_tread: 1.64 # between left wheel center and right wheel center
+      front_overhang: 1.0 # between front wheel center and vehicle front
+      rear_overhang: 1.1 # between rear wheel center and vehicle rear
+      left_overhang: 0.128 # between left wheel center and vehicle left
+      right_overhang: 0.128 # between right wheel center and vehicle right
