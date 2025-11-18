@@ -19,7 +19,7 @@ RUN rm -f /etc/apt/apt.conf.d/docker-clean \
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y rosdep \
-  && pip uninstall -y ansible ansible-core \
+  && pipx uninstall ansible \
   && /autoware/cleanup_apt.sh
 
 # Generate install package lists
