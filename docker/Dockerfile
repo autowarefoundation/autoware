@@ -20,7 +20,8 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y rosdep \
   && pip uninstall -y ansible ansible-core \
-  && /autoware/cleanup_apt.sh
+  && /autoware/cleanup_apt.sh \
+  && find /opt/autoware -type f \( -executable -o -name "*.so" \) -exec strip --strip-unneeded {} \;
 
 # Generate install package lists
 COPY src/core/autoware_adapi_msgs /autoware/src/core/autoware_adapi_msgs
