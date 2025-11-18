@@ -10,7 +10,6 @@
 build/
 install/
 log/
-/src/
 
 # Python
 *.pyc
