@@ -21,7 +21,8 @@ RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y rosdep --ros-distro "$ROS_DISTRO" \
   && pipx uninstall ansible\
-  && /autoware/cleanup_apt.sh
+  && /autoware/cleanup_apt.sh \
+  && rm -rf /opt/autoware
 
 # Generate install package lists
 COPY src/core/autoware_adapi_msgs /autoware/src/core/autoware_adapi_msgs
