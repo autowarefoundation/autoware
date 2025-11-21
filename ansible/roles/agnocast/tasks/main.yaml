@@ -18,11 +18,48 @@
     - { name: net.ipv6.conf.default.disable_ipv6 }
   become: true
 
-- name: Add agnocast PPA repository while IPv6 is disabled
-  ansible.builtin.apt_repository:
-    repo: ppa:t4-system-software/agnocast
+- name: Create /etc/apt/keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Download agnocast PPA GPG key while IPv6 is disabled
+  ansible.builtin.get_url:
+    url: https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xCFDB1950382092423DF37D3E075CD8B5C91E5ACA
+    dest: /tmp/agnocast-ppa.asc
+    mode: "0644"
+  register: agnocast_gpg_key_download
+
+- name: Convert GPG key to binary format and install
+  ansible.builtin.shell: |
+    gpg --dearmor < /tmp/agnocast-ppa.asc > /etc/apt/keyrings/agnocast-ppa.gpg
+    chmod 0644 /etc/apt/keyrings/agnocast-ppa.gpg
+  become: true
+  when: agnocast_gpg_key_download.changed
+  changed_when: true
+
+- name: Verify GPG key fingerprint
+  ansible.builtin.shell: |
+    gpg --show-keys /etc/apt/keyrings/agnocast-ppa.gpg | grep -q 'CFDB1950382092423DF37D3E075CD8B5C91E5ACA'
+  register: agnocast_gpg_verify
+  failed_when: agnocast_gpg_verify.rc != 0
+  changed_when: false
+
+- name: Display GPG key verification success
+  ansible.builtin.debug:
+    msg: "GPG key fingerprint verified successfully: CFDB1950382092423DF37D3E075CD8B5C91E5ACA"
+
+- name: Add agnocast repository (deb822 format)
+  ansible.builtin.deb822_repository:
+    name: agnocast
+    types: deb
+    uris: http://ppa.launchpad.net/t4-system-software/agnocast/ubuntu
+    suites: jammy
+    components: main
+    signed_by: /etc/apt/keyrings/agnocast-ppa.gpg
     state: present
-    update_cache: false
   become: true
 
 - name: Restore original IPv6 settings # noqa: no-changed-when
