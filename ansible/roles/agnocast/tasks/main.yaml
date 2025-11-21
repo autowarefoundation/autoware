@@ -51,7 +51,7 @@
   ansible.builtin.debug:
     msg: "GPG key fingerprint verified successfully: CFDB1950382092423DF37D3E075CD8B5C91E5ACA"
 
-- name: Add agnocast repository (deb822 format)
+- name: Add agnocast repository
   ansible.builtin.deb822_repository:
     name: agnocast
     types: deb
