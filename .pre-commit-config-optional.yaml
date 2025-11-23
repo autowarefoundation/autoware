@@ -11,7 +11,7 @@ ci:
 
 repos:
   - repo: https://github.com/tcort/markdown-link-check
-    rev: v3.13.7
+    rev: v3.14.2
     hooks:
       - id: markdown-link-check
         args: [--quiet, --config=.markdown-link-check.json]
