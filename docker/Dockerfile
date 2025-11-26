@@ -525,6 +525,9 @@ COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
 COPY --from=universe-visualization-devel /opt/autoware /opt/autoware
 COPY --from=universe-api-devel /opt/autoware /opt/autoware
 
+# strip unneeded symbols from binaries in /opt/autoware
+RUN find /opt/autoware -type f \( -executable -o -name "*.so" \) -exec strip --strip-unneeded --remove-section=.comment --remove-section=.note {} \;
+
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
