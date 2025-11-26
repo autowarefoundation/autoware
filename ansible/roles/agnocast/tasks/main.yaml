@@ -55,14 +55,15 @@
     msg: "GPG key fingerprint verified successfully: CFDB1950382092423DF37D3E075CD8B5C91E5ACA"
 
 - name: Add agnocast repository
-  ansible.builtin.deb822_repository:
-    name: agnocast
-    types: deb
-    uris: http://ppa.launchpad.net/t4-system-software/agnocast/ubuntu
-    suites: jammy
-    components: main
-    signed_by: /etc/apt/keyrings/agnocast-ppa.gpg
-    state: present
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/agnocast.sources
+    content: |
+      Types: deb
+      URIs: http://ppa.launchpad.net/t4-system-software/agnocast/ubuntu
+      Suites: jammy
+      Components: main
+      Signed-By: /etc/apt/keyrings/agnocast-ppa.gpg
+    mode: "0644"
   become: true
 
 - name: Restore original IPv6 settings # noqa: no-changed-when
