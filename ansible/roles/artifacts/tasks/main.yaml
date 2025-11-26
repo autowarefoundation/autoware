@@ -514,7 +514,7 @@
     mode: "755"
     state: directory
 
-- name: Download diffusion_planner/v1.0/diffusion_planner.onnx
+- name: Download diffusion_planner/v2.0/diffusion_planner.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v2.0/diffusion_planner.onnx
