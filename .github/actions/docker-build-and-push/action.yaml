@@ -32,17 +32,15 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install jq and vcs2l
+    - name: Install jq
       run: |
         sudo apt-get -y update
-        sudo apt-get -y install jq python3-pip
-        pip install --no-cache-dir vcs2l
+        sudo apt-get -y install jq
       shell: bash
 
-    - name: Run vcs import
+    - name: Initialize submodules
       run: |
-        mkdir -p src
-        vcs import --shallow src < repositories/autoware.repos
+        git submodule update --init --checkout src/autoware
       shell: bash
 
     - name: Setup Docker Buildx

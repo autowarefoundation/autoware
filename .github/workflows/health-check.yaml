@@ -64,12 +64,12 @@ jobs:
         with:
           files: |
             *.env
-            *.repos
             .github/actions/docker-build/action.yaml
             .github/workflows/health-check.yaml
             ansible-galaxy-requirements.yaml
             ansible/**
             docker/**
+            src/**
             setup-dev-env.sh
 
       - name: Show disk space
@@ -90,7 +90,7 @@ jobs:
         with:
           platform: ${{ matrix.platform }}
           cache-tag-suffix: ${{ matrix.build-type }}
-          additional-repos: ${{ matrix.build-type == 'nightly' && 'repositories/autoware-nightly.repos' || '' }}
+          use-nightly: ${{ matrix.build-type == 'nightly' }}
           build-args: |
             ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
