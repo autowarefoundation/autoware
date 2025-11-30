@@ -128,6 +128,15 @@
 	path = src/autoware/middleware/external/agnocast
 	url = https://github.com/tier4/agnocast.git
 	update = none
+# extra-packages
+[submodule "src/extra-packages/sensor_component/external/tamagawa_imu_driver"]
+	path = src/extra-packages/sensor_component/external/tamagawa_imu_driver
+	url = https://github.com/tier4/tamagawa_imu_driver.git
+	branch = ros2
+[submodule "src/extra-packages/vehicle/external/pacmod_interface"]
+	path = src/extra-packages/vehicle/external/pacmod_interface
+	url = https://github.com/tier4/pacmod_interface.git
+	branch = main
 # simulator
 [submodule "src/simulator/simulator/scenario_simulator"]
 	path = src/simulator/simulator/scenario_simulator
