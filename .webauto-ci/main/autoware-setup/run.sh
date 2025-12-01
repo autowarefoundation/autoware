@@ -9,9 +9,14 @@ ansible_args+=("--extra-vars" "install_devel=false")
 
 # read amd64 env file and expand ansible arguments
 source 'amd64.env'
-while read -r env_name; do
+while read -r env_name value; do
     ansible_args+=("--extra-vars" "${env_name}=${!env_name}")
-done < <(sed "s/=.*//" <amd64.env)
+done < <(
+    grep -v '^\s*#' amd64.env |
+    grep -v '^\s*$' |
+    sed 's/#.*//' |      # remove trailing comments
+    sed 's/=.*//'        # extract variable name
+)
 
 ansible-galaxy collection install -f -r "ansible-galaxy-requirements.yaml"
 ansible-playbook "ansible/playbooks/universe.yaml" \
