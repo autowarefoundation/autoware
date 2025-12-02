@@ -9,7 +9,7 @@ ansible_args+=("--extra-vars" "install_devel=false")
 
 # read amd64 env file and expand ansible arguments
 source 'amd64.env'
-while read -r env_name value; do
+while read -r env_name; do
     ansible_args+=("--extra-vars" "${env_name}=${!env_name}")
 done < <(
     grep -v '^\s*#' amd64.env |
