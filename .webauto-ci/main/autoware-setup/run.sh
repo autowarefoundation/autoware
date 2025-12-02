@@ -13,9 +13,9 @@ while read -r env_name value; do
     ansible_args+=("--extra-vars" "${env_name}=${!env_name}")
 done < <(
     grep -v '^\s*#' amd64.env |
-    grep -v '^\s*$' |
-    sed 's/#.*//' |      # remove trailing comments
-    sed 's/=.*//'        # extract variable name
+        grep -v '^\s*$' |
+        sed 's/#.*//' | # remove trailing comments
+        sed 's/=.*//'   # extract variable name
 )
 
 ansible-galaxy collection install -f -r "ansible-galaxy-requirements.yaml"
