@@ -8,6 +8,10 @@ on:
       - "*.*.*"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml

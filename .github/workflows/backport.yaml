@@ -9,6 +9,10 @@ on:
       - closed
       - labeled
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   backport:
     runs-on: ubuntu-22.04

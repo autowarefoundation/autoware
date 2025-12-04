@@ -11,6 +11,10 @@ on:
     - cron: 0 12 * * *
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   label-check:
     uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
