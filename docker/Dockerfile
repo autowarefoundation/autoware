@@ -16,10 +16,7 @@ RUN chmod +x /autoware/resolve_rosdep_keys.sh
 WORKDIR /autoware
 
 RUN rm -f /etc/apt/apt.conf.d/docker-clean \
-  && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
-RUN --mount=type=ssh \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  pipx uninstall ansible \
+  && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
   && /autoware/cleanup_apt.sh
 
 # Generate install package lists
