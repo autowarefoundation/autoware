@@ -28,6 +28,27 @@ jobs:
           private_key: ${{ secrets.PRIVATE_KEY }}
 
       - uses: tibdex/backport@v2
+        id: backport
         with:
           github_token: ${{ steps.generate-token.outputs.token }}
           title_template: "<%= title %> (backport #<%= number %>)"
+
+      - name: Request review from original author
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          PR_JSON: ${{ steps.backport.outputs.created_pull_requests }}
+          ORIGINAL_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          echo "Created PRs JSON: $PR_JSON"
+          echo "Original PR Author: $ORIGINAL_AUTHOR"
+
+          # Use 'jq' to parse the JSON and extract all PR numbers (values)
+          # Loop through the extracted PR numbers, one per line
+          echo "$PR_JSON" | jq -r 'to_entries | .[] | .value' | while read -r pr_num; do
+            if [ -n "$pr_num" ]; then
+              echo "Requesting review for PR #$pr_num from $ORIGINAL_AUTHOR..."
+
+              # Use the 'gh' CLI to add the reviewer
+              gh pr edit "$pr_num" --add-reviewer "$ORIGINAL_AUTHOR" --repo "${{ github.repository }}"
+            fi
+          done
