@@ -19,8 +19,7 @@ RUN rm -f /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  ./setup-dev-env.sh -y rosdep --ros-distro "$ROS_DISTRO" \
-  && pipx uninstall ansible\
+  pipx uninstall ansible \
   && /autoware/cleanup_apt.sh
 
 # Generate install package lists
