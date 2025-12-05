@@ -26,17 +26,16 @@ jobs:
             lsb-release \
             python3-pip \
             git
-          pip install --upgrade gdown vcstool
+          pip install --upgrade gdown
       - name: Show memory info
         shell: bash
         run: free -h
-      - name: Clone Autoware and Import simulator.repos
+      - name: Clone Autoware and Initialize Simulator
         shell: bash
         run: |
           git clone https://github.com/autowarefoundation/autoware.git ~/autoware_ws
           cd ~/autoware_ws
-          mkdir src
-          vcs import src < simulator.repos
+          git submodule update --init --checkout src/simulator
       - name: Install ROS dependencies
         shell: bash
         run: |
