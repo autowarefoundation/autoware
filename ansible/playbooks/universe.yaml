@@ -55,8 +55,6 @@
     - role: autoware.dev_env.geographiclib
     - role: autoware.dev_env.cuda
       when: prompt_install_nvidia == 'y'
-    - role: autoware.dev_env.pacmod
-      when: rosdistro == 'humble'
     - role: autoware.dev_env.tensorrt
       when: prompt_install_nvidia == 'y'
     - role: autoware.dev_env.spconv
