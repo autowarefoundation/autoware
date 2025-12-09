@@ -1,3 +1,27 @@
+# Remove legacy agnocast PPA configuration (if exists)
+- name: Remove legacy agnocast PPA via add-apt-repository
+  ansible.builtin.command: add-apt-repository --remove ppa:t4-system-software/agnocast -y
+  register: agnocast_legacy_ppa_remove
+  failed_when: false
+  changed_when: agnocast_legacy_ppa_remove.rc == 0
+  become: true
+
+- name: Remove legacy agnocast sources.list files
+  ansible.builtin.shell: rm -f /etc/apt/sources.list.d/*agnocast*.list
+  args:
+    executable: /bin/bash
+  register: agnocast_legacy_sources_remove
+  changed_when: false
+  become: true
+
+- name: Remove legacy agnocast GPG keys from trusted.gpg.d
+  ansible.builtin.shell: rm -f /etc/apt/trusted.gpg.d/*agnocast*.gpg
+  args:
+    executable: /bin/bash
+  register: agnocast_legacy_gpg_remove
+  changed_when: false
+  become: true
+
 # TODO(rej55, sykwer): IPv6 support
 - name: Save current IPv6 settings
   ansible.builtin.shell: |
