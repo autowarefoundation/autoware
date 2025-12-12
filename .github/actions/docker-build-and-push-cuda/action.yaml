@@ -36,8 +36,8 @@ runs:
     - name: Run vcs import
       run: |
         mkdir src
-        vcs import --shallow src < autoware.repos
-        vcs import src < extra-packages.repos
+        vcs import --shallow src < repositories/autoware.repos
+        vcs import src < repositories/extra-packages.repos
       shell: bash
 
     - name: Setup Docker Buildx

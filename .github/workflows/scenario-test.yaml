@@ -36,7 +36,7 @@ jobs:
           git clone https://github.com/autowarefoundation/autoware.git ~/autoware_ws
           cd ~/autoware_ws
           mkdir src
-          vcs import src < simulator.repos
+          vcs import src < repositories/simulator.repos
       - name: Install ROS dependencies
         shell: bash
         run: |
