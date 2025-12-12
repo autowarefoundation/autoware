@@ -14,10 +14,6 @@ COPY docker/scripts/cleanup_system.sh /autoware/cleanup_system.sh
 RUN chmod +x /autoware/cleanup_system.sh
 WORKDIR /autoware
 
-# Disable installing suggested and recommended packages
-RUN echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/99-disable-extra-packages; \
-    echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/99-disable-extra-packages
-
 # Install apt packages and add GitHub to known hosts for private repositories
 RUN rm -f /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
