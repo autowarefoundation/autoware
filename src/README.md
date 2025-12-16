@@ -10,7 +10,7 @@ To manage these repositories, Autoware uses **[vcs2l](https://github.com/ros-inf
 - [`repositories/autoware.repos`](../repositories/autoware.repos) ➡️ The manifest file that lists essential Autoware repositories and their versions
 - `src/` (here) ➡️ The directory where all Autoware source repositories will be cloned
 
-⭐ Check the [**🔗 Repository structure and versioning documentation**](https://autowarefoundation.github.io/autoware-documentation/main/design/versioning_and_repositories/repository-structure/) for more details.
+⭐ Check the [**🔗 Repository structure and versioning documentation**](https://autowarefoundation.github.io/autoware-documentation/main/design/repository-structure/) for more details.
 
 ## Cloning the essential Autoware source code
 
