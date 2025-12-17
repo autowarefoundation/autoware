@@ -62,3 +62,11 @@
   ansible.builtin.debug:
     msg: ROS package 'ros-{{ rosdistro }}-plotjuggler' is apt-mark hold. Skipping installation.
   when: not dev_tools__install_result.changed
+
+- name: Install nanoflann
+  become: true
+  ansible.builtin.apt:
+    name: 
+      - libnanoflann-dev
+    state: present
+    update_cache: true
