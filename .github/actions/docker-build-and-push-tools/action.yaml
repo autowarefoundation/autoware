@@ -28,7 +28,7 @@ runs:
 
     - name: Run vcs import
       run: |
-        mkdir src
+        mkdir -p src
         vcs import --shallow src < repositories/simulator.repos
       shell: bash
 

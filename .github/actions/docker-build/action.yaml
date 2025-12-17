@@ -31,7 +31,7 @@ runs:
 
     - name: Run vcs import
       run: |
-        mkdir src
+        mkdir -p src
         vcs import --shallow src < repositories/autoware.repos
         vcs import --shallow src < repositories/extra-packages.repos
       shell: bash
