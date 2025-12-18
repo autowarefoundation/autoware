@@ -22,11 +22,11 @@ runs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Install vcs2l
+    - name: Install vcstool
       run: |
         sudo apt-get -y update
         sudo apt-get -y install python3-pip
-        pipx install vcs2l
+        pipx install vcstool
       shell: bash
 
     - name: Run vcs import

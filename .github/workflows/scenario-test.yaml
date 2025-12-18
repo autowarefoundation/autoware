@@ -26,7 +26,7 @@ jobs:
             lsb-release \
             python3-pip \
             git
-          pip install --upgrade gdown vcs2l
+          pip install --upgrade gdown vcstool
       - name: Show memory info
         shell: bash
         run: free -h

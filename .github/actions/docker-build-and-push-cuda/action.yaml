@@ -19,7 +19,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install jq and vcs2l
+    - name: Install jq and vcstool
       run: |
         sudo apt-get -y update
         sudo apt-get -y install curl gnupg lsb-release
@@ -30,7 +30,7 @@ runs:
           sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
         sudo apt-get update
-        sudo apt-get install -y jq python3-pip python3-vcs2l
+        sudo apt-get install -y jq python3-pip python3-vcstool
       shell: bash
 
     - name: Run vcs import
