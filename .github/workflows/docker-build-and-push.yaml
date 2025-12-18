@@ -49,13 +49,13 @@ jobs:
         with:
           files: |
             *.env
-            *.repos
             .github/actions/combine-multi-arch-images/action.yaml
             .github/actions/docker-build-and-push*/action.yaml
             .github/workflows/docker-build-and-push.yaml
             ansible-galaxy-requirements.yaml
             ansible/**
             docker/**
+            src/**
 
       - name: Free disk space
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
@@ -116,13 +116,13 @@ jobs:
         with:
           files: |
             *.env
-            *.repos
             .github/actions/combine-multi-arch-images/action.yaml
             .github/actions/docker-build-and-push*/action.yaml
             .github/workflows/docker-build-and-push.yaml
             ansible-galaxy-requirements.yaml
             ansible/**
             docker/**
+            src/**
 
       - name: Free disk space
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
@@ -186,13 +186,13 @@ jobs:
         with:
           files: |
             *.env
-            *.repos
             .github/actions/combine-multi-arch-images/action.yaml
             .github/actions/docker-build-and-push*/action.yaml
             .github/workflows/docker-build-and-push.yaml
             ansible-galaxy-requirements.yaml
             ansible/**
             docker/**
+            src/**
 
       - name: Free disk space
         if: ${{ runner.environment == 'github-hosted' &&
@@ -297,13 +297,13 @@ jobs:
         with:
           files: |
             *.env
-            *.repos
             .github/actions/combine-multi-arch-images/action.yaml
             .github/actions/docker-build-and-push*/action.yaml
             .github/workflows/docker-build-and-push.yaml
             ansible-galaxy-requirements.yaml
             ansible/**
             docker/**
+            src/**
 
       - name: Free disk space
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
