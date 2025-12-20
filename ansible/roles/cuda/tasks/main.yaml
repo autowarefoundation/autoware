@@ -1,3 +1,4 @@
+# cspell:ignore libnvjpeg
 - name: Get CUDA architecture name
   ansible.builtin.shell: |
     if [ "$(uname -m)" = "x86_64" ]; then
