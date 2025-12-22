@@ -1,3 +1,4 @@
+# cspell:ignore libnvjpeg
 - name: Get CUDA architecture name
   ansible.builtin.shell: |
     if [ "$(uname -m)" = "x86_64" ]; then
@@ -36,6 +37,8 @@
       - libcurand-dev-{{ cuda__dash_case_cuda_version.stdout }}
       - cuda-nvml-dev-{{ cuda__dash_case_cuda_version.stdout }}
       - cuda-nvrtc-dev-{{ cuda__dash_case_cuda_version.stdout }}
+      - libnpp-dev-{{ cuda__dash_case_cuda_version.stdout }}
+      - libnvjpeg-dev-{{ cuda__dash_case_cuda_version.stdout }}
     update_cache: true
   when: install_devel == 'y'
 
@@ -47,6 +50,8 @@
       - libcusparse-{{ cuda__dash_case_cuda_version.stdout }}
       - libcublas-{{ cuda__dash_case_cuda_version.stdout }}
       - libcurand-{{ cuda__dash_case_cuda_version.stdout }}
+      - libnpp-{{ cuda__dash_case_cuda_version.stdout }}
+      - libnvjpeg-{{ cuda__dash_case_cuda_version.stdout }}
     update_cache: true
   when: install_devel == 'N'
 
