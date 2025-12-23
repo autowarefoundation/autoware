@@ -37,7 +37,15 @@ From: <https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#net
 wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
 
 os=ubuntu2204
-wget https://developer.download.nvidia.com/compute/cuda/repos/$os/$(uname -m)/cuda-keyring_1.1-1_all.deb
+arch_dir=$(
+  case "$(dpkg --print-architecture)" in
+    amd64) echo x86_64 ;;
+    aarch64) echo arm64 ;;
+    *) echo "$(dpkg --print-architecture)";;
+  esac
+)
+
+wget "https://developer.download.nvidia.com/compute/cuda/repos/${os}/${arch_dir}/cuda-keyring_1.1-1_all.deb"
 sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
 cuda_version_dashed=$(eval sed -e "s/[.]/-/g" <<< "${cuda_version}")
