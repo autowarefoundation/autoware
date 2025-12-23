@@ -18,10 +18,6 @@ on:
       autoware_base_cuda_image:
         value: ${{ jobs.load-env.outputs.autoware_base_cuda_image }}
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   load-env:
     runs-on: ubuntu-22.04
