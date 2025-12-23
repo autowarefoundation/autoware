@@ -1,7 +1,6 @@
 name: keep-build-cache-small
 
 on:
-  workflow_call:
   workflow_dispatch:
   schedule:
     - cron: 0 6 * * *
