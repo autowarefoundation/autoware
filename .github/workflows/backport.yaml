@@ -1,3 +1,7 @@
+# This file is automatically synced from:
+# https://github.com/autowarefoundation/sync-file-templates
+# To make changes, update the source repository and follow the guidelines in its README.
+
 name: backport
 on:
   pull_request_target:
@@ -28,6 +32,28 @@ jobs:
           private_key: ${{ secrets.PRIVATE_KEY }}
 
       - uses: tibdex/backport@v2
+        id: backport
         with:
           github_token: ${{ steps.generate-token.outputs.token }}
           title_template: "<%= title %> (backport #<%= number %>)"
+
+      - name: Request review from original author
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          PR_JSON: ${{ steps.backport.outputs.created_pull_requests }}
+          ORIGINAL_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          set -e
+          echo "Created PRs JSON: $PR_JSON"
+          echo "Original PR Author: $ORIGINAL_AUTHOR"
+
+          # Use 'jq' to parse the JSON and extract all PR numbers
+          pr_numbers=($(echo "$PR_JSON" | jq -r 'to_entries | .[] | .value'))
+
+          # Loop through the array of PR numbers
+          for pr_num in "${pr_numbers[@]}"; do
+            if [ -n "$pr_num" ]; then
+              echo "Requesting review for PR #$pr_num from $ORIGINAL_AUTHOR..."
+              gh pr edit "$pr_num" --add-reviewer "$ORIGINAL_AUTHOR" --repo "${{ github.repository }}"
+            fi
+          done
