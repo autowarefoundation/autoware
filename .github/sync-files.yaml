@@ -5,7 +5,6 @@
     - source: .github/ISSUE_TEMPLATE/config.yml
     - source: .github/ISSUE_TEMPLATE/task.yaml
     - source: .github/dependabot.yaml
-    - source: .github/pull_request_template.md
     - source: .github/stale.yml
     - source: .github/workflows/cancel-previous-workflows.yaml
     - source: .github/workflows/comment-on-pr.yaml
