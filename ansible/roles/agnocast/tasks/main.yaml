@@ -65,6 +65,12 @@
     creates: /etc/apt/keyrings/agnocast-ppa.gpg
   become: true
 
+- name: Remove temporary GPG key file
+  ansible.builtin.file:
+    path: /tmp/agnocast-ppa.asc
+    state: absent
+  become: true
+
 - name: Verify GPG key fingerprint
   ansible.builtin.shell: |
     set -o pipefail
