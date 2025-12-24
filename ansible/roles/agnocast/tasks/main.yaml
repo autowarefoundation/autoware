@@ -54,6 +54,7 @@
     url: https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xCFDB1950382092423DF37D3E075CD8B5C91E5ACA
     dest: /tmp/agnocast-ppa.asc
     mode: "0644"
+  become: true
   register: agnocast_gpg_key_download
 
 - name: Convert GPG key to binary format and install
