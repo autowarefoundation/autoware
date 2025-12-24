@@ -6,10 +6,6 @@ name: comment-on-pr
 on:
   pull_request_target:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   comment-on-pr:
     runs-on: ubuntu-22.04
