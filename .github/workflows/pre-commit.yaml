@@ -3,6 +3,10 @@ name: pre-commit
 on:
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pre-commit:
     if: ${{ github.event.repository.private }} # Use pre-commit.ci for public repositories

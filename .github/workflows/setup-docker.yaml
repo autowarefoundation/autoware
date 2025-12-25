@@ -3,6 +3,10 @@ name: setup-docker
 on:
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   setup-docker:
     runs-on: ubuntu-22.04

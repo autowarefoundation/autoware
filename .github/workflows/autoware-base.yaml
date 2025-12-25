@@ -20,6 +20,10 @@ on:
     - cron: 0 0 15 * * # every 15th of the month
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   autoware-base:
     strategy:

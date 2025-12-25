@@ -1,10 +1,13 @@
 name: keep-build-cache-small
 
 on:
-  workflow_call:
   workflow_dispatch:
   schedule:
     - cron: 0 6 * * *
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   keep-build-cache-small:
