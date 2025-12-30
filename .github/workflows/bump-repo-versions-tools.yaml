@@ -31,5 +31,5 @@ jobs:
           targets: major minor patch
           base_branch: main
           new_branch_prefix: feat/update-
-          autoware_repos_file_name: tools.repos
+          autoware_repos_file_name: repositories/tools.repos
           verbosity: 0

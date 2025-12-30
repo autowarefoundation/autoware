@@ -31,5 +31,5 @@ jobs:
           targets: major minor
           base_branch: main
           new_branch_prefix: feat/update-
-          autoware_repos_file_name: simulator.repos
+          autoware_repos_file_name: repositories/simulator.repos
           verbosity: 0
