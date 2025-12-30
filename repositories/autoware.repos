@@ -19,7 +19,7 @@ repositories:
   core/autoware_utils:
     type: git
     url: https://github.com/autowarefoundation/autoware_utils.git
-    version: 1.4.2
+    version: 1.5.0
   core/autoware_lanelet2_extension:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
