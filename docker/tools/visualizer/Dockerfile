@@ -25,6 +25,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   openbox \
   tigervnc-standalone-server \
   tigervnc-common \
+  tigervnc-tools \
   novnc \
   websockify \
   python3-numpy \
