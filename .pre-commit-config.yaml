@@ -5,7 +5,6 @@
 # https://pre-commit.ci/#configuration
 ci:
   autofix_commit_msg: "style(pre-commit): autofix"
-  # we already have our own daily update mechanism, we set this to quarterly
   autoupdate_schedule: quarterly
   autoupdate_commit_msg: "ci(pre-commit): quarterly autoupdate"
 
@@ -26,7 +25,7 @@ repos:
         args: [--markdown-linebreak-ext=md]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.46.0
+    rev: v0.47.0
     hooks:
       - id: markdownlint
         args: [-c, .markdownlint.yaml, --fix]
@@ -35,6 +34,7 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
+        args: [--no-error-on-unmatched-pattern]
 
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.37.1
@@ -73,14 +73,14 @@ repos:
       - id: isort
         args: [--profile=black, --line-length=100]
 
-  - repo: https://github.com/psf/black
-    rev: 25.11.0
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 25.12.0
     hooks:
       - id: black
         args: [--line-length=100]
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v21.1.6
+    rev: v21.1.8
     hooks:
       - id: clang-format
         types_or: [c++, c, cuda]
@@ -93,7 +93,7 @@ repos:
         exclude: .cu
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.35.0
+    rev: 0.36.0
     hooks:
       - id: check-metaschema
         files: ^.+/schema/.*schema\.json$
