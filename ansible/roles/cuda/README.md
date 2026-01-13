@@ -51,6 +51,9 @@ sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
 cuda_version_dashed=$(eval sed -e "s/[.]/-/g" <<< "${cuda_version}")
 sudo apt-get -y install cuda-toolkit-${cuda_version_dashed}
+```
+
+```bash
 # ⚠️ this is the minimum version
 sudo apt-get install -y cuda-drivers-570
 
