@@ -15,7 +15,8 @@ This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
 ### Version compatibility
 
-Autoware currently uses CUDA `12.8` which corresponds to the NVIDIA driver version `570` and is minimum required driver version.
+- CUDA version `12.8`.
+- NVIDIA driver version `570` or **newer**.
 
 #### 🛠️ For Advanced Users
 
