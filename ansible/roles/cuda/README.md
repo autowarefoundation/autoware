@@ -1,6 +1,6 @@
 # cuda
 
-This role installs [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) following [this page](https://developer.nvidia.com/cuda-12-4-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network) and [this page](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions).
+This role installs [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) following [this page](https://developer.nvidia.com/cuda-12-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network) and [this page](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions).
 
 This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
@@ -15,9 +15,8 @@ This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
 ### Version compatibility
 
-- Autoware requires **CUDA 12.4** at minimum, which corresponds to **NVIDIA driver version 550**.
-- Autoware is fully compatible with the newer CUDA release: **CUDA 12.8**.
-- Autoware runs reliably with the **latest NVIDIA GPU drivers**.
+- CUDA version `12.8`.
+- NVIDIA driver version `570` or **newer**.
 
 #### 🛠️ For Advanced Users
 
@@ -56,7 +55,7 @@ sudo apt-get -y install cuda-toolkit-${cuda_version_dashed}
 
 ```bash
 # ⚠️ this is the minimum version
-sudo apt-get install -y cuda-drivers-550
+sudo apt-get install -y cuda-drivers-570
 
 # ✅ latest version is OK
 apt search '^nvidia-driver-[0-9]+'
