@@ -50,7 +50,12 @@ sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
 cuda_version_dashed=$(eval sed -e "s/[.]/-/g" <<< "${cuda_version}")
 sudo apt-get -y install cuda-toolkit-${cuda_version_dashed}
+# ⚠️ this is the minimum version
 sudo apt-get install -y cuda-drivers-570
+
+# ✅ latest version is OK
+apt search '^nvidia-driver-[0-9]+'
+sudo apt install nvidia-driver-580  # or whichever is latest
 ```
 
 Perform the post installation actions:
