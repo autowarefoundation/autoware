@@ -1,20 +1,9 @@
 # cspell:ignore openbox, VNC, tigervnc, novnc, websockify, newkey, xstartup, keyout
-FROM ghcr.io/autowarefoundation/autoware:universe AS universe
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-# Extract RViz configs for visualizer
-# hadolint ignore=SC1091
-RUN source /opt/autoware/setup.bash \
-  && RVIZ_PATH="$(ros2 pkg prefix --share autoware_launch)/rviz" \
-  && cp -r "$RVIZ_PATH" /autoware/rviz
-
-### visualizer
 FROM ghcr.io/autowarefoundation/autoware:universe-visualization AS visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
 
-COPY --from=universe /autoware/rviz /autoware/rviz
 WORKDIR /autoware
 
 # Install openbox, VNC, and simulator dependencies
@@ -48,7 +37,8 @@ RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /root/.bashrc && \
   echo "source /opt/autoware/setup.bash" >> /root/.bashrc
 
 # Copy startup scripts
-COPY docker/tools/visualizer/xstartup /root/.vnc/xstartup
+COPY docker/tools/visualizer/etc/visualizer.launch.xml /autoware/visualizer.launch.xml
+COPY docker/tools/visualizer/etc/xstartup /root/.vnc/xstartup
 COPY docker/tools/visualizer/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && chmod +x /root/.vnc/xstartup
 ENTRYPOINT ["/entrypoint.sh"]
