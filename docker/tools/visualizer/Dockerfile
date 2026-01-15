@@ -1,5 +1,5 @@
 # cspell:ignore openbox, VNC, tigervnc, novnc, websockify, newkey, xstartup, keyout
-FROM ghcr.io/autowarefoundation/autoware:universe-visualization AS visualizer
+FROM ghcr.io/autowarefoundation/autoware:universe AS visualizer
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
