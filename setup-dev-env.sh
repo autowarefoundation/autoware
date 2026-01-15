@@ -36,7 +36,7 @@ check_environment() {
     # Check OS
     if [ -f /etc/os-release ]; then
         source /etc/os-release
-        if [[ "$VERSION_ID" != "22.04" && "$VERSION_ID" != "24.04" ]]; then
+        if [[ $VERSION_ID != "22.04" && $VERSION_ID != "24.04" ]]; then
             echo -e "\e[31m[ERROR] Unsupported OS version: $VERSION_ID. Only 22.04 and 24.04 are supported.\e[0m"
             errors=$((errors + 1))
         else
@@ -64,9 +64,9 @@ check_environment() {
         echo -e "\e[33m[WARNING] pipx is not in PATH. It might be installed but not in PATH.\e[0m"
         # Try to find it in likely locations
         if [ -f "$HOME/.local/bin/pipx" ]; then
-             echo -e "\e[33m[INFO] pipx found at $HOME/.local/bin/pipx.\e[0m"
+            echo -e "\e[33m[INFO] pipx found at $HOME/.local/bin/pipx.\e[0m"
         else
-             errors=$((errors + 1))
+            errors=$((errors + 1))
         fi
     fi
 
@@ -77,7 +77,7 @@ check_environment() {
         echo -e "\e[31m[ERROR] ansible-playbook is missing or not in PATH.\e[0m"
         errors=$((errors + 1))
     fi
-    
+
     if [ $errors -eq 0 ]; then
         echo -e "\e[32mEnvironment check passed.\e[0m"
         return 0
