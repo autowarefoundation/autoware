@@ -43,3 +43,12 @@ repositories:
     type: git
     url: https://github.com/tier4/autoware_system_designer.git
     version: main
+  sensor_component/external/nebula:
+    type: git
+    url: https://github.com/tier4/nebula.git
+    version: main
+  sensor_component/external/sync_tooling_msgs:  # For Nebula SYNC.TOOLING support
+    type: git
+    url: https://github.com/tier4/sync_tooling_msgs.git
+    version: v0.2.3
+    base: true
