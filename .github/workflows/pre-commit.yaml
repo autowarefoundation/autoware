@@ -1,7 +1,15 @@
+# This file is automatically synced from:
+# https://github.com/autowarefoundation/sync-file-templates
+# To make changes, update the source repository and follow the guidelines in its README.
+
 name: pre-commit
 
 on:
   pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   pre-commit:

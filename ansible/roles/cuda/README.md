@@ -1,6 +1,6 @@
 # cuda
 
-This role installs [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) following [this page](https://developer.nvidia.com/cuda-12-4-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network) and [this page](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions).
+This role installs [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) following [this page](https://developer.nvidia.com/cuda-12-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network) and [this page](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions).
 
 This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
@@ -15,7 +15,8 @@ This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
 ### Version compatibility
 
-Autoware currently uses CUDA `12.4` which corresponds to the NVIDIA driver version `550` and is minimum required driver version.
+- CUDA version `12.8`.
+- NVIDIA driver version `570` or **newer**.
 
 #### 🛠️ For Advanced Users
 
@@ -37,12 +38,28 @@ From: <https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#net
 wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
 
 os=ubuntu2204
-wget https://developer.download.nvidia.com/compute/cuda/repos/$os/$(uname -m)/cuda-keyring_1.1-1_all.deb
+arch_dir=$(
+  case "$(dpkg --print-architecture)" in
+    amd64) echo x86_64 ;;
+    aarch64) echo arm64 ;;
+    *) echo "$(dpkg --print-architecture)";;
+  esac
+)
+
+wget "https://developer.download.nvidia.com/compute/cuda/repos/${os}/${arch_dir}/cuda-keyring_1.1-1_all.deb"
 sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
 cuda_version_dashed=$(eval sed -e "s/[.]/-/g" <<< "${cuda_version}")
 sudo apt-get -y install cuda-toolkit-${cuda_version_dashed}
-sudo apt-get install -y cuda-drivers-550
+```
+
+```bash
+# ⚠️ this is the minimum version
+sudo apt-get install -y cuda-drivers-570
+
+# ✅ latest version is OK
+apt search '^nvidia-driver-[0-9]+'
+sudo apt install nvidia-driver-580  # or whichever is latest
 ```
 
 Perform the post installation actions:

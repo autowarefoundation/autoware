@@ -28,39 +28,47 @@
 - name: Download bevfusion/bevfusion_lidar.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v1/bevfusion_lidar.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/bevfusion_lidar.onnx
     dest: "{{ data_dir }}/bevfusion/bevfusion_lidar.onnx"
     mode: "644"
-    checksum: sha256:9c3f5fbcda4fd162075464b3ad01b0fcdb96ebff99cee7fc07b4ffb4a5682b95
+    checksum: sha256:5c29087963bf2c4dc02bf45c29d459303be602d63f9b6adff22a75c9cfb459a6
 
 - name: Download bevfusion/bevfusion_camera_lidar.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v1/bevfusion_camera_lidar.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/bevfusion_camera_lidar.onnx
     dest: "{{ data_dir }}/bevfusion/bevfusion_camera_lidar.onnx"
     mode: "644"
-    checksum: sha256:27ae64a33b8080d504ac4a75659bab9766f9f98bfdd226665e44a60a385106f0
+    checksum: sha256:aa78d2f219146cb1423287643bbef81666d429ddcde4432a2e51db3f212a7c68
+
+- name: Download bevfusion/bevfusion_image_backbone.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/bevfusion_image_backbone.onnx
+    dest: "{{ data_dir }}/bevfusion/bevfusion_image_backbone.onnx"
+    mode: "644"
+    checksum: sha256:799af1e486b5c1245c8e2783bc77522d49e4a6535320ae77eba1b0f829385797
 
 - name: Download bevfusion/ml_package_bevfusion_lidar.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v1/ml_package_bevfusion_lidar.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/ml_package_bevfusion_lidar.param.yaml
     dest: "{{ data_dir }}/bevfusion/ml_package_bevfusion_lidar.param.yaml"
     mode: "644"
-    checksum: sha256:4c07293e13b0f3ba7a1ef50158bffa44bc4d8b8d5aec991d5f2bb8ab4e8bb21b
+    checksum: sha256:866265b9f0fc8c17805c0974339d3c7c4e601c1aa212818971fc650d71782181
 
 - name: Download bevfusion/ml_package_bevfusion_camera_lidar.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v1/ml_package_bevfusion_camera_lidar.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/ml_package_bevfusion_camera_lidar.param.yaml
     dest: "{{ data_dir }}/bevfusion/ml_package_bevfusion_camera_lidar.param.yaml"
     mode: "644"
-    checksum: sha256:426dd08a029b1005f26597d3a4f56ec80f22ff1746724bbd2fcdf8ff3b906b3e
+    checksum: sha256:50707efcbb7fa80527d0a2effe677557d0be5df5cd72276f9af152399f27c719
 
 - name: Download bevfusion/detection_class_remapper.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v1/detection_class_remapper.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/detection_class_remapper.param.yaml
     dest: "{{ data_dir }}/bevfusion/detection_class_remapper.param.yaml"
     mode: "644"
     checksum: sha256:928f9eb14ac042d725909f12b2be1532c16b09a683485c5936cf04fb04728520
@@ -486,49 +494,94 @@
     mode: "755"
     state: directory
 
-- name: Create diffusion_planner v0.1 directory inside {{ data_dir }}
+- name: Create diffusion_planner v2.0 directory inside {{ data_dir }}
   ansible.builtin.file:
-    path: "{{ data_dir }}/diffusion_planner/v0.1"
+    path: "{{ data_dir }}/diffusion_planner/v2.0"
     mode: "755"
     state: directory
 
-- name: Download diffusion_planner/v0.1/diffusion_planner.onnx
+- name: Download diffusion_planner/v2.0/diffusion_planner.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v0.1/diffusion_planner.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v0.1/diffusion_planner.onnx"
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v2.0/diffusion_planner.onnx
+    dest: "{{ data_dir }}/diffusion_planner/v2.0/diffusion_planner.onnx"
     mode: "644"
-    checksum: sha256:7028f68639abc9a3fb96f2ef73cb3f7795e0471a9a1e88201527331168abe8c1
+    checksum: sha256:622c2c2f21115900c712f80b58560b5a6425be5f70d5aa82a96ef0b13af8c24b
 
-- name: Download diffusion_planner/v0.1/diffusion_planner.param.json
+- name: Download diffusion_planner/v2.0/diffusion_planner.param.json
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v0.1/diffusion_planner.param.json
-    dest: "{{ data_dir }}/diffusion_planner/v0.1/diffusion_planner.param.json"
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v2.0/diffusion_planner.param.json
+    dest: "{{ data_dir }}/diffusion_planner/v2.0/diffusion_planner.param.json"
     mode: "644"
-    checksum: sha256:346bbd953551206dabcb02198269371dc336ea552b71cbc96105f1fa7f134264
+    checksum: sha256:bf41f12d85b31e363acf84f46d6a9e4e28da6c2ccce0e3fcf91ee4910f4b8453
 
-- name: Create diffusion_planner v1.0 directory inside {{ data_dir }}
+- name: Create diffusion_planner v3.0 directory inside {{ data_dir }}
   ansible.builtin.file:
-    path: "{{ data_dir }}/diffusion_planner/v1.0"
+    path: "{{ data_dir }}/diffusion_planner/v3.0"
     mode: "755"
     state: directory
 
-- name: Download diffusion_planner/v1.0/diffusion_planner.onnx
+- name: Download diffusion_planner/v3.0/diffusion_planner.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v1.0/diffusion_planner.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v1.0/diffusion_planner.onnx"
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v3.0/diffusion_planner.onnx
+    dest: "{{ data_dir }}/diffusion_planner/v3.0/diffusion_planner.onnx"
     mode: "644"
-    checksum: sha256:35094c876426655ccd384f1046f84a2bf0ac32a935335c6b659c1364870dc928
+    checksum: sha256:3026918b55869b02ea561c1e1b9fed05c34092294c035d743f1d1cb756f4abcc
 
-- name: Download diffusion_planner/v1.0/diffusion_planner.param.json
+- name: Download diffusion_planner/v3.0/diffusion_planner.param.json
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v1.0/diffusion_planner.param.json
-    dest: "{{ data_dir }}/diffusion_planner/v1.0/diffusion_planner.param.json"
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v3.0/diffusion_planner.param.json
+    dest: "{{ data_dir }}/diffusion_planner/v3.0/diffusion_planner.param.json"
     mode: "644"
-    checksum: sha256:215493daac110055990318b7916fbf1a7d6b08feea9c27cdd6403df31557d992
+    checksum: sha256:d726ce7b257ddaf39da8a7dfbd016512e866843c26a9622fdec8a59b45da3e04
+
+# tensorrt_vad
+- name: Create tensorrt_vad directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/vad"
+    mode: "755"
+    state: directory
+
+- name: Create tensorrt_vad v0.1 directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/vad/v0.1"
+    mode: "755"
+    state: directory
+
+- name: Download tensorrt_vad/vad-carla-tiny_backbone.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny_backbone.onnx
+    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny_backbone.onnx"
+    mode: "644"
+    checksum: sha256:04b925f2750fd1c4adf16b5aae9c149d0baa39185e99d141232ebe20bddba4da
+
+- name: Download tensorrt_vad/vad-carla-tiny_head.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny_head.onnx
+    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny_head.onnx"
+    mode: "644"
+    checksum: sha256:31f49a592a764ce82bbe6e26d0bfc99dc8a9613628884dc73dd5e67521ff3e9e
+
+- name: Download tensorrt_vad/vad-carla-tiny_head_no_prev.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny_head_no_prev.onnx
+    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny_head_no_prev.onnx"
+    mode: "644"
+    checksum: sha256:6a89d479e0717b1e526f1aa3a1137c631a9ef854e810d0328a035aae11818c2a
+
+- name: Download tensorrt_vad/vad-carla-tiny.param.json
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny.param.json
+    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny.param.json"
+    mode: "644"
+    checksum: sha256:03d3187fed3c70f761456afc2e93e18c1765113b1c1580ffa78ab42b10dbd179
 
 # traffic_light_fine_detector
 - name: Create traffic_light_fine_detector directory inside {{ data_dir }}

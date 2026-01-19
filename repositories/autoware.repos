@@ -7,36 +7,36 @@ repositories:
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
-    version: 1.9.0
+    version: 1.9.1
   core/autoware_internal_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_internal_msgs.git
-    version: 1.12.0
+    version: 1.12.1
   core/autoware_cmake:
     type: git
     url: https://github.com/autowarefoundation/autoware_cmake.git
-    version: 1.0.2
+    version: 1.1.0
   core/autoware_utils:
     type: git
     url: https://github.com/autowarefoundation/autoware_utils.git
-    version: 1.4.2
+    version: 1.5.0
   core/autoware_lanelet2_extension:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
-    version: 0.9.0
+    version: 0.10.0
   core/autoware_core:
     type: git
     url: https://github.com/autowarefoundation/autoware_core.git
-    version: 1.4.0
+    version: 1.5.0
   core/autoware_rviz_plugins:
     type: git
     url: https://github.com/autowarefoundation/autoware_rviz_plugins.git
-    version: 0.2.0
+    version: 0.3.0
   # universe
   universe/autoware_universe:
     type: git
     url: https://github.com/autowarefoundation/autoware_universe.git
-    version: 0.47.1
+    version: 0.48.0
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Migrate to AD API and remove this repository entry.
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
@@ -44,7 +44,7 @@ repositories:
   universe/external/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
-    version: v0.51.0
+    version: v0.58.0
   # Fix the version not to merge https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs/pull/9
   universe/external/morai_msgs:
     type: git
@@ -98,7 +98,7 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
-    version: 0.47.0
+    version: 0.48.0
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git

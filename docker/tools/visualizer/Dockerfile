@@ -1,5 +1,6 @@
 # cspell:ignore openbox, VNC, tigervnc, novnc, websockify, newkey, xstartup, keyout
 FROM ghcr.io/autowarefoundation/autoware:universe AS universe
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Extract RViz configs for visualizer
 # hadolint ignore=SC1091
@@ -24,6 +25,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   openbox \
   tigervnc-standalone-server \
   tigervnc-common \
+  tigervnc-tools \
   novnc \
   websockify \
   python3-numpy \

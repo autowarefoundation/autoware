@@ -75,6 +75,9 @@ set_cuda_options() {
     fi
 }
 
+# Note: Image tags are loaded from env files (amd64.env or amd64_jazzy.env)
+# via the load_env() function, which sets $autoware_base_image and $autoware_base_cuda_image
+
 # Set build options
 set_build_options() {
     if [ -n "$option_target" ]; then
@@ -115,13 +118,11 @@ set_arch_lib_dir() {
 
 # Load env
 load_env() {
-    # Override base image variables for jazzy
-    if [ "$ros_distro" = "jazzy" ]; then
-        source "$WORKSPACE_ROOT/amd64_jazzy.env"
-    else
+    if [ "$ros_distro" = "humble" ]; then
         source "$WORKSPACE_ROOT/amd64.env"
+    else
+        source "$WORKSPACE_ROOT/amd64_jazzy.env"
     fi
-
     if [ "$platform" = "linux/arm64" ]; then
         source "$WORKSPACE_ROOT/arm64.env"
     fi
@@ -132,12 +133,10 @@ clone_repositories() {
     cd "$WORKSPACE_ROOT"
     if [ ! -d "src" ]; then
         mkdir -p src
-        vcs import src <autoware.repos
-        vcs import src <extra-packages.repos
+        vcs import src <repositories/autoware.repos
     else
         echo "Source directory already exists. Updating repositories..."
-        vcs import src <autoware.repos
-        vcs import src <extra-packages.repos
+        vcs import src <repositories/autoware.repos
         vcs pull src
     fi
 }

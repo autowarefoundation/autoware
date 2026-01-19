@@ -15,6 +15,10 @@ on:
         type: string
         required: true
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   github-release:
     runs-on: ubuntu-22.04
@@ -60,7 +64,7 @@ jobs:
         run: |
           gh release ${{ steps.select-verb.outputs.verb }} "${{ steps.set-tag-name.outputs.tag-name }}" \
             --draft \
-            --title "Release ${{ steps.set-tag-name.outputs.tag-name }}" \
+            --title "${{ steps.set-tag-name.outputs.tag-name }}" \
             --notes "$NOTES"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

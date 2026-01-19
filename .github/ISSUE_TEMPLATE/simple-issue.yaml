@@ -1,0 +1,19 @@
+name: Simple Issue
+description: Create a simple issue
+body:
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      description: Confirm the following items before proceeding. If one cannot be satisfied, create a discussion thread instead.
+      options:
+        - label: I've read the [contribution guidelines](https://github.com/autowarefoundation/autoware/blob/main/CONTRIBUTING.md).
+          required: true
+        - label: I've searched other issues and no duplicate issues were found.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Description
+      description: Write a brief description of the issue.
+    validations:
+      required: true

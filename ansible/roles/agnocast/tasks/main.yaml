@@ -1,3 +1,27 @@
+# Remove legacy agnocast PPA configuration (if exists)
+- name: Remove legacy agnocast PPA via add-apt-repository
+  ansible.builtin.command: add-apt-repository --remove ppa:t4-system-software/agnocast -y
+  register: agnocast_legacy_ppa_remove
+  failed_when: false
+  changed_when: agnocast_legacy_ppa_remove.rc == 0
+  become: true
+
+- name: Remove legacy agnocast sources.list files
+  ansible.builtin.shell: rm -f /etc/apt/sources.list.d/*agnocast*.list
+  args:
+    executable: /bin/bash
+  register: agnocast_legacy_sources_remove
+  changed_when: false
+  become: true
+
+- name: Remove legacy agnocast GPG keys from trusted.gpg.d
+  ansible.builtin.shell: rm -f /etc/apt/trusted.gpg.d/*agnocast*.gpg
+  args:
+    executable: /bin/bash
+  register: agnocast_legacy_gpg_remove
+  changed_when: false
+  become: true
+
 # TODO(rej55, sykwer): IPv6 support
 - name: Save current IPv6 settings
   ansible.builtin.shell: |
@@ -18,11 +42,59 @@
     - { name: net.ipv6.conf.default.disable_ipv6 }
   become: true
 
-- name: Add agnocast PPA repository while IPv6 is disabled
-  ansible.builtin.apt_repository:
-    repo: ppa:t4-system-software/agnocast
-    state: present
-    update_cache: false
+- name: Create /etc/apt/keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Download agnocast PPA GPG key while IPv6 is disabled
+  ansible.builtin.get_url:
+    url: https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xCFDB1950382092423DF37D3E075CD8B5C91E5ACA
+    dest: /tmp/agnocast-ppa.asc
+    mode: "0644"
+  become: true
+  register: agnocast_gpg_key_download
+
+- name: Convert GPG key to binary format and install
+  ansible.builtin.shell: |
+    gpg --dearmor < /tmp/agnocast-ppa.asc > /etc/apt/keyrings/agnocast-ppa.gpg
+    chmod 0644 /etc/apt/keyrings/agnocast-ppa.gpg
+  args:
+    creates: /etc/apt/keyrings/agnocast-ppa.gpg
+  become: true
+
+- name: Remove temporary GPG key file
+  ansible.builtin.file:
+    path: /tmp/agnocast-ppa.asc
+    state: absent
+  become: true
+
+- name: Verify GPG key fingerprint
+  ansible.builtin.shell: |
+    set -o pipefail
+    gpg --show-keys /etc/apt/keyrings/agnocast-ppa.gpg | grep -q 'CFDB1950382092423DF37D3E075CD8B5C91E5ACA'
+  args:
+    executable: /bin/bash
+  register: agnocast_gpg_verify
+  failed_when: agnocast_gpg_verify.rc != 0
+  changed_when: false
+
+- name: Display GPG key verification success
+  ansible.builtin.debug:
+    msg: "GPG key fingerprint verified successfully: CFDB1950382092423DF37D3E075CD8B5C91E5ACA"
+
+- name: Add agnocast repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/agnocast.sources
+    content: |
+      Types: deb
+      URIs: http://ppa.launchpad.net/t4-system-software/agnocast/ubuntu
+      Suites: jammy
+      Components: main
+      Signed-By: /etc/apt/keyrings/agnocast-ppa.gpg
+    mode: "0644"
   become: true
 
 - name: Restore original IPv6 settings # noqa: no-changed-when

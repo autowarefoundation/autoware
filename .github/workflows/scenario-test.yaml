@@ -6,6 +6,10 @@ on:
   push:
     branches:
       - main
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   scenario-test:
     runs-on: ubuntu-24.04
@@ -26,7 +30,7 @@ jobs:
             lsb-release \
             python3-pip \
             git
-          pip install --upgrade gdown vcstool
+          pip install --upgrade gdown vcs2l
       - name: Show memory info
         shell: bash
         run: free -h
@@ -35,8 +39,8 @@ jobs:
         run: |
           git clone https://github.com/autowarefoundation/autoware.git ~/autoware_ws
           cd ~/autoware_ws
-          mkdir src
-          vcs import src < simulator.repos
+          mkdir -p src
+          vcs import src < repositories/simulator.repos
       - name: Install ROS dependencies
         shell: bash
         run: |
