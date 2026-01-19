@@ -39,3 +39,7 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
     version: main
+  middleware/autoware_system_designer:
+    type: git
+    url: https://github.com/tier4/autoware_system_designer.git
+    version: main
