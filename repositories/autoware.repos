@@ -81,7 +81,7 @@ repositories:
   universe/external/trt_batched_nms:
     type: git
     url: https://github.com/autowarefoundation/trt_batched_nms.git
-    version: 1a9df130b4a5d96c25019b5793abbfde42d237ac
+    version: 0.1.0
   universe/external/cuda_blackboard:
     type: git
     url: https://github.com/autowarefoundation/cuda_blackboard.git
