@@ -61,7 +61,7 @@ repositories:
   universe/external/eagleye:
     type: git
     url: https://github.com/MapIV/eagleye.git
-    version: c1919448336e86a8dd9c94a337032c05fcf6c381
+    version: 575136ebba99892946d36d8398f228aee2136af0
   universe/external/rtklib_ros_bridge:
     type: git
     url: https://github.com/MapIV/rtklib_ros_bridge.git
