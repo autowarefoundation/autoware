@@ -1,50 +1,52 @@
 # docker_engine
 
-This role installs [Docker Engine](https://docs.docker.com/engine/) following the [installation guide](https://docs.docker.com/engine/install/ubuntu/) and sets up execution from non-root users following the [manual](https://docs.docker.com/engine/install/linux-postinstall/).
+This role installs [Docker Engine](https://docs.docker.com/engine/) following the [Official Installation Guide](https://docs.docker.com/engine/install/ubuntu/).
+Then it sets up execution from non-root users following the [Official Post Installation Steps](https://docs.docker.com/engine/install/linux-postinstall).
 
 ## Inputs
 
 None.
 
-## Manual Installation
+## Manual installation (Recommended)
 
-Install Docker Engine:
+> ℹ️ The steps below may differ from the role implementation.  
+> They reflect the **most up-to-date and preferred procedure** for manual installation.  
+> The role will be updated to align with these steps.
+
+### Install Docker Engine
 
 ```bash
 # Taken from: https://docs.docker.com/engine/install/ubuntu/
-# And: https://docs.docker.com/engine/install/linux-postinstall/
+# And: https://docs.docker.com/engine/install/linux-postinstall
 
 # Uninstall old versions
-sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt remove $(dpkg --get-selections docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc | cut -f1)
 
-# Install using the repository
-sudo apt-get update
+# Add Docker's official GPG key:
+sudo apt update
+sudo apt install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-sudo apt-get install \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release
+# Add the repository to Apt sources:
+sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
 
-# Add Docker’s official GPG key:
-sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-
-# Use the following command to set up the repository:
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# Install Docker Engine
-sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Verify that Docker Engine is installed correctly by running the hello-world image.
 sudo docker run hello-world
 # Note: This command downloads a test image and runs it in a container. When the container runs, it prints a message and exits.
 ```
 
-Perform the post-installation steps:
+### Post-Installation setup (non-root usage)
 
 ```bash
 # Post-installation steps for Linux
