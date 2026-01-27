@@ -21,8 +21,8 @@ repositories:
     version: main
   universe/autoware_universe:
     type: git
-    url: https://github.com/autowarefoundation/autoware_universe.git
-    version: main
+    url: https://github.com/isamu-takagi/autoware_universe.git
+    version: feat/remove-tier4-api-adapter
   universe/external/managed_transform_buffer:
     type: git
     url: https://github.com/autowarefoundation/managed_transform_buffer.git
