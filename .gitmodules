@@ -148,8 +148,3 @@
 	path = src/tools/tools
 	url = https://github.com/autowarefoundation/autoware_tools.git
 	branch = main
-[submodule "src/tools/plotjuggler_ros"]
-	# This should be removed after merged PR (https://github.com/PlotJuggler/plotjuggler-ros-plugins/pull/94)
-	path = src/tools/plotjuggler_ros
-	url = https://github.com/PlotJuggler/plotjuggler-ros-plugins.git
-	update = none

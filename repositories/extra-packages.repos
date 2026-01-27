@@ -7,5 +7,5 @@ repositories:
   vehicle/external/pacmod_interface:
     type: git
     url: https://github.com/tier4/pacmod_interface.git
-    version: 7da80108c801fb090e8f86df02c433f8f286fcb8
+    version: 2b93fb21d0bd2d9d2366856314577198cdbe2aa3
     branch: main
