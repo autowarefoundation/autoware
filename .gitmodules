@@ -79,7 +79,7 @@
 [submodule "src/autoware/universe/external/bevdet_vendor"]
 	path = src/autoware/universe/external/bevdet_vendor
 	url = https://github.com/autowarefoundation/bevdet_vendor.git
-	branch = bevdet_vendor-ros2
+	update = none
 [submodule "src/autoware/universe/external/trt_batched_nms"]
 	path = src/autoware/universe/external/trt_batched_nms
 	url = https://github.com/autowarefoundation/trt_batched_nms.git

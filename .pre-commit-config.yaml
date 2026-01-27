@@ -57,7 +57,7 @@ repos:
       - id: sort-package-xml
 
   - repo: https://github.com/paulsohn/pre-commit-hooks-submodules
-    rev: v0.0.0-pre4
+    rev: v0.0.0-pre5
     hooks:
       - id: check-gitmodules
       - id: sync-repos-files
