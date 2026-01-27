@@ -131,11 +131,7 @@ load_env() {
 # Clone repositories
 clone_repositories() {
     cd "$WORKSPACE_ROOT"
-    if [ -d "src" ]; then
-        rm -rf src
-    fi
     git submodule update --init --checkout src/autoware
-    git submodule update --init --checkout src/extra-packages
 }
 
 # Build images
