@@ -1,0 +1,11 @@
+repositories:
+  sensor_component/external/tamagawa_imu_driver:
+    type: git
+    url: https://github.com/tier4/tamagawa_imu_driver.git
+    version: fc939e9bfbf171986d2d558400a4a4fee97332c6
+    branch: ros2
+  vehicle/external/pacmod_interface:
+    type: git
+    url: https://github.com/tier4/pacmod_interface.git
+    version: 7da80108c801fb090e8f86df02c433f8f286fcb8
+    branch: main

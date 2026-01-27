@@ -56,6 +56,14 @@ repos:
       - id: ros-include-guard
       - id: sort-package-xml
 
+  - repo: https://github.com/paulsohn/pre-commit-hooks-submodules
+    rev: v0.0.0-pre
+    hooks:
+      - id: check-gitmodules
+      - id: check-submodules-branch
+      - id: sync-repos-files
+        args: [--repos-dir, repositories]
+
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.11.0.1
     hooks:
