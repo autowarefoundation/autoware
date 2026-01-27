@@ -204,7 +204,7 @@ RUN --mount=type=ssh \
 
 # Install rosdep dependencies
 COPY --from=rosdep-depend /rosdep-core-common-depend-packages.txt /tmp/rosdep-core-common-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-core-common-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -230,7 +230,7 @@ ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
 COPY --from=rosdep-depend /rosdep-core-depend-packages.txt /tmp/rosdep-core-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && cat /tmp/rosdep-core-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
@@ -251,7 +251,7 @@ ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
 COPY --from=rosdep-depend /rosdep-universe-common-depend-packages.txt /tmp/rosdep-universe-common-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -284,7 +284,7 @@ FROM universe-common-devel AS universe-common-devel-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set up CUDA development environment
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --module all --no-cuda-drivers openadkit --ros-distro "$ROS_DISTRO" \
   && pipx uninstall ansible \
@@ -300,7 +300,7 @@ ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
 COPY --from=rosdep-universe-sensing-perception-depend /rosdep-universe-sensing-perception-depend-packages.txt /tmp/rosdep-universe-sensing-perception-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -330,7 +330,7 @@ ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
 COPY --from=rosdep-universe-sensing-perception-depend /rosdep-universe-sensing-perception-depend-packages.txt /tmp/rosdep-universe-sensing-perception-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -360,7 +360,7 @@ ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
 COPY --from=rosdep-universe-localization-mapping-depend /rosdep-universe-localization-mapping-depend-packages.txt /tmp/rosdep-universe-localization-mapping-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -388,7 +388,7 @@ ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
 COPY --from=rosdep-universe-planning-control-depend /rosdep-universe-planning-control-depend-packages.txt /tmp/rosdep-universe-planning-control-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -423,7 +423,7 @@ ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
 COPY --from=rosdep-universe-vehicle-system-depend /rosdep-universe-vehicle-system-depend-packages.txt /tmp/rosdep-universe-vehicle-system-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -454,7 +454,7 @@ ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
 COPY --from=rosdep-universe-visualization-depend /rosdep-universe-visualization-depend-packages.txt /tmp/rosdep-universe-visualization-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -479,7 +479,7 @@ ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
 COPY --from=rosdep-universe-api-depend /rosdep-universe-api-depend-packages.txt /tmp/rosdep-universe-api-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -507,7 +507,7 @@ ENV CCACHE_DIR="/root/.ccache"
 
 # Install rosdep dependencies
 COPY --from=rosdep-universe-depend /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -543,7 +543,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install rosdep dependencies
 COPY --from=rosdep-universe-depend /rosdep-universe-depend-packages.txt /tmp/rosdep-universe-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
@@ -770,7 +770,7 @@ ARG LIB_DIR
 
 # Set up runtime environment
 COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \
@@ -796,7 +796,7 @@ ARG LIB_DIR
 
 # Set up runtime environment
 COPY --from=rosdep-universe-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
-# hadolint ignore=SC2002
+# hadolint ignore=SC2002,DL3009
 RUN --mount=type=ssh \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ./setup-dev-env.sh -y --module all --no-nvidia --no-cuda-drivers --runtime openadkit --ros-distro $ROS_DISTRO \

@@ -4,7 +4,7 @@
   vars_prompt:
     - name: prompt_install_nvidia
       prompt: |-
-        [Warning] Some Autoware components depend on the CUDA, cuDNN and TensorRT NVIDIA libraries which have end-user license agreements that should be reviewed before installation.
+        [Warning] Some Autoware components depend on the CUDA, and TensorRT NVIDIA libraries which have end-user license agreements that should be reviewed before installation.
         Install NVIDIA libraries? [y/N]
       private: false
   pre_tasks:
@@ -12,7 +12,6 @@
       ansible.builtin.debug:
         msg:
           - cuda_version: "{{ cuda_version }}"
-          - cudnn_version: "{{ cudnn_version }}"
     - name: Show a warning if the NVIDIA libraries will not be installed
       ansible.builtin.pause:
         seconds: 10

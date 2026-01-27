@@ -4,7 +4,7 @@
   vars_prompt:
     - name: prompt_install_nvidia
       prompt: |-
-        [Warning] Some Autoware components depend on the CUDA, cuDNN and TensorRT NVIDIA libraries which have end-user license agreements that should be reviewed before installation.
+        [Warning] Some Autoware components depend on the CUDA, and TensorRT NVIDIA libraries which have end-user license agreements that should be reviewed before installation.
         Install NVIDIA libraries? [y/N]
       private: false
     - name: prompt_download_artifacts
@@ -29,7 +29,6 @@
           - rosdistro: "{{ rosdistro }}"
           - rmw_implementation: "{{ rmw_implementation }}"
           - cuda_version: "{{ cuda_version }}"
-          - cudnn_version: "{{ cudnn_version }}"
           - tensorrt_version: "{{ tensorrt_version }}"
 
     - name: Show a warning if the NVIDIA libraries will not be installed
