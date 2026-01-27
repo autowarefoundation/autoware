@@ -1,5 +1,0 @@
-repositories:
-  tools:
-    type: git
-    url: https://github.com/autowarefoundation/autoware_tools.git
-    version: 0.5.0
