@@ -28,6 +28,11 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
+      - name: Initialize submodules
+        run: |
+          git submodule update --init --checkout
+        shell: bash
+
       - name: Run pre-commit
         uses: autowarefoundation/autoware-github-actions/pre-commit@v1
         with:

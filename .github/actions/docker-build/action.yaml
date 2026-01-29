@@ -8,9 +8,9 @@ inputs:
   cache-tag-suffix:
     description: Suffix of the target cache tag.
     required: true
-  additional-repos:
-    description: Additional target .repos file.
-    default: ""
+  use-nightly:
+    description: Whether to use nightly submodules.
+    default: false
     required: false
   build-args:
     description: Additional build args.
@@ -22,23 +22,15 @@ runs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Install vcs2l
+    - name: Initialize submodules
       run: |
-        sudo apt-get -y update
-        sudo apt-get -y install python3-pip
-        pipx install vcs2l
+        git submodule update --init --checkout src/autoware
       shell: bash
 
-    - name: Run vcs import
+    - name: Initialize submodules to nightly
+      if: ${{ inputs.use-nightly }}
       run: |
-        mkdir -p src
-        vcs import --shallow src < repositories/autoware.repos
-      shell: bash
-
-    - name: Import additional repositories
-      if: ${{ inputs.additional-repos != '' }}
-      run: |
-        vcs import --shallow --force src < ${{ inputs.additional-repos }}
+        git submodule update --remote src/autoware
       shell: bash
 
     - name: Cache ccache

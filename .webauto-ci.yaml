@@ -11,12 +11,6 @@ artifacts:
       type: custom
       runtime:
         type: standard1/amd64/large
-      source:
-        vcstool:
-          repositories_files:
-            - repositories/autoware.repos
-            - repositories/simulator.repos
-          import_path: src
       environment_variables:
         AUTOWARE_PATH: /opt/autoware
         DEBIAN_FRONTEND: noninteractive
@@ -37,6 +31,7 @@ artifacts:
               - .webauto-ci/main/environment-setup/**/*
         - name: autoware-setup
           user: autoware
+          workdir: /opt/autoware
           exec: ./.webauto-ci/main/autoware-setup/run.sh
           caches:
             - name: apt-lists
@@ -53,6 +48,7 @@ artifacts:
             enabled: true
         - name: autoware-build
           user: autoware
+          workdir: /opt/autoware
           exec: ./.webauto-ci/main/autoware-build/run.sh
           environment_variables:
             PARALLEL_WORKERS: "32"
@@ -67,7 +63,8 @@ artifacts:
           build_result_reuse:
             key_files:
               - .webauto-ci/main/autoware-build/**/*
-              - src/**/*
+              - src/autoware/**/*
+              - src/simulator/**/*
       base_container_image:
         from: ubuntu:22.04
       output_container_image:

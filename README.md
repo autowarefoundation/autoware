@@ -63,7 +63,7 @@ To learn more about using or developing Autoware, refer to the [Autoware documen
 ## Repository overview
 
 - [autowarefoundation/autoware](https://github.com/autowarefoundation/autoware)
-  - Meta-repository containing `.repos` files to construct an Autoware workspace.
+  - Meta-repository containing Autoware components as git submodules.
   - It is anticipated that this repository will be frequently forked by users, and so it contains minimal information to avoid unnecessary differences.
 - [autowarefoundation/autoware_core](https://github.com/autowarefoundation/autoware_core)
   - Main repository for high-quality, stable ROS packages for Autonomous Driving.
