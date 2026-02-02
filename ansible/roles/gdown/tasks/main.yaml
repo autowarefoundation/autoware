@@ -1,3 +1,10 @@
+- name: Install pipx
+  become: true
+  ansible.builtin.apt:
+    name: pipx
+    state: latest
+    update_cache: true
+
 - name: Install gdown to download files from CMakeLists.txt
   community.general.pipx:
     name: gdown
