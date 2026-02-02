@@ -64,6 +64,7 @@
     /tmp/rustup-init.sh -y --default-toolchain stable
   args:
     executable: /bin/bash
+    creates: "{{ ansible_env.HOME }}/.cargo/bin/rustup"
   when: build_tools_rustup_check.rc != 0
   environment:
     PATH: "{{ ansible_env.PATH }}"
