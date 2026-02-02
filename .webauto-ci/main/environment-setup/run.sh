@@ -5,7 +5,7 @@ apt-get update
 apt-get -y install sudo curl wget unzip gnupg lsb-release ccache python3-apt python3-pip apt-utils software-properties-common jq
 add-apt-repository universe
 
-pip install --no-cache-dir 'ansible==6.*'
+pip install --no-cache-dir 'ansible==10.*'
 
 user=autoware
 useradd -m "$user" -s /bin/bash
