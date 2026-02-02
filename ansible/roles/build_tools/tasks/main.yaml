@@ -82,7 +82,7 @@
     create: true
     mode: 0644
     insertafter: EOF
-    regexp: '^export PATH=.*\.cargo/bin'
+    regexp: ^export PATH=.*\.cargo/bin
 
 - name: Check if rustup is available after installation
   ansible.builtin.command: which rustup
