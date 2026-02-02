@@ -28,27 +28,66 @@ jobs:
       github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/load-env.yaml
 
-  docker-build:
+  docker-build-main:
+    name: docker-build (main)
     needs: load-env
-    strategy:
-      fail-fast: false
-      matrix:
-        build-type: [main, nightly, main-arm64]
-        include:
-          - build-type: main
-            platform: amd64
-            runner: "['self-hosted','Linux','X64']"
-            lib-dir: x86_64
-            container: ubuntu:22.04
-          - build-type: nightly
-            platform: amd64
-            runner: "['ubuntu-24.04']"
-            lib-dir: x86_64
-          - build-type: main-arm64
-            platform: arm64
-            runner: "['ubuntu-24.04-arm']"
-            lib-dir: aarch64
-    runs-on: ${{ fromJson(matrix.runner) }}
+    runs-on: [self-hosted, Linux, X64]
+    steps:
+      # https://github.com/actions/checkout/issues/211
+      - name: Change permission of workspace
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: step-security/changed-files@v46
+        with:
+          files: |
+            *.env
+            *.repos
+            .github/actions/docker-build/action.yaml
+            .github/workflows/health-check.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+            setup-dev-env.sh
+
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
+
+      - name: Build 'Autoware'
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
+        uses: ./.github/actions/docker-build
+        with:
+          platform: amd64
+          cache-tag-suffix: main
+          build-args: |
+            ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
+            AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
+            LIB_DIR=x86_64
+
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
+
+  docker-build-arm64:
+    name: docker-build (main-arm64)
+    needs: load-env
+    runs-on: ubuntu-24.04-arm
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
@@ -83,8 +122,7 @@ jobs:
           df -h
 
       - name: Free disk space
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' &&
-          matrix.build-type != 'main' }}
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware'
@@ -93,14 +131,74 @@ jobs:
           github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/docker-build
         with:
-          platform: ${{ matrix.platform }}
-          cache-tag-suffix: ${{ matrix.build-type }}
-          additional-repos: ${{ matrix.build-type == 'nightly' && 'repositories/autoware-nightly.repos' || '' }}
+          platform: arm64
+          cache-tag-suffix: main-arm64
           build-args: |
             ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
-            LIB_DIR=${{ matrix.lib-dir }}
+            LIB_DIR=aarch64
+
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
+
+  docker-build-nightly:
+    name: docker-build (nightly)
+    needs: [load-env, docker-build-arm64]
+    runs-on: ubuntu-24.04
+    steps:
+      # https://github.com/actions/checkout/issues/211
+      - name: Change permission of workspace
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: step-security/changed-files@v46
+        with:
+          files: |
+            *.env
+            *.repos
+            .github/actions/docker-build/action.yaml
+            .github/workflows/health-check.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+            setup-dev-env.sh
+
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
+
+      - name: Free disk space
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
+        uses: ./.github/actions/free-disk-space
+
+      - name: Build 'Autoware'
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
+        uses: ./.github/actions/docker-build
+        with:
+          platform: amd64
+          cache-tag-suffix: nightly
+          additional-repos: repositories/autoware-nightly.repos
+          build-args: |
+            ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
+            AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
+            LIB_DIR=x86_64
 
       - name: Show disk space
         if: always()
