@@ -43,3 +43,36 @@
   args:
     executable: /bin/bash
   changed_when: false
+
+- name: Check if rustup is installed
+  ansible.builtin.command: which rustup
+  register: rustup_check
+  changed_when: false
+  failed_when: false
+  environment:
+    PATH: "{{ ansible_env.PATH }}:$HOME/.cargo/bin"
+
+- name: Install Rust toolchain via rustup
+  ansible.builtin.shell: |
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+  args:
+    executable: /bin/bash
+  when: rustup_check.rc != 0
+  environment:
+    PATH: "{{ ansible_env.PATH }}"
+
+- name: Add cargo to PATH in .bashrc
+  ansible.builtin.lineinfile:
+    dest: ~/.bashrc
+    line: export PATH="$HOME/.cargo/bin:$PATH"
+    state: present
+    create: true
+    mode: 0644
+    insertafter: EOF
+
+- name: Update Rust toolchain to latest stable
+  ansible.builtin.command: rustup update stable
+  environment:
+    PATH: "{{ ansible_env.PATH }}:$HOME/.cargo/bin"
+  when: rustup_check.rc == 0 or rustup_check.rc != 0
+  changed_when: true
