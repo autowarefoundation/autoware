@@ -56,7 +56,7 @@
   ansible.builtin.get_url:
     url: https://sh.rustup.rs
     dest: /tmp/rustup-init.sh
-    mode: '0755'
+    mode: "0755"
   when: build_tools_rustup_check.rc != 0
 
 - name: Install Rust toolchain via rustup
