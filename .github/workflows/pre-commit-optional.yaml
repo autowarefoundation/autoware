@@ -20,6 +20,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Initialize submodules
+        run: |
+          git submodule update --init --checkout
+        shell: bash
+
       - name: Run pre-commit
         uses: autowarefoundation/autoware-github-actions/pre-commit@v1
         with:

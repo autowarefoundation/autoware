@@ -15,3 +15,8 @@ repos:
     hooks:
       - id: markdown-link-check
         args: [--quiet, --config=.markdown-link-check.json]
+
+  - repo: https://github.com/paulsohn/pre-commit-hooks-submodules
+    rev: v0.0.0-pre5
+    hooks:
+      - id: check-submodules-branch

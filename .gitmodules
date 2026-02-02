@@ -1,0 +1,150 @@
+# autoware
+## core
+[submodule "src/autoware/core/autoware_msgs"]
+	path = src/autoware/core/autoware_msgs
+	url = https://github.com/autowarefoundation/autoware_msgs.git
+	update = none
+[submodule "src/autoware/core/autoware_adapi_msgs"]
+	path = src/autoware/core/autoware_adapi_msgs
+	url = https://github.com/autowarefoundation/autoware_adapi_msgs.git
+	branch = main
+[submodule "src/autoware/core/autoware_internal_msgs"]
+	path = src/autoware/core/autoware_internal_msgs
+	url = https://github.com/autowarefoundation/autoware_internal_msgs.git
+	branch = main
+[submodule "src/autoware/core/autoware_cmake"]
+	path = src/autoware/core/autoware_cmake
+	url = https://github.com/autowarefoundation/autoware_cmake.git
+	update = none
+[submodule "src/autoware/core/autoware_utils"]
+	path = src/autoware/core/autoware_utils
+	url = https://github.com/autowarefoundation/autoware_utils.git
+	branch = main
+[submodule "src/autoware/core/autoware_lanelet2_extension"]
+	path = src/autoware/core/autoware_lanelet2_extension
+	url = https://github.com/autowarefoundation/autoware_lanelet2_extension.git
+	update = none
+[submodule "src/autoware/core/autoware_core"]
+	path = src/autoware/core/autoware_core
+	url = https://github.com/autowarefoundation/autoware_core.git
+	branch = main
+[submodule "src/autoware/core/autoware_rviz_plugins"]
+	path = src/autoware/core/autoware_rviz_plugins
+	url = https://github.com/autowarefoundation/autoware_rviz_plugins.git
+	branch = main
+## universe
+[submodule "src/autoware/universe/autoware_universe"]
+	path = src/autoware/universe/autoware_universe
+	url = https://github.com/autowarefoundation/autoware_universe.git
+	branch = main
+[submodule "src/autoware/universe/external/tier4_ad_api_adaptor"]
+	# TODO(TIER IV): Migrate to AD API and remove this repository entry.
+	path = src/autoware/universe/external/tier4_ad_api_adaptor
+	url = https://github.com/tier4/tier4_ad_api_adaptor.git
+	branch = tier4/universe
+[submodule "src/autoware/universe/external/tier4_autoware_msgs"]
+	path = src/autoware/universe/external/tier4_autoware_msgs
+	url = https://github.com/tier4/tier4_autoware_msgs.git
+	branch = tier4/universe
+[submodule "src/autoware/universe/external/morai_msgs"]
+	# Fix the version not to merge https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs/pull/9
+	path = src/autoware/universe/external/morai_msgs
+	url = https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs.git
+	update = none
+[submodule "src/autoware/universe/external/muSSP"]
+	path = src/autoware/universe/external/muSSP
+	url = https://github.com/tier4/muSSP.git
+	update = none
+[submodule "src/autoware/universe/external/pointcloud_to_laserscan"]
+	path = src/autoware/universe/external/pointcloud_to_laserscan
+	url = https://github.com/tier4/pointcloud_to_laserscan.git
+	update = none
+[submodule "src/autoware/universe/external/eagleye"]
+	path = src/autoware/universe/external/eagleye
+	url = https://github.com/MapIV/eagleye.git
+	update = none
+[submodule "src/autoware/universe/external/rtklib_ros_bridge"]
+	path = src/autoware/universe/external/rtklib_ros_bridge
+	url = https://github.com/MapIV/rtklib_ros_bridge.git
+	update = none
+[submodule "src/autoware/universe/external/llh_converter"]
+	path = src/autoware/universe/external/llh_converter
+	url = https://github.com/MapIV/llh_converter.git
+	update = none
+[submodule "src/autoware/universe/external/glog"]
+	# TODO(Horibe): to use isGoogleInitialized() API in v0.6.0. Remove when the rosdep glog version is updated to v0.6.0 (already updated in Ubuntu 24.04)
+	path = src/autoware/universe/external/glog
+	url = https://github.com/tier4/glog.git
+	update = none
+[submodule "src/autoware/universe/external/bevdet_vendor"]
+	path = src/autoware/universe/external/bevdet_vendor
+	url = https://github.com/autowarefoundation/bevdet_vendor.git
+	update = none
+[submodule "src/autoware/universe/external/trt_batched_nms"]
+	path = src/autoware/universe/external/trt_batched_nms
+	url = https://github.com/autowarefoundation/trt_batched_nms.git
+	update = none
+[submodule "src/autoware/universe/external/cuda_blackboard"]
+	path = src/autoware/universe/external/cuda_blackboard
+	url = https://github.com/autowarefoundation/cuda_blackboard.git
+	update = none
+[submodule "src/autoware/universe/external/negotiated"]
+	path = src/autoware/universe/external/negotiated
+	url = https://github.com/osrf/negotiated.git
+	update = none
+[submodule "src/autoware/universe/external/managed_transform_buffer"]
+	path = src/autoware/universe/external/managed_transform_buffer
+	url = https://github.com/autowarefoundation/managed_transform_buffer.git
+	branch = main
+## launcher
+[submodule "src/autoware/launcher/autoware_launch"]
+	path = src/autoware/launcher/autoware_launch
+	url = https://github.com/autowarefoundation/autoware_launch.git
+	branch = main
+## sensor_component
+[submodule "src/autoware/sensor_component/external/sensor_component_description"]
+	path = src/autoware/sensor_component/external/sensor_component_description
+	url = https://github.com/tier4/sensor_component_description.git
+	update = none
+[submodule "src/autoware/sensor_component/external/nebula"]
+	path = src/autoware/sensor_component/external/nebula
+	url = https://github.com/tier4/nebula.git
+	update = none
+[submodule "src/autoware/sensor_component/transport_drivers"]
+	# Fork of transport_drivers that enables reduction of copy operations
+	path = src/autoware/sensor_component/transport_drivers
+	url = https://github.com/autowarefoundation/transport_drivers
+	update = none
+[submodule "src/autoware/sensor_component/ros2_socketcan"]
+	# Continental compatible version of ROS 2 socket CAN
+	path = src/autoware/sensor_component/ros2_socketcan
+	url = https://github.com/autowarefoundation/ros2_socketcan
+	update = none
+## middleware
+[submodule "src/autoware/middleware/external/agnocast"]
+	# TODO(TIER IV): During the transition period of Agnocast introduction,
+	# the Agnocast ROS packages are provided as a source build.
+	# Once the transition stabilizes, use the packages released from the official ROS repository.
+	# Issue: https://github.com/autowarefoundation/autoware/issues/5968
+	path = src/autoware/middleware/external/agnocast
+	url = https://github.com/tier4/agnocast.git
+	update = none
+# extra-packages
+[submodule "src/extra-packages/sensor_component/external/tamagawa_imu_driver"]
+	path = src/extra-packages/sensor_component/external/tamagawa_imu_driver
+	url = https://github.com/tier4/tamagawa_imu_driver.git
+	branch = ros2
+[submodule "src/extra-packages/vehicle/external/pacmod_interface"]
+	path = src/extra-packages/vehicle/external/pacmod_interface
+	url = https://github.com/tier4/pacmod_interface.git
+	branch = main
+# simulator
+[submodule "src/simulator/simulator/scenario_simulator"]
+	path = src/simulator/simulator/scenario_simulator
+	url = https://github.com/tier4/scenario_simulator_v2.git
+	update = none
+# tools
+[submodule "src/tools/tools"]
+	path = src/tools/tools
+	url = https://github.com/autowarefoundation/autoware_tools.git
+	branch = main

@@ -131,14 +131,7 @@ load_env() {
 # Clone repositories
 clone_repositories() {
     cd "$WORKSPACE_ROOT"
-    if [ ! -d "src" ]; then
-        mkdir -p src
-        vcs import src <repositories/autoware.repos
-    else
-        echo "Source directory already exists. Updating repositories..."
-        vcs import src <repositories/autoware.repos
-        vcs pull src
-    fi
+    git submodule update --init --checkout src/autoware
 }
 
 # Build images
