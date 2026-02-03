@@ -37,7 +37,7 @@ jobs:
         include:
           - build-type: main
             platform: amd64
-            runner: "['ubuntu-24.04-arm']"
+            runner: "['ubuntu-24.04']"
             lib-dir: x86_64
             container: ubuntu:22.04
           - build-type: nightly
