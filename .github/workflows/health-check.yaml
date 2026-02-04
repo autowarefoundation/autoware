@@ -82,6 +82,7 @@ jobs:
         with:
           platform: ${{ matrix.platform }}
           cache-tag-suffix: ${{ matrix.build-type }}
+          image-artifact-name: autoware-image
           additional-repos: ${{ matrix.build-type == 'nightly' && 'repositories/autoware-nightly.repos' || '' }}
           build-args: |
             ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
