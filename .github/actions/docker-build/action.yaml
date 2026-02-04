@@ -15,6 +15,10 @@ inputs:
   build-args:
     description: Additional build args.
     required: false
+  image-artifact-name:
+    description: Name of the exported docker image artifact.
+    default: autoware-image
+    required: false
 
 runs:
   using: composite
@@ -114,3 +118,14 @@ runs:
         push: false
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-main
+        tags: autoware:health-check-${{ github.sha }}
+        outputs: type=docker,dest=/tmp/autoware_image.tar
+    - name: Upload built image (tar)
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.image-artifact-name }}-${{ github.sha }}
+        path: /tmp/autoware_image.tar
+        retention-days: 1
+
+    
+
