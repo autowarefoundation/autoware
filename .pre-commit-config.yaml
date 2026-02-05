@@ -5,7 +5,6 @@
 # https://pre-commit.ci/#configuration
 ci:
   autofix_commit_msg: "style(pre-commit): autofix"
-  # we already have our own daily update mechanism, we set this to quarterly
   autoupdate_schedule: quarterly
   autoupdate_commit_msg: "ci(pre-commit): quarterly autoupdate"
 
@@ -35,6 +34,7 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
+        args: [--no-error-on-unmatched-pattern]
 
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.37.1
