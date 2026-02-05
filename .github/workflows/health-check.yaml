@@ -140,9 +140,14 @@ jobs:
             bash -lc '
               set -e
 
+              # --- FIX: enable recommends so gcc installs cc1 ---
+              rm -f /etc/apt/apt.conf.d/*no-recommends* 2>/dev/null || true
+              printf "APT::Install-Recommends \"true\";\nAPT::Install-Suggests \"true\";\n" > /etc/apt/apt.conf.d/99-enable-recommends
+
               apt-get update
               apt-get install -y \
-                build-essential gcc g++ \
+                build-essential gcc g++ cpp \
+                gcc-11 g++-11 cpp-11 \
                 unzip zip curl gnupg2 lsb-release python3-pip git
 
               # Force toolchain + quick sanity checks (fixes "cc1: No such file or directory")
