@@ -96,3 +96,124 @@ jobs:
         if: always()
         run: |
           df -h
+
+  scenario-test:
+    needs: docker-build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download built image artifact (tar)
+        uses: actions/download-artifact@v4
+        with:
+          name: autoware-image-${{ github.sha }}
+          path: /tmp
+
+      - name: Load docker image
+        shell: bash
+        run: |
+          TARBALL="$(find /tmp -maxdepth 2 -name autoware_image.tar -print -quit)"
+          if [ -z "$TARBALL" ]; then
+            echo "::error::autoware_image.tar not found under /tmp"
+            ls -lah /tmp || true
+            find /tmp -maxdepth 3 -type f -name "*.tar" -print || true
+            exit 1
+          fi
+          echo "Loading docker image from: $TARBALL"
+          docker load -i "$TARBALL"
+          docker image ls | head -n 20
+
+      - name: Run scenario_test_runner inside built image
+        shell: bash
+        run: |
+          mkdir -p ${{ github.workspace }}/scenario_out
+
+          docker run --rm \
+            -v "${{ github.workspace }}:/repo" \
+            -v "${{ github.workspace }}/scenario_out:/out" \
+            autoware:health-check-${{ github.sha }} \
+            bash -lc '
+              set -e
+
+              apt-get update
+              apt-get install -y \
+                unzip zip curl gnupg2 lsb-release python3-pip git
+              pip install --upgrade gdown vcs2l
+
+              # Use PR code (mounted at /repo) instead of cloning main
+              rm -rf /autoware_ws
+              mkdir -p /autoware_ws
+              cp -a /repo/. /autoware_ws
+              cd /autoware_ws
+
+              mkdir -p src
+              vcs import src < repositories/simulator.repos
+
+              source /opt/ros/humble/setup.bash
+              source /opt/autoware/setup.bash
+              rosdep update
+              rosdep install --from-paths src --ignore-src -r -y
+
+              pip3 install --user xmlschema==3.4.5
+
+              rm -rf build install log
+              export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+              colcon build --symlink-install \
+                --cmake-args -DCMAKE_BUILD_TYPE=Release \
+                --executor sequential
+
+              source /autoware_ws/install/setup.bash
+              ros2 pkg list | grep autoware || true
+
+              cd /out
+
+              gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
+
+              mkdir -p /out/autoware_map
+              gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
+              unzip sample-map-planning.zip -d /out/autoware_map
+
+              sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
+
+              export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+              SCENARIO_FILE="/out/sample-scenario.yaml"
+
+              mkdir -p /out/results
+              ros2 launch scenario_test_runner scenario_test_runner.launch.py \
+                architecture_type:=awf/universe/20250130 \
+                record:=true \
+                scenario:="$SCENARIO_FILE" \
+                sensor_model:=sample_sensor_kit \
+                vehicle_model:=sample_vehicle \
+                initialize_duration:=300 \
+                output_directory:=/out/results \
+                simulate_localization:=true \
+                initial_pose:="[0.0, 0.0, 0.0]" \
+                launch_rviz:=false \
+                frame_rate:=1 \
+                disable_lanelet_pose_validation:=true 2>&1 | tee /out/scenario_output.log || true
+
+              RESULT_FILE="/out/results/scenario_test_runner/result.junit.xml"
+              if [ ! -f "$RESULT_FILE" ]; then
+                echo "::error::Result file not found! Simulation likely crashed."
+                exit 1
+              fi
+
+              if grep -q -E "<failure|<error" "$RESULT_FILE"; then
+                echo "::error::Test failures or errors detected."
+                cat "$RESULT_FILE"
+                exit 1
+              fi
+
+              echo "Test successfully passed."
+            '
+
+      - name: Upload scenario artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-test-results-and-logs
+          path: |
+            scenario_out/results/
+            scenario_out/scenario_output.log
