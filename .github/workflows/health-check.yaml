@@ -25,7 +25,8 @@ jobs:
     needs: label-check
     if: ${{ needs.label-check.outputs.result == 'true' ||
       github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' }}
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'pull_request' }}
     uses: ./.github/workflows/load-env.yaml
 
   docker-build:
@@ -77,7 +78,8 @@ jobs:
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch' }}
+          github.event_name == 'workflow_dispatch' ||
+          github.event_name == 'pull_request' }}
         uses: ./.github/actions/docker-build
         with:
           platform: ${{ matrix.platform }}
