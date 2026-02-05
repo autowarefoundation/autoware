@@ -113,11 +113,13 @@ jobs:
       - name: Load docker image
         shell: bash
         run: |
-          TARBALL="$(find /tmp -maxdepth 2 -name autoware_image.tar -print -quit)"
-          if [ -z "$TARBALL" ]; then
-            echo "::error::autoware_image.tar not found under /tmp"
+          TARBALL="/tmp/autoware-image-${{ github.sha }}/autoware_image.tar"
+          if [ ! -f "$TARBALL" ]; then
+            echo "::error::autoware_image.tar not found at $TARBALL"
+            echo "Listing /tmp:"
             ls -lah /tmp || true
-            find /tmp -maxdepth 3 -type f -name "*.tar" -print || true
+            echo "Listing expected artifact dir:"
+            ls -lah "/tmp/autoware-image-${{ github.sha }}" || true
             exit 1
           fi
           echo "Loading docker image from: $TARBALL"
@@ -215,5 +217,4 @@ jobs:
         with:
           name: scenario-test-results-and-logs
           path: |
-            scenario_out/results/
-            scenario_out/scenario_output.log
+            scenario_out/
