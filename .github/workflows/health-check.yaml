@@ -142,8 +142,10 @@ jobs:
 
               apt-get update
               apt-get install -y \
+                build-essential gcc g++ \
                 unzip zip curl gnupg2 lsb-release python3-pip git
-              pip install --upgrade gdown vcs2l
+
+              pip3 install --upgrade gdown vcs2l
 
               # Use PR code (mounted at /repo) instead of cloning main
               rm -rf /autoware_ws
