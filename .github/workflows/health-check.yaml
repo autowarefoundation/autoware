@@ -113,15 +113,17 @@ jobs:
       - name: Load docker image
         shell: bash
         run: |
-          TARBALL="/tmp/autoware-image-${{ github.sha }}/autoware_image.tar"
+          echo "Listing /tmp:"
+          ls -lah /tmp || true
+
+          TARBALL="/tmp/autoware_image.tar"
           if [ ! -f "$TARBALL" ]; then
             echo "::error::autoware_image.tar not found at $TARBALL"
-            echo "Listing /tmp:"
-            ls -lah /tmp || true
-            echo "Listing expected artifact dir:"
-            ls -lah "/tmp/autoware-image-${{ github.sha }}" || true
+            echo "All tar files under /tmp:"
+            find /tmp -maxdepth 3 -type f -name "*.tar" -print || true
             exit 1
           fi
+
           echo "Loading docker image from: $TARBALL"
           docker load -i "$TARBALL"
           docker image ls | head -n 20
