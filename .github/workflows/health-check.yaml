@@ -25,7 +25,8 @@ jobs:
     needs: label-check
     if: ${{ needs.label-check.outputs.result == 'true' ||
       github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' }}
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'pull_request' }}
     uses: ./.github/workflows/load-env.yaml
 
   docker-build:
@@ -56,31 +57,31 @@ jobs:
         with:
           files: |
             *.env
-            repositories/*.repos
+            *.repos
             .github/actions/docker-build/action.yaml
             .github/workflows/health-check.yaml
             ansible-galaxy-requirements.yaml
             ansible/**
             docker/**
             setup-dev-env.sh
-      
       - name: Show disk space
         if: always()
         run: |
           df -h
-      
       - name: Free disk space
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' &&
+          matrix.build-type != 'main' }}
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch' }}
+          github.event_name == 'workflow_dispatch' ||
+          github.event_name == 'pull_request' }}
         uses: ./.github/actions/docker-build
         with:
           platform: ${{ matrix.platform }}
-          cache-tag-suffix: ${{ matrix.build-type }}-$(date +%Y%m%d)
+          cache-tag-suffix: ${{ matrix.build-type }}
           image-artifact-name: autoware-image
           additional-repos: ${{ matrix.build-type == 'nightly' && 'repositories/autoware-nightly.repos' || '' }}
           build-args: |
@@ -88,22 +89,16 @@ jobs:
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
-          no-cache: true
-      
       - name: Show disk space
         if: always()
         run: |
           df -h
-  
   scenario-test:
     needs: docker-build
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
 
       - name: Download built image artifact (tar)
         uses: actions/download-artifact@v4
@@ -116,18 +111,16 @@ jobs:
         run: |
           echo "Listing /tmp:"
           ls -lah /tmp || true
-          TARBALL=$(find /tmp -maxdepth 1 -name "*.tar" | head -n 1)
-          
-          if [ -z "$TARBALL" ]; then
-            echo "::error::No tarball found in /tmp. Artifact download may have failed."
+          TARBALL="/tmp/autoware_image.tar"
+          if [ ! -f "$TARBALL" ]; then
+            echo "::error::autoware_image.tar not found at $TARBALL"
+            echo "All tar files under /tmp:"
+            find /tmp -maxdepth 3 -type f -name "*.tar" -print || true
             exit 1
           fi
           echo "Loading docker image from: $TARBALL"
           docker load -i "$TARBALL"
-          
-          IMAGE_ID=$(docker images -q | head -n 1)
-          docker tag "$IMAGE_ID" autoware:health-check
-      
+          docker image ls | head -n 20
       - name: Run scenario_test_runner inside built image
         shell: bash
         run: |
@@ -135,17 +128,15 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/repo" \
             -v "${{ github.workspace }}/scenario_out:/out" \
-            autoware:health-check \
+            autoware:health-check-${{ github.sha }} \
             bash -lc '
               set -e
-              printf "APT::Install-Recommends \"true\";\nAPT::Install-Suggests \"true\";\n" > /etc/apt/apt.conf.d/99-enable-recommends
               apt-get update
-              apt-get install -y unzip zip curl gnupg2 lsb-release python3-pip git
-              
-              apt-get install -y build-essential gcc-11 g++-11 cpp-11 libc6-dev
-              export CC=/usr/bin/gcc-11
-              export CXX=/usr/bin/g++-11
+              apt-get install -y \
+                build-essential gcc g++ \
+                unzip zip curl gnupg2 lsb-release python3-pip git
               pip3 install --upgrade gdown vcs2l
+              # Use PR code (mounted at /repo) instead of cloning main
               rm -rf /autoware_ws
               mkdir -p /autoware_ws
               cp -a /repo/. /autoware_ws
@@ -154,7 +145,6 @@ jobs:
               vcs import src < repositories/simulator.repos
               source /opt/ros/humble/setup.bash
               source /opt/autoware/setup.bash
-              
               rosdep update
               rosdep install --from-paths src --ignore-src -r -y
               pip3 install --user xmlschema==3.4.5
@@ -172,12 +162,12 @@ jobs:
               unzip sample-map-planning.zip -d /out/autoware_map
               sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
               export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-              
+              SCENARIO_FILE="/out/sample-scenario.yaml"
               mkdir -p /out/results
               ros2 launch scenario_test_runner scenario_test_runner.launch.py \
                 architecture_type:=awf/universe/20250130 \
                 record:=true \
-                scenario:="/out/sample-scenario.yaml" \
+                scenario:="$SCENARIO_FILE" \
                 sensor_model:=sample_sensor_kit \
                 vehicle_model:=sample_vehicle \
                 initialize_duration:=300 \
@@ -199,10 +189,10 @@ jobs:
               fi
               echo "Test successfully passed."
             '
-      
       - name: Upload scenario artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: scenario-test-results-and-logs
-          path: scenario_out/
+          path: |
+            scenario_out/
