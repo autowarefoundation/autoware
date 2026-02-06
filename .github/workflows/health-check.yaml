@@ -74,11 +74,10 @@ jobs:
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         uses: ./.github/actions/free-disk-space
 
-      # FIX 1: Import Dependencies (The "Correct" Way)
       - name: Install vcstool and Import Repositories
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         run: |
-          sudo apt-get update && sudo apt-get install -y python3-pip
+          sudo apt-get update && sudo apt-get install -y python3-pip wget
           pip3 install --break-system-packages vcstool
           
           mkdir -p src
@@ -88,11 +87,10 @@ jobs:
           elif [ -f "repositories/autoware.repos" ]; then
             vcs import src < repositories/autoware.repos
           else
-             # Fallback
-             vcs import src < repositories/simulator.repos
+            wget https://raw.githubusercontent.com/autowarefoundation/autoware/main/autoware.repos -O temp_autoware.repos
+            vcs import src < temp_autoware.repos
           fi
 
-     
       - name: Create missing bind-mount directories
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         run: |
@@ -173,19 +171,16 @@ jobs:
             bash -lc '
               set -e
 
-              # 1. INSTALL DEPENDENCIES
               printf "APT::Install-Recommends \"true\";\nAPT::Install-Suggests \"true\";\n" > /etc/apt/apt.conf.d/99-enable-recommends
               apt-get update
               apt-get install -y unzip zip curl gnupg2 lsb-release python3-pip git
               
-              # 
               apt-get install -y build-essential gcc-11 g++-11 cpp-11 libc6-dev
               export CC=/usr/bin/gcc-11
               export CXX=/usr/bin/g++-11
 
               pip3 install --upgrade gdown vcs2l
 
-              # 2. SETUP WORKSPACE
               rm -rf /autoware_ws
               mkdir -p /autoware_ws
               cp -a /repo/. /autoware_ws
@@ -197,13 +192,11 @@ jobs:
               source /opt/ros/humble/setup.bash
               source /opt/autoware/setup.bash
               
-              # 3. INSTALL ROS DEPENDENCIES
               rosdep update
               rosdep install --from-paths src --ignore-src -r -y
 
               pip3 install --user xmlschema==3.4.5
 
-              # 4. BUILD
               rm -rf build install log
               export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
               colcon build --symlink-install \
@@ -213,7 +206,6 @@ jobs:
               source /autoware_ws/install/setup.bash
               ros2 pkg list | grep autoware || true
 
-              # 5. PREPARE SCENARIO
               cd /out
               gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
 
@@ -223,7 +215,6 @@ jobs:
 
               sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
 
-              # 6. LAUNCH
               export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
               
               mkdir -p /out/results
@@ -241,7 +232,6 @@ jobs:
                 frame_rate:=1 \
                 disable_lanelet_pose_validation:=true 2>&1 | tee /out/scenario_output.log || true
 
-              # 7. VALIDATE RESULTS
               RESULT_FILE="/out/results/scenario_test_runner/result.junit.xml"
               if [ ! -f "$RESULT_FILE" ]; then
                 echo "::error::Result file not found! Simulation likely crashed."
