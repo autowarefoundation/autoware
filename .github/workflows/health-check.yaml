@@ -64,32 +64,13 @@ jobs:
             ansible/**
             docker/**
             setup-dev-env.sh
-
       - name: Show disk space
         if: always()
         run: |
           df -h
-
-      # Force disk cleanup 
       - name: Free disk space
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         uses: ./.github/actions/free-disk-space
-
-      # Download dependencies 
-      - name: Install vcstool and import repositories
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
-        run: |
-          sudo apt-get update && sudo apt-get install -y python3-pip
-          pip3 install --upgrade vcstool
-          
-          mkdir -p src
-          if [ -f "autoware.repos" ]; then
-            vcs import src < autoware.repos
-          elif [ -f "repositories/autoware.repos" ]; then
-            vcs import src < repositories/autoware.repos
-          elif [ -f "repositories/simulator.repos" ]; then
-            vcs import src < repositories/simulator.repos
-          fi
 
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
@@ -107,12 +88,10 @@ jobs:
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
-
       - name: Show disk space
         if: always()
         run: |
           df -h
-
   scenario-test:
     needs: docker-build
     runs-on: ubuntu-24.04
@@ -134,83 +113,65 @@ jobs:
         run: |
           echo "Listing /tmp:"
           ls -lah /tmp || true
-
-          # 
+          # --- Try to fixed it
           TARBALL=$(find /tmp -maxdepth 1 -name "*.tar" | head -n 1)
           
           if [ -z "$TARBALL" ]; then
             echo "::error::No tarball found in /tmp. Artifact download may have failed."
             exit 1
           fi
-
           echo "Loading docker image from: $TARBALL"
           docker load -i "$TARBALL"
           
           IMAGE_ID=$(docker images -q | head -n 1)
           docker tag "$IMAGE_ID" autoware:health-check
-
       - name: Run scenario_test_runner inside built image
         shell: bash
         run: |
           mkdir -p ${{ github.workspace }}/scenario_out
-
           docker run --rm \
             -v "${{ github.workspace }}:/repo" \
             -v "${{ github.workspace }}/scenario_out:/out" \
             autoware:health-check \
             bash -lc '
               set -e
-
               # 1. INSTALL DEPENDENCIES
               printf "APT::Install-Recommends \"true\";\nAPT::Install-Suggests \"true\";\n" > /etc/apt/apt.conf.d/99-enable-recommends
               apt-get update
               apt-get install -y unzip zip curl gnupg2 lsb-release python3-pip git
               
-              # 
-              apt-get install -y build-essential gcc-11 g++-11 cpp-11 libc6-dev
-              export CC=/usr/bin/gcc-11
-              export CXX=/usr/bin/g++-11
-
+              # CRITICAL FIX: Install toolchain
+              apt-get install -y --reinstall build-essential gcc g++ libc6-dev
               pip3 install --upgrade gdown vcs2l
-
               # 2. SETUP WORKSPACE
               rm -rf /autoware_ws
               mkdir -p /autoware_ws
               cp -a /repo/. /autoware_ws
               cd /autoware_ws
-
               mkdir -p src
               vcs import src < repositories/simulator.repos
-
               source /opt/ros/humble/setup.bash
               source /opt/autoware/setup.bash
               
               # 3. INSTALL ROS DEPENDENCIES
               rosdep update
               rosdep install --from-paths src --ignore-src -r -y
-
               pip3 install --user xmlschema==3.4.5
-
               # 4. BUILD
               rm -rf build install log
               export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
               colcon build --symlink-install \
                 --cmake-args -DCMAKE_BUILD_TYPE=Release \
                 --executor sequential
-
               source /autoware_ws/install/setup.bash
               ros2 pkg list | grep autoware || true
-
               # 5. PREPARE SCENARIO
               cd /out
               gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
-
               mkdir -p /out/autoware_map
               gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
               unzip sample-map-planning.zip -d /out/autoware_map
-
               sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
-
               # 6. LAUNCH
               export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
               
@@ -228,23 +189,19 @@ jobs:
                 launch_rviz:=false \
                 frame_rate:=1 \
                 disable_lanelet_pose_validation:=true 2>&1 | tee /out/scenario_output.log || true
-
               # 7. VALIDATE RESULTS
               RESULT_FILE="/out/results/scenario_test_runner/result.junit.xml"
               if [ ! -f "$RESULT_FILE" ]; then
                 echo "::error::Result file not found! Simulation likely crashed."
                 exit 1
               fi
-
               if grep -q -E "<failure|<error" "$RESULT_FILE"; then
                 echo "::error::Test failures or errors detected."
                 cat "$RESULT_FILE"
                 exit 1
               fi
-
               echo "Test successfully passed."
             '
-
       - name: Upload scenario artifacts
         if: always()
         uses: actions/upload-artifact@v4
