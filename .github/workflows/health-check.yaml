@@ -80,7 +80,7 @@ jobs:
         uses: ./.github/actions/docker-build
         with:
           platform: ${{ matrix.platform }}
-          cache-tag-suffix: ${{ matrix.build-type }}
+          cache-tag-suffix: ${{ matrix.build-type }}-$(date +%Y%m%d)
           image-artifact-name: autoware-image
           additional-repos: ${{ matrix.build-type == 'nightly' && 'repositories/autoware-nightly.repos' || '' }}
           build-args: |
@@ -88,6 +88,7 @@ jobs:
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
+          no-cache: true
       
       - name: Show disk space
         if: always()
