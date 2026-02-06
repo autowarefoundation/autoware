@@ -118,7 +118,7 @@ jobs:
           echo "Listing /tmp:"
           ls -lah /tmp || true
 
-          # --- Try to fixed it
+          # FIX 1: -maxdepth 1 prevents the "Permission denied" error from crashing the script
           TARBALL=$(find /tmp -maxdepth 1 -name "*.tar" | head -n 1)
           
           if [ -z "$TARBALL" ]; then
@@ -149,8 +149,12 @@ jobs:
               apt-get update
               apt-get install -y unzip zip curl gnupg2 lsb-release python3-pip git
               
-              # CRITICAL FIX: Install toolchain
-              apt-get install -y --reinstall build-essential gcc g++ libc6-dev
+              # 
+              apt-get install -y build-essential gcc-11 g++-11 cpp-11 libc6-dev
+
+              # 
+              export CC=/usr/bin/gcc-11
+              export CXX=/usr/bin/g++-11
 
               pip3 install --upgrade gdown vcs2l
 
