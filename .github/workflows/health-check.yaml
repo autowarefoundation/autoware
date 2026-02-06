@@ -64,47 +64,14 @@ jobs:
             ansible/**
             docker/**
             setup-dev-env.sh
-
       - name: Show disk space
         if: always()
         run: |
           df -h
-
       - name: Free disk space
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' &&
+          matrix.build-type != 'main' }}
         uses: ./.github/actions/free-disk-space
-
-      - name: Install vcstool and Import Repositories
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
-        run: |
-          sudo apt-get update && sudo apt-get install -y python3-pip wget
-          pip3 install --break-system-packages vcstool
-          
-          mkdir -p src
-          
-          if [ -f "autoware.repos" ]; then
-            vcs import src < autoware.repos
-          elif [ -f "repositories/autoware.repos" ]; then
-            vcs import src < repositories/autoware.repos
-          else
-            wget https://raw.githubusercontent.com/autowarefoundation/autoware/main/autoware.repos -O temp_autoware.repos
-            vcs import src < temp_autoware.repos
-          fi
-
-      - name: Create missing bind-mount directories
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
-        run: |
-          # FIX: Clone the SPECIFIC branch 'tier4/universe' to prevent compilation errors
-          if [ ! -d "src/universe/external/tier4_ad_api_adaptor" ]; then
-             git clone -b tier4/universe https://github.com/tier4/tier4_ad_api_adaptor.git src/universe/external/tier4_ad_api_adaptor
-          fi
-
-          mkdir -p src/universe/external/tier4_autoware_msgs
-          mkdir -p src/universe/external/morai_msgs
-          mkdir -p src/universe/external/muSSP
-          mkdir -p src/universe/external/eagleye
-          mkdir -p src/universe/external/rtklib_ros_bridge
-          mkdir -p src/universe/external/llh_converter
 
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
@@ -122,21 +89,16 @@ jobs:
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
-
       - name: Show disk space
         if: always()
         run: |
           df -h
-
   scenario-test:
     needs: docker-build
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
 
       - name: Download built image artifact (tar)
         uses: actions/download-artifact@v4
@@ -149,83 +111,72 @@ jobs:
         run: |
           echo "Listing /tmp:"
           ls -lah /tmp || true
-
-          TARBALL=$(find /tmp -maxdepth 1 -name "*.tar" | head -n 1)
-          
-          if [ -z "$TARBALL" ]; then
-            echo "::error::No tarball found in /tmp. Artifact download may have failed."
+          TARBALL="/tmp/autoware_image.tar"
+          if [ ! -f "$TARBALL" ]; then
+            echo "::error::autoware_image.tar not found at $TARBALL"
+            echo "All tar files under /tmp:"
+            find /tmp -maxdepth 3 -type f -name "*.tar" -print || true
             exit 1
           fi
-
           echo "Loading docker image from: $TARBALL"
           docker load -i "$TARBALL"
-          
-          IMAGE_ID=$(docker images -q | head -n 1)
-          docker tag "$IMAGE_ID" autoware:health-check
-
+          docker image ls | head -n 20
       - name: Run scenario_test_runner inside built image
         shell: bash
         run: |
           mkdir -p ${{ github.workspace }}/scenario_out
-
           docker run --rm \
             -v "${{ github.workspace }}:/repo" \
             -v "${{ github.workspace }}/scenario_out:/out" \
-            autoware:health-check \
+            autoware:health-check-${{ github.sha }} \
             bash -lc '
               set -e
-
+              # --- FIX: ensure full GCC toolchain is installed (cc1 must exist) ---
               printf "APT::Install-Recommends \"true\";\nAPT::Install-Suggests \"true\";\n" > /etc/apt/apt.conf.d/99-enable-recommends
               apt-get update
-              apt-get install -y unzip zip curl gnupg2 lsb-release python3-pip git
-              
-              apt-get install -y build-essential gcc-11 g++-11 cpp-11 libc6-dev
-              export CC=/usr/bin/gcc-11
-              export CXX=/usr/bin/g++-11
-
+              apt-get install -y \
+                unzip zip curl gnupg2 lsb-release python3-pip git
+              # Reinstall full compiler toolchain explicitly (Jammy = GCC 11)
+              apt-get install -y --reinstall \
+                build-essential gcc g++ cpp gcc-11 g++-11 cpp-11
+              CC1_PATH="$(gcc -print-prog-name=cc1)"
+              echo "cc1 path: ${CC1_PATH}"
+              ls -lah "${CC1_PATH}" || true
+              test -x "${CC1_PATH}"
+              # --- END FIX ---
               pip3 install --upgrade gdown vcs2l
-
+              # Use PR code (mounted at /repo) instead of cloning main
               rm -rf /autoware_ws
               mkdir -p /autoware_ws
               cp -a /repo/. /autoware_ws
               cd /autoware_ws
-
               mkdir -p src
               vcs import src < repositories/simulator.repos
-
               source /opt/ros/humble/setup.bash
               source /opt/autoware/setup.bash
-              
               rosdep update
               rosdep install --from-paths src --ignore-src -r -y
-
               pip3 install --user xmlschema==3.4.5
-
               rm -rf build install log
               export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
               colcon build --symlink-install \
                 --cmake-args -DCMAKE_BUILD_TYPE=Release \
                 --executor sequential
-
               source /autoware_ws/install/setup.bash
               ros2 pkg list | grep autoware || true
-
               cd /out
               gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
-
               mkdir -p /out/autoware_map
               gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
               unzip sample-map-planning.zip -d /out/autoware_map
-
               sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
-
               export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-              
+              SCENARIO_FILE="/out/sample-scenario.yaml"
               mkdir -p /out/results
               ros2 launch scenario_test_runner scenario_test_runner.launch.py \
                 architecture_type:=awf/universe/20250130 \
                 record:=true \
-                scenario:="/out/sample-scenario.yaml" \
+                scenario:="$SCENARIO_FILE" \
                 sensor_model:=sample_sensor_kit \
                 vehicle_model:=sample_vehicle \
                 initialize_duration:=300 \
@@ -235,25 +186,22 @@ jobs:
                 launch_rviz:=false \
                 frame_rate:=1 \
                 disable_lanelet_pose_validation:=true 2>&1 | tee /out/scenario_output.log || true
-
               RESULT_FILE="/out/results/scenario_test_runner/result.junit.xml"
               if [ ! -f "$RESULT_FILE" ]; then
                 echo "::error::Result file not found! Simulation likely crashed."
                 exit 1
               fi
-
               if grep -q -E "<failure|<error" "$RESULT_FILE"; then
                 echo "::error::Test failures or errors detected."
                 cat "$RESULT_FILE"
                 exit 1
               fi
-
               echo "Test successfully passed."
             '
-
       - name: Upload scenario artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: scenario-test-results-and-logs
-          path: scenario_out/
+          path: |
+            scenario_out/
