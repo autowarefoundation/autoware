@@ -56,7 +56,7 @@ jobs:
         with:
           files: |
             *.env
-            *.repos
+            repositories/*.repos
             .github/actions/docker-build/action.yaml
             .github/workflows/health-check.yaml
             ansible-galaxy-requirements.yaml
