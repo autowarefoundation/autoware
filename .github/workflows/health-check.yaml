@@ -63,39 +63,16 @@ jobs:
             ansible/**
             docker/**
             setup-dev-env.sh
+      
       - name: Show disk space
         if: always()
         run: |
           df -h
+      
       - name: Free disk space
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         uses: ./.github/actions/free-disk-space
 
-      - name: Install vcstool and Import Repositories
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
-        run: |
-          sudo apt-get update && sudo apt-get install -y python3-pip wget
-          pip3 install --break-system-packages vcstool
-          
-          mkdir -p src
-          
-          if [ -f "autoware.repos" ]; then
-            vcs import src < autoware.repos
-          elif [ -f "repositories/autoware.repos" ]; then
-            vcs import src < repositories/autoware.repos
-          else
-            wget https://raw.githubusercontent.com/autowarefoundation/autoware/main/autoware.repos -O temp_autoware.repos
-            vcs import src < temp_autoware.repos
-          fi
-      - name: Create missing bind-mount directories
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
-        run: |
-          mkdir -p src/universe/external/tier4_autoware_msgs
-          mkdir -p src/universe/external/morai_msgs
-          mkdir -p src/universe/external/muSSP
-          mkdir -p src/universe/external/eagleye
-          mkdir -p src/universe/external/rtklib_ros_bridge
-          mkdir -p src/universe/external/llh_converter
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'schedule' ||
@@ -111,10 +88,12 @@ jobs:
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
+      
       - name: Show disk space
         if: always()
         run: |
           df -h
+  
   scenario-test:
     needs: docker-build
     runs-on: ubuntu-24.04
@@ -147,6 +126,7 @@ jobs:
           
           IMAGE_ID=$(docker images -q | head -n 1)
           docker tag "$IMAGE_ID" autoware:health-check
+      
       - name: Run scenario_test_runner inside built image
         shell: bash
         run: |
@@ -218,6 +198,7 @@ jobs:
               fi
               echo "Test successfully passed."
             '
+      
       - name: Upload scenario artifacts
         if: always()
         uses: actions/upload-artifact@v4
