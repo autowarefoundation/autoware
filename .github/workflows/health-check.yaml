@@ -74,7 +74,6 @@ jobs:
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         uses: ./.github/actions/free-disk-space
 
-      # FIX 1: Import Repositories & Manually Clone Missing Adapter
       - name: Install vcstool and Import Repositories
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         run: |
@@ -83,7 +82,6 @@ jobs:
           
           mkdir -p src
           
-          # 1. Import standard repos
           if [ -f "autoware.repos" ]; then
             vcs import src < autoware.repos
           elif [ -f "repositories/autoware.repos" ]; then
@@ -93,16 +91,14 @@ jobs:
             vcs import src < temp_autoware.repos
           fi
 
-      # FIX 2: Create Missing Directories (Safety Net for Docker)
       - name: Create missing bind-mount directories
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         run: |
-          # 1. Manually clone tier4_ad_api_adaptor (REQUIRED for build)
+          # FIX: Clone the SPECIFIC branch 'tier4/universe' to prevent compilation errors
           if [ ! -d "src/universe/external/tier4_ad_api_adaptor" ]; then
-             git clone https://github.com/tier4/tier4_ad_api_adaptor.git src/universe/external/tier4_ad_api_adaptor
+             git clone -b tier4/universe https://github.com/tier4/tier4_ad_api_adaptor.git src/universe/external/tier4_ad_api_adaptor
           fi
 
-          # 2. Create empty folders for others (REQUIRED for Docker bind-mount)
           mkdir -p src/universe/external/tier4_autoware_msgs
           mkdir -p src/universe/external/morai_msgs
           mkdir -p src/universe/external/muSSP
@@ -183,7 +179,6 @@ jobs:
               apt-get update
               apt-get install -y unzip zip curl gnupg2 lsb-release python3-pip git
               
-              # FIX 3: Install GCC-11 for Test Compilation
               apt-get install -y build-essential gcc-11 g++-11 cpp-11 libc6-dev
               export CC=/usr/bin/gcc-11
               export CXX=/usr/bin/g++-11
