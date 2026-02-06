@@ -74,6 +74,17 @@ jobs:
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         uses: ./.github/actions/free-disk-space
 
+      # --- Download the missing dependency 
+      - name: Install vcstool and import repositories
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y python3-pip
+          pip3 install --upgrade vcstool
+          
+          mkdir -p src
+          # This command downloads the missing folders (like tier4_ad_api_adaptor)
+          vcs import src < autoware.repos
+
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'schedule' ||
@@ -118,7 +129,6 @@ jobs:
           echo "Listing /tmp:"
           ls -lah /tmp || true
 
-          # FIX 1: -maxdepth 1 prevents the "Permission denied" error from crashing the script
           TARBALL=$(find /tmp -maxdepth 1 -name "*.tar" | head -n 1)
           
           if [ -z "$TARBALL" ]; then
@@ -149,10 +159,8 @@ jobs:
               apt-get update
               apt-get install -y unzip zip curl gnupg2 lsb-release python3-pip git
               
-              # 
+              # : Install compiler toolchain
               apt-get install -y build-essential gcc-11 g++-11 cpp-11 libc6-dev
-
-              # 
               export CC=/usr/bin/gcc-11
               export CXX=/usr/bin/g++-11
 
