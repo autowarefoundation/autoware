@@ -70,7 +70,6 @@ jobs:
         run: |
           df -h
 
-      # -
       - name: Free disk space
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         uses: ./.github/actions/free-disk-space
@@ -104,7 +103,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # ---  Ensure disk space is clear before loading large docker image ---
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
@@ -120,7 +118,8 @@ jobs:
           echo "Listing /tmp:"
           ls -lah /tmp || true
 
-          TARBALL=$(find /tmp -name "*.tar" | head -n 1)
+          # --- Try to fixed it
+          TARBALL=$(find /tmp -maxdepth 1 -name "*.tar" | head -n 1)
           
           if [ -z "$TARBALL" ]; then
             echo "::error::No tarball found in /tmp. Artifact download may have failed."
@@ -130,7 +129,6 @@ jobs:
           echo "Loading docker image from: $TARBALL"
           docker load -i "$TARBALL"
           
-          # Tag the image with a consistent name
           IMAGE_ID=$(docker images -q | head -n 1)
           docker tag "$IMAGE_ID" autoware:health-check
 
@@ -146,12 +144,12 @@ jobs:
             bash -lc '
               set -e
 
-              # 1. INSTALL DEPENDENCIES 
+              # 1. INSTALL DEPENDENCIES
               printf "APT::Install-Recommends \"true\";\nAPT::Install-Suggests \"true\";\n" > /etc/apt/apt.conf.d/99-enable-recommends
               apt-get update
               apt-get install -y unzip zip curl gnupg2 lsb-release python3-pip git
               
-              # CRITICAL FIX: Install full toolchain for custom build environment
+              # CRITICAL FIX: Install toolchain
               apt-get install -y --reinstall build-essential gcc g++ libc6-dev
 
               pip3 install --upgrade gdown vcs2l
