@@ -70,9 +70,26 @@ jobs:
         run: |
           df -h
 
+      # Force disk cleanup 
       - name: Free disk space
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
         uses: ./.github/actions/free-disk-space
+
+      # Download dependencies 
+      - name: Install vcstool and import repositories
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y python3-pip
+          pip3 install --upgrade vcstool
+          
+          mkdir -p src
+          if [ -f "autoware.repos" ]; then
+            vcs import src < autoware.repos
+          elif [ -f "repositories/autoware.repos" ]; then
+            vcs import src < repositories/autoware.repos
+          elif [ -f "repositories/simulator.repos" ]; then
+            vcs import src < repositories/simulator.repos
+          fi
 
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
@@ -118,7 +135,7 @@ jobs:
           echo "Listing /tmp:"
           ls -lah /tmp || true
 
-          #
+          # 
           TARBALL=$(find /tmp -maxdepth 1 -name "*.tar" | head -n 1)
           
           if [ -z "$TARBALL" ]; then
@@ -149,7 +166,7 @@ jobs:
               apt-get update
               apt-get install -y unzip zip curl gnupg2 lsb-release python3-pip git
               
-              # ---  (Fixes "cc1 not found") ---
+              # 
               apt-get install -y build-essential gcc-11 g++-11 cpp-11 libc6-dev
               export CC=/usr/bin/gcc-11
               export CXX=/usr/bin/g++-11
