@@ -64,14 +64,21 @@ jobs:
             ansible/**
             docker/**
             setup-dev-env.sh
-      - name: Show disk space
-        if: always()
-        run: |
-          df -h
+
       - name: Free disk space
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' &&
-          matrix.build-type != 'main' }}
-        uses: ./.github/actions/free-disk-space
+        # FIX: Removed 'matrix.build-type != main' to ensure cleanup runs for everyone
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' || 
+                github.event_name == 'schedule' || 
+                github.event_name == 'workflow_dispatch' }}
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: false
+          swap-storage: true
 
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
@@ -89,16 +96,24 @@ jobs:
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
+
       - name: Show disk space
         if: always()
-        run: |
-          df -h
+        run: df -h
+
   scenario-test:
     needs: docker-build
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Free disk space
+        # Aggressive cleanup before downloading/loading large Docker images
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          large-packages: true
 
       - name: Download built image artifact (tar)
         uses: actions/download-artifact@v4
@@ -114,13 +129,15 @@ jobs:
           TARBALL="/tmp/autoware_image.tar"
           if [ ! -f "$TARBALL" ]; then
             echo "::error::autoware_image.tar not found at $TARBALL"
-            echo "All tar files under /tmp:"
             find /tmp -maxdepth 3 -type f -name "*.tar" -print || true
             exit 1
           fi
           echo "Loading docker image from: $TARBALL"
           docker load -i "$TARBALL"
+          # Delete tarball immediately after load to reclaim space
+          rm "$TARBALL"
           docker image ls | head -n 20
+
       - name: Run scenario_test_runner inside built image
         shell: bash
         run: |
@@ -136,7 +153,6 @@ jobs:
                 build-essential gcc g++ \
                 unzip zip curl gnupg2 lsb-release python3-pip git
               pip3 install --upgrade gdown vcs2l
-              # Use PR code (mounted at /repo) instead of cloning main
               rm -rf /autoware_ws
               mkdir -p /autoware_ws
               cp -a /repo/. /autoware_ws
@@ -189,6 +205,7 @@ jobs:
               fi
               echo "Test successfully passed."
             '
+
       - name: Upload scenario artifacts
         if: always()
         uses: actions/upload-artifact@v4
