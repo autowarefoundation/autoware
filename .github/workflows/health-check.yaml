@@ -31,7 +31,7 @@ jobs:
         include:
           - build-type: main
             platform: amd64
-            runner: "['ubuntu-24.04-16core']"  # Use larger runner if available
+            runner: "['ubuntu-24.04']"
             lib-dir: x86_64
             container: ubuntu:22.04
     runs-on: ${{ fromJson(matrix.runner) }}
@@ -41,9 +41,9 @@ jobs:
           echo "=== Disk space before cleanup ==="
           df -h
           
-          # Stop and remove ALL Docker containers, images, volumes
+          # Stop Docker to safely remove everything
           sudo systemctl stop docker
-          sudo rm -rf /var/lib/docker
+          sudo rm -rf /var/lib/docker/*
           
           # Remove EVERYTHING possible
           sudo rm -rf /usr/share/dotnet
@@ -54,6 +54,8 @@ jobs:
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
           sudo rm -rf /usr/local/.ghcup
           sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/local/share/powershell
           
           # Remove packages
           sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' 'php.*' '^mongodb-.*' '^mysql-.*' || true
@@ -103,13 +105,6 @@ jobs:
             "log-opts": {
               "max-size": "10m",
               "max-file": "3"
-            },
-            "default-ulimits": {
-              "nofile": {
-                "Name": "nofile",
-                "Hard": 64000,
-                "Soft": 64000
-              }
             }
           }
           EOF
@@ -119,12 +114,10 @@ jobs:
           # Set environment variables
           echo "DOCKER_BUILDKIT=1" >> $GITHUB_ENV
           echo "BUILDKIT_PROGRESS=plain" >> $GITHUB_ENV
-          echo "COMPOSE_DOCKER_CLI_BUILD=1" >> $GITHUB_ENV
           
           echo "=== Final disk space before build ==="
           df -h
           docker system df
-          docker info | grep -i storage
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -142,7 +135,7 @@ jobs:
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
-            COLCON_ARGS="--packages-select scenario_test_runner --packages-up-to scenario_test_runner"
+            COLCON_ARGS="--packages-up-to scenario_test_runner"
 
       - name: Aggressive post-build cleanup
         if: always()
