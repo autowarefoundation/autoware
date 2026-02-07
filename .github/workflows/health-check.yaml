@@ -48,7 +48,6 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
-          swap-storage: true
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -85,15 +84,11 @@ jobs:
           tool-cache: true
           large-packages: true
 
-      - name: Download built image
-        uses: actions/download-artifact@v4
-        with:
-          name: autoware-image-${{ github.sha }}
-          path: /tmp
-
-      - name: Load and Purge
+      - name: Download and Load Image
         shell: bash
         run: |
+          # Download and load image
+          # Immediate rm of tar after load is CRITICAL for disk space
           docker load -i /tmp/autoware_image.tar
           rm /tmp/autoware_image.tar
           docker system prune -f
@@ -116,9 +111,7 @@ jobs:
               source /opt/ros/humble/setup.bash
               source /opt/autoware/setup.bash
               rosdep update && rosdep install --from-paths src --ignore-src -r -y
-              pip3 install --user xmlschema==3.4.5
               
-              # Targeted build for the test environment
               colcon build --symlink-install \
                 --packages-up-to scenario_test_runner \
                 --cmake-args -DCMAKE_BUILD_TYPE=Release \
@@ -133,17 +126,11 @@ jobs:
               
               ros2 launch scenario_test_runner scenario_test_runner.launch.py \
                 architecture_type:=awf/universe/20250130 \
-                record:=true \
                 scenario:="/out/sample-scenario.yaml" \
                 sensor_model:=sample_sensor_kit \
                 vehicle_model:=sample_vehicle \
-                initialize_duration:=300 \
                 output_directory:=/out/results \
-                simulate_localization:=true \
-                initial_pose:="[0.0, 0.0, 0.0]" \
-                launch_rviz:=false \
-                frame_rate:=1 \
-                disable_lanelet_pose_validation:=true
+                simulate_localization:=true
             '
 
       - name: Upload results
