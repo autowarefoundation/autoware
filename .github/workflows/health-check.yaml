@@ -35,6 +35,8 @@ jobs:
             lib-dir: x86_64
             container: ubuntu:22.04
     runs-on: ${{ fromJson(matrix.runner) }}
+    outputs:
+      image-artifact-name: ${{ steps.get-artifact-name.outputs.artifact-name }}
     steps:
       - name: Maximize disk space
         run: |
@@ -105,6 +107,7 @@ jobs:
           sudo systemctl restart docker || true
 
       - name: Build 'Autoware' (Selective Build)
+        id: docker-build
         uses: ./.github/actions/docker-build
         with:
           platform: ${{ matrix.platform }}
@@ -116,6 +119,13 @@ jobs:
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
             COLCON_ARGS="--packages-up-to scenario_test_runner"
+
+      - name: Get actual artifact name
+        id: get-artifact-name
+        run: |
+          # The artifact name includes a hash suffix
+          # We'll use a pattern to find it
+          echo "artifact-name=autoware-image-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Cleanup after build
         if: always()
@@ -151,11 +161,26 @@ jobs:
           dotnet: true
           haskell: true
 
+      - name: List all artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+            });
+            console.log('Available artifacts:');
+            artifacts.data.artifacts.forEach(artifact => {
+              console.log(`- ${artifact.name} (${artifact.size_in_bytes} bytes)`);
+            });
+
       - name: Download Docker Image Artifact
         uses: actions/download-artifact@v4
         with:
-          name: autoware-image
+          pattern: autoware-image-*
           path: /tmp
+          merge-multiple: true
 
       - name: Show disk space before loading image
         run: df -h
@@ -163,6 +188,9 @@ jobs:
       - name: Load Docker Image
         shell: bash
         run: |
+          echo "Checking for tar file..."
+          ls -lh /tmp/
+          
           echo "Loading Docker image..."
           docker load -i /tmp/autoware_image.tar
           echo "Removing tar file immediately..."
