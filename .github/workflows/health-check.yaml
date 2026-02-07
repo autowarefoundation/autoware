@@ -19,118 +19,178 @@ jobs:
 
   load-env:
     needs: label-check
-    if: ${{ needs.label-check.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' }}
+    if: ${{ needs.label-check.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/load-env.yaml
 
-  docker-build-and-test:
+  docker-build:
     needs: load-env
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        build-type: [main]
+        include:
+          - build-type: main
+            platform: amd64
+            runner: "['ubuntu-24.04']"
+            lib-dir: x86_64
+            container: ubuntu:22.04
+    runs-on: ${{ fromJson(matrix.runner) }}
+    container:
+      image: ghcr.io/autowarefoundation/autoware:universe-devel
     steps:
-      - name: Maximize disk space
-        run: |
-          echo "=== Disk space before cleanup ==="
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo docker system prune -af
-          echo "=== Disk space after cleanup ==="
-          df -h
-
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Free disk space (Aggressive)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: false
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Show disk space before build
-        run: df -h
-
-      - name: Run scenario test directly in base image
+      - name: Install required packages
         shell: bash
         run: |
-          mkdir -p ${{ github.workspace }}/scenario_out
-          
-          # Use base image and build only what's needed
-          docker run --rm \
-            -v "${{ github.workspace }}:/repo" \
-            -v "${{ github.workspace }}/scenario_out:/out" \
-            ${{ needs.load-env.outputs.autoware_base_image }} \
-            bash -lc '
-              set -e
-              echo "Installing dependencies..."
-              apt-get update && apt-get install -y build-essential python3-pip git unzip wget curl
-              pip3 install --upgrade gdown vcstool
-              
-              echo "Setting up workspace..."
-              rm -rf /autoware_ws && mkdir -p /autoware_ws/src
-              cd /autoware_ws
-              
-              # Copy only necessary files from repo
-              cp /repo/repositories/simulator.repos .
-              
-              # Import simulator repositories
-              vcs import src < simulator.repos
-              
-              # Source ROS and Autoware
-              source /opt/ros/humble/setup.bash
-              if [ -f /opt/autoware/setup.bash ]; then
-                source /opt/autoware/setup.bash
-              fi
-              
-              echo "Installing ROS dependencies..."
-              rosdep update
-              rosdep install --from-paths src --ignore-src -r -y || true
-              
-              echo "Building scenario_test_runner..."
-              colcon build --symlink-install \
-                --packages-up-to scenario_test_runner \
-                --cmake-args -DCMAKE_BUILD_TYPE=Release \
-                --executor sequential
-              
-              echo "Sourcing workspace..."
-              source /autoware_ws/install/setup.bash
-              
-              echo "Downloading test data..."
-              cd /out
-              gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml || echo "Failed to download scenario"
-              mkdir -p /out/autoware_map
-              gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip || echo "Failed to download map"
-              if [ -f sample-map-planning.zip ]; then
-                unzip -q sample-map-planning.zip -d /out/autoware_map
-              fi
-              
-              echo "Running scenario test..."
-              ros2 launch scenario_test_runner scenario_test_runner.launch.py \
-                architecture_type:=awf/universe/20250130 \
-                scenario:="/out/sample-scenario.yaml" \
-                sensor_model:=sample_sensor_kit \
-                vehicle_model:=sample_vehicle \
-                output_directory:=/out/results \
-                simulate_localization:=true || echo "Test execution completed with status: $?"
-            '
+          apt-get update
+          apt-get install -y \
+            unzip \
+            zip \
+            curl \
+            gnupg2 \
+            lsb-release \
+            python3-pip \
+            git
+          pip install --upgrade gdown vcstool
 
-      - name: Upload scenario test results
+      - name: Show memory info
+        shell: bash
+        run: free -h
+
+      - name: Clone Autoware and Import simulator.repos
+        shell: bash
+        run: |
+          git clone https://github.com/autowarefoundation/autoware.git ~/autoware_ws
+          cd ~/autoware_ws
+          mkdir -p src
+          vcs import src < repositories/simulator.repos
+
+      - name: Install ROS dependencies
+        shell: bash
+        run: |
+          cd ~/autoware_ws
+          source /opt/ros/humble/setup.bash
+          source /opt/autoware/setup.bash
+          rosdep update
+          rosdep install --from-paths src --ignore-src -r -y
+
+      - name: Downgrade xmlschema
+        shell: bash
+        run: |
+          pip3 install --user xmlschema==3.4.5
+
+      - name: Build Autoware Workspace
+        shell: bash
+        run: |
+          cd ~/autoware_ws
+          # Clean the workspace before building
+          rm -rf build install log
+          source /opt/ros/humble/setup.bash
+          source /opt/autoware/setup.bash
+          # Disable precompiled headers to reduce memory
+          export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+          # Build with sequential executor to reduce RAM spikes
+          colcon build --symlink-install \
+            --cmake-args -DCMAKE_BUILD_TYPE=Release \
+            --executor sequential
+
+      - name: Check Autoware installation
+        shell: bash
+        run: |
+          source ~/autoware_ws/install/setup.bash
+          ros2 pkg list | grep autoware
+
+      - name: Download scenario file
+        shell: bash
+        run: |
+          gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
+
+      - name: Download sample-map-planning maps
+        shell: bash
+        run: |
+          mkdir -p $HOME/autoware_map
+          gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
+          unzip sample-map-planning.zip -d $HOME/autoware_map
+
+      - name: Fix paths in sample-scenario.yaml
+        shell: bash
+        run: |
+          # Replace hardcoded user paths with the dynamic $HOME variable
+          sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
+
+      - name: Launch scenario_test_runner with diagnostics
+        shell: bash
+        run: |
+          # Use stable DDS implementation for CI
+          export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+          SCENARIO_FILE="./sample-scenario.yaml"
+          source ~/autoware_ws/install/setup.bash
+          if [ -f "$SCENARIO_FILE" ]; then
+            echo "Launching scenario_test_runner..."
+            mkdir -p ./results
+            ros2 launch scenario_test_runner scenario_test_runner.launch.py \
+              architecture_type:=awf/universe/20250130 \
+              record:=true \
+              scenario:="$SCENARIO_FILE" \
+              sensor_model:=sample_sensor_kit \
+              vehicle_model:=sample_vehicle \
+              initialize_duration:=300 \
+              output_directory:=./results \
+              simulate_localization:=true \
+              initial_pose:="[0.0, 0.0, 0.0]" \
+              launch_rviz:=false \
+              frame_rate:=1 \
+              disable_lanelet_pose_validation:=true 2>&1 | tee scenario_output.log || true
+          else
+            echo "ERROR: sample-scenario.yaml is missing!"
+            exit 1
+          fi
+
+      - name: Check for Test Failures
+        shell: bash
+        run: |
+          RESULT_FILE="./results/scenario_test_runner/result.junit.xml"
+          if [ ! -f "$RESULT_FILE" ]; then
+            echo "::error::Result file not found! Simulation likely crashed."
+            exit 1
+          fi
+          echo "Checking for failures in $RESULT_FILE..."
+          # Check for failure or error tags in the JUnit XML
+          if grep -q -E '<failure|<error' "$RESULT_FILE"; then
+            echo "::error::Test failures or errors detected."
+            cat "$RESULT_FILE"
+            exit 1
+          else
+            echo "Test successfully passed."
+          fi
+
+      - name: Upload Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: scenario-test-results
-          path: scenario_out/
+          name: scenario-test-results-and-logs
+          path: |
+            ./results/
+            ./scenario_output.log
+            ~/.ros/log/
 
-      - name: Show final disk space
+      - name: Kill lingering ROS nodes (cleanup)
+        if: always()
+        shell: bash
+        run: |
+          echo "Killing lingering ROS processes..."
+          pkill -9 -f ros2 || true
+          pkill -9 -f scenario_test_runner || true
+          pkill -9 -f openscenario_interpreter_node || true
+          pkill -9 -f python || true
+
+      - name: Show disk space
         if: always()
         run: df -h
