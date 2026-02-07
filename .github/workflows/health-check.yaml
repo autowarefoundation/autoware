@@ -39,6 +39,16 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Additional manual cleanup
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker system prune -af
+          sudo apt-get clean
+          df -h
+
       - name: Free disk space (Aggressive)
         uses: jlumbroso/free-disk-space@main
         with:
@@ -48,6 +58,10 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
+          swap-storage: false
+
+      - name: Show disk space after cleanup
+        run: df -h
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -67,7 +81,7 @@ jobs:
             LIB_DIR=${{ matrix.lib-dir }}
             COLCON_ARGS="--packages-up-to scenario_test_runner"
 
-      - name: Show disk space
+      - name: Show disk space after build
         if: always()
         run: df -h
 
@@ -83,6 +97,18 @@ jobs:
         with:
           tool-cache: true
           large-packages: true
+          android: true
+          dotnet: true
+          haskell: true
+
+      - name: Download Docker Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: autoware-image
+          path: /tmp
+
+      - name: Show disk space before loading image
+        run: df -h
 
       - name: Download and Load Image
         shell: bash
@@ -92,6 +118,9 @@ jobs:
           docker load -i /tmp/autoware_image.tar
           rm /tmp/autoware_image.tar
           docker system prune -f
+
+      - name: Show disk space after loading image
+        run: df -h
 
       - name: Run scenario_test_runner
         shell: bash
