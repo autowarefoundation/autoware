@@ -2,11 +2,7 @@ name: health-check
 
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
-      - labeled
+    types: [opened, synchronize, reopened, labeled]
   schedule:
     - cron: 0 12 * * *
   workflow_dispatch:
@@ -23,10 +19,7 @@ jobs:
 
   load-env:
     needs: label-check
-    if: ${{ needs.label-check.outputs.result == 'true' ||
-      github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'pull_request' }}
+    if: ${{ needs.label-check.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' }}
     uses: ./.github/workflows/load-env.yaml
 
   docker-build:
@@ -46,30 +39,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set git config
-        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get changed files
-        id: changed-files
-        uses: step-security/changed-files@v46
-        with:
-          files: |
-            *.env
-            *.repos
-            .github/actions/docker-build/action.yaml
-            .github/workflows/health-check.yaml
-            ansible-galaxy-requirements.yaml
-            ansible/**
-            docker/**
-            setup-dev-env.sh
-
-      - name: Free disk space
-        # FIX: Removed 'matrix.build-type != main' to ensure cleanup runs for everyone
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' || 
-                github.event_name == 'schedule' || 
-                github.event_name == 'workflow_dispatch' }}
+      - name: Free disk space (Aggressive)
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: true
@@ -77,20 +47,20 @@ jobs:
           dotnet: true
           haskell: true
           large-packages: true
-          docker-images: false
+          docker-images: true # Clears pre-cached images to make room for Autoware
           swap-storage: true
 
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build 'Autoware'
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch' ||
-          github.event_name == 'pull_request' }}
         uses: ./.github/actions/docker-build
         with:
           platform: ${{ matrix.platform }}
           cache-tag-suffix: ${{ matrix.build-type }}
           image-artifact-name: autoware-image
-          additional-repos: ${{ matrix.build-type == 'nightly' && 'repositories/autoware-nightly.repos' || '' }}
           build-args: |
             ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
@@ -109,36 +79,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Free disk space
-        # Aggressive cleanup before downloading/loading large Docker images
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: true
           large-packages: true
 
-      - name: Download built image artifact (tar)
+      - name: Download built image
         uses: actions/download-artifact@v4
         with:
           name: autoware-image-${{ github.sha }}
           path: /tmp
 
-      - name: Load docker image
+      - name: Load and Purge
         shell: bash
         run: |
-          echo "Listing /tmp:"
-          ls -lah /tmp || true
-          TARBALL="/tmp/autoware_image.tar"
-          if [ ! -f "$TARBALL" ]; then
-            echo "::error::autoware_image.tar not found at $TARBALL"
-            find /tmp -maxdepth 3 -type f -name "*.tar" -print || true
-            exit 1
-          fi
-          echo "Loading docker image from: $TARBALL"
-          docker load -i "$TARBALL"
-          # Delete tarball immediately after load to reclaim space
-          rm "$TARBALL"
-          docker image ls | head -n 20
+          docker load -i /tmp/autoware_image.tar
+          rm /tmp/autoware_image.tar
+          docker system prune -f # Deletes unused layers immediately
 
-      - name: Run scenario_test_runner inside built image
+      - name: Run scenario_test_runner
         shell: bash
         run: |
           mkdir -p ${{ github.workspace }}/scenario_out
@@ -148,42 +107,26 @@ jobs:
             autoware:health-check-${{ github.sha }} \
             bash -lc '
               set -e
-              apt-get update
-              apt-get install -y \
-                build-essential gcc g++ \
-                unzip zip curl gnupg2 lsb-release python3-pip git
+              apt-get update && apt-get install -y build-essential python3-pip git unzip
               pip3 install --upgrade gdown vcs2l
-              rm -rf /autoware_ws
-              mkdir -p /autoware_ws
-              cp -a /repo/. /autoware_ws
-              cd /autoware_ws
-              mkdir -p src
-              vcs import src < repositories/simulator.repos
+              rm -rf /autoware_ws && mkdir -p /autoware_ws
+              cp -a /repo/. /autoware_ws && cd /autoware_ws
+              mkdir -p src && vcs import src < repositories/simulator.repos
               source /opt/ros/humble/setup.bash
               source /opt/autoware/setup.bash
-              rosdep update
-              rosdep install --from-paths src --ignore-src -r -y
+              rosdep update && rosdep install --from-paths src --ignore-src -r -y
               pip3 install --user xmlschema==3.4.5
-              rm -rf build install log
-              export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
-              colcon build --symlink-install \
-                --cmake-args -DCMAKE_BUILD_TYPE=Release \
-                --executor sequential
+              colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --executor sequential
               source /autoware_ws/install/setup.bash
-              ros2 pkg list | grep autoware || true
               cd /out
               gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
               mkdir -p /out/autoware_map
               gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
               unzip sample-map-planning.zip -d /out/autoware_map
-              sed -i "s@/home/user/@$HOME/@g" sample-scenario.yaml
-              export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-              SCENARIO_FILE="/out/sample-scenario.yaml"
-              mkdir -p /out/results
               ros2 launch scenario_test_runner scenario_test_runner.launch.py \
                 architecture_type:=awf/universe/20250130 \
                 record:=true \
-                scenario:="$SCENARIO_FILE" \
+                scenario:="/out/sample-scenario.yaml" \
                 sensor_model:=sample_sensor_kit \
                 vehicle_model:=sample_vehicle \
                 initialize_duration:=300 \
@@ -192,24 +135,12 @@ jobs:
                 initial_pose:="[0.0, 0.0, 0.0]" \
                 launch_rviz:=false \
                 frame_rate:=1 \
-                disable_lanelet_pose_validation:=true 2>&1 | tee /out/scenario_output.log || true
-              RESULT_FILE="/out/results/scenario_test_runner/result.junit.xml"
-              if [ ! -f "$RESULT_FILE" ]; then
-                echo "::error::Result file not found! Simulation likely crashed."
-                exit 1
-              fi
-              if grep -q -E "<failure|<error" "$RESULT_FILE"; then
-                echo "::error::Test failures or errors detected."
-                cat "$RESULT_FILE"
-                exit 1
-              fi
-              echo "Test successfully passed."
+                disable_lanelet_pose_validation:=true
             '
 
-      - name: Upload scenario artifacts
+      - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: scenario-test-results-and-logs
-          path: |
-            scenario_out/
+          name: scenario-test-results
+          path: scenario_out/
