@@ -31,7 +31,7 @@ jobs:
         include:
           - build-type: main
             platform: amd64
-            runner: "['ubuntu-24.04']"
+            runner: "['self-hosted','Linux','X64']"
             lib-dir: x86_64
             container: ubuntu:22.04
     runs-on: ${{ fromJson(matrix.runner) }}
@@ -39,83 +39,28 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Maximize disk space
-        run: |
-          echo "=== Before cleanup ==="
-          df -h
-          
-          # Remove large directories
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          
-          # Clean Docker (but keep it running)
-          docker system prune -af --volumes
-          
-          echo "=== After cleanup ==="
-          df -h
-
-      - name: Free disk space (Aggressive)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: false
-
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show disk space before build
+        run: df -h
 
       - name: Build 'Autoware' (Selective Build)
         uses: ./.github/actions/docker-build
         with:
           platform: ${{ matrix.platform }}
           cache-tag-suffix: ${{ matrix.build-type }}
-          image-artifact-name: autoware-image
           build-args: |
             ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
             COLCON_ARGS="--packages-up-to scenario_test_runner"
-      
-      - name: Show disk space
-        if: always()
+
+      - name: Show disk space after build
         run: df -h
-
-  scenario-test:
-    needs: docker-build
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Free disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          large-packages: true
-
-      - name: Download Docker Image Artifact
-        uses: actions/download-artifact@v4
-        with:
-          pattern: autoware-image-*
-          path: /tmp
-          merge-multiple: true
-
-      - name: Load Docker Image
-        shell: bash
-        run: |
-          docker load -i /tmp/autoware_image.tar
-          rm -f /tmp/autoware_image.tar
-          docker system prune -f
 
       - name: Run scenario_test_runner
         shell: bash
@@ -124,14 +69,16 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/repo" \
             -v "${{ github.workspace }}/scenario_out:/out" \
-            autoware:health-check-${{ github.sha }} \
+            autoware:latest-${{ matrix.platform }}-${{ matrix.build-type }} \
             bash -lc '
               set -e
               apt-get update && apt-get install -y build-essential python3-pip git unzip
               pip3 install --upgrade gdown vcs2l
+              
               rm -rf /autoware_ws && mkdir -p /autoware_ws
               cp -a /repo/. /autoware_ws && cd /autoware_ws
               mkdir -p src && vcs import src < repositories/simulator.repos
+              
               source /opt/ros/humble/setup.bash
               source /opt/autoware/setup.bash
               rosdep update && rosdep install --from-paths src --ignore-src -r -y
@@ -157,9 +104,13 @@ jobs:
                 simulate_localization:=true
             '
 
-      - name: Upload results
+      - name: Upload scenario test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: scenario-test-results
           path: scenario_out/
+
+      - name: Show final disk space
+        if: always()
+        run: df -h
