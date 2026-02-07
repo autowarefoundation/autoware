@@ -31,44 +31,46 @@ jobs:
         include:
           - build-type: main
             platform: amd64
-            runner: "['ubuntu-24.04']"
+            runner: "['ubuntu-24.04-16core']"  # Use larger runner if available
             lib-dir: x86_64
             container: ubuntu:22.04
     runs-on: ${{ fromJson(matrix.runner) }}
-    outputs:
-      image-artifact-name: ${{ steps.get-artifact-name.outputs.artifact-name }}
     steps:
-      - name: Maximize disk space
+      - name: Maximize build disk space
         run: |
-          echo "Before cleanup:"
+          echo "=== Disk space before cleanup ==="
           df -h
           
-          # Remove unwanted software
+          # Stop and remove ALL Docker containers, images, volumes
+          sudo systemctl stop docker
+          sudo rm -rf /var/lib/docker
+          
+          # Remove EVERYTHING possible
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /opt/hostedtoolcache
+          sudo rm -rf /usr/local/share/boost
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/swift
           
-          # Remove large packages
-          sudo apt-get remove -y '^aspnetcore-.*' || true
-          sudo apt-get remove -y '^dotnet-.*' --fix-missing || true
-          sudo apt-get remove -y '^llvm-.*' --fix-missing || true
-          sudo apt-get remove -y 'php.*' --fix-missing || true
-          sudo apt-get remove -y '^mongodb-.*' --fix-missing || true
-          sudo apt-get remove -y '^mysql-.*' --fix-missing || true
-          sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri --fix-missing || true
+          # Remove packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' 'php.*' '^mongodb-.*' '^mysql-.*' || true
+          sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri || true
+          sudo apt-get remove -y google-cloud-sdk google-cloud-cli microsoft-edge-stable || true
           sudo apt-get autoremove -y
           sudo apt-get clean
           
-          # Clean Docker
-          docker system prune -af --volumes
-          
-          # Clean apt cache
+          # Clean more
           sudo rm -rf /var/lib/apt/lists/*
-          sudo apt-get clean
+          sudo rm -rf /tmp/*
+          sudo rm -rf /var/tmp/*
           
-          echo "After cleanup:"
+          # Restart Docker
+          sudo systemctl start docker
+          
+          echo "=== Disk space after cleanup ==="
           df -h
 
       - name: Check out repository
@@ -85,29 +87,51 @@ jobs:
           docker-images: true
           swap-storage: false
 
-      - name: Final disk check before build
+      - name: Configure Docker for maximum efficiency
         run: |
-          echo "Disk space before build:"
+          echo "=== Configuring Docker ==="
+          sudo mkdir -p /etc/docker
+          
+          # Configure Docker daemon for space efficiency
+          cat << 'EOF' | sudo tee /etc/docker/daemon.json
+          {
+            "storage-driver": "overlay2",
+            "storage-opts": [
+              "overlay2.override_kernel_check=true"
+            ],
+            "log-driver": "json-file",
+            "log-opts": {
+              "max-size": "10m",
+              "max-file": "3"
+            },
+            "default-ulimits": {
+              "nofile": {
+                "Name": "nofile",
+                "Hard": 64000,
+                "Soft": 64000
+              }
+            }
+          }
+          EOF
+          
+          sudo systemctl restart docker
+          
+          # Set environment variables
+          echo "DOCKER_BUILDKIT=1" >> $GITHUB_ENV
+          echo "BUILDKIT_PROGRESS=plain" >> $GITHUB_ENV
+          echo "COMPOSE_DOCKER_CLI_BUILD=1" >> $GITHUB_ENV
+          
+          echo "=== Final disk space before build ==="
           df -h
-          echo "Docker disk usage:"
           docker system df
+          docker info | grep -i storage
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Enable Docker BuildKit and cleanup
-        run: |
-          echo "DOCKER_BUILDKIT=1" >> $GITHUB_ENV
-          echo "BUILDKIT_PROGRESS=plain" >> $GITHUB_ENV
-          # Set Docker to use overlay2 with minimal logging
-          sudo mkdir -p /etc/docker
-          echo '{"storage-driver":"overlay2","log-driver":"json-file","log-opts":{"max-size":"10m","max-file":"3"}}' | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker || true
-
-      - name: Build 'Autoware' (Selective Build)
-        id: docker-build
+      - name: Build 'Autoware' (Minimal Selective Build)
         uses: ./.github/actions/docker-build
         with:
           platform: ${{ matrix.platform }}
@@ -118,24 +142,21 @@ jobs:
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
-            COLCON_ARGS="--packages-up-to scenario_test_runner"
+            COLCON_ARGS="--packages-select scenario_test_runner --packages-up-to scenario_test_runner"
 
-      - name: Get actual artifact name
-        id: get-artifact-name
-        run: |
-          # The artifact name includes a hash suffix
-          # We'll use a pattern to find it
-          echo "artifact-name=autoware-image-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Cleanup after build
+      - name: Aggressive post-build cleanup
         if: always()
         run: |
+          echo "=== Cleaning up after build ==="
           docker system prune -af --volumes
           df -h
 
-      - name: Show disk space
+      - name: Show final disk space
         if: always()
-        run: df -h
+        run: |
+          echo "=== Final disk space ==="
+          df -h
+          docker system df
 
   scenario-test:
     needs: docker-build
@@ -146,6 +167,7 @@ jobs:
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache
           sudo docker system prune -af
           df -h
 
@@ -161,20 +183,6 @@ jobs:
           dotnet: true
           haskell: true
 
-      - name: List all artifacts
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId,
-            });
-            console.log('Available artifacts:');
-            artifacts.data.artifacts.forEach(artifact => {
-              console.log(`- ${artifact.name} (${artifact.size_in_bytes} bytes)`);
-            });
-
       - name: Download Docker Image Artifact
         uses: actions/download-artifact@v4
         with:
@@ -189,12 +197,18 @@ jobs:
         shell: bash
         run: |
           echo "Checking for tar file..."
-          ls -lh /tmp/
+          ls -lh /tmp/ || true
           
-          echo "Loading Docker image..."
-          docker load -i /tmp/autoware_image.tar
-          echo "Removing tar file immediately..."
-          rm -f /tmp/autoware_image.tar
+          if [ -f /tmp/autoware_image.tar ]; then
+            echo "Loading Docker image..."
+            docker load -i /tmp/autoware_image.tar
+            echo "Removing tar file immediately..."
+            rm -f /tmp/autoware_image.tar
+          else
+            echo "ERROR: autoware_image.tar not found!"
+            exit 1
+          fi
+          
           echo "Pruning Docker system..."
           docker system prune -f
           df -h
