@@ -36,47 +36,26 @@ jobs:
             container: ubuntu:22.04
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
-      - name: Maximize build disk space
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Maximize disk space
         run: |
-          echo "=== Disk space before cleanup ==="
+          echo "=== Before cleanup ==="
           df -h
           
-          # Stop Docker to safely remove everything
-          sudo systemctl stop docker
-          sudo rm -rf /var/lib/docker/*
-          
-          # Remove EVERYTHING possible
+          # Remove large directories
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache
-          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          sudo rm -rf /usr/local/.ghcup
-          sudo rm -rf /usr/share/swift
-          sudo rm -rf /usr/local/share/chromium
-          sudo rm -rf /usr/local/share/powershell
           
-          # Remove packages
-          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' 'php.*' '^mongodb-.*' '^mysql-.*' || true
-          sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri || true
-          sudo apt-get remove -y google-cloud-sdk google-cloud-cli microsoft-edge-stable || true
-          sudo apt-get autoremove -y
-          sudo apt-get clean
+          # Clean Docker (but keep it running)
+          docker system prune -af --volumes
           
-          # Clean more
-          sudo rm -rf /var/lib/apt/lists/*
-          sudo rm -rf /tmp/*
-          sudo rm -rf /var/tmp/*
-          
-          # Restart Docker
-          sudo systemctl start docker
-          
-          echo "=== Disk space after cleanup ==="
+          echo "=== After cleanup ==="
           df -h
-
-      - name: Check out repository
-        uses: actions/checkout@v4
 
       - name: Free disk space (Aggressive)
         uses: jlumbroso/free-disk-space@main
@@ -89,42 +68,12 @@ jobs:
           docker-images: true
           swap-storage: false
 
-      - name: Configure Docker for maximum efficiency
-        run: |
-          echo "=== Configuring Docker ==="
-          sudo mkdir -p /etc/docker
-          
-          # Configure Docker daemon for space efficiency
-          cat << 'EOF' | sudo tee /etc/docker/daemon.json
-          {
-            "storage-driver": "overlay2",
-            "storage-opts": [
-              "overlay2.override_kernel_check=true"
-            ],
-            "log-driver": "json-file",
-            "log-opts": {
-              "max-size": "10m",
-              "max-file": "3"
-            }
-          }
-          EOF
-          
-          sudo systemctl restart docker
-          
-          # Set environment variables
-          echo "DOCKER_BUILDKIT=1" >> $GITHUB_ENV
-          echo "BUILDKIT_PROGRESS=plain" >> $GITHUB_ENV
-          
-          echo "=== Final disk space before build ==="
-          df -h
-          docker system df
-
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build 'Autoware' (Minimal Selective Build)
+      - name: Build 'Autoware' (Selective Build)
         uses: ./.github/actions/docker-build
         with:
           platform: ${{ matrix.platform }}
@@ -136,34 +85,15 @@ jobs:
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
             COLCON_ARGS="--packages-up-to scenario_test_runner"
-
-      - name: Aggressive post-build cleanup
+      
+      - name: Show disk space
         if: always()
-        run: |
-          echo "=== Cleaning up after build ==="
-          docker system prune -af --volumes
-          df -h
-
-      - name: Show final disk space
-        if: always()
-        run: |
-          echo "=== Final disk space ==="
-          df -h
-          docker system df
+        run: df -h
 
   scenario-test:
     needs: docker-build
     runs-on: ubuntu-24.04
     steps:
-      - name: Maximize disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache
-          sudo docker system prune -af
-          df -h
-
       - name: Check out repository
         uses: actions/checkout@v4
 
@@ -172,9 +102,6 @@ jobs:
         with:
           tool-cache: true
           large-packages: true
-          android: true
-          dotnet: true
-          haskell: true
 
       - name: Download Docker Image Artifact
         uses: actions/download-artifact@v4
@@ -183,28 +110,12 @@ jobs:
           path: /tmp
           merge-multiple: true
 
-      - name: Show disk space before loading image
-        run: df -h
-
       - name: Load Docker Image
         shell: bash
         run: |
-          echo "Checking for tar file..."
-          ls -lh /tmp/ || true
-          
-          if [ -f /tmp/autoware_image.tar ]; then
-            echo "Loading Docker image..."
-            docker load -i /tmp/autoware_image.tar
-            echo "Removing tar file immediately..."
-            rm -f /tmp/autoware_image.tar
-          else
-            echo "ERROR: autoware_image.tar not found!"
-            exit 1
-          fi
-          
-          echo "Pruning Docker system..."
+          docker load -i /tmp/autoware_image.tar
+          rm -f /tmp/autoware_image.tar
           docker system prune -f
-          df -h
 
       - name: Run scenario_test_runner
         shell: bash
