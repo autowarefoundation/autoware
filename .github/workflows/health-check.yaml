@@ -36,18 +36,41 @@ jobs:
             container: ubuntu:22.04
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Additional manual cleanup
+      - name: Maximize disk space
         run: |
+          echo "Before cleanup:"
+          df -h
+          
+          # Remove unwanted software
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
           sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo docker system prune -af
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          
+          # Remove large packages
+          sudo apt-get remove -y '^aspnetcore-.*' || true
+          sudo apt-get remove -y '^dotnet-.*' --fix-missing || true
+          sudo apt-get remove -y '^llvm-.*' --fix-missing || true
+          sudo apt-get remove -y 'php.*' --fix-missing || true
+          sudo apt-get remove -y '^mongodb-.*' --fix-missing || true
+          sudo apt-get remove -y '^mysql-.*' --fix-missing || true
+          sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri --fix-missing || true
+          sudo apt-get autoremove -y
           sudo apt-get clean
+          
+          # Clean Docker
+          docker system prune -af --volumes
+          
+          # Clean apt cache
+          sudo rm -rf /var/lib/apt/lists/*
+          sudo apt-get clean
+          
+          echo "After cleanup:"
           df -h
+
+      - name: Check out repository
+        uses: actions/checkout@v4
 
       - name: Free disk space (Aggressive)
         uses: jlumbroso/free-disk-space@main
@@ -60,13 +83,26 @@ jobs:
           docker-images: true
           swap-storage: false
 
-      - name: Show disk space after cleanup
-        run: df -h
+      - name: Final disk check before build
+        run: |
+          echo "Disk space before build:"
+          df -h
+          echo "Docker disk usage:"
+          docker system df
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable Docker BuildKit and cleanup
+        run: |
+          echo "DOCKER_BUILDKIT=1" >> $GITHUB_ENV
+          echo "BUILDKIT_PROGRESS=plain" >> $GITHUB_ENV
+          # Set Docker to use overlay2 with minimal logging
+          sudo mkdir -p /etc/docker
+          echo '{"storage-driver":"overlay2","log-driver":"json-file","log-opts":{"max-size":"10m","max-file":"3"}}' | sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker || true
 
       - name: Build 'Autoware' (Selective Build)
         uses: ./.github/actions/docker-build
@@ -81,7 +117,13 @@ jobs:
             LIB_DIR=${{ matrix.lib-dir }}
             COLCON_ARGS="--packages-up-to scenario_test_runner"
 
-      - name: Show disk space after build
+      - name: Cleanup after build
+        if: always()
+        run: |
+          docker system prune -af --volumes
+          df -h
+
+      - name: Show disk space
         if: always()
         run: df -h
 
@@ -89,6 +131,14 @@ jobs:
     needs: docker-build
     runs-on: ubuntu-24.04
     steps:
+      - name: Maximize disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo docker system prune -af
+          df -h
+
       - name: Check out repository
         uses: actions/checkout@v4
 
@@ -110,17 +160,16 @@ jobs:
       - name: Show disk space before loading image
         run: df -h
 
-      - name: Download and Load Image
+      - name: Load Docker Image
         shell: bash
         run: |
-          # Download and load image
-          # Immediate rm of tar after load is CRITICAL for disk space
+          echo "Loading Docker image..."
           docker load -i /tmp/autoware_image.tar
-          rm /tmp/autoware_image.tar
+          echo "Removing tar file immediately..."
+          rm -f /tmp/autoware_image.tar
+          echo "Pruning Docker system..."
           docker system prune -f
-
-      - name: Show disk space after loading image
-        run: df -h
+          df -h
 
       - name: Run scenario_test_runner
         shell: bash
