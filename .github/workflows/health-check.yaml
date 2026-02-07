@@ -47,7 +47,7 @@ jobs:
           dotnet: true
           haskell: true
           large-packages: true
-          docker-images: true # Clears pre-cached images to make room for Autoware
+          docker-images: true
           swap-storage: true
 
       - name: Set git config
@@ -55,7 +55,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build 'Autoware'
+      - name: Build 'Autoware' (Selective Build)
         uses: ./.github/actions/docker-build
         with:
           platform: ${{ matrix.platform }}
@@ -66,6 +66,7 @@ jobs:
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
+            COLCON_ARGS="--packages-up-to scenario_test_runner"
 
       - name: Show disk space
         if: always()
@@ -95,7 +96,7 @@ jobs:
         run: |
           docker load -i /tmp/autoware_image.tar
           rm /tmp/autoware_image.tar
-          docker system prune -f # Deletes unused layers immediately
+          docker system prune -f
 
       - name: Run scenario_test_runner
         shell: bash
@@ -116,13 +117,20 @@ jobs:
               source /opt/autoware/setup.bash
               rosdep update && rosdep install --from-paths src --ignore-src -r -y
               pip3 install --user xmlschema==3.4.5
-              colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --executor sequential
+              
+              # Targeted build for the test environment
+              colcon build --symlink-install \
+                --packages-up-to scenario_test_runner \
+                --cmake-args -DCMAKE_BUILD_TYPE=Release \
+                --executor sequential
+                
               source /autoware_ws/install/setup.bash
               cd /out
               gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml
               mkdir -p /out/autoware_map
               gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip
               unzip sample-map-planning.zip -d /out/autoware_map
+              
               ros2 launch scenario_test_runner scenario_test_runner.launch.py \
                 architecture_type:=awf/universe/20250130 \
                 record:=true \
