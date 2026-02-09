@@ -157,6 +157,7 @@ FROM rosdep-depend AS rosdep-universe-api-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
+COPY src/universe/autoware_universe/launch/tier4_autoware_api_launch /autoware/src/universe/autoware_universe/launch/tier4_autoware_api_launch
 COPY src/universe/autoware_universe/system/autoware_default_adapi_universe /autoware/src/universe/autoware_universe/system/autoware_default_adapi_universe
 COPY src/core/autoware_core/api/autoware_adapi_adaptors /autoware/src/core/autoware_core/api/autoware_adapi_adaptors
 COPY src/universe/autoware_universe/system/autoware_diagnostic_graph_utils /autoware/src/universe/autoware_universe/system/autoware_diagnostic_graph_utils
@@ -268,6 +269,7 @@ RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/universe/external/muSSP,target=/autoware/src/universe/external/muSSP \
   --mount=type=bind,source=src/universe/external/pointcloud_to_laserscan,target=/autoware/src/universe/external/pointcloud_to_laserscan \
   --mount=type=bind,source=src/universe/external/rtklib_ros_bridge,target=/autoware/src/universe/external/rtklib_ros_bridge \
+  --mount=type=bind,source=src/universe/external/tier4_ad_api_adaptor,target=/autoware/src/universe/external/tier4_ad_api_adaptor \
   --mount=type=bind,source=src/universe/external/tier4_autoware_msgs,target=/autoware/src/universe/external/tier4_autoware_msgs \
   --mount=type=bind,source=src/middleware/external,target=/autoware/src/middleware/external \
   --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \
@@ -486,6 +488,7 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
+  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_autoware_api_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_autoware_api_launch \
   --mount=type=bind,source=src/universe/autoware_universe/system/autoware_default_adapi_universe,target=/autoware/src/universe/autoware_universe/system/autoware_default_adapi_universe \
   --mount=type=bind,source=src/core/autoware_core/api/autoware_adapi_adaptors,target=/autoware/src/core/autoware_core/api/autoware_adapi_adaptors \
   --mount=type=bind,source=src/universe/autoware_universe/system/autoware_diagnostic_graph_utils,target=/autoware/src/universe/autoware_universe/system/autoware_diagnostic_graph_utils \

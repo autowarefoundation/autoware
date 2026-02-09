@@ -41,12 +41,6 @@ runs:
         vcs import --shallow --force src < ${{ inputs.additional-repos }}
       shell: bash
 
-    - name: Ensure required directories exist
-      run: |
-        # Create tools directory if it doesn't exist to avoid Docker mount errors
-        mkdir -p src/universe/autoware_universe/tools
-      shell: bash
-
     - name: Cache ccache
       uses: actions/cache@v4
       if: ${{ github.ref == 'refs/heads/main'}}
