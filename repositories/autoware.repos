@@ -104,10 +104,14 @@ repositories:
     type: git
     url: https://github.com/tier4/sensor_component_description.git
     version: 03ba094851ec90febfcfc0adb20b64b0e19df7a8
+  sensor_component/external/sync_tooling_msgs:
+    type: git
+    url: https://github.com/tier4/sync_tooling_msgs.git
+    version: 0.2.6
   sensor_component/external/nebula:
     type: git
     url: https://github.com/tier4/nebula.git
-    version: v0.2.6
+    version: v0.3.2
   # Fork of transport_drivers that enables reduction of copy operations
   sensor_component/transport_drivers:
     type: git
