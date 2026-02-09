@@ -530,7 +530,6 @@ RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/universe/autoware_universe/evaluator,target=/autoware/src/universe/autoware_universe/evaluator \
   --mount=type=bind,source=src/universe/autoware_universe/launch,target=/autoware/src/universe/autoware_universe/launch \
   --mount=type=bind,source=src/universe/autoware_universe/simulator,target=/autoware/src/universe/autoware_universe/simulator \
-  --mount=type=bind,source=src/universe/autoware_universe/tools,target=/autoware/src/universe/autoware_universe/tools \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
