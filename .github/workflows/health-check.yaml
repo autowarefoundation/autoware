@@ -35,31 +35,8 @@ jobs:
             lib-dir: x86_64
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
-      - name: Maximize disk space
-        run: |
-          echo "=== Disk space before cleanup ==="
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo docker system prune -af
-          echo "=== Disk space after cleanup ==="
-          df -h
-
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Free disk space (Aggressive)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: false
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -108,30 +85,8 @@ jobs:
       matrix:
         build-type: [main]
     steps:
-      - name: Maximize disk space
-        run: |
-          echo "=== Disk space before cleanup ==="
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo docker system prune -af
-          echo "=== Disk space after cleanup ==="
-          df -h
-
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Free disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
 
       - name: Show disk space before download
         run: df -h
