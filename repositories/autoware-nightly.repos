@@ -39,3 +39,12 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
     version: main
+  # TODO(mitsudome-r): remove after https://github.com/autowarefoundation/autoware/pull/6788 is merged
+  sensor_component/external/sync_tooling_msgs:
+    type: git
+    url: https://github.com/tier4/sync_tooling_msgs.git
+    version: 0.2.6  
+  sensor_component/external/nebula:
+    type: git
+    url: https://github.com/tier4/nebula.git
+    version: v0.3.2
