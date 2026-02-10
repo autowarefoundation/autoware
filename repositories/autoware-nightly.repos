@@ -43,7 +43,7 @@ repositories:
   sensor_component/external/sync_tooling_msgs:
     type: git
     url: https://github.com/tier4/sync_tooling_msgs.git
-    version: 0.2.6  
+    version: 0.2.6
   sensor_component/external/nebula:
     type: git
     url: https://github.com/tier4/nebula.git
