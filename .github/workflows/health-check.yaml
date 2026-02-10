@@ -27,21 +27,39 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build-type: [main, nightly]
+        build-type: [main]
         include:
           - build-type: main
-            platform: amd64
-            runner: "['self-hosted','Linux','X64']"
-            lib-dir: x86_64
-            container: ubuntu:22.04
-          - build-type: nightly
             platform: amd64
             runner: "['ubuntu-24.04']"
             lib-dir: x86_64
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
+      - name: Maximize disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker system prune -af
+          echo "=== Disk space after cleanup ==="
+          df -h
+
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Free disk space (Aggressive)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -62,13 +80,8 @@ jobs:
             docker/**
             setup-dev-env.sh
 
-      - name: Show disk space
-        if: always()
+      - name: Show disk space before build
         run: df -h
-
-      - name: Free disk space
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' && matrix.build-type != 'main' }}
-        uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -77,14 +90,13 @@ jobs:
           platform: ${{ matrix.platform }}
           cache-tag-suffix: ${{ matrix.build-type }}
           image-artifact-name: autoware-image
-          additional-repos: ${{ matrix.build-type == 'nightly' && 'repositories/autoware-nightly.repos' || '' }}
           build-args: |
             ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
 
-      - name: Show disk space
+      - name: Show disk space after build
         if: always()
         run: df -h
 
@@ -94,10 +106,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build-type: [main, nightly]
+        build-type: [main]
     steps:
+      - name: Maximize disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker system prune -af
+          echo "=== Disk space after cleanup ==="
+          df -h
+
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
 
       - name: Show disk space before download
         run: df -h
@@ -113,7 +147,9 @@ jobs:
 
       - name: Load Docker image
         run: |
+          echo "Loading Docker image..."
           docker load -i /tmp/autoware_image.tar
+          echo "Listing loaded images:"
           docker images
           df -h
 
@@ -133,38 +169,38 @@ jobs:
             bash -c '
               set -e
               
-              # Install test dependencies
+              echo "Installing test dependencies..."
               apt-get update && apt-get install -y python3-pip git unzip wget curl
               pip3 install --upgrade gdown vcstool
               
-              # Clone and setup simulator repos
+              echo "Setting up simulator workspace..."
               cd /workspace
               mkdir -p /autoware_ws/src
               cd /autoware_ws
               vcs import src < /workspace/repositories/simulator.repos
               
-              # Source Autoware environment
+              echo "Sourcing Autoware environment..."
               source /opt/ros/humble/setup.bash
               source /opt/autoware/setup.bash
               
-              # Install simulator dependencies
+              echo "Installing simulator dependencies..."
               rosdep update
               rosdep install --from-paths src --ignore-src -r -y || true
               
-              # Downgrade xmlschema for compatibility
+              echo "Downgrading xmlschema for compatibility..."
               pip3 install --user xmlschema==3.4.5
               
-              # Build scenario_test_runner
+              echo "Building scenario_test_runner..."
               export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
               colcon build --symlink-install \
                 --packages-up-to scenario_test_runner \
                 --cmake-args -DCMAKE_BUILD_TYPE=Release \
                 --executor sequential
               
-              # Source the built workspace
+              echo "Sourcing the built workspace..."
               source /autoware_ws/install/setup.bash
               
-              # Download test data
+              echo "Downloading test data..."
               cd /out
               gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml || echo "Failed to download scenario"
               mkdir -p /out/autoware_map
@@ -174,10 +210,10 @@ jobs:
                 unzip -q sample-map-planning.zip -d /out/autoware_map
               fi
               
-              # Fix paths in scenario file
+              echo "Fixing paths in scenario file..."
               sed -i "s@/home/user/@/out/@g" sample-scenario.yaml
               
-              # Run scenario test
+              echo "Running scenario test..."
               export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
               mkdir -p /out/results
               
@@ -195,7 +231,7 @@ jobs:
                 frame_rate:=1 \
                 disable_lanelet_pose_validation:=true 2>&1 | tee /out/scenario_output.log || true
               
-              # Cleanup
+              echo "Cleaning up processes..."
               pkill -9 -f ros2 || true
               pkill -9 -f scenario_test_runner || true
               pkill -9 -f openscenario_interpreter_node || true
