@@ -31,7 +31,7 @@ jobs:
         include:
           - build-type: main
             platform: amd64
-            runner: "['ubuntu-24.04']"
+            runner: "['self-hosted', 'Linux', 'X64']"
             lib-dir: x86_64
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
@@ -102,7 +102,7 @@ jobs:
 
   scenario-test:
     needs: docker-build
-    runs-on: ubuntu-24.04
+    runs-on: ['self-hosted', 'Linux', 'X64']
     strategy:
       fail-fast: false
       matrix:
@@ -253,7 +253,7 @@ jobs:
             cat "$RESULT_FILE"
             exit 1
           else
-            echo "✅ Test successfully passed."
+            echo " Test successfully passed."
           fi
 
       - name: Upload scenario test results
