@@ -125,7 +125,7 @@ jobs:
               set -e
               
               echo "Installing test dependencies..."
-              apt-get update && apt-get install -y python3-pip git unzip wget curl
+              apt-get update && apt-get install -y python3-pip git unzip wget curl build-essential gcc g++ cmake make
               pip3 install --upgrade gdown vcstool
               
               echo "Setting up simulator workspace..."
