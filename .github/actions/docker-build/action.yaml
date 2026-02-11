@@ -117,6 +117,7 @@ runs:
         context: .
         push: false
         load: true
+        target: universe-devel
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-main
         tags: autoware:health-check-${{ github.sha }}
