@@ -110,7 +110,7 @@ jobs:
               set -e
               
               echo "Installing test dependencies..."
-              apt-get update && apt-get install -y python3-pip git unzip wget curl build-essential gcc g++ cmake make cpp
+              apt-get update && apt-get install -y python3-pip git unzip wget curl build-essential gcc g++ cmake make && apt-get install -y --reinstall cpp-11 gcc-11
               pip3 install --upgrade gdown vcstool
               
               echo "Setting up simulator workspace..."
