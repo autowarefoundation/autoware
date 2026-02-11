@@ -116,16 +116,7 @@ runs:
         file: docker/Dockerfile
         context: .
         push: false
+        load: true
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-main
         tags: autoware:health-check-${{ github.sha }}
-        outputs: type=docker,dest=/tmp/autoware_image.tar
-    - name: Upload built image (tar)
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ inputs.image-artifact-name }}-${{ github.sha }}
-        path: /tmp/autoware_image.tar
-        retention-days: 1
-
-    
-
