@@ -159,6 +159,7 @@ ARG ROS_DISTRO
 
 COPY src/launcher/autoware_launch/tier4_universe_launch/tier4_autoware_api_launch /autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_autoware_api_launch
 COPY src/universe/autoware_universe/system/autoware_default_adapi_universe /autoware/src/universe/autoware_universe/system/autoware_default_adapi_universe
+COPY src/universe/autoware_universe/evaluator/autoware_evaluation_adapter /autoware/src/universe/autoware_universe/evaluator/autoware_evaluation_adapter
 COPY src/core/autoware_core/api/autoware_adapi_adaptors /autoware/src/core/autoware_core/api/autoware_adapi_adaptors
 COPY src/universe/autoware_universe/system/autoware_diagnostic_graph_utils /autoware/src/universe/autoware_universe/system/autoware_diagnostic_graph_utils
 COPY src/core/autoware_core/map/autoware_map_height_fitter /autoware/src/core/autoware_core/map/autoware_map_height_fitter
