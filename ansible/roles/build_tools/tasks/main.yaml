@@ -45,7 +45,7 @@
   changed_when: false
 
 - name: Check if rustup is installed
-  ansible.builtin.shell: command -v rustup
+  ansible.builtin.command: rustup --version
   register: build_tools_rustup_check
   changed_when: false
   failed_when: false
@@ -86,7 +86,7 @@
     mode: 0644
 
 - name: Check if rustup is available after installation
-  ansible.builtin.shell: command -v rustup
+  ansible.builtin.command: rustup --version
   register: build_tools_rustup_available
   changed_when: false
   failed_when: false
@@ -95,7 +95,7 @@
 
 - name: Update Rust toolchain to latest stable
   ansible.builtin.command: rustup update stable
-  register: rustup_update_result
+  register: build_tools_rustup_update_result
   environment:
     PATH: "{{ ansible_env.PATH }}:$HOME/.cargo/bin"
   when: build_tools_rustup_available.rc == 0
