@@ -528,7 +528,7 @@ RUN find /opt/autoware -type f \( -executable -o -name "*.so" \) -exec strip --s
 RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
   --mount=type=bind,source=src/universe/autoware_universe/evaluator,target=/autoware/src/universe/autoware_universe/evaluator \
-  --mount=type=bind,source=src/universe/autoware_universe/launch,target=/autoware/src/universe/autoware_universe/launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch \
   --mount=type=bind,source=src/universe/autoware_universe/simulator,target=/autoware/src/universe/autoware_universe/simulator \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
