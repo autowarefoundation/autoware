@@ -133,7 +133,6 @@ jobs:
               echo "Building scenario_test_runner..."
               export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
               colcon build --symlink-install \
-                --packages-up-to scenario_test_runner behavior_tree_plugin \
                 --cmake-args -DCMAKE_BUILD_TYPE=Release \
                 --executor sequential
               
