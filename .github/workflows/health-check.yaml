@@ -35,6 +35,9 @@ jobs:
             lib-dir: x86_64
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
+      - name: Clean up previous run artifacts
+        run: sudo rm -rf ${{ github.workspace }}/scenario_out
+
       - name: Check out repository
         uses: actions/checkout@v4
 
@@ -85,6 +88,9 @@ jobs:
       matrix:
         build-type: [main]
     steps:
+      - name: Clean up previous run artifacts
+        run: sudo rm -rf ${{ github.workspace }}/scenario_out
+
       - name: Check out repository
         uses: actions/checkout@v4
 
