@@ -32,13 +32,13 @@ runs:
     - name: Run vcs import
       run: |
         mkdir -p src
-        vcs import --shallow src < repositories/autoware.repos
+        vcs import --recursive --shallow src < repositories/autoware.repos
       shell: bash
 
     - name: Import additional repositories
       if: ${{ inputs.additional-repos != '' }}
       run: |
-        vcs import --shallow --force src < ${{ inputs.additional-repos }}
+        vcs import --recursive --shallow --force src < ${{ inputs.additional-repos }}
       shell: bash
 
     - name: Cache ccache
