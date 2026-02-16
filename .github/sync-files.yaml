@@ -10,6 +10,7 @@
     - source: .github/workflows/comment-on-pr.yaml
     - source: .github/workflows/github-release.yaml
     - source: .github/workflows/pre-commit-optional.yaml
+    - source: .github/workflows/pre-commit-ansible.yaml
     - source: .github/workflows/pre-commit.yaml
     - source: .github/workflows/semantic-pull-request.yaml
     - source: .github/workflows/spell-check-differential.yaml
@@ -20,6 +21,7 @@
     - source: .markdown-link-check.json
     - source: .markdownlint.yaml
     - source: .pre-commit-config-optional.yaml
+    - source: .pre-commit-config-ansible.yaml
     - source: .pre-commit-config.yaml
     - source: .prettierignore
     - source: .prettierrc.yaml
