@@ -27,10 +27,6 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/managed_transform_buffer.git
     version: main
-  universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Migrate to AD API and remove this repository entry.
-    type: git
-    url: https://github.com/tier4/tier4_ad_api_adaptor.git
-    version: tier4/universe
   universe/external/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
