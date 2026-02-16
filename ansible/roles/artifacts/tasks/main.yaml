@@ -125,7 +125,7 @@
 - name: Download image_projection_based_fusion/pointpainting_ml_package.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v5/pointpainting_ml_package.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v4/pointpainting_ml_package.param.yaml
     dest: "{{ data_dir }}/image_projection_based_fusion/pointpainting_ml_package.param.yaml"
     mode: "644"
     checksum: sha256:a70f8a01d592aa4e85d481d44377f37ea35ea5271c064723d6d0db7d375990a3
@@ -201,21 +201,21 @@
 - name: Download lidar_centerpoint/centerpoint_ml_package.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/centerpoint_ml_package.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/centerpoint_ml_package.param.yaml
     dest: "{{ data_dir }}/lidar_centerpoint/centerpoint_ml_package.param.yaml"
     mode: "644"
     checksum: sha256:9bbc16e521dd87c91cbadf1cb89c8b81393d1f8e1069af385aaba677576f0e27
 - name: Download lidar_centerpoint/centerpoint_tiny_ml_package.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/centerpoint_tiny_ml_package.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/centerpoint_tiny_ml_package.param.yaml
     dest: "{{ data_dir }}/lidar_centerpoint/centerpoint_tiny_ml_package.param.yaml"
     mode: "644"
     checksum: sha256:e0846b08fbd023d6a7c085f5389d0ccaef8ad9cd2c5e1eb7dbc6583618e38424
 - name: Download lidar_centerpoint/centerpoint_sigma_ml_package.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/centerpoint_sigma_ml_package.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/centerpoint_sigma_ml_package.param.yaml
     dest: "{{ data_dir }}/lidar_centerpoint/centerpoint_sigma_ml_package.param.yaml"
     mode: "644"
     checksum: sha256:9bbc16e521dd87c91cbadf1cb89c8b81393d1f8e1069af385aaba677576f0e27
