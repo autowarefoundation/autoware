@@ -68,8 +68,8 @@ FROM rosdep-depend AS rosdep-universe-sensing-perception-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
-COPY src/universe/autoware_universe/launch/tier4_perception_launch /autoware/src/universe/autoware_universe/launch/tier4_perception_launch
-COPY src/universe/autoware_universe/launch/tier4_sensing_launch /autoware/src/universe/autoware_universe/launch/tier4_sensing_launch
+COPY src/launcher/autoware_launch/tier4_universe_launch/tier4_perception_launch /autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_perception_launch
+COPY src/launcher/autoware_launch/tier4_universe_launch/tier4_sensing_launch /autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_sensing_launch
 COPY src/universe/autoware_universe/perception /autoware/src/universe/autoware_universe/perception
 COPY src/universe/autoware_universe/sensing /autoware/src/universe/autoware_universe/sensing
 COPY src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator /autoware/src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator
@@ -85,8 +85,8 @@ FROM rosdep-depend AS rosdep-universe-localization-mapping-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
-COPY src/universe/autoware_universe/launch/tier4_localization_launch /autoware/src/universe/autoware_universe/launch/tier4_localization_launch
-COPY src/universe/autoware_universe/launch/tier4_map_launch /autoware/src/universe/autoware_universe/launch/tier4_map_launch
+COPY src/launcher/autoware_launch/tier4_universe_launch/tier4_localization_launch /autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_localization_launch
+COPY src/launcher/autoware_launch/tier4_universe_launch/tier4_map_launch /autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_map_launch
 COPY src/universe/autoware_universe/localization /autoware/src/universe/autoware_universe/localization
 COPY src/universe/autoware_universe/map /autoware/src/universe/autoware_universe/map
 # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware_universe/issues/10282 is resolved
@@ -104,8 +104,8 @@ FROM rosdep-depend AS rosdep-universe-planning-control-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
-COPY src/universe/autoware_universe/launch/tier4_control_launch /autoware/src/universe/autoware_universe/launch/tier4_control_launch
-COPY src/universe/autoware_universe/launch/tier4_planning_launch /autoware/src/universe/autoware_universe/launch/tier4_planning_launch
+COPY src/launcher/autoware_launch/tier4_universe_launch/tier4_control_launch /autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_control_launch
+COPY src/launcher/autoware_launch/tier4_universe_launch/tier4_planning_launch /autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_planning_launch
 COPY src/universe/autoware_universe/control /autoware/src/universe/autoware_universe/control
 COPY src/universe/autoware_universe/planning /autoware/src/universe/autoware_universe/planning
 # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware_universe/issues/8805 is resolved
@@ -133,8 +133,8 @@ FROM rosdep-depend AS rosdep-universe-vehicle-system-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
-COPY src/universe/autoware_universe/launch/tier4_vehicle_launch /autoware/src/universe/autoware_universe/launch/tier4_vehicle_launch
-COPY src/universe/autoware_universe/launch/tier4_system_launch /autoware/src/universe/autoware_universe/launch/tier4_system_launch
+COPY src/launcher/autoware_launch/tier4_universe_launch/tier4_vehicle_launch /autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_vehicle_launch
+COPY src/launcher/autoware_launch/tier4_universe_launch/tier4_system_launch /autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_system_launch
 COPY src/universe/autoware_universe/vehicle /autoware/src/universe/autoware_universe/vehicle
 COPY src/universe/autoware_universe/system /autoware/src/universe/autoware_universe/system
 
@@ -157,8 +157,9 @@ FROM rosdep-depend AS rosdep-universe-api-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
-COPY src/universe/autoware_universe/launch/tier4_autoware_api_launch /autoware/src/universe/autoware_universe/launch/tier4_autoware_api_launch
+COPY src/launcher/autoware_launch/tier4_universe_launch/tier4_autoware_api_launch /autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_autoware_api_launch
 COPY src/universe/autoware_universe/system/autoware_default_adapi_universe /autoware/src/universe/autoware_universe/system/autoware_default_adapi_universe
+COPY src/universe/autoware_universe/evaluator/autoware_evaluation_adapter /autoware/src/universe/autoware_universe/evaluator/autoware_evaluation_adapter
 COPY src/core/autoware_core/api/autoware_adapi_adaptors /autoware/src/core/autoware_core/api/autoware_adapi_adaptors
 COPY src/universe/autoware_universe/system/autoware_diagnostic_graph_utils /autoware/src/universe/autoware_universe/system/autoware_diagnostic_graph_utils
 COPY src/core/autoware_core/map/autoware_map_height_fitter /autoware/src/core/autoware_core/map/autoware_map_height_fitter
@@ -309,8 +310,8 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target="${CCACHE_DIR}" \
-  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_perception_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_perception_launch \
-  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_sensing_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_sensing_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_perception_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_perception_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_sensing_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_sensing_launch \
   --mount=type=bind,source=src/universe/external/trt_batched_nms,target=/autoware/src/universe/external/trt_batched_nms \
   --mount=type=bind,source=src/universe/autoware_universe/perception,target=/autoware/src/universe/autoware_universe/perception \
   --mount=type=bind,source=src/universe/autoware_universe/sensing,target=/autoware/src/universe/autoware_universe/sensing \
@@ -369,8 +370,8 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target="${CCACHE_DIR}" \
-  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_localization_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_localization_launch \
-  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_map_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_map_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_localization_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_localization_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_map_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_map_launch \
   --mount=type=bind,source=src/universe/autoware_universe/localization,target=/autoware/src/universe/autoware_universe/localization \
   --mount=type=bind,source=src/universe/autoware_universe/map,target=/autoware/src/universe/autoware_universe/map \
   # TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware_universe/issues/10282 is resolved
@@ -397,8 +398,8 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target="${CCACHE_DIR}" \
-  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_control_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_control_launch \
-  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_planning_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_planning_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_control_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_control_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_planning_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_planning_launch \
   --mount=type=bind,source=src/universe/autoware_universe/control,target=/autoware/src/universe/autoware_universe/control \
   --mount=type=bind,source=src/universe/autoware_universe/planning,target=/autoware/src/universe/autoware_universe/planning \
   # TODO(youtalk): Remove --mount options when https://github.com/autowarefoundation/autoware_universe/issues/8805 is resolved
@@ -432,8 +433,8 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target="${CCACHE_DIR}" \
-  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_vehicle_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_vehicle_launch \
-  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_system_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_system_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_vehicle_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_vehicle_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_system_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_system_launch \
   --mount=type=bind,source=src/universe/autoware_universe/vehicle,target=/autoware/src/universe/autoware_universe/vehicle \
   --mount=type=bind,source=src/universe/autoware_universe/system,target=/autoware/src/universe/autoware_universe/system \
   --mount=type=bind,source=src/core/autoware_core/map/autoware_map_height_fitter,target=/autoware/src/core/autoware_core/map/autoware_map_height_fitter \
@@ -488,7 +489,7 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,source=src/universe/autoware_universe/launch/tier4_autoware_api_launch,target=/autoware/src/universe/autoware_universe/launch/tier4_autoware_api_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_autoware_api_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_autoware_api_launch \
   --mount=type=bind,source=src/universe/autoware_universe/system/autoware_default_adapi_universe,target=/autoware/src/universe/autoware_universe/system/autoware_default_adapi_universe \
   --mount=type=bind,source=src/core/autoware_core/api/autoware_adapi_adaptors,target=/autoware/src/core/autoware_core/api/autoware_adapi_adaptors \
   --mount=type=bind,source=src/universe/autoware_universe/system/autoware_diagnostic_graph_utils,target=/autoware/src/universe/autoware_universe/system/autoware_diagnostic_graph_utils \
@@ -528,7 +529,7 @@ RUN find /opt/autoware -type f \( -executable -o -name "*.so" \) -exec strip --s
 RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
   --mount=type=bind,source=src/universe/autoware_universe/evaluator,target=/autoware/src/universe/autoware_universe/evaluator \
-  --mount=type=bind,source=src/universe/autoware_universe/launch,target=/autoware/src/universe/autoware_universe/launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch \
   --mount=type=bind,source=src/universe/autoware_universe/simulator,target=/autoware/src/universe/autoware_universe/simulator \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
