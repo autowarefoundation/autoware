@@ -159,6 +159,7 @@ ARG ROS_DISTRO
 
 COPY src/launcher/autoware_launch/tier4_universe_launch/tier4_autoware_api_launch /autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_autoware_api_launch
 COPY src/universe/autoware_universe/system/autoware_default_adapi_universe /autoware/src/universe/autoware_universe/system/autoware_default_adapi_universe
+COPY src/universe/autoware_universe/evaluator/autoware_evaluation_adapter /autoware/src/universe/autoware_universe/evaluator/autoware_evaluation_adapter
 COPY src/core/autoware_core/api/autoware_adapi_adaptors /autoware/src/core/autoware_core/api/autoware_adapi_adaptors
 COPY src/universe/autoware_universe/system/autoware_diagnostic_graph_utils /autoware/src/universe/autoware_universe/system/autoware_diagnostic_graph_utils
 COPY src/core/autoware_core/map/autoware_map_height_fitter /autoware/src/core/autoware_core/map/autoware_map_height_fitter
@@ -528,7 +529,7 @@ RUN find /opt/autoware -type f \( -executable -o -name "*.so" \) -exec strip --s
 RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
   --mount=type=bind,source=src/universe/autoware_universe/evaluator,target=/autoware/src/universe/autoware_universe/evaluator \
-  --mount=type=bind,source=src/universe/autoware_universe/launch,target=/autoware/src/universe/autoware_universe/launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch \
   --mount=type=bind,source=src/universe/autoware_universe/simulator,target=/autoware/src/universe/autoware_universe/simulator \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
