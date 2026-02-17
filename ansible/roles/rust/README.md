@@ -1,12 +1,15 @@
 # rust
 
+<<<<<<< Updated upstream
 This role installs the Rust toolchain (rustup, cargo, rustc) for building Autoware components that depend on Rust (e.g. acados and tera_renderer).
+=======
+This role installs the Rust toolchain (rustc and cargo) via apt for building Autoware components that depend on Rust (e.g. acados and tera_renderer). rustup is not installed; the system compiler and cargo from the distribution are used.
+>>>>>>> Stashed changes
 
 ## Tools
 
-- rustup
-- cargo
-- rustc
+- rustc (apt)
+- cargo (apt)
 
 ## Inputs
 
@@ -17,24 +20,12 @@ This role installs the Rust toolchain (rustup, cargo, rustc) for building Autowa
 ## Manual Installation
 
 ```bash
-# Install dependencies
 sudo apt-get update
-sudo apt-get install -y curl build-essential
-
-# Download and run the Rust installer
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
-# Add Cargo to PATH (or restart your shell)
-. "$HOME/.cargo/env"
+sudo apt-get install -y rustc cargo build-essential
 
 # Verify
 cargo --version
+rustc --version
 ```
 
-To make the environment persistent, add the following to your `~/.bashrc`:
-
-```bash
-. "$HOME/.cargo/env"
-```
-
-See [Rust installation documentation](https://www.rust-lang.org/tools/install) for more options.
+For a user-managed toolchain (multiple Rust versions, rustup), see [Rust installation documentation](https://www.rust-lang.org/tools/install).
