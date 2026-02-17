@@ -63,8 +63,9 @@
   failed_when: false
 
 - name: Initialize Rust toolchain via rustup (from apt)
-  ansible.builtin.command: /usr/bin/rustup-init -y --default-toolchain stable
+  ansible.builtin.shell: rustup-init -y --default-toolchain stable
   args:
+    executable: /bin/bash
     creates: "{{ ansible_env.HOME }}/.cargo/bin/rustup"
   when:
     - build_tools_rustup_check.rc != 0
