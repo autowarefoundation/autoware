@@ -17,7 +17,7 @@
   become: false
   ansible.builtin.command: /tmp/rustup-init.sh -y
   args:
-    creates: "{{ ansible_env.HOME }}/.cargo/bin/rustc"
+    creates: "{{ ansible_env.HOME }}/.cargo/bin/rustup"
 
 - name: Ensure ~/.cargo/bin is in PATH via .bashrc
   become: false
