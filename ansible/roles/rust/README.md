@@ -10,9 +10,9 @@ This role installs the Rust toolchain (rustup, cargo, rustc) for building Autowa
 
 ## Inputs
 
-| Name | Required | Description |
-| ---- | -------- | ----------- |
-| (none) | - | This role has no configurable variables. |
+| Name   | Required | Description                              |
+| ------ | -------- | ---------------------------------------- |
+| (none) | -        | This role has no configurable variables. |
 
 ## Manual Installation
 
