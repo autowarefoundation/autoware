@@ -68,7 +68,7 @@
     creates: "{{ ansible_env.HOME }}/.cargo/bin/rustup"
   when:
     - build_tools_rustup_check.rc != 0
-    - build_tools_apt_rustup_result is not failed
+    - build_tools_apt_rustup_result.changed | default(false)
   environment:
     PATH: "{{ ansible_env.PATH }}"
 
@@ -79,7 +79,7 @@
     mode: "0755"
   when:
     - build_tools_rustup_check.rc != 0
-    - build_tools_apt_rustup_result is failed
+    - not (build_tools_apt_rustup_result.changed | default(false))
 
 - name: Initialize Rust toolchain via rustup (fallback script)
   ansible.builtin.shell: |
@@ -89,7 +89,7 @@
     creates: "{{ ansible_env.HOME }}/.cargo/bin/rustup"
   when:
     - build_tools_rustup_check.rc != 0
-    - build_tools_apt_rustup_result is failed
+    - not (build_tools_apt_rustup_result.changed | default(false))
   environment:
     PATH: "{{ ansible_env.PATH }}"
 
@@ -99,7 +99,7 @@
     state: absent
   when:
     - build_tools_rustup_check.rc != 0
-    - build_tools_apt_rustup_result is failed
+    - not (build_tools_apt_rustup_result.changed | default(false))
 
 - name: Add cargo to PATH in .bashrc
   ansible.builtin.lineinfile:
