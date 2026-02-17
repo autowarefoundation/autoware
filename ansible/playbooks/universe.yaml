@@ -47,6 +47,7 @@
         rmw_implementation__name: "{{ rmw_implementation }}"
     - role: autoware.dev_env.gdown
     - role: autoware.dev_env.build_tools
+    - role: autoware.dev_env.rust
     - role: autoware.dev_env.agnocast
       when: rosdistro == 'humble'
 
