@@ -59,14 +59,47 @@
     state: present
     update_cache: true
   when: build_tools_rustup_check.rc != 0
+  register: build_tools_apt_rustup_result
+  failed_when: false
 
-- name: Initialize Rust toolchain via rustup
-  ansible.builtin.command: rustup-init -y --default-toolchain stable
+- name: Initialize Rust toolchain via rustup (from apt)
+  ansible.builtin.command: /usr/bin/rustup-init -y --default-toolchain stable
   args:
     creates: "{{ ansible_env.HOME }}/.cargo/bin/rustup"
-  when: build_tools_rustup_check.rc != 0
+  when:
+    - build_tools_rustup_check.rc != 0
+    - build_tools_apt_rustup_result is not failed
   environment:
     PATH: "{{ ansible_env.PATH }}"
+
+- name: Download rustup installer (fallback when apt package not available)
+  ansible.builtin.get_url:
+    url: https://sh.rustup.rs
+    dest: /tmp/rustup-init.sh
+    mode: "0755"
+  when:
+    - build_tools_rustup_check.rc != 0
+    - build_tools_apt_rustup_result is failed
+
+- name: Initialize Rust toolchain via rustup (fallback script)
+  ansible.builtin.shell: |
+    /tmp/rustup-init.sh -y --default-toolchain stable
+  args:
+    executable: /bin/bash
+  when:
+    - build_tools_rustup_check.rc != 0
+    - build_tools_apt_rustup_result is failed
+  environment:
+    PATH: "{{ ansible_env.PATH }}"
+  creates: "{{ ansible_env.HOME }}/.cargo/bin/rustup"
+
+- name: Clean up rustup installer (fallback)
+  ansible.builtin.file:
+    path: /tmp/rustup-init.sh
+    state: absent
+  when:
+    - build_tools_rustup_check.rc != 0
+    - build_tools_apt_rustup_result is failed
 
 - name: Add cargo to PATH in .bashrc
   ansible.builtin.lineinfile:
