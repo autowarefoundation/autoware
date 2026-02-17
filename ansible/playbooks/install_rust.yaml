@@ -1,0 +1,4 @@
+- name: Download and install the rust packages
+  hosts: localhost
+  roles:
+    - autoware.dev_env.rust
