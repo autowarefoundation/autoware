@@ -29,7 +29,7 @@
     - role: autoware.dev_env.build_tools
       when: module == 'all' and install_devel=='y'
     - role: autoware.dev_env.rust
-      when: module == 'all' and install_devel=='y'
+      when: module == 'all'
 
     # Module specific dependencies
     - role: autoware.dev_env.geographiclib
