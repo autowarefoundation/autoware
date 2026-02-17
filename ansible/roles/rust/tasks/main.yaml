@@ -19,6 +19,11 @@
   args:
     creates: "{{ ansible_env.HOME }}/.cargo/bin/rustup"
 
+- name: Remove rustup-init script
+  become: true
+  ansible.builtin.file:
+    path: /tmp/rustup-init.sh
+    state: absent
 - name: Ensure ~/.cargo/bin is in PATH via .bashrc
   become: false
   ansible.builtin.lineinfile:
