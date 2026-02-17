@@ -1,6 +1,6 @@
 # rust
 
-This role installs the Rust toolchain (rustup, cargo, rustc) for building Autoware components that depend on Rust (e.g. acados tera_renderer).
+This role installs the Rust toolchain (rustup, cargo, rustc) for building Autoware components that depend on Rust (e.g. acados and tera_renderer).
 
 ## Tools
 
