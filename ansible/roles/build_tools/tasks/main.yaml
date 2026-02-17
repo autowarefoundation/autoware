@@ -50,7 +50,7 @@
   changed_when: false
   failed_when: false
   environment:
-    PATH: "{{ ansible_env.PATH }}:$HOME/.cargo/bin"
+    PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.cargo/bin"
 
 - name: Install rustup via apt when not present
   become: true
@@ -124,12 +124,12 @@
   changed_when: false
   failed_when: false
   environment:
-    PATH: "{{ ansible_env.PATH }}:$HOME/.cargo/bin"
+    PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.cargo/bin"
 
 - name: Update Rust toolchain to latest stable
   ansible.builtin.command: rustup update stable
   register: build_tools_rustup_update_result
   environment:
-    PATH: "{{ ansible_env.PATH }}:$HOME/.cargo/bin"
+    PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.cargo/bin"
   when: build_tools_rustup_available.rc == 0
   changed_when: false
