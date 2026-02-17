@@ -4,7 +4,6 @@
     name:
       - rustc
       - cargo
-      - build-essential
     state: present
     update_cache: true
 
