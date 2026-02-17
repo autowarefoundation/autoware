@@ -6,6 +6,7 @@
       - cargo
     state: present
     update_cache: true
+    cache_valid_time: 3600
 
 - name: Check cargo version
   ansible.builtin.command: cargo --version
