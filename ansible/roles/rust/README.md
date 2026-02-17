@@ -1,10 +1,12 @@
 # rust
 
 <<<<<<< Updated upstream
-This role installs the Rust toolchain (rustup, cargo, rustc) for building Autoware components that depend on Rust (e.g. acados and tera_renderer).
+This role installs the Rust toolchain (rustup, cargo, rustc) for building Autoware components that depend on Rust (e.g. acados and tera_renderer)
 =======
+
 This role installs the Rust toolchain (rustc and cargo) via apt for building Autoware components that depend on Rust (e.g. acados and tera_renderer). rustup is not installed; the system compiler and cargo from the distribution are used.
->>>>>>> Stashed changes
+
+> > > > > > > Stashed changes
 
 ## Tools
 
