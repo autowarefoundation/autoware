@@ -1,38 +1,40 @@
-# Rust
+# rust
 
-This role sets up the Rust toolchain (rustup, cargo, rustc) for building Autoware components that depend on Rust (e.g. acados tera_renderer).
+This role installs the Rust toolchain (rustup, cargo, rustc) for building Autoware components that depend on Rust (e.g. acados tera_renderer).
 
-## Role in system design
+## Tools
 
-Used to build packages that require Rust.
+- rustup
+- cargo
+- rustc
 
-## Dependencies
+## Inputs
 
-- curl
-- build-essential
+| Name | Required | Description |
+| ---- | -------- | ----------- |
+| (none) | - | This role has no configurable variables. |
 
-## Usage
+## Manual Installation
 
-### Variables
+```bash
+# Install dependencies
+sudo apt-get update
+sudo apt-get install -y curl build-essential
 
-None
+# Download and run the Rust installer
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-### Preparation
+# Add Cargo to PATH (or restart your shell)
+. "$HOME/.cargo/env"
 
-Example of adding the role to a playbook:
-
-```yaml
-- { role: rust, tags: [rust] }
+# Verify
+cargo --version
 ```
 
-Or with the collection:
+To make the environment persistent, add the following to your `~/.bashrc`:
 
-```yaml
-- role: autoware.dev_env.rust
+```bash
+. "$HOME/.cargo/env"
 ```
 
-## Related links
-
-<https://www.rust-lang.org/tools/install>
-
-### Remarks
+See [Rust installation documentation](https://www.rust-lang.org/tools/install) for more options.
