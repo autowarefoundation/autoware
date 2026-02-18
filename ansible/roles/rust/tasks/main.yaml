@@ -1,4 +1,5 @@
 - name: Download rustup-init script
+  become: false
   ansible.builtin.get_url:
     url: https://sh.rustup.rs
     dest: /tmp/rustup-init.sh
