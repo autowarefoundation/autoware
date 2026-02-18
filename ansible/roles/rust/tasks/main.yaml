@@ -5,7 +5,7 @@
       - curl
     state: present
     update_cache: true
-    
+
 - name: Download rustup-init script
   ansible.builtin.get_url:
     url: https://sh.rustup.rs
@@ -32,7 +32,7 @@
   changed_when: false
   args:
     executable: /bin/bash
-    
+
 - name: Check cargo version
   ansible.builtin.command: cargo --version
   register: rust_cargo_version
