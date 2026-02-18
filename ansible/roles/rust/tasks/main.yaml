@@ -2,12 +2,37 @@
   become: true
   ansible.builtin.apt:
     name:
-      - rustc
-      - cargo
+      - curl
     state: present
     update_cache: true
-    cache_valid_time: 3600
+    
+- name: Download rustup-init script
+  ansible.builtin.get_url:
+    url: https://sh.rustup.rs
+    dest: /tmp/rustup-init.sh
+    mode: "0755"
 
+- name: Install rustup using rustup-init script
+  become: false
+  ansible.builtin.command: /tmp/rustup-init.sh -y
+  args:
+    creates: "{{ ansible_env.HOME }}/.cargo/bin/rustc"
+
+- name: Ensure ~/.cargo/bin is in PATH via .bashrc
+  become: false
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    line: . "$HOME/.cargo/env"
+    insertafter: EOF
+    state: present
+
+- name: Source ~/.bashrc to apply PATH
+  become: false
+  ansible.builtin.shell: . ~/.bashrc
+  changed_when: false
+  args:
+    executable: /bin/bash
+    
 - name: Check cargo version
   ansible.builtin.command: cargo --version
   register: rust_cargo_version
