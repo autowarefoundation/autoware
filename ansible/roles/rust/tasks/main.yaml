@@ -1,11 +1,3 @@
-- name: Install Rust toolchain (rustc and cargo) and build dependencies via apt
-  become: true
-  ansible.builtin.apt:
-    name:
-      - curl
-    state: present
-    update_cache: true
-
 - name: Download rustup-init script
   ansible.builtin.get_url:
     url: https://sh.rustup.rs
@@ -28,7 +20,7 @@
 
 - name: Source ~/.bashrc to apply PATH
   become: false
-  ansible.builtin.shell: . ~/.bashrc
+  ansible.builtin.shell: . ansible.builtin.shell: . "{{ ansible_env.HOME }}/.bashrc".bashrc
   changed_when: false
   args:
     executable: /bin/bash
