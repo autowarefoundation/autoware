@@ -26,7 +26,7 @@ chmod +x /tmp/rustup-init.sh
 
 Add the following line to your `~/.bashrc`.
 
-```
+```bash
 . "$HOME/.cargo/env"
 ```
 
