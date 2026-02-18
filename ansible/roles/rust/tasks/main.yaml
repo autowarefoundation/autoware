@@ -28,10 +28,20 @@
 - name: Check cargo version
   become: false
   ansible.builtin.shell: |
-    ~/.cargo/bin/cargo --version
+    {{ ansible_env.HOME }}/.cargo/bin/cargo --version
   register: rust_cargo_version
   changed_when: false
 
 - name: Show cargo version
   ansible.builtin.debug:
     msg: "Cargo version: {{ rust_cargo_version.stdout }}"
+
+- name: Check rust version
+  become: false
+  ansible.builtin.command: "{{ ansible_env.HOME }}/.cargo/bin/rustc --version"
+  register: rust_rustc_version
+  changed_when: false
+
+- name: Show rust version
+  ansible.builtin.debug:
+    msg: "Rust version: {{ rust_rustc_version.stdout }}"
