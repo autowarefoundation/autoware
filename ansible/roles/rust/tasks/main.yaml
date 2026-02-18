@@ -1,18 +1,41 @@
-- name: Install Rust toolchain (rustc and cargo) and build dependencies via apt
-  become: true
-  ansible.builtin.apt:
-    name:
-      - rustc
-      - cargo
+- name: Download rustup-init script
+  become: false
+  ansible.builtin.get_url:
+    url: https://sh.rustup.rs
+    dest: /tmp/rustup-init.sh
+    mode: "0755"
+
+- name: Install rustup using rustup-init script
+  become: false
+  ansible.builtin.command: /tmp/rustup-init.sh -y
+  args:
+    creates: "{{ ansible_env.HOME }}/.cargo/bin/rustc"
+
+- name: Ensure ~/.cargo/bin is in PATH via .bashrc
+  become: false
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    line: . "$HOME/.cargo/env"
+    insertafter: EOF
     state: present
-    update_cache: true
-    cache_valid_time: 3600
 
 - name: Check cargo version
-  ansible.builtin.command: cargo --version
+  become: false
+  ansible.builtin.shell: |
+    {{ ansible_env.HOME }}/.cargo/bin/cargo --version
   register: rust_cargo_version
   changed_when: false
 
 - name: Show cargo version
   ansible.builtin.debug:
     msg: "Cargo version: {{ rust_cargo_version.stdout }}"
+
+- name: Check rust version
+  become: false
+  ansible.builtin.command: "{{ ansible_env.HOME }}/.cargo/bin/rustc --version"
+  register: rust_rustc_version
+  changed_when: false
+
+- name: Show rust version
+  ansible.builtin.debug:
+    msg: "Rust version: {{ rust_rustc_version.stdout }}"
