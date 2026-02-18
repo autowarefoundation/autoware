@@ -1,0 +1,155 @@
+name: scenario-test-reusable
+
+on:
+  workflow_call:
+    inputs:
+      image-tag:
+        type: string
+        required: true
+        description: Docker image tag to use for the scenario test
+      runner:
+        type: string
+        default: "['self-hosted', 'Linux', 'X64']"
+        required: false
+      architecture-type:
+        type: string
+        default: awf/universe/20250130
+        required: false
+      sensor-model:
+        type: string
+        default: sample_sensor_kit
+        required: false
+      vehicle-model:
+        type: string
+        default: sample_vehicle
+        required: false
+
+jobs:
+  scenario-test:
+    runs-on: ${{ fromJson(inputs.runner) }}
+    steps:
+      - name: Clean up previous run artifacts
+        run: sudo rm -rf ${{ github.workspace }}/scenario_out
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify Docker image exists
+        run: |
+          echo "Checking for image in local Docker daemon..."
+          if ! docker inspect ${{ inputs.image-tag }} > /dev/null 2>&1; then
+            echo "::error::Image ${{ inputs.image-tag }} not found!"
+            exit 1
+          fi
+          docker images ${{ inputs.image-tag }}
+          df -h
+
+      - name: Run scenario test in built Docker image
+        run: |
+          mkdir -p ${{ github.workspace }}/scenario_out
+
+          docker run --rm \
+            -v "${{ github.workspace }}:/workspace" \
+            -v "${{ github.workspace }}/scenario_out:/out" \
+            ${{ inputs.image-tag }} \
+            bash -c '
+              set -e
+
+              echo "Installing test dependencies..."
+              apt-get update && apt-get install -y python3-pip git unzip wget curl
+              pip3 install --upgrade gdown vcstool
+
+              echo "Setting up simulator workspace..."
+              cd /workspace
+              mkdir -p /autoware_ws/src
+              cd /autoware_ws
+              vcs import src < /workspace/repositories/simulator.repos
+
+              echo "Sourcing Autoware environment..."
+              source /opt/ros/humble/setup.bash
+              source /opt/autoware/setup.bash
+
+              echo "Installing simulator dependencies..."
+              rosdep update
+              rosdep install --from-paths src --ignore-src -r -y || true
+
+              echo "Downgrading xmlschema for compatibility..."
+              pip3 install --user xmlschema==3.4.5
+
+              echo "Building scenario_test_runner..."
+              export CMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+              colcon build --symlink-install \
+                --cmake-args -DCMAKE_BUILD_TYPE=Release \
+                --executor sequential
+
+              echo "Sourcing the built workspace..."
+              source /autoware_ws/install/setup.bash
+
+              echo "Downloading test data..."
+              cd /out
+              gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml || echo "Failed to download scenario"
+              mkdir -p /out/autoware_map
+              gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip || echo "Failed to download map"
+
+              if [ -f sample-map-planning.zip ]; then
+                unzip -q sample-map-planning.zip -d /out/autoware_map
+              fi
+
+              echo "Fixing paths in scenario file..."
+              sed -i "s@/home/user/@/out/@g" sample-scenario.yaml
+
+              echo "Running scenario test..."
+              export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+              mkdir -p /out/results
+
+              ros2 launch scenario_test_runner scenario_test_runner.launch.py \
+                architecture_type:=${{ inputs.architecture-type }} \
+                record:=true \
+                scenario:="/out/sample-scenario.yaml" \
+                sensor_model:=${{ inputs.sensor-model }} \
+                vehicle_model:=${{ inputs.vehicle-model }} \
+                initialize_duration:=300 \
+                output_directory:=/out/results \
+                simulate_localization:=true \
+                initial_pose:="[0.0, 0.0, 0.0]" \
+                launch_rviz:=false \
+                frame_rate:=1 \
+                disable_lanelet_pose_validation:=true 2>&1 | tee /out/scenario_output.log || true
+
+              echo "Cleaning up processes..."
+              pkill -9 -f ros2 || true
+              pkill -9 -f scenario_test_runner || true
+              pkill -9 -f openscenario_interpreter_node || true
+            '
+
+      - name: Check for test failures
+        run: |
+          RESULT_FILE="${{ github.workspace }}/scenario_out/results/scenario_test_runner/result.junit.xml"
+
+          if [ ! -f "$RESULT_FILE" ]; then
+            echo "::error::Result file not found! Simulation likely crashed."
+            exit 1
+          fi
+
+          echo "Checking for failures in $RESULT_FILE..."
+
+          if grep -q -E '<failure|<error' "$RESULT_FILE"; then
+            echo "::error::Test failures or errors detected."
+            cat "$RESULT_FILE"
+            exit 1
+          else
+            echo "Test successfully passed."
+          fi
+
+      - name: Upload scenario test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-test-results
+          path: |
+            ${{ github.workspace }}/scenario_out/results/
+            ${{ github.workspace }}/scenario_out/scenario_output.log
+
+      - name: Show final disk space
+        if: always()
+        run: df -h
