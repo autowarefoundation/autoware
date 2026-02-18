@@ -20,7 +20,7 @@
 
 - name: Source ~/.bashrc to apply PATH
   become: false
-  ansible.builtin.shell: . "{{ ansible_env.HOME }}/.bashrc".bashrc
+  ansible.builtin.shell: . "{{ ansible_env.HOME }}/.bashrc"
   changed_when: false
   args:
     executable: /bin/bash
