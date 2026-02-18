@@ -1,0 +1,18 @@
+- name: Install Rust toolchain (rustc and cargo) and build dependencies via apt
+  become: true
+  ansible.builtin.apt:
+    name:
+      - rustc
+      - cargo
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Check cargo version
+  ansible.builtin.command: cargo --version
+  register: rust_cargo_version
+  changed_when: false
+
+- name: Show cargo version
+  ansible.builtin.debug:
+    msg: "Cargo version: {{ rust_cargo_version.stdout }}"

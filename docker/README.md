@@ -12,7 +12,7 @@ If you do not need the CUDA drivers, you can also use the smaller image `ghcr.io
 ```shell
 $ git clone git@github.com:autowarefoundation/autoware.git
 $ cd autoware
-$ vcs import src < repositories/autoware.repos
+$ vcs import --recursive src < repositories/autoware.repos
 $ docker run -it --rm \
   –v $PWD/src/universe/autoware_universe/XXX/autoware_YYY:/autoware/src/autoware_YYY \
   ghcr.io/autowarefoundation/autoware:universe-devel-cuda

@@ -37,6 +37,10 @@ jobs:
     steps:
       - name: Clean up previous run artifacts
         run: sudo rm -rf ${{ github.workspace }}/scenario_out
+      # https://github.com/actions/checkout/issues/211
+      - name: Change permission of workspace
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
 
       - name: Check out repository
         uses: actions/checkout@v4
