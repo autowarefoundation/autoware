@@ -10,9 +10,11 @@
       tags: [always]
 
   roles:
-    # --- Base ---
     - role: autoware.dev_env.rmw_implementation
       tags: [rmw]
       vars:
         rmw_implementation__rosdistro: "{{ rosdistro }}"
         rmw_implementation__name: "{{ rmw_implementation }}"
+
+    - role: autoware.dev_env.build_tools
+      tags: [ccache]

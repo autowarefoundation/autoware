@@ -42,6 +42,7 @@ WORKDIR /tmp/ansible
 RUN ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
     ansible-playbook autoware.dev_env.core \
       --tags rmw \
+      --tags ccache \
       -e rosdistro=${ROS_DISTRO} \
       -e rmw_implementation=${RMW_IMPLEMENTATION}
 
