@@ -11,10 +11,8 @@ ARG USERNAME=aw
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     sudo \
-    tree \
     pipx \
     bash-completion \
-    python3-argcomplete \
     gosu \
     && rm -rf /var/lib/apt/lists/*
 
@@ -58,3 +56,28 @@ ENV USERNAME=${USERNAME}
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["/bin/bash"]
+
+FROM core-base AS core-rosdep
+
+ARG ROS_DISTRO
+ARG USERNAME=aw
+
+RUN rosdep update
+
+USER root
+COPY repositories/ /tmp/repositories/
+
+RUN mkdir -p /tmp/rosdep-install/src && \
+    cd /tmp/rosdep-install && \
+    vcs import --recursive --shallow src < /tmp/repositories/autoware.repos && \
+    apt-get update && \
+    rosdep install -y \
+      --from-paths src/core \
+      --ignore-src \
+      --rosdistro "${ROS_DISTRO}" && \
+    rm -rf /var/lib/apt/lists/* /tmp/rosdep-install /tmp/repositories
+
+FROM core-base AS core-prebuilt
+
+ARG ROS_DISTRO
+ARG USERNAME=aw
