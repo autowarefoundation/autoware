@@ -51,7 +51,7 @@ jobs:
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
       - name: Clean up previous run artifacts
-      - run: sudo rm -rf ${{ github.workspace }}/scenario_out
+        run: sudo rm -rf ${{ github.workspace }}/scenario_out
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
         run: |
@@ -112,4 +112,4 @@ jobs:
     needs: docker-build
     uses: ./.github/workflows/scenario-test-reusable.yaml
     with:
-      image-tag: autoware:health-check-${{ github.sha }}
+      autoware_container_image: autoware:health-check-${{ github.sha }}
