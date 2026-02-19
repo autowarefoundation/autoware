@@ -96,6 +96,7 @@ jobs:
 
               echo "Downloading test data..."
               cd /out
+              # cspell: ignore Uownh Ietur
               gdown --id 1Tq7snfDPsuPHPtl50aL5fJY6paiC-HxV -O sample-scenario.yaml || echo "Failed to download scenario"
               mkdir -p /out/autoware_map
               gdown --id 1499_nsbUbIeturZaDj7jhUownh5fvXHd -O sample-map-planning.zip || echo "Failed to download map"
