@@ -27,12 +27,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build-type: [main]
+        build-type: [main, nightly, main-arm64]
         include:
           - build-type: main
             platform: amd64
-            runner: "['self-hosted', 'Linux', 'X64']"
+            runner: "['self-hosted','Linux','X64']"
             lib-dir: x86_64
+            container: ubuntu:22.04
+          - build-type: nightly
+            platform: amd64
+            runner: "['ubuntu-24.04']"
+            lib-dir: x86_64
+          - build-type: main-arm64
+            platform: arm64
+            runner: "['ubuntu-24.04-arm']"
+            lib-dir: aarch64
+            
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
       - name: Clean up previous run artifacts
@@ -64,8 +74,15 @@ jobs:
             docker/**
             setup-dev-env.sh
 
-      - name: Show disk space before build
-        run: df -h
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
+
+      - name: Free disk space
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' &&
+          matrix.build-type != 'main' }}
+        uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -79,10 +96,6 @@ jobs:
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
-
-      - name: Show disk space after build
-        if: always()
-        run: df -h
 
   scenario-test:
     needs: docker-build
