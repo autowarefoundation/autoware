@@ -2,7 +2,7 @@ name: health-check
 
 on:
   pull_request:
-    types: 
+    types:
       - opened
       - synchronize
       - reopened
