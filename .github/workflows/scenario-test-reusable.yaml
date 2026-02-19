@@ -34,24 +34,33 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential gcc g++ cmake make
+
       - name: Verify Docker image exists
+        env:
+          IMAGE_TAG: ${{ inputs.image-tag }}
         run: |
           echo "Checking for image in local Docker daemon..."
-          if ! docker inspect ${{ inputs.image-tag }} > /dev/null 2>&1; then
-            echo "::error::Image ${{ inputs.image-tag }} not found!"
+          if ! docker inspect "$IMAGE_TAG" > /dev/null 2>&1; then
+            echo "::error::Image $IMAGE_TAG not found!"
             exit 1
           fi
-          docker images ${{ inputs.image-tag }}
+          docker images "$IMAGE_TAG"
           df -h
 
       - name: Run scenario test in built Docker image
+        env:
+          IMAGE_TAG: ${{ inputs.image-tag }}
         run: |
           mkdir -p ${{ github.workspace }}/scenario_out
 
           docker run --rm \
             -v "${{ github.workspace }}:/workspace" \
             -v "${{ github.workspace }}/scenario_out:/out" \
-            ${{ inputs.image-tag }} \
+            "$IMAGE_TAG" \
             bash -c '
               set -e
 
