@@ -41,10 +41,10 @@ jobs:
           - build-type: main-arm64
             platform: arm64
             runner: "['ubuntu-24.04-arm']"
-            lib-dir: aarch64
-            
+            lib-dir: aarch64 
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
+    
       - name: Clean up previous run artifacts
         run: sudo rm -rf ${{ github.workspace }}/scenario_out
       # https://github.com/actions/checkout/issues/211
