@@ -776,7 +776,6 @@ RUN --mount=type=ssh \
   && pipx uninstall ansible \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get install -y --no-install-recommends build-essential gcc g++ cmake make \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-devel /opt/autoware /opt/autoware
@@ -803,7 +802,6 @@ RUN --mount=type=ssh \
   && pipx uninstall ansible \
   && apt-get update \
   && cat /tmp/rosdep-exec-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get install -y --no-install-recommends build-essential gcc g++ cmake make \
   && /autoware/cleanup_system.sh $LIB_DIR $ROS_DISTRO
 
 COPY --from=universe-devel-cuda /opt/autoware /opt/autoware
