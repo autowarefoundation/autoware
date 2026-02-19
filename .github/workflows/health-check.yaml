@@ -1,22 +1,31 @@
 name: health-check
+
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: 
+      - opened
+      - synchronize
+      - reopened
+      - labeled
   schedule:
     - cron: 0 12 * * *
   workflow_dispatch:
+  
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
+  
 jobs:
   label-check:
     uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
     with:
       label: run:health-check
+      
   load-env:
     needs: label-check
     if: ${{ needs.label-check.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/load-env.yaml
+    
   docker-build:
     needs: load-env
     strategy:
@@ -45,12 +54,15 @@ jobs:
       - name: Change permission of workspace
         run: |
           sudo chown -R $USER:$USER ${{ github.workspace }}
+          
       - name: Check out repository
         uses: actions/checkout@v4
+        
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Get changed files
         id: changed-files
         uses: step-security/changed-files@v46
@@ -64,14 +76,17 @@ jobs:
             ansible/**
             docker/**
             setup-dev-env.sh
+            
       - name: Show disk space
         if: always()
         run: |
           df -h
+          
       - name: Free disk space
         if: ${{ steps.changed-files.outputs.any_changed == 'true' &&
           matrix.build-type != 'main' }}
         uses: ./.github/actions/free-disk-space
+        
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/docker-build
@@ -84,6 +99,12 @@ jobs:
             AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
             AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
+            
+      - name: Show disk space
+        if: always()
+        run: |
+          df -h
+          
   scenario-test:
     needs: docker-build
     uses: ./.github/workflows/scenario-test-reusable.yaml
