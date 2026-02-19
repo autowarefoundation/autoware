@@ -3,10 +3,10 @@ name: scenario-test-reusable
 on:
   workflow_call:
     inputs:
-      image-tag:
+      autoware_container_image:
         type: string
         required: true
-        description: Docker image tag to use for the scenario test
+        description: Autoware docker image tag to use for the scenario test
       runner:
         type: string
         default: "['self-hosted', 'Linux', 'X64']"
