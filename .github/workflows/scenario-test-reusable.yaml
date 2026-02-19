@@ -41,7 +41,7 @@ jobs:
 
       - name: Verify Docker image exists
         env:
-          IMAGE_TAG: ${{ inputs.image-tag }}
+          IMAGE_TAG: ${{ inputs.autoware_container_image }}
         run: |
           echo "Checking for image in local Docker daemon..."
           if ! docker inspect "$IMAGE_TAG" > /dev/null 2>&1; then
@@ -53,11 +53,17 @@ jobs:
 
       - name: Run scenario test in built Docker image
         env:
-          IMAGE_TAG: ${{ inputs.image-tag }}
+          IMAGE_TAG: ${{ inputs.autoware_container_image }}
+          SENSOR_MODEL: ${{ inputs.sensor-model }}
+          VEHICLE_MODEL: ${{ inputs.vehicle-model }}
+          ARCHITECTURE_TYPE: ${{ inputs.architecture-type }}
         run: |
           mkdir -p ${{ github.workspace }}/scenario_out
 
           docker run --rm \
+            -e SENSOR_MODEL \
+            -e VEHICLE_MODEL \
+            -e ARCHITECTURE_TYPE \
             -v "${{ github.workspace }}:/workspace" \
             -v "${{ github.workspace }}/scenario_out:/out" \
             "$IMAGE_TAG" \
@@ -113,11 +119,11 @@ jobs:
               mkdir -p /out/results
 
               ros2 launch scenario_test_runner scenario_test_runner.launch.py \
-                architecture_type:=${{ inputs.architecture-type }} \
+                architecture_type:=$ARCHITECTURE_TYPE \
                 record:=true \
                 scenario:="/out/sample-scenario.yaml" \
-                sensor_model:=${{ inputs.sensor-model }} \
-                vehicle_model:=${{ inputs.vehicle-model }} \
+                sensor_model:=$SENSOR_MODEL \
+                vehicle_model:=$VEHICLE_MODEL \
                 initialize_duration:=300 \
                 output_directory:=/out/results \
                 simulate_localization:=true \
