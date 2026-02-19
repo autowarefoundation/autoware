@@ -134,4 +134,4 @@ repositories:
   middleware/external/agnocast:
     type: git
     url: https://github.com/tier4/agnocast.git
-    version: backport-jazzy-support-v2.1.2
+    version: v2.2.0
