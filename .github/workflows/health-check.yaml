@@ -50,7 +50,7 @@ jobs:
             lib-dir: aarch64
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
-      - name: clean up previous run artifacts
+      - name: Clean up previous run artifacts
       - run: sudo rm -rf ${{ github.workspace }}/scenario_out
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
