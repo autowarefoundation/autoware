@@ -1,4 +1,3 @@
----
 # Autoware workspace root (where you run setup-dev-env.sh / vcs import).
 # Default: two levels up from ansible/playbooks/
 acados_workspace_root: "{{ (playbook_dir | dirname) | dirname }}"
@@ -6,5 +5,5 @@ acados_external_dir: "{{ acados_workspace_root }}/src/universe/external"
 acados_source_dir: "{{ acados_external_dir }}/acados"
 acados_build_dir: "{{ acados_external_dir }}/acados_build"
 acados_install_dir: "{{ acados_external_dir }}/acados_install"
-tera_renderer_source_dir: "{{ acados_external_dir }}/tera_renderer"
-t_renderer_output_path: "{{ acados_source_dir }}/bin/t_renderer"
+acados_tera_renderer_source_dir: "{{ acados_external_dir }}/tera_renderer"
+acados_t_renderer_output_path: "{{ acados_source_dir }}/bin/t_renderer"

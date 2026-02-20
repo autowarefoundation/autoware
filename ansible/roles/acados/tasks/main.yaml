@@ -1,4 +1,3 @@
----
 # Pre-build acados and t_renderer for autoware_path_optimizer.
 # Run after vcs import (so universe/external/acados and tera_renderer exist)
 # and after the rust role (for cargo to build t_renderer).
@@ -38,51 +37,51 @@
   become: false
   ansible.builtin.command:
     cmd: cmake --build {{ acados_build_dir }} --config Release
-  register: acados_build
-  changed_when: acados_build.rc == 0
+  register: acados_build_result
+  changed_when: acados_build_result.rc == 0
 
 - name: Install acados
   become: false
   ansible.builtin.command:
     cmd: cmake --build {{ acados_build_dir }} --config Release --target install
-  register: acados_install
-  changed_when: acados_install.rc == 0
+  register: acados_install_result
+  changed_when: acados_install_result.rc == 0
 
 # --- Build t_renderer ---
 - name: Check if tera_renderer source exists
   ansible.builtin.stat:
-    path: "{{ tera_renderer_source_dir }}/Cargo.toml"
-  register: tera_renderer_src
+    path: "{{ acados_tera_renderer_source_dir }}/Cargo.toml"
+  register: acados_tera_renderer_src
 
 - name: Build t_renderer with cargo
   become: false
   ansible.builtin.command:
     cmd: cargo build --release
   args:
-    chdir: "{{ tera_renderer_source_dir }}"
+    chdir: "{{ acados_tera_renderer_source_dir }}"
   environment:
     PATH: "{{ ansible_env.HOME }}/.cargo/bin:{{ ansible_env.PATH }}"
-  register: cargo_build
-  changed_when: cargo_build.rc == 0
-  when: tera_renderer_src.stat.exists
+  register: acados_cargo_build
+  changed_when: acados_cargo_build.rc == 0
+  when: acados_tera_renderer_src.stat.exists
 
 - name: Create acados bin directory for t_renderer
   ansible.builtin.file:
     path: "{{ acados_source_dir }}/bin"
     state: directory
     mode: "0755"
-  when: tera_renderer_src.stat.exists
+  when: acados_tera_renderer_src.stat.exists
 
 - name: Copy t_renderer into acados bin
   become: false
   ansible.builtin.copy:
-    src: "{{ tera_renderer_source_dir }}/target/release/t_renderer"
-    dest: "{{ t_renderer_output_path }}"
+    src: "{{ acados_tera_renderer_source_dir }}/target/release/t_renderer"
+    dest: "{{ acados_t_renderer_output_path }}"
     mode: "0755"
     remote_src: true
-  when: tera_renderer_src.stat.exists
+  when: acados_tera_renderer_src.stat.exists
 
 - name: Warn if tera_renderer was not built
   ansible.builtin.debug:
-    msg: "tera_renderer source not found at {{ tera_renderer_source_dir }}; t_renderer was not built. path_optimizer will need it at build time."
-  when: not tera_renderer_src.stat.exists
+    msg: tera_renderer source not found at {{ acados_tera_renderer_source_dir }}; t_renderer was not built. path_optimizer will need it at build time.
+  when: not acados_tera_renderer_src.stat.exists

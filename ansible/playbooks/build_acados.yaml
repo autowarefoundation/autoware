@@ -1,4 +1,3 @@
----
 # Pre-build acados and t_renderer for autoware_path_optimizer.
 # Run from the autoware repo root after vcs import (and after the rust role if building t_renderer).
 #
