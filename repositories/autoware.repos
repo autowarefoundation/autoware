@@ -90,14 +90,6 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/managed_transform_buffer.git
     version: 0.2.0
-  universe/external/acados:
-    type: git
-    url: https://github.com/acados/acados.git
-    version: v0.5.3
-  universe/external/tera_renderer:
-    type: git
-    url: https://github.com/acados/tera_renderer.git
-    version: v0.2.0
   # launcher
   launcher/autoware_launch:
     type: git
