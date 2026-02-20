@@ -1,0 +1,15 @@
+---
+# Pre-build acados and t_renderer for autoware_path_optimizer.
+# Run from the autoware repo root after vcs import (and after the rust role if building t_renderer).
+#
+# From repo root:
+#   ANSIBLE_ROLES_PATH=ansible/roles ansible-playbook -i localhost, ansible/playbooks/build_acados.yaml
+#
+# With explicit workspace (e.g. for CI):
+#   ansible-playbook -i localhost, ansible/playbooks/build_acados.yaml -e acados_workspace_root=$PWD
+#
+- name: Build acados and t_renderer (path_optimizer setup)
+  hosts: localhost
+  connection: local
+  roles:
+    - acados
