@@ -1,87 +1,66 @@
-# Pre-build acados and t_renderer for autoware_path_optimizer.
-# Run after vcs import (so universe/external/acados and tera_renderer exist)
-# and after the rust role (for cargo to build t_renderer).
+- name: Clone acados repository (shallow) with submodules
+  become: true
+  ansible.builtin.git:
+    repo: https://github.com/acados/acados.git
+    dest: /opt/acados
+    version: "{{ acados_version }}"
+    depth: 1
+    force: true
+    recursive: true
 
-- name: Check if acados source exists
-  ansible.builtin.stat:
-    path: "{{ acados_source_dir }}/CMakeLists.txt"
-  register: acados_src
-
-- name: Fail when acados source missing
-  ansible.builtin.fail:
-    msg: "acados source not found at {{ acados_source_dir }}. Run: vcs import src < repositories/autoware.repos --recursive"
-  when: not acados_src.stat.exists
-
-# --- Build acados ---
-- name: Create acados build directory
+- name: Create build directory
+  become: true
   ansible.builtin.file:
-    path: "{{ acados_build_dir }}"
+    path: /opt/acados/build
     state: directory
     mode: "0755"
 
 - name: Configure acados with CMake
-  become: false
+  become: true
   ansible.builtin.command:
     cmd: >
-      cmake -S {{ acados_source_dir }}
-            -B {{ acados_build_dir }}
-            -DCMAKE_INSTALL_PREFIX={{ acados_install_dir }}
-            -DCMAKE_BUILD_TYPE=Release
-            -DACADOS_WITH_QPOASES=ON
-            -DBUILD_SHARED_LIBS=OFF
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-  register: acados_configure
-  changed_when: acados_configure.rc == 0
+      cmake
+      -DACADOS_WITH_QPOASES=ON
+      -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+      ..
+    chdir: /opt/acados/build
+  changed_when: false
 
-- name: Build acados
-  become: false
+- name: Build and install acados
+  become: true
   ansible.builtin.command:
-    cmd: cmake --build {{ acados_build_dir }} --config Release
-  register: acados_build_result
-  changed_when: acados_build_result.rc == 0
+    cmd: make install -j{{ ansible_processor_vcpus }}
+    chdir: /opt/acados/build
+  changed_when: false
 
-- name: Install acados
-  become: false
-  ansible.builtin.command:
-    cmd: cmake --build {{ acados_build_dir }} --config Release --target install
-  register: acados_install_result
-  changed_when: acados_install_result.rc == 0
-
-# --- Build t_renderer ---
-- name: Check if tera_renderer source exists
-  ansible.builtin.stat:
-    path: "{{ acados_tera_renderer_source_dir }}/Cargo.toml"
-  register: acados_tera_renderer_src
-
-- name: Build t_renderer with cargo
-  become: false
-  ansible.builtin.command:
-    cmd: cargo build --release
-  args:
-    chdir: "{{ acados_tera_renderer_source_dir }}"
-  environment:
-    PATH: "{{ ansible_env.HOME }}/.cargo/bin:{{ ansible_env.PATH }}"
-  register: acados_cargo_build
-  changed_when: acados_cargo_build.rc == 0
-  when: acados_tera_renderer_src.stat.exists
-
-- name: Create acados bin directory for t_renderer
+- name: Create acados bin directory
+  become: true
   ansible.builtin.file:
-    path: "{{ acados_source_dir }}/bin"
+    path: /opt/acados/bin
     state: directory
     mode: "0755"
-  when: acados_tera_renderer_src.stat.exists
 
-- name: Copy t_renderer into acados bin
-  become: false
-  ansible.builtin.copy:
-    src: "{{ acados_tera_renderer_source_dir }}/target/release/t_renderer"
-    dest: "{{ acados_t_renderer_output_path }}"
+- name: Set tera renderer architecture
+  ansible.builtin.set_fact:
+    acados_tera_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_architecture] }}"
+
+- name: Download tera renderer
+  become: true
+  ansible.builtin.get_url:
+    url: https://github.com/acados/tera_renderer/releases/download/{{ acados_tera_renderer_version }}/t_renderer-{{ acados_tera_renderer_version }}-linux-{{ acados_tera_arch }}
+    dest: /opt/acados/bin/t_renderer
     mode: "0755"
-    remote_src: true
-  when: acados_tera_renderer_src.stat.exists
 
-- name: Warn if tera_renderer was not built
-  ansible.builtin.debug:
-    msg: tera_renderer source not found at {{ acados_tera_renderer_source_dir }}; t_renderer was not built. path_optimizer will need it at build time.
-  when: not acados_tera_renderer_src.stat.exists
+- name: Add acados CMAKE_PREFIX_PATH to .bashrc
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    line: export CMAKE_PREFIX_PATH="/opt/acados:${CMAKE_PREFIX_PATH}"
+    regexp: CMAKE_PREFIX_PATH.*acados
+    state: present
+
+- name: Add ACADOS_SOURCE_DIR to .bashrc
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    line: export ACADOS_SOURCE_DIR="/opt/acados"
+    regexp: ACADOS_SOURCE_DIR
+    state: present
