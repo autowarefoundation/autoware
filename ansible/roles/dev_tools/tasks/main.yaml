@@ -3,20 +3,12 @@
   become: true
   ansible.builtin.apt:
     name: git-lfs
-    state: latest
+    state: present
     update_cache: true
 
-# ref: https://github.com/ansible/ansible-lint/issues/1780
-- name: Check if git lfs is installed # https://github.com/git-lfs/git-lfs/issues/901
-  community.general.git_config:
-    list_all: true
-    scope: global
-  register: dev_tools__git_lfs__git_global_config
-
-- name: Setup Git LFS
+- name: Setup Git LFS for current user
   ansible.builtin.command: git lfs install
-  when: "'filter.lfs.required' not in dev_tools__git_lfs__git_global_config.config_values"
-  changed_when: true
+  changed_when: false
 
 - name: Install pipx
   become: true
