@@ -23,7 +23,7 @@ Here is a brief summary of the steps:
 cd autoware
 
 # Clone the Autoware source code into src/
-vcs import --recursive src < repositories/autoware.repos
+vcs import src < repositories/autoware.repos
 ```
 
 This command will clone and check out the correct versions as defined in [`autoware.repos`](../repositories/autoware.repos)

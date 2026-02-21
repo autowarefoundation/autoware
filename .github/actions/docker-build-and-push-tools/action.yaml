@@ -29,7 +29,7 @@ runs:
     - name: Run vcs import
       run: |
         mkdir -p src
-        vcs import --recursive --shallow src < repositories/simulator.repos
+        vcs import --shallow src < repositories/simulator.repos
       shell: bash
 
     - name: Setup Docker Buildx
