@@ -15,6 +15,7 @@
     state: directory
     mode: "0755"
 
+# cspell:ignore DACADOS
 - name: Configure acados with CMake
   become: true
   ansible.builtin.command:
