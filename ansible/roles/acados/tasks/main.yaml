@@ -1,0 +1,101 @@
+- name: Clone acados repository (shallow) with submodules
+  become: true
+  ansible.builtin.git:
+    repo: https://github.com/acados/acados.git
+    dest: /opt/acados
+    version: "{{ acados_version }}"
+    depth: 1
+    force: true
+    recursive: true
+
+- name: Create build directory
+  become: true
+  ansible.builtin.file:
+    path: /opt/acados/build
+    state: directory
+    mode: "0755"
+
+- name: Configure acados with CMake
+  become: true
+  ansible.builtin.command:
+    cmd: >
+      cmake
+      -DACADOS_WITH_QPOASES=ON
+      -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+      ..
+    chdir: /opt/acados/build
+  changed_when: false
+
+- name: Build and install acados
+  become: true
+  ansible.builtin.command:
+    cmd: make install -j{{ ansible_processor_vcpus }}
+    chdir: /opt/acados/build
+  changed_when: false
+
+- name: Create acados bin directory
+  become: true
+  ansible.builtin.file:
+    path: /opt/acados/bin
+    state: directory
+    mode: "0755"
+
+- name: Set tera renderer architecture
+  ansible.builtin.set_fact:
+    acados_tera_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_architecture] }}"
+
+- name: Download tera renderer
+  become: true
+  ansible.builtin.get_url:
+    url: https://github.com/acados/tera_renderer/releases/download/{{ acados_tera_renderer_version }}/t_renderer-{{ acados_tera_renderer_version }}-linux-{{ acados_tera_arch }}
+    dest: /opt/acados/bin/t_renderer
+    mode: "0755"
+
+# ---------- Python virtual environment ----------
+
+- name: Create acados Python virtual environment
+  become: true
+  ansible.builtin.command:
+    cmd: python3 -m venv /opt/acados/.venv
+    creates: /opt/acados/.venv/bin/activate
+
+- name: Upgrade pip inside the virtual environment
+  become: true
+  ansible.builtin.command:
+    cmd: /opt/acados/.venv/bin/pip install --upgrade pip
+  changed_when: false
+
+- name: Install Python packages in acados venv
+  become: true
+  ansible.builtin.command:
+    cmd: /opt/acados/.venv/bin/pip install {{ acados_pip_packages | join(' ') }}
+  changed_when: false
+
+- name: Install acados_template (editable) in acados venv
+  become: true
+  ansible.builtin.command:
+    cmd: /opt/acados/.venv/bin/pip install -e /opt/acados/interfaces/acados_template
+  changed_when: false
+
+# ---------- Environment (.bashrc) ----------
+
+- name: Add acados CMAKE_PREFIX_PATH to .bashrc
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    line: export CMAKE_PREFIX_PATH="/opt/acados:${CMAKE_PREFIX_PATH}"
+    regexp: CMAKE_PREFIX_PATH.*acados
+    state: present
+
+- name: Add ACADOS_SOURCE_DIR to .bashrc
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    line: export ACADOS_SOURCE_DIR="/opt/acados"
+    regexp: ACADOS_SOURCE_DIR
+    state: present
+
+- name: Add acados LD_LIBRARY_PATH to .bashrc
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    line: export LD_LIBRARY_PATH="/opt/acados/lib:${LD_LIBRARY_PATH}"
+    regexp: LD_LIBRARY_PATH.*acados
+    state: present

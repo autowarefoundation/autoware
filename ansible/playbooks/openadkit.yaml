@@ -30,6 +30,8 @@
       when: module == 'all' and install_devel=='y'
 
     # Module specific dependencies
+    - role: autoware.dev_env.acados
+      when: module == 'all'
     - role: autoware.dev_env.geographiclib
       when: module == 'perception-localization' or module == 'all'
     - role: autoware.dev_env.cuda
