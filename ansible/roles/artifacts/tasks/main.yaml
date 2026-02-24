@@ -112,14 +112,6 @@
     mode: "644"
     checksum: sha256:47ca7283260021746e6f5461b8d92817d131e513f64baec65c297cd12477988c
 
-- name: Download camera_streampetr/camera_streampetr.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/streampetr/v1/camera_streampetr.param.yaml
-    dest: "{{ data_dir }}/camera_streampetr/camera_streampetr.param.yaml"
-    mode: "644"
-    checksum: sha256:9b1c931ab99f80a713550e63fd25b5e61bedf53961ed0037d51ad7589ae476e0
-
 # bevdet
 - name: Create tensorrt_bevdet directory inside {{ data_dir }}
   ansible.builtin.file:
