@@ -110,7 +110,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/streampetr/v1/ml_package_camera_streampetr.param.yaml
     dest: "{{ data_dir }}/camera_streampetr/ml_package_camera_streampetr.param.yaml"
     mode: "644"
-    checksum: sha256:47ca7283260021746e6f5461b8d92817d131e513f64baec65c297cd12477988c
+    checksum: sha256:f539407f0b3aee65f7d6d30401dd0052dfed86fa7beefef86c79061362615218
 
 # bevdet
 - name: Create tensorrt_bevdet directory inside {{ data_dir }}
