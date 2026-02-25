@@ -80,14 +80,6 @@
     mode: "755"
     state: directory
 
-- name: Download camera_streampetr/tensorrt_stream_petr.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/streampetr/v1/tensorrt_stream_petr.param.yaml
-    dest: "{{ data_dir }}/camera_streampetr/tensorrt_stream_petr.param.yaml"
-    mode: "644"
-    checksum: sha256:30c6ae13fa0386042324f7cd08c7486bc8170a0b1b381e0da9fc7574b0af6fb9
-
 - name: Download camera_streampetr/simplify_pts_head_memory.onnx
   become: true
   ansible.builtin.get_url:
@@ -111,6 +103,14 @@
     dest: "{{ data_dir }}/camera_streampetr/simplify_extract_img_feat.onnx"
     mode: "644"
     checksum: sha256:322c2f426f9a01c43d28456f50b33f0fa2039535cf50db7329483097cd363efd
+
+- name: Download camera_streampetr/ml_package_camera_streampetr.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/streampetr/v1/ml_package_camera_streampetr.param.yaml
+    dest: "{{ data_dir }}/camera_streampetr/ml_package_camera_streampetr.param.yaml"
+    mode: "644"
+    checksum: sha256:f539407f0b3aee65f7d6d30401dd0052dfed86fa7beefef86c79061362615218
 
 # bevdet
 - name: Create tensorrt_bevdet directory inside {{ data_dir }}
