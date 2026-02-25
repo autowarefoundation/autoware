@@ -129,4 +129,4 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.image-artifact-name }}
-        path: /tmp/autoware-image.tar.gz            
+        path: /tmp/autoware-image.tar.gz
