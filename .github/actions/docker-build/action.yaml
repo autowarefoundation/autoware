@@ -115,9 +115,9 @@ runs:
       with:
         file: docker/Dockerfile
         context: .
-        push: true
+        push: false
         load: true
         target: universe-devel
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-main
-        tags: ghcr.io/${{ github.repository }}:health-check-${{ github.sha }}
+        tags: autoware:health-check-${{ github.sha }}
