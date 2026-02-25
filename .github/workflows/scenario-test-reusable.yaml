@@ -40,8 +40,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends build-essential gcc g++ cmake make
-      - name: Pull Docker image
-        run: docker pull ${{ inputs.autoware_container_image }}
       - name: Verify Docker image exists
         env:
           IMAGE_TAG: ${{ inputs.autoware_container_image }}
