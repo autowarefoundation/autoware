@@ -17,7 +17,7 @@ inputs:
     required: false
   image-artifact-name:
     description: Name of the exported docker image artifact.
-    default: autoware-image
+    default: ""
     required: false
 
 runs:
@@ -123,9 +123,11 @@ runs:
         tags: autoware:health-check-${{ github.sha }}
 
     - name: Save Docker image
+      if: ${{ inputs.image-artifact-name != '' }}
       run: docker save autoware:health-check-${{ github.sha }} | gzip > /tmp/autoware-image.tar.gz
       shell: bash
     - name: Upload Docker image artifact
+      if: ${{ inputs.image-artifact-name != '' }}
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.image-artifact-name }}
