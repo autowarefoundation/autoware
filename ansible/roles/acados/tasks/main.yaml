@@ -82,21 +82,30 @@
 
 - name: Add acados CMAKE_PREFIX_PATH to .bashrc
   ansible.builtin.lineinfile:
-    path: "{{ ansible_env.HOME }}/.bashrc"
+    path: "{{ item }}"
     line: export CMAKE_PREFIX_PATH="/opt/acados:${CMAKE_PREFIX_PATH}"
     regexp: CMAKE_PREFIX_PATH.*acados
     state: present
+  loop:
+    - "{{ ansible_env.HOME }}/.bashrc"
+    - /etc/skel/.bashrc
 
 - name: Add ACADOS_SOURCE_DIR to .bashrc
   ansible.builtin.lineinfile:
-    path: "{{ ansible_env.HOME }}/.bashrc"
+    path: "{{ item }}"
     line: export ACADOS_SOURCE_DIR="/opt/acados"
     regexp: ACADOS_SOURCE_DIR
     state: present
+  loop:
+    - "{{ ansible_env.HOME }}/.bashrc"
+    - /etc/skel/.bashrc
 
 - name: Add acados LD_LIBRARY_PATH to .bashrc
   ansible.builtin.lineinfile:
-    path: "{{ ansible_env.HOME }}/.bashrc"
+    path: "{{ item }}"
     line: export LD_LIBRARY_PATH="/opt/acados/lib:${LD_LIBRARY_PATH}"
     regexp: LD_LIBRARY_PATH.*acados
     state: present
+  loop:
+    - "{{ ansible_env.HOME }}/.bashrc"
+    - /etc/skel/.bashrc
