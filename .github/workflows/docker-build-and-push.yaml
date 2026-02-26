@@ -274,12 +274,16 @@ jobs:
     needs: [load-env-jazzy]
     strategy:
       matrix:
-        platform: [amd64]
+        platform: [amd64, arm64]
         include:
           - platform: amd64
             runner: ubuntu-24.04
             arch-platform: linux/amd64
             lib-dir: x86_64
+          - platform: arm64
+            runner: ubuntu-22.04-arm
+            arch-platform: linux/arm64
+            lib-dir: aarch64
     runs-on: ${{ matrix.runner }}
     steps:
       # https://github.com/actions/checkout/issues/211
@@ -344,12 +348,16 @@ jobs:
     needs: [load-env-jazzy, docker-build-and-push-jazzy]
     strategy:
       matrix:
-        platform: [amd64]
+        platform: [amd64, arm64]
         include:
           - platform: amd64
             runner: [self-hosted, Linux, X64]
             arch-platform: linux/amd64
             lib-dir: x86_64
+          - platform: arm64
+            runner: [self-hosted, Linux, ARM64]
+            arch-platform: linux/arm64
+            lib-dir: aarch64
     runs-on: ${{ matrix.runner }}
     steps:
       # https://github.com/actions/checkout/issues/211
