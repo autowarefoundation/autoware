@@ -15,6 +15,10 @@ inputs:
   build-args:
     description: Additional build args.
     required: false
+  image-artifact-name:
+    description: Name of the exported docker image artifact.
+    default: ""
+    required: false
 
 runs:
   using: composite
@@ -112,5 +116,19 @@ runs:
         file: docker/Dockerfile
         context: .
         push: false
+        load: true
+        target: universe-devel
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-main
+        tags: autoware:health-check-${{ github.sha }}
+
+    - name: Save Docker image
+      if: ${{ inputs.image-artifact-name != '' }}
+      run: docker save autoware:health-check-${{ github.sha }} | gzip > /tmp/autoware-image.tar.gz
+      shell: bash
+    - name: Upload Docker image artifact
+      if: ${{ inputs.image-artifact-name != '' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.image-artifact-name }}
+        path: /tmp/autoware-image.tar.gz

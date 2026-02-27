@@ -50,6 +50,8 @@ jobs:
             lib-dir: aarch64
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
+      - name: Clean up previous run artifacts
+        run: sudo rm -rf ${{ github.workspace }}/scenario_out
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
         run: |
@@ -95,6 +97,7 @@ jobs:
         with:
           platform: ${{ matrix.platform }}
           cache-tag-suffix: ${{ matrix.build-type }}
+          image-artifact-name: ${{ matrix.build-type == 'main' && 'autoware-image' || '' }}
           additional-repos: ${{ matrix.build-type == 'nightly' && 'repositories/autoware-nightly.repos' || '' }}
           build-args: |
             ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
@@ -106,3 +109,8 @@ jobs:
         if: always()
         run: |
           df -h
+  scenario-test:
+    needs: docker-build
+    uses: ./.github/workflows/scenario-test-reusable.yaml
+    with:
+      autoware_container_image: autoware:health-check-${{ github.sha }}
