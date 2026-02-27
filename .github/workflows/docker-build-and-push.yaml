@@ -281,7 +281,7 @@ jobs:
             arch-platform: linux/amd64
             lib-dir: x86_64
           - platform: arm64
-            runner: ubuntu-22.04-arm
+            runner: ubuntu-24.04-arm
             arch-platform: linux/arm64
             lib-dir: aarch64
     runs-on: ${{ matrix.runner }}
