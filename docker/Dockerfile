@@ -250,6 +250,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
 
+ENV CMAKE_PREFIX_PATH="/opt/acados:${CMAKE_PREFIX_PATH}"
+ENV ACADOS_SOURCE_DIR="/opt/acados"
+ENV LD_LIBRARY_PATH="/opt/acados/lib:${LD_LIBRARY_PATH}"
+
 # Install rosdep dependencies
 COPY --from=rosdep-depend /rosdep-universe-common-depend-packages.txt /tmp/rosdep-universe-common-depend-packages.txt
 # hadolint ignore=SC2002,DL3009
