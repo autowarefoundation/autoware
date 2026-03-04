@@ -538,6 +538,14 @@
     mode: "644"
     checksum: sha256:d726ce7b257ddaf39da8a7dfbd016512e866843c26a9622fdec8a59b45da3e04
 
+- name: Download diffusion_planner/v3.0/diffusion_planner_simplified.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v3.0/diffusion_planner_simplified.onnx
+    dest: "{{ data_dir }}/diffusion_planner/v3.0/diffusion_planner_simplified.onnx"
+    mode: "644"
+    checksum: sha256:a063d323af20d962048315dc0969e4d3cad46e81a20299f39d74a470d58b148b
+
 # tensorrt_vad
 - name: Create tensorrt_vad directory inside {{ data_dir }}
   ansible.builtin.file:
