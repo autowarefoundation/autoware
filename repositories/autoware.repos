@@ -19,11 +19,11 @@ repositories:
   core/autoware_utils:
     type: git
     url: https://github.com/autowarefoundation/autoware_utils.git
-    version: 1.5.0
+    version: 1.6.0
   core/autoware_lanelet2_extension:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
-    version: 0.11.0
+    version: 0.12.0
   core/autoware_core:
     type: git
     url: https://github.com/autowarefoundation/autoware_core.git
@@ -90,14 +90,6 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/managed_transform_buffer.git
     version: 0.2.0
-  universe/external/acados:
-    type: git
-    url: https://github.com/acados/acados.git
-    version: v0.5.3
-  universe/external/tera_renderer:
-    type: git
-    url: https://github.com/acados/tera_renderer.git
-    version: v0.2.0
   # launcher
   launcher/autoware_launch:
     type: git

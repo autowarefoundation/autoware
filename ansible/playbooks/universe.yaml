@@ -47,11 +47,11 @@
         rmw_implementation__name: "{{ rmw_implementation }}"
     - role: autoware.dev_env.gdown
     - role: autoware.dev_env.build_tools
-    - role: autoware.dev_env.rust
     - role: autoware.dev_env.agnocast
       when: rosdistro == 'humble'
 
     # Autoware module dependencies
+    - role: autoware.dev_env.acados
     - role: autoware.dev_env.geographiclib
     - role: autoware.dev_env.cuda
       when: prompt_install_nvidia == 'y'
