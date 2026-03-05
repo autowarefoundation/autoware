@@ -50,6 +50,11 @@ jobs:
             lib-dir: aarch64
     runs-on: ${{ fromJson(matrix.runner) }}
     steps:
+      # https://github.com/actions/checkout/issues/211
+      - name: Change permission of workspace
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+
       - name: Check out repository
         uses: actions/checkout@v4
 
@@ -64,7 +69,7 @@ jobs:
         with:
           files: |
             *.env
-            *.repos
+            repositories/*.repos
             .github/actions/docker-build/action.yaml
             .github/workflows/health-check.yaml
             ansible-galaxy-requirements.yaml

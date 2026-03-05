@@ -9,18 +9,34 @@ concurrency:
 
 jobs:
   setup-universe:
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, Linux, X64]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ubuntu:22.04
+            ros_distro: humble
+          - image: ubuntu:24.04
+            ros_distro: jazzy
+    container:
+      image: ${{ matrix.image }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
+        uses: actions/checkout@v6
 
       - name: Show disk space
         if: always()
         run: |
           df -h
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y git sudo curl ca-certificates apt-utils
+
+      - name: Install tzdata non-interactively
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -29,4 +45,4 @@ jobs:
 
       - name: Run setup script
         run: |
-          ./setup-dev-env.sh -y -v universe
+          ./setup-dev-env.sh --ros-distro ${{ matrix.ros_distro }} -y -v universe

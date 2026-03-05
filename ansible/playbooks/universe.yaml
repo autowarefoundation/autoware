@@ -51,6 +51,7 @@
       when: rosdistro == 'humble'
 
     # Autoware module dependencies
+    - role: autoware.dev_env.acados
     - role: autoware.dev_env.geographiclib
     - role: autoware.dev_env.cuda
       when: prompt_install_nvidia == 'y'
