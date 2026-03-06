@@ -173,3 +173,10 @@ jobs:
       - name: Show final disk space
         if: always()
         run: df -h
+      - name: Clean up Docker images
+        if: always()
+        env:
+          IMAGE_TAG: ${{ inputs.autoware_container_image }}
+        run: |
+          rm -f /tmp/autoware-image.tar.gz
+          docker rmi "$IMAGE_TAG" || true
