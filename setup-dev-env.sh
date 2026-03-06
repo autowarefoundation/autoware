@@ -7,7 +7,9 @@ set -e
 
 # Function to print help message
 print_help() {
-    echo "Usage: setup-dev-env.sh [OPTIONS]"
+    echo "Usage: setup-dev-env.sh [OPTIONS] [COMMAND]"
+    echo "Commands:"
+    echo "  check           Check the development environment configuration"
     echo "Options:"
     echo "  --help          Display this help message"
     echo "  -h              Display this help message"
@@ -26,12 +28,75 @@ print_help() {
 
 SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
 
+# Function to check environment
+check_environment() {
+    echo "Checking development environment..."
+    local errors=0
+
+    # Check OS
+    if [ -f /etc/os-release ]; then
+        source /etc/os-release
+        if [[ $VERSION_ID != "22.04" && $VERSION_ID != "24.04" ]]; then
+            echo -e "\e[31m[ERROR] Unsupported OS version: $VERSION_ID. Only 22.04 and 24.04 are supported.\e[0m"
+            errors=$((errors + 1))
+        else
+            echo -e "\e[32m[OK] OS version: $VERSION_ID\e[0m"
+        fi
+    else
+        echo -e "\e[31m[ERROR] Cannot determine OS version.\e[0m"
+        errors=$((errors + 1))
+    fi
+
+    # Check critical tools
+    for tool in git sudo python3; do
+        if command -v $tool >/dev/null 2>&1; then
+            echo -e "\e[32m[OK] $tool is installed.\e[0m"
+        else
+            echo -e "\e[31m[ERROR] $tool is missing.\e[0m"
+            errors=$((errors + 1))
+        fi
+    done
+
+    # Check pipx
+    if command -v pipx >/dev/null 2>&1; then
+        echo -e "\e[32m[OK] pipx is installed.\e[0m"
+    else
+        echo -e "\e[33m[WARNING] pipx is not in PATH. It might be installed but not in PATH.\e[0m"
+        # Try to find it in likely locations
+        if [ -f "$HOME/.local/bin/pipx" ]; then
+            echo -e "\e[33m[INFO] pipx found at $HOME/.local/bin/pipx.\e[0m"
+        else
+            errors=$((errors + 1))
+        fi
+    fi
+
+    # Check ansible
+    if command -v ansible-playbook >/dev/null 2>&1; then
+        echo -e "\e[32m[OK] ansible-playbook is installed.\e[0m"
+    else
+        echo -e "\e[31m[ERROR] ansible-playbook is missing or not in PATH.\e[0m"
+        errors=$((errors + 1))
+    fi
+
+    if [ $errors -eq 0 ]; then
+        echo -e "\e[32mEnvironment check passed.\e[0m"
+        return 0
+    else
+        echo -e "\e[31mEnvironment check failed with $errors errors.\e[0m"
+        return 1
+    fi
+}
+
 # Parse arguments
 args=()
 option_data_dir="$HOME/autoware_data"
+mode="install"
 
 while [ "$1" != "" ]; do
     case "$1" in
+    check)
+        mode="check"
+        ;;
     --help | -h)
         print_help
         exit 1
@@ -79,6 +144,11 @@ while [ "$1" != "" ]; do
     esac
     shift
 done
+
+if [ "$mode" == "check" ]; then
+    check_environment
+    exit $?
+fi
 
 # Select installation type
 target_playbook="autoware.dev_env.universe" # default
