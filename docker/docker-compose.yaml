@@ -1,5 +1,5 @@
 services:
-  map:
+ map:
     image: ghcr.io/autowarefoundation/autoware:universe-localization-mapping
     container_name: autoware-map
     init: true
