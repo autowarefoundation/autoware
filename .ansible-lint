@@ -1,9 +1,3 @@
-exclude_paths:
-  - src/
-  - build/
-  - install/
-  - log/
-
 skip_list:
   - galaxy # We don't publish to Ansible Galaxy.
   - package-latest # Since this is a development environment, we allow the latest versions.
