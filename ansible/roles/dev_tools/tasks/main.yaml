@@ -1,7 +1,7 @@
 # https://github.com/git-lfs/git-lfs/wiki/Installation#debian-and-ubuntu
 - name: Install Git LFS
   become: true
-  ansible.builtin.apt:
+ ansible.builtin.apt:
     name: git-lfs
     state: present
     update_cache: true
