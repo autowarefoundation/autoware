@@ -21,7 +21,7 @@ inputs:
     required: false
   image-tag:
     description: Tag for the saved docker image.
-    default: "autoware:health-check-${{ github.sha }}"
+    default: autoware:health-check-${{ github.sha }}
     required: false
 
 runs:
