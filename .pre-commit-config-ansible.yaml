@@ -3,5 +3,7 @@ repos:
     rev: v25.8.2
     hooks:
       - id: ansible-lint
+        args:
+          - ansible/
         additional_dependencies:
           - ansible
