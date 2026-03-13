@@ -4,3 +4,13 @@
 # EXCEPT: Re-include the necessary files.
 !README.md
 !.gitignore
+# Allow acados stub header for clang-tidy in CI
+# Need to un-ignore parent directories first
+!universe/
+!universe/autoware_universe/
+!universe/autoware_universe/planning/
+!universe/autoware_universe/planning/autoware_path_optimizer/
+!universe/autoware_universe/planning/autoware_path_optimizer/src/
+!universe/autoware_universe/planning/autoware_path_optimizer/src/acados_mpc/
+!universe/autoware_universe/planning/autoware_path_optimizer/src/acados_mpc/c_generated_code/
+!universe/autoware_universe/planning/autoware_path_optimizer/src/acados_mpc/c_generated_code/acados_solver_curvilinear_bicycle_model_spatial.h
