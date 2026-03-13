@@ -755,15 +755,15 @@
 - name: Download calibration_status_classifier/calibration_status_classifier.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/sensing/models/calibration_status_classifier/v1/calibration_status_classifier.onnx
+    url: https://awf.ml.dev.web.auto/sensing/models/calibration_status_classifier/v2/calibration_status_classifier.onnx
     dest: "{{ data_dir }}/calibration_status_classifier/calibration_status_classifier.onnx"
     mode: "644"
-    checksum: sha256:86b575c03a25d08b97a295878cf572fdea016bdab1a48e396194c06a6bc28565
+    checksum: sha256:13d6119e8dc73945ab0efe76b0c9492e2536187fdc7963ba62b8625900f54474
 
 - name: Download calibration_status_classifier/ml_package_calibration_status_classifier.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/sensing/models/calibration_status_classifier/v1/ml_package_calibration_status_classifier.param.yaml
+    url: https://awf.ml.dev.web.auto/sensing/models/calibration_status_classifier/v2/ml_package_calibration_status_classifier.param.yaml
     dest: "{{ data_dir }}/calibration_status_classifier/ml_package_calibration_status_classifier.param.yaml"
     mode: "644"
     checksum: sha256:39d99ce065eea608e2bea3e560eeb1bcee18b2636f988c28afed5219e3e69760
