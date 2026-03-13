@@ -4,3 +4,4 @@
 # EXCEPT: Re-include the necessary files.
 !README.md
 !.gitignore
+!autoware_shadow_recorder
