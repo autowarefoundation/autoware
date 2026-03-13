@@ -37,6 +37,10 @@ RUN --mount=type=ssh \
   && /autoware/cleanup_apt.sh \
   && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
 
+ENV CMAKE_PREFIX_PATH="/opt/acados:${CMAKE_PREFIX_PATH}"
+ENV ACADOS_SOURCE_DIR="/opt/acados"
+ENV LD_LIBRARY_PATH="/opt/acados/lib:${LD_LIBRARY_PATH}"
+
 # Create entrypoint
 COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
