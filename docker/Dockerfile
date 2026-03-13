@@ -192,10 +192,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
 
-ENV CMAKE_PREFIX_PATH="/opt/acados:${CMAKE_PREFIX_PATH}"
-ENV ACADOS_SOURCE_DIR="/opt/acados"
-ENV LD_LIBRARY_PATH="/opt/acados/lib:${LD_LIBRARY_PATH}"
-
 COPY docker/scripts/build_and_clean.sh /autoware/build_and_clean.sh
 RUN chmod +x /autoware/build_and_clean.sh
 
