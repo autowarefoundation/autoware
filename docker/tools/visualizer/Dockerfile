@@ -14,10 +14,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG LIB_DIR
 
-ENV CMAKE_PREFIX_PATH="/opt/acados:${CMAKE_PREFIX_PATH}"
-ENV ACADOS_SOURCE_DIR="/opt/acados"
-ENV LD_LIBRARY_PATH="/opt/acados/lib:${LD_LIBRARY_PATH}"
-
 COPY --from=universe /autoware/rviz /autoware/rviz
 WORKDIR /autoware
 
