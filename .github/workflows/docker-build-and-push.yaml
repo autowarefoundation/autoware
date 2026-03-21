@@ -379,7 +379,7 @@ jobs:
         with:
           files: |
             *.env
-            *.repos
+            repositories/*.repos
             .github/actions/combine-multi-arch-images/action.yaml
             .github/actions/docker-build-and-push*/action.yaml
             .github/workflows/docker-build-and-push.yaml
