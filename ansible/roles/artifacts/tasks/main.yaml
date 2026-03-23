@@ -533,28 +533,6 @@
     mode: "755"
     state: directory
 
-- name: Create diffusion_planner v2.0 directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/diffusion_planner/v2.0"
-    mode: "755"
-    state: directory
-
-- name: Download diffusion_planner/v2.0/diffusion_planner.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v2.0/diffusion_planner.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v2.0/diffusion_planner.onnx"
-    mode: "644"
-    checksum: sha256:622c2c2f21115900c712f80b58560b5a6425be5f70d5aa82a96ef0b13af8c24b
-
-- name: Download diffusion_planner/v2.0/diffusion_planner.param.json
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v2.0/diffusion_planner.param.json
-    dest: "{{ data_dir }}/diffusion_planner/v2.0/diffusion_planner.param.json"
-    mode: "644"
-    checksum: sha256:bf41f12d85b31e363acf84f46d6a9e4e28da6c2ccce0e3fcf91ee4910f4b8453
-
 - name: Create diffusion_planner v3.0 directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/diffusion_planner/v3.0"
@@ -599,6 +577,28 @@
     dest: "{{ data_dir }}/diffusion_planner/v3.1/diffusion_planner.param.json"
     mode: "644"
     checksum: sha256:d726ce7b257ddaf39da8a7dfbd016512e866843c26a9622fdec8a59b45da3e04
+
+- name: Create diffusion_planner v4.0 directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/diffusion_planner/v4.0"
+    mode: "755"
+    state: directory
+
+- name: Download diffusion_planner/v4.0/diffusion_planner.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v4.0/diffusion_planner.onnx
+    dest: "{{ data_dir }}/diffusion_planner/v4.0/diffusion_planner.onnx"
+    mode: "644"
+    checksum: sha256:6fd21662a655e7c262ffa465fc0d93b51d8a7fe1b56f95c6abd110f6cfa15ffd
+
+- name: Download diffusion_planner/v4.0/diffusion_planner.param.json
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v4.0/diffusion_planner.param.json
+    dest: "{{ data_dir }}/diffusion_planner/v4.0/diffusion_planner.param.json"
+    mode: "644"
+    checksum: sha256:d74dfe1b960c67c5e0a7ea5c62f691ade2614aa92062b8f86dd9b0860e81d323
 
 # tensorrt_vad
 - name: Create tensorrt_vad directory inside {{ data_dir }}
