@@ -709,18 +709,18 @@
 - name: Download ptv3/ptv3.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v1/ptv3.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v2/ptv3.onnx
     dest: "{{ data_dir }}/ptv3/ptv3.onnx"
     mode: "644"
-    checksum: sha256:b5d8f7f038599de46e66148d46182600155820c6f6f2fd37e787461f97d143ff
+    checksum: sha256:a2c28b9bc4d52ab4847757f69e4ab716128aeafc0024c221eb106dccf2f2495a
 
 - name: Download ptv3/ml_package_ptv3.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v1/ml_package_ptv3.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v2/ml_package_ptv3.param.yaml
     dest: "{{ data_dir }}/ptv3/ml_package_ptv3.param.yaml"
     mode: "644"
-    checksum: sha256:9a3e35648d6eb46771b208a6534a2dcb19d26efca20a9d8df5abc05a9970d0ec
+    checksum: sha256:ccb620aa8a11528b5b9a9b42c496fd6fe4438fceb8a9fc09c151feedc7bc4fdd
 
 # frnet
 - name: Create lidar_frnet directory inside {{ data_dir }}
