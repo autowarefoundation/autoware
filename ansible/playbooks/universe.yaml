@@ -4,17 +4,17 @@
   vars_prompt:
     - name: prompt_install_nvidia
       prompt: |-
-        [Warning] Some Autoware components depend on the CUDA, and TensorRT NVIDIA libraries which have end-user license agreements that should be reviewed before installation.
+        Some Autoware components depend on CUDA and TensorRT NVIDIA libraries which have end-user license agreements that should be reviewed before installation.
         Install NVIDIA libraries? [y/N]
       private: false
     - name: prompt_download_artifacts
       prompt: |-
-        [Warning] Should the ONNX model files and other artifacts be downloaded alongside setting up the development environment.
+        ONNX model files and other artifacts can be downloaded alongside setting up the development environment.
         Download artifacts? [y/N]
       private: false
     - name: install_devel
       prompt: |-
-        [Warning] Do you want to install recommended development tools for Autoware? [y/N]
+        Install recommended development tools for Autoware? [y/N]
       private: false
       default: y
   pre_tasks:
