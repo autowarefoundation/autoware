@@ -22,7 +22,7 @@
 - name: Download the spconv package
   ansible.builtin.get_url:
     mode: "0644"
-    url: https://github.com/veqcc/spconv_cpp/releases/download/drive-thor/spconv.deb
+    url: https://github.com/veqcc/spconv_cpp/releases/download/drive-thor/spconv_2.3.8_amd64.deb
     dest: /tmp/spconv.deb
 
 - name: Install the spconv package
