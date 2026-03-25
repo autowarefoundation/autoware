@@ -23,15 +23,15 @@ The following command will install a particular version of the packages using an
 ### Standard installation (amd64 or arm64 server)
 
 ```bash
-export CUMM_VERSION=0.5.3
+export SPCONV_CUMM_VERSION=0.5.3
 export SPCONV_VERSION=2.3.8
-ansible-playbook autoware.dev_env.install_spconv.yaml -e cumm_version=${CUMM_VERSION} -e spconv_version=${SPCONV_VERSION} --ask-become-pass
+ansible-playbook autoware.dev_env.install_spconv.yaml -e spconv_cumm_version=${SPCONV_CUMM_VERSION} -e spconv_version=${SPCONV_VERSION} --ask-become-pass
 ```
 
 ### Installation for NVIDIA Jetson platforms
 
 ```bash
-export CUMM_VERSION=0.5.3
+export SPCONV_CUMM_VERSION=0.5.3
 export SPCONV_VERSION=2.3.8
-ansible-playbook autoware.dev_env.install_spconv.yaml -e cumm_version=${CUMM_VERSION} -e spconv_version=${SPCONV_VERSION} -e spconv_is_jetson=true --ask-become-pass
+ansible-playbook autoware.dev_env.install_spconv.yaml -e spconv_cumm_version=${SPCONV_CUMM_VERSION} -e spconv_version=${SPCONV_VERSION} -e spconv_is_jetson=true --ask-become-pass
 ```

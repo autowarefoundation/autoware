@@ -10,7 +10,7 @@
 - name: Download the cumm package
   ansible.builtin.get_url:
     mode: "0644"
-    url: https://github.com/autowarefoundation/spconv_cpp/releases/download/spconv_v{{ spconv_version }}%2Bcumm_v{{ cumm_version }}%2Bcu128/cumm_{{ cumm_version }}_{{ spconv_normalized_arch }}{{ spconv_arch_suffix }}.deb
+    url: https://github.com/autowarefoundation/spconv_cpp/releases/download/spconv_v{{ spconv_version }}%2Bcumm_v{{ spconv_cumm_version }}%2Bcu128/cumm_{{ spconv_cumm_version }}_{{ spconv_normalized_arch }}{{ spconv_arch_suffix }}.deb
     dest: /tmp/cumm.deb
 
 - name: Install the cumm package
@@ -22,7 +22,7 @@
 - name: Download the spconv package
   ansible.builtin.get_url:
     mode: "0644"
-    url: https://github.com/autowarefoundation/spconv_cpp/releases/download/spconv_v{{ spconv_version }}%2Bcumm_v{{ cumm_version }}%2Bcu128/spconv_{{ spconv_version }}_{{ spconv_normalized_arch }}{{ spconv_arch_suffix }}.deb
+    url: https://github.com/autowarefoundation/spconv_cpp/releases/download/spconv_v{{ spconv_version }}%2Bcumm_v{{ spconv_cumm_version }}%2Bcu128/spconv_{{ spconv_version }}_{{ spconv_normalized_arch }}{{ spconv_arch_suffix }}.deb
     dest: /tmp/spconv.deb
 
 - name: Install the spconv package
