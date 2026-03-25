@@ -12,9 +12,9 @@
         msg:
           - module: "{{ module }}"
           - rosdistro: "{{ rosdistro }}"
-          - rmw_implementation: "{{ rmw_implementation }}"
-          - cuda_version: "{{ cuda_version }}"
-          - tensorrt_version: "{{ tensorrt_version }}"
+          - rmw_implementation: "{{ rmw_implementation | default('(role default)') }}"
+          - cuda_version: "{{ cuda_version | default('(role default)') }}"
+          - tensorrt_version: "{{ tensorrt_version | default('(role default)') }}"
   roles:
     # Autoware base dependencies
     - role: autoware.dev_env.rmw_implementation

@@ -1,2 +1,2 @@
-rmw_implementation__rosdistro: null
-rmw_implementation__name: null
+rmw_implementation__rosdistro: "{{ rosdistro | default(lookup('env', 'ROS_DISTRO') | default('jazzy')) }}"
+rmw_implementation__name: rmw_cyclonedds_cpp
