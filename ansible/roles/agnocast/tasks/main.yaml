@@ -139,7 +139,7 @@
   when: agnocast_is_container
 
 - name: Handle kernel-related tasks (headers + kmod, non-container only)
-  when: not agnocast_is_container
+  when: not agnocast_is_container or agnocast_force_kmod_install
   block:
     - name: Check if linux-headers package is available
       ansible.builtin.shell: |
