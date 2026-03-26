@@ -709,18 +709,18 @@
 - name: Download ptv3/ptv3.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v1/ptv3.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v2/ptv3.onnx
     dest: "{{ data_dir }}/ptv3/ptv3.onnx"
     mode: "644"
-    checksum: sha256:b5d8f7f038599de46e66148d46182600155820c6f6f2fd37e787461f97d143ff
+    checksum: sha256:a2c28b9bc4d52ab4847757f69e4ab716128aeafc0024c221eb106dccf2f2495a
 
 - name: Download ptv3/ml_package_ptv3.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v1/ml_package_ptv3.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v2/ml_package_ptv3.param.yaml
     dest: "{{ data_dir }}/ptv3/ml_package_ptv3.param.yaml"
     mode: "644"
-    checksum: sha256:9a3e35648d6eb46771b208a6534a2dcb19d26efca20a9d8df5abc05a9970d0ec
+    checksum: sha256:ccb620aa8a11528b5b9a9b42c496fd6fe4438fceb8a9fc09c151feedc7bc4fdd
 
 # frnet
 - name: Create lidar_frnet directory inside {{ data_dir }}
@@ -729,21 +729,37 @@
     mode: "755"
     state: directory
 
-- name: Download lidar_frnet/frnet.onnx
+- name: Download lidar_frnet/frnet_ot128.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/frnet/v1/frnet.onnx
-    dest: "{{ data_dir }}/lidar_frnet/frnet.onnx"
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/frnet_ot128.onnx
+    dest: "{{ data_dir }}/lidar_frnet/frnet_ot128.onnx"
     mode: "644"
-    checksum: sha256:acaaf0190e9dbf67e4987542fc57bcec4102a842a40ee24a9dc8fa1948bedf04
+    checksum: sha256:d29bf5950432360d800c22ff86a590d4d9d006acc501563ac611cfa33747c11f
 
-- name: Download lidar_frnet/ml_package_frnet.param.yaml
+- name: Download lidar_frnet/frnet_qt128.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/frnet/v1/ml_package_frnet.param.yaml
-    dest: "{{ data_dir }}/lidar_frnet/ml_package_frnet.param.yaml"
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/frnet_qt128.onnx
+    dest: "{{ data_dir }}/lidar_frnet/frnet_qt128.onnx"
     mode: "644"
-    checksum: sha256:34577cc7902acd942a51f401bdcf560da91c3c80df8d553bfdc775f118b499b8
+    checksum: sha256:647af92790e3d591a19d065fe94d3ded797916ac9ffe5bf96b5e8b8324b31ad2
+
+- name: Download lidar_frnet/ml_package_frnet_ot128.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/ml_package_frnet_ot128.param.yaml
+    dest: "{{ data_dir }}/lidar_frnet/ml_package_frnet_ot128.param.yaml"
+    mode: "644"
+    checksum: sha256:96de220d55a3895131775dba9177e7b8286ea751f5a7cfc20f11e26933fc4575
+
+- name: Download lidar_frnet/ml_package_frnet_qt128.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/ml_package_frnet_qt128.param.yaml
+    dest: "{{ data_dir }}/lidar_frnet/ml_package_frnet_qt128.param.yaml"
+    mode: "644"
+    checksum: sha256:dcbe9cc2821fa94097ae58cab53a1511a3e974d0662f94389657e666e9a61af6
 
 # calibration_status_classifier
 - name: Create calibration_status_classifier directory inside {{ data_dir }}
