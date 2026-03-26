@@ -1,0 +1,20 @@
+- name: Load lockfile
+  ansible.builtin.include_vars:
+    file: "{{ lockfile_path }}"
+    name: locked_packages
+  when: use_locked_versions | default(false) | bool
+
+- name: Create APT version pins
+  become: true
+  ansible.builtin.template:
+    src: autoware-lock.pref.j2
+    dest: /etc/apt/preferences.d/autoware-lock
+    mode: "0644"
+  when: use_locked_versions | default(false) | bool
+
+- name: Remove APT version pins
+  become: true
+  ansible.builtin.file:
+    path: /etc/apt/preferences.d/autoware-lock
+    state: absent
+  when: not (use_locked_versions | default(false) | bool)

@@ -1,0 +1,6 @@
+{% for pkg, ver in locked_packages.items() %}
+Package: {{ pkg }}
+Pin: version {{ ver }}
+Pin-Priority: 1001
+
+{% endfor %}
