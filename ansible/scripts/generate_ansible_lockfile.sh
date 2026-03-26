@@ -23,15 +23,19 @@ main() {
     # Read package names from existing lockfile
     local packages
     # cspell:ignore isinstance
-    packages=$(python3 -c "
+    if ! packages=$(python3 -c "
 import yaml, sys
 with open('$OUTPUT_FILE') as f:
     data = yaml.safe_load(f)
 if not isinstance(data, dict):
-    sys.exit(0)
+    sys.stderr.write('Error: Lockfile content must be a YAML mapping (dict).\n')
+    sys.exit(1)
 for pkg in sorted(data):
     print(pkg)
-")
+"); then
+        echo "Error: Failed to read package list from lockfile: $OUTPUT_FILE" >&2
+        exit 1
+    fi
 
     # Resolve all versions first, fail if any package is missing
     declare -A versions
