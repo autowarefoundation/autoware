@@ -1,0 +1,1 @@
+tensorrt_version: "{{ '10.3.0.26-1+cuda12.5' if ansible_architecture == 'aarch64' else '10.8.0.43-1+cuda12.8' }}"
