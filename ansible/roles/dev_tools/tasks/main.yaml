@@ -4,6 +4,7 @@
   ansible.builtin.apt:
     name: git-lfs
     state: present
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
 
 - name: Setup Git LFS for current user
@@ -15,6 +16,7 @@
   ansible.builtin.apt:
     name: pipx
     state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
 
 - name: Install pre-commit
@@ -32,6 +34,7 @@
   ansible.builtin.apt:
     name: golang
     state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
 
 - name: Hold check of ros-{{ rosdistro + '-plotjuggler' }}
@@ -45,6 +48,7 @@
     name:
       - ros-{{ rosdistro }}-plotjuggler
     state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
   when: "'ros-' + rosdistro + '-plotjuggler' not in dev_tools__held_ros_packages.stdout"
   register: dev_tools__install_result
