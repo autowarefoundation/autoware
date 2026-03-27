@@ -27,7 +27,6 @@
       ansible.builtin.debug:
         msg:
           - rosdistro: "{{ rosdistro }}"
-          - rmw_implementation: "{{ rmw_implementation | default('(role default)') }}"
           - cuda_version: "{{ cuda_version | default('(role default)') }}"
           - tensorrt_version: "{{ tensorrt_version | default('(role default)') }}"
 
@@ -44,7 +43,6 @@
     - role: autoware.dev_env.rmw_implementation
       vars:
         rmw_implementation__rosdistro: "{{ rosdistro }}"
-        rmw_implementation__name: "{{ rmw_implementation }}"
     - role: autoware.dev_env.gdown
     - role: autoware.dev_env.build_tools
     - role: autoware.dev_env.agnocast

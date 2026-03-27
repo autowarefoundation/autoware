@@ -12,7 +12,6 @@
         msg:
           - module: "{{ module }}"
           - rosdistro: "{{ rosdistro }}"
-          - rmw_implementation: "{{ rmw_implementation | default('(role default)') }}"
           - cuda_version: "{{ cuda_version | default('(role default)') }}"
           - tensorrt_version: "{{ tensorrt_version | default('(role default)') }}"
   roles:
@@ -21,7 +20,6 @@
       when: module == 'base'
       vars:
         rmw_implementation__rosdistro: "{{ rosdistro }}"
-        rmw_implementation__name: "{{ rmw_implementation }}"
     - role: autoware.dev_env.gdown
       when: module == 'base'
     - role: autoware.dev_env.kisak_mesa
