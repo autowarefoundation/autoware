@@ -3,11 +3,11 @@ name: load-env
 on:
   workflow_call:
     inputs:
-      env_file:
-        description: Specify the env file to load (e.g., amd64.env, amd64_jazzy.env)
+      rosdistro:
+        description: ROS distribution name (humble or jazzy)
         required: false
         type: string
-        default: ""
+        default: humble
     outputs:
       rosdistro:
         value: ${{ jobs.load-env.outputs.rosdistro }}
@@ -22,46 +22,31 @@ jobs:
   load-env:
     runs-on: ubuntu-22.04
     outputs:
-      rosdistro: ${{ steps.set-env.outputs.rosdistro }}
-      base_image: ${{ steps.set-env.outputs.base_image }}
-      autoware_base_image: ${{ steps.set-env.outputs.autoware_base_image }}
-      autoware_base_cuda_image: ${{ steps.set-env.outputs.autoware_base_cuda_image }}
+      rosdistro: ${{ steps.derive.outputs.rosdistro }}
+      base_image: ${{ steps.derive.outputs.base_image }}
+      autoware_base_image: ${{ steps.derive.outputs.autoware_base_image }}
+      autoware_base_cuda_image: ${{ steps.derive.outputs.autoware_base_cuda_image }}
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Load env
+      - name: Derive image names from rosdistro
+        id: derive
         run: |
-          # Check if env_file is specified
-          if [ -n "${{ inputs.env_file }}" ]; then
-            # Use specified env file
-            echo "Loading specified env file: ${{ inputs.env_file }}"
-            cat ${{ inputs.env_file }} | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
-          else
-            # Auto-detect based on ROS_DISTRO
-            rosdistro=${ROS_DISTRO:-humble}
-            echo "rosdistro=$rosdistro" >> $GITHUB_ENV
+          rosdistro="${{ inputs.rosdistro }}"
+          echo "rosdistro=${rosdistro}" >> "$GITHUB_OUTPUT"
 
-            # Determine which env file to use based on rosdistro
-            if [ "$rosdistro" = "humble" ]; then
-              echo "Loading amd64.env for Humble"
-              cat amd64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
-            else
-              echo "Loading amd64_jazzy.env for Jazzy"
-              cat amd64_jazzy.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
-            fi
-          fi
-
-          # Load ARM64 specific env if on ARM64 architecture
-          if [ "$(uname -m)" = "aarch64" ]; then
-            echo "Loading arm64.env for ARM64 architecture"
-            cat arm64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
-          fi
-
-      - name: Set env
-        id: set-env
-        run: |
-          echo "rosdistro=${{ env.rosdistro }}" >> $GITHUB_OUTPUT
-          echo "base_image=${{ env.base_image }}" >> $GITHUB_OUTPUT
-          echo "autoware_base_image=${{ env.autoware_base_image }}" >> $GITHUB_OUTPUT
-          echo "autoware_base_cuda_image=${{ env.autoware_base_cuda_image }}" >> $GITHUB_OUTPUT
+          case "${rosdistro}" in
+            humble)
+              echo "base_image=ros:humble-ros-base-jammy" >> "$GITHUB_OUTPUT"
+              echo "autoware_base_image=ghcr.io/autowarefoundation/autoware-base:latest" >> "$GITHUB_OUTPUT"
+              echo "autoware_base_cuda_image=ghcr.io/autowarefoundation/autoware-base:cuda-latest" >> "$GITHUB_OUTPUT"
+              ;;
+            jazzy)
+              echo "base_image=ros:jazzy-ros-base-noble" >> "$GITHUB_OUTPUT"
+              echo "autoware_base_image=ghcr.io/autowarefoundation/autoware-base:latest-jazzy" >> "$GITHUB_OUTPUT"
+              echo "autoware_base_cuda_image=ghcr.io/autowarefoundation/autoware-base:cuda-latest-jazzy" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "::error::Unknown rosdistro: ${rosdistro}"
+              exit 1
+              ;;
+          esac
+        shell: bash

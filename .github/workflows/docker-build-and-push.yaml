@@ -16,7 +16,7 @@ jobs:
   load-env:
     uses: ./.github/workflows/load-env.yaml
     with:
-      env_file: amd64.env
+      rosdistro: humble
 
   docker-build-and-push:
     needs: load-env
@@ -56,7 +56,6 @@ jobs:
         uses: step-security/changed-files@v46
         with:
           files: |
-            *.env
             repositories/*.repos
             .github/actions/combine-multi-arch-images/action.yaml
             .github/actions/docker-build-and-push*/action.yaml
@@ -127,7 +126,6 @@ jobs:
         uses: step-security/changed-files@v46
         with:
           files: |
-            *.env
             repositories/*.repos
             .github/actions/combine-multi-arch-images/action.yaml
             .github/actions/docker-build-and-push*/action.yaml
@@ -201,7 +199,6 @@ jobs:
         uses: step-security/changed-files@v46
         with:
           files: |
-            *.env
             repositories/*.repos
             .github/actions/combine-multi-arch-images/action.yaml
             .github/actions/docker-build-and-push*/action.yaml
@@ -280,7 +277,7 @@ jobs:
   load-env-jazzy:
     uses: ./.github/workflows/load-env.yaml
     with:
-      env_file: amd64_jazzy.env
+      rosdistro: jazzy
 
   docker-build-and-push-jazzy:
     needs: [load-env-jazzy]
@@ -320,7 +317,6 @@ jobs:
         uses: step-security/changed-files@v46
         with:
           files: |
-            *.env
             repositories/*.repos
             .github/actions/combine-multi-arch-images/action.yaml
             .github/actions/docker-build-and-push*/action.yaml
@@ -398,7 +394,6 @@ jobs:
         uses: step-security/changed-files@v46
         with:
           files: |
-            *.env
             repositories/*.repos
             .github/actions/combine-multi-arch-images/action.yaml
             .github/actions/docker-build-and-push*/action.yaml
