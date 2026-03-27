@@ -75,9 +75,6 @@ set_cuda_options() {
     fi
 }
 
-# Note: Image tags are loaded from env files (amd64.env or amd64_jazzy.env)
-# via the load_env() function, which sets $autoware_base_image and $autoware_base_cuda_image
-
 # Set build options
 set_build_options() {
     if [ -n "$option_target" ]; then
@@ -116,16 +113,18 @@ set_arch_lib_dir() {
     fi
 }
 
-# Load env
-load_env() {
+# Derive image names from rosdistro
+derive_images() {
     if [ "$ros_distro" = "humble" ]; then
-        source "$WORKSPACE_ROOT/amd64.env"
+        base_image="ros:humble-ros-base-jammy"
+        autoware_base_image="ghcr.io/autowarefoundation/autoware-base:latest"
+        autoware_base_cuda_image="ghcr.io/autowarefoundation/autoware-base:cuda-latest"
     else
-        source "$WORKSPACE_ROOT/amd64_jazzy.env"
+        base_image="ros:${ros_distro}-ros-base-noble"
+        autoware_base_image="ghcr.io/autowarefoundation/autoware-base:latest-${ros_distro}"
+        autoware_base_cuda_image="ghcr.io/autowarefoundation/autoware-base:cuda-latest-${ros_distro}"
     fi
-    if [ "$platform" = "linux/arm64" ]; then
-        source "$WORKSPACE_ROOT/arm64.env"
-    fi
+    rosdistro="$ros_distro"
 }
 
 # Clone repositories
@@ -206,7 +205,7 @@ set_cuda_options
 set_build_options
 set_platform
 set_arch_lib_dir
-load_env
+derive_images
 clone_repositories
 build_images
 remove_dangling_images
