@@ -21,15 +21,11 @@ jobs:
     with:
       label: run:health-check
 
-  load-env:
+  docker-build:
     needs: label-check
     if: ${{ needs.label-check.outputs.result == 'true' ||
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' }}
-    uses: ./.github/workflows/load-env.yaml
-
-  docker-build:
-    needs: load-env
     strategy:
       fail-fast: false
       matrix:
@@ -59,6 +55,12 @@ jobs:
 
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Derive image names
+        id: derive
+        uses: ./.github/actions/derive-image-names
+        with:
+          rosdistro: humble
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -128,9 +130,9 @@ jobs:
           image-artifact-name: ${{ matrix.build-type == 'main' && 'autoware-image' || '' }}
           additional-repos: ${{ matrix.build-type == 'nightly' && 'repositories/autoware-nightly.repos' || '' }}
           build-args: |
-            ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
-            AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
+            ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
             LIB_DIR=${{ matrix.lib-dir }}
 
       - name: Show disk space

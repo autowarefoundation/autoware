@@ -1,0 +1,46 @@
+name: derive-image-names
+description: Derive Docker image names from rosdistro
+
+inputs:
+  rosdistro:
+    description: ROS distribution name (humble or jazzy)
+    required: false
+    default: humble
+
+outputs:
+  rosdistro:
+    description: The ROS distribution (pass-through of input)
+    value: ${{ inputs.rosdistro }}
+  base_image:
+    description: The base ROS image
+    value: ${{ steps.derive.outputs.base_image }}
+  autoware_base_image:
+    description: The Autoware base image
+    value: ${{ steps.derive.outputs.autoware_base_image }}
+  autoware_base_cuda_image:
+    description: The Autoware base CUDA image
+    value: ${{ steps.derive.outputs.autoware_base_cuda_image }}
+
+runs:
+  using: composite
+  steps:
+    - name: Derive image names from rosdistro
+      id: derive
+      run: |
+        case "${{ inputs.rosdistro }}" in
+          humble)
+            echo "base_image=ros:humble-ros-base-jammy" >> "$GITHUB_OUTPUT"
+            echo "autoware_base_image=ghcr.io/autowarefoundation/autoware-base:latest" >> "$GITHUB_OUTPUT"
+            echo "autoware_base_cuda_image=ghcr.io/autowarefoundation/autoware-base:cuda-latest" >> "$GITHUB_OUTPUT"
+            ;;
+          jazzy)
+            echo "base_image=ros:jazzy-ros-base-noble" >> "$GITHUB_OUTPUT"
+            echo "autoware_base_image=ghcr.io/autowarefoundation/autoware-base:latest-jazzy" >> "$GITHUB_OUTPUT"
+            echo "autoware_base_cuda_image=ghcr.io/autowarefoundation/autoware-base:cuda-latest-jazzy" >> "$GITHUB_OUTPUT"
+            ;;
+          *)
+            echo "::error::Unknown rosdistro: ${{ inputs.rosdistro }}"
+            exit 1
+            ;;
+        esac
+      shell: bash

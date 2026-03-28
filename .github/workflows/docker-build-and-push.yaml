@@ -13,13 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  load-env:
-    uses: ./.github/workflows/load-env.yaml
-    with:
-      rosdistro: humble
-
   docker-build-and-push:
-    needs: load-env
     strategy:
       matrix:
         platform: [amd64, arm64]
@@ -41,6 +35,12 @@ jobs:
 
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Derive image names
+        id: derive
+        uses: ./.github/actions/derive-image-names
+        with:
+          rosdistro: humble
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -80,9 +80,9 @@ jobs:
           target-image: autoware
           build-args: |
             *.platform=${{ matrix.arch-platform }}
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
-            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-main
@@ -94,7 +94,7 @@ jobs:
           df -h
 
   docker-build-and-push-tools:
-    needs: [load-env, docker-build-and-push]
+    needs: docker-build-and-push
     strategy:
       matrix:
         platform: [amd64, arm64]
@@ -111,6 +111,12 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Derive image names
+        id: derive
+        uses: ./.github/actions/derive-image-names
+        with:
+          rosdistro: humble
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -150,7 +156,7 @@ jobs:
           target-image: autoware-tools
           build-args: |
             *.platform=${{ matrix.arch-platform }}
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-main
@@ -162,7 +168,7 @@ jobs:
           df -h
 
   docker-build-and-push-cuda:
-    needs: [load-env, docker-build-and-push]
+    needs: docker-build-and-push
     strategy:
       matrix:
         platform: [amd64, arm64]
@@ -184,6 +190,12 @@ jobs:
 
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Derive image names
+        id: derive
+        uses: ./.github/actions/derive-image-names
+        with:
+          rosdistro: humble
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -224,10 +236,10 @@ jobs:
           target-image: autoware
           build-args: |
             *.platform=${{ matrix.arch-platform }}
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
-            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
-            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ steps.derive.outputs.base_image }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-main
@@ -274,13 +286,7 @@ jobs:
         with:
           package-name: autoware-tools
 
-  load-env-jazzy:
-    uses: ./.github/workflows/load-env.yaml
-    with:
-      rosdistro: jazzy
-
   docker-build-and-push-jazzy:
-    needs: [load-env-jazzy]
     strategy:
       matrix:
         platform: [amd64, arm64]
@@ -302,6 +308,12 @@ jobs:
 
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Derive image names
+        id: derive
+        uses: ./.github/actions/derive-image-names
+        with:
+          rosdistro: jazzy
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -341,9 +353,9 @@ jobs:
           target-image: autoware
           build-args: |
             *.platform=${{ matrix.arch-platform }}
-            *.args.ROS_DISTRO=${{ needs.load-env-jazzy.outputs.rosdistro }}
-            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env-jazzy.outputs.autoware_base_image }}
-            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env-jazzy.outputs.autoware_base_cuda_image }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-main
@@ -357,7 +369,7 @@ jobs:
           df -h
 
   docker-build-and-push-jazzy-cuda:
-    needs: [load-env-jazzy, docker-build-and-push-jazzy]
+    needs: docker-build-and-push-jazzy
     strategy:
       matrix:
         platform: [amd64, arm64]
@@ -379,6 +391,12 @@ jobs:
 
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Derive image names
+        id: derive
+        uses: ./.github/actions/derive-image-names
+        with:
+          rosdistro: jazzy
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -419,10 +437,10 @@ jobs:
           target-image: autoware
           build-args: |
             *.platform=${{ matrix.arch-platform }}
-            *.args.ROS_DISTRO=${{ needs.load-env-jazzy.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env-jazzy.outputs.base_image }}
-            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env-jazzy.outputs.autoware_base_image }}
-            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env-jazzy.outputs.autoware_base_cuda_image }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ steps.derive.outputs.base_image }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-cuda-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-cuda-main
