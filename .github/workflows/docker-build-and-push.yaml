@@ -86,7 +86,7 @@ jobs:
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }},mode=max
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: Show disk space
         if: always()
@@ -160,7 +160,7 @@ jobs:
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }},mode=max
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: Show disk space
         if: always()
@@ -241,9 +241,9 @@ jobs:
             *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
             *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }},mode=max
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-cuda-${{ steps.sanitize.outputs.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-cuda-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-cuda-${{ steps.sanitize.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: Show disk space
         if: always()
@@ -359,7 +359,7 @@ jobs:
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ steps.sanitize.outputs.ref_name }},mode=max
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ steps.sanitize.outputs.ref_name }},mode=max,ignore-error=true
           set-latest: false
           suffix: -jazzy
 
@@ -444,7 +444,7 @@ jobs:
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-cuda-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-cuda-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-cuda-${{ steps.sanitize.outputs.ref_name }},mode=max
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-cuda-${{ steps.sanitize.outputs.ref_name }},mode=max,ignore-error=true
           suffix: -jazzy
 
       - name: Show disk space
