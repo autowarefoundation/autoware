@@ -49,16 +49,11 @@ jobs:
         with: # cSpell:ignore tonistiigi, binfmt
           image: tonistiigi/binfmt:qemu-v7.0.0
 
-      - name: Derive base image from rosdistro
+      - name: Derive image names from rosdistro
         id: derive
-        run: |
-          rosdistro="${{ matrix.platform }}"
-          case "${rosdistro}" in
-            humble) echo "base_image=ros:humble-ros-base-jammy" >> "$GITHUB_OUTPUT" ;;
-            jazzy)  echo "base_image=ros:jazzy-ros-base-noble" >> "$GITHUB_OUTPUT" ;;
-            *)      echo "::error::Unknown rosdistro: ${rosdistro}"; exit 1 ;;
-          esac
-        shell: bash
+        uses: ./.github/actions/derive-image-names
+        with:
+          rosdistro: ${{ matrix.platform }}
 
       - name: Build Autoware's base images
         uses: ./.github/actions/docker-build-and-push-base
@@ -66,7 +61,7 @@ jobs:
           target-image: autoware-base
           build-args: |
             *.platform=linux/amd64,linux/arm64
-            *.args.ROS_DISTRO=${{ matrix.platform }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
             *.args.BASE_IMAGE=${{ steps.derive.outputs.base_image }}
           suffix: ${{ matrix.suffix }}
           set-latest: ${{ matrix.set-latest }}
