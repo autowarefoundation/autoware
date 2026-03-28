@@ -70,7 +70,6 @@ jobs:
         uses: step-security/changed-files@v46
         with:
           files: |
-            *.env
             repositories/*.repos
             .github/actions/docker-build/action.yaml
             .github/workflows/health-check.yaml
