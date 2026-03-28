@@ -89,6 +89,35 @@ jobs:
           matrix.build-type != 'main' }}
         uses: ./.github/actions/free-disk-space
 
+      - name: Show runner info
+        run: |
+          echo "::group::CPU"
+          nproc
+          lscpu
+          echo "::endgroup::"
+          echo "::group::Memory"
+          free -h
+          echo "::endgroup::"
+          echo "::group::Swap"
+          swapon --show
+          echo "::endgroup::"
+          echo "::group::Disk"
+          df -h
+          echo "::endgroup::"
+
+      - name: Create additional swap
+        if: ${{ matrix.platform == 'arm64' &&
+          (steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch') }}
+        run: |
+          sudo fallocate -l 8G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          free -h
+          swapon --show
+
       - name: Build 'Autoware'
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'schedule' ||
