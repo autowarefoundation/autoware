@@ -98,9 +98,9 @@ jobs:
           target-image: autoware
           build-args: |
             *.platform=${{ matrix.arch-platform }}
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
-            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
 
       - name: Show disk space
@@ -187,7 +187,7 @@ jobs:
           target-image: autoware-tools
           build-args: |
             *.platform=${{ matrix.arch-platform }}
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
 
       - name: Show disk space
@@ -283,10 +283,10 @@ jobs:
           target-image: autoware
           build-args: |
             *.platform=${{ matrix.arch-platform }}
-            *.args.ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env.outputs.base_image }}
-            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
-            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ steps.derive.outputs.base_image }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
 
       - name: Show disk space
@@ -417,9 +417,9 @@ jobs:
           target-image: autoware
           build-args: |
             *.platform=${{ matrix.arch-platform }}
-            *.args.ROS_DISTRO=${{ needs.load-env-jazzy.outputs.rosdistro }}
-            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env-jazzy.outputs.autoware_base_image }}
-            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env-jazzy.outputs.autoware_base_cuda_image }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
           set-latest: false
           suffix: -jazzy
@@ -518,10 +518,10 @@ jobs:
           target-image: autoware
           build-args: |
             *.platform=${{ matrix.arch-platform }}
-            *.args.ROS_DISTRO=${{ needs.load-env-jazzy.outputs.rosdistro }}
-            *.args.BASE_IMAGE=${{ needs.load-env-jazzy.outputs.base_image }}
-            *.args.AUTOWARE_BASE_IMAGE=${{ needs.load-env-jazzy.outputs.autoware_base_image }}
-            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env-jazzy.outputs.autoware_base_cuda_image }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ steps.derive.outputs.base_image }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
           suffix: -jazzy
 
