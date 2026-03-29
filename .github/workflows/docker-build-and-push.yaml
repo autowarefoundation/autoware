@@ -71,6 +71,8 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware' without CUDA
+        id: build
+        continue-on-error: true
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
@@ -86,7 +88,20 @@ jobs:
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }},mode=max
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }},mode=max,ignore-error=true
+
+      - name: Retry build 'Autoware' without CUDA (without cache)
+        if: ${{ steps.build.outcome == 'failure' }}
+        uses: ./.github/actions/docker-build-and-push
+        with:
+          platform: ${{ matrix.platform }}
+          target-image: autoware
+          build-args: |
+            *.platform=${{ matrix.arch-platform }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
+            *.args.LIB_DIR=${{ matrix.lib-dir }}
 
       - name: Show disk space
         if: always()
@@ -147,6 +162,8 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'autoware-tools'
+        id: build-tools
+        continue-on-error: true
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
@@ -160,7 +177,18 @@ jobs:
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }},mode=max
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }},mode=max,ignore-error=true
+
+      - name: Retry build 'autoware-tools' (without cache)
+        if: ${{ steps.build-tools.outcome == 'failure' }}
+        uses: ./.github/actions/docker-build-and-push-tools
+        with:
+          platform: ${{ matrix.platform }}
+          target-image: autoware-tools
+          build-args: |
+            *.platform=${{ matrix.arch-platform }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.LIB_DIR=${{ matrix.lib-dir }}
 
       - name: Show disk space
         if: always()
@@ -227,6 +255,8 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware' with CUDA
+        id: build-cuda
+        continue-on-error: true
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
@@ -241,9 +271,23 @@ jobs:
             *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
             *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
             *.args.LIB_DIR=${{ matrix.lib-dir }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }},mode=max
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-cuda-${{ steps.sanitize.outputs.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-cuda-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-cuda-${{ steps.sanitize.outputs.ref_name }},mode=max,ignore-error=true
+
+      - name: Retry build 'Autoware' with CUDA (without cache)
+        if: ${{ steps.build-cuda.outcome == 'failure' }}
+        uses: ./.github/actions/docker-build-and-push-cuda
+        with:
+          platform: ${{ matrix.platform }}
+          target-image: autoware
+          build-args: |
+            *.platform=${{ matrix.arch-platform }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ steps.derive.outputs.base_image }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
+            *.args.LIB_DIR=${{ matrix.lib-dir }}
 
       - name: Show disk space
         if: always()
@@ -344,6 +388,8 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware Jazzy Universe' without CUDA
+        id: build-jazzy
+        continue-on-error: true
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
@@ -359,7 +405,22 @@ jobs:
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ steps.sanitize.outputs.ref_name }},mode=max
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-${{ steps.sanitize.outputs.ref_name }},mode=max,ignore-error=true
+          set-latest: false
+          suffix: -jazzy
+
+      - name: Retry build 'Autoware Jazzy Universe' without CUDA (without cache)
+        if: ${{ steps.build-jazzy.outcome == 'failure' }}
+        uses: ./.github/actions/docker-build-and-push
+        with:
+          platform: ${{ matrix.platform }}
+          target-image: autoware
+          build-args: |
+            *.platform=${{ matrix.arch-platform }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
+            *.args.LIB_DIR=${{ matrix.lib-dir }}
           set-latest: false
           suffix: -jazzy
 
@@ -428,6 +489,8 @@ jobs:
         uses: ./.github/actions/free-disk-space
 
       - name: Build 'Autoware Jazzy Universe' with CUDA
+        id: build-jazzy-cuda
+        continue-on-error: true
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'push' && github.ref_type == 'tag') }}
@@ -444,7 +507,22 @@ jobs:
             *.args.LIB_DIR=${{ matrix.lib-dir }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-cuda-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-cuda-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-cuda-${{ steps.sanitize.outputs.ref_name }},mode=max
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ matrix.platform }}-jazzy-cuda-${{ steps.sanitize.outputs.ref_name }},mode=max,ignore-error=true
+          suffix: -jazzy
+
+      - name: Retry build 'Autoware Jazzy Universe' with CUDA (without cache)
+        if: ${{ steps.build-jazzy-cuda.outcome == 'failure' }}
+        uses: ./.github/actions/docker-build-and-push-cuda
+        with:
+          platform: ${{ matrix.platform }}
+          target-image: autoware
+          build-args: |
+            *.platform=${{ matrix.arch-platform }}
+            *.args.ROS_DISTRO=${{ steps.derive.outputs.rosdistro }}
+            *.args.BASE_IMAGE=${{ steps.derive.outputs.base_image }}
+            *.args.AUTOWARE_BASE_IMAGE=${{ steps.derive.outputs.autoware_base_image }}
+            *.args.AUTOWARE_BASE_CUDA_IMAGE=${{ steps.derive.outputs.autoware_base_cuda_image }}
+            *.args.LIB_DIR=${{ matrix.lib-dir }}
           suffix: -jazzy
 
       - name: Show disk space
