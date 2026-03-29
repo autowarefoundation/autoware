@@ -23,6 +23,7 @@
       - python3-vcs2l # formerly python3-vcstool
       - wget # from ros-dev-tools
     state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
 
 - name: Run 'sudo rosdep init'
