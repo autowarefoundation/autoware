@@ -13,20 +13,12 @@ This role sets up ROS 2 RMW implementation following [this page](https://docs.ro
 
 ## Set up the environment variables
 
-Choose **one** ROS distribution and run the corresponding command.
-
-### ROS 2 Humble
-
 ```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && \
-source /tmp/amd64.env
-```
+# Choose your ROS distribution
+rosdistro=humble  # or jazzy
 
-### ROS 2 Jazzy
-
-```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64_jazzy.env && \
-source /tmp/amd64.env
+# RMW implementation (see ./defaults/main.yaml for the current default)
+rmw_implementation=rmw_cyclonedds_cpp
 ```
 
 ## Install the RMW implementation

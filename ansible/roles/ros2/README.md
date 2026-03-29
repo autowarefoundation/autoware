@@ -32,7 +32,8 @@ For Universe, the `rosdistro` variable can also be found in:
 [../../playbooks/universe.yaml](../../playbooks/universe.yaml)
 
 ```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
+# Choose your ROS distribution
+rosdistro=humble  # or jazzy
 
 # Taken from: https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html
 
