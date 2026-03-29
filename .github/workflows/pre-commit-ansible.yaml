@@ -14,6 +14,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
         with:
