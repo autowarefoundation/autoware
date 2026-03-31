@@ -72,6 +72,13 @@ runs:
           apt-get-${{ inputs.platform }}-main-${{ inputs.platform == 'arm64' && 'arm64-' || '' }}
           apt-get-${{ inputs.platform }}-
 
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ github.token }}
+
     - name: Inject cache into docker
       # TODO(youtalk): Use the release version again
       uses: reproducible-containers/buildkit-cache-dance@7c892679bab8ff382a8c88ab7f973d5e30a8f239
@@ -322,13 +329,6 @@ runs:
         bake-target: docker-metadata-action-universe
         flavor: |
           latest=${{ inputs.set-latest }}
-
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ github.token }}
 
     - name: set build targets
       id: set-build-targets

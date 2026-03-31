@@ -27,9 +27,8 @@
       ansible.builtin.debug:
         msg:
           - rosdistro: "{{ rosdistro }}"
-          - rmw_implementation: "{{ rmw_implementation }}"
-          - cuda_version: "{{ cuda_version }}"
-          - tensorrt_version: "{{ tensorrt_version }}"
+          - cuda_version: "{{ cuda_version | default('(role default)') }}"
+          - tensorrt_version: "{{ tensorrt_version | default('(role default)') }}"
 
     - name: Show a warning if the NVIDIA libraries will not be installed
       ansible.builtin.pause:
@@ -44,13 +43,13 @@
     - role: autoware.dev_env.rmw_implementation
       vars:
         rmw_implementation__rosdistro: "{{ rosdistro }}"
-        rmw_implementation__name: "{{ rmw_implementation }}"
     - role: autoware.dev_env.gdown
     - role: autoware.dev_env.build_tools
     - role: autoware.dev_env.agnocast
       when: rosdistro == 'humble'
 
     # Autoware module dependencies
+    - role: autoware.dev_env.acados
     - role: autoware.dev_env.geographiclib
     - role: autoware.dev_env.cuda
       when: prompt_install_nvidia == 'y'

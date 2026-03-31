@@ -1,0 +1,5 @@
+acados_version: v0.5.3
+acados_tera_renderer_version: v0.2.0
+acados_pip_packages:
+  - casadi
+  - sympy

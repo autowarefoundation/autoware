@@ -7,7 +7,7 @@ ARG ROS_DISTRO=humble
 FROM $AUTOWARE_BASE_IMAGE AS rosdep-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-COPY setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env amd64_jazzy.env arm64.env /autoware/
+COPY setup-dev-env.sh ansible-galaxy-requirements.yaml /autoware/
 COPY ansible/ /autoware/ansible/
 COPY docker/scripts/cleanup_apt.sh /autoware/cleanup_apt.sh
 RUN chmod +x /autoware/cleanup_apt.sh
@@ -192,6 +192,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ENV CCACHE_DIR="/root/.ccache"
 
+ENV CMAKE_PREFIX_PATH="/opt/acados:${CMAKE_PREFIX_PATH}"
+ENV ACADOS_SOURCE_DIR="/opt/acados"
+ENV LD_LIBRARY_PATH="/opt/acados/lib:${LD_LIBRARY_PATH}"
+
 COPY docker/scripts/build_and_clean.sh /autoware/build_and_clean.sh
 RUN chmod +x /autoware/build_and_clean.sh
 
@@ -270,7 +274,6 @@ RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/universe/external/muSSP,target=/autoware/src/universe/external/muSSP \
   --mount=type=bind,source=src/universe/external/pointcloud_to_laserscan,target=/autoware/src/universe/external/pointcloud_to_laserscan \
   --mount=type=bind,source=src/universe/external/rtklib_ros_bridge,target=/autoware/src/universe/external/rtklib_ros_bridge \
-  --mount=type=bind,source=src/universe/external/tier4_ad_api_adaptor,target=/autoware/src/universe/external/tier4_ad_api_adaptor \
   --mount=type=bind,source=src/universe/external/tier4_autoware_msgs,target=/autoware/src/universe/external/tier4_autoware_msgs \
   --mount=type=bind,source=src/middleware/external,target=/autoware/src/middleware/external \
   --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \

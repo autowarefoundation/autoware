@@ -19,6 +19,18 @@ jobs:
             cache_threshold_gb: 7.0
           - image_tag: arm64-main
             cache_threshold_gb: 9.0
+          - image_tag: amd64-cuda-main
+            cache_threshold_gb: 7.0
+          - image_tag: arm64-cuda-main
+            cache_threshold_gb: 9.0
+          - image_tag: amd64-jazzy-main
+            cache_threshold_gb: 7.0
+          - image_tag: arm64-jazzy-main
+            cache_threshold_gb: 9.0
+          - image_tag: amd64-jazzy-cuda-main
+            cache_threshold_gb: 7.0
+          - image_tag: arm64-jazzy-cuda-main
+            cache_threshold_gb: 9.0
 
     env:
       IMAGE_NAME: autoware-buildcache

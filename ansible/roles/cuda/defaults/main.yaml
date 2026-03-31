@@ -1,1 +1,2 @@
 cuda_install_drivers: true
+cuda_version: "12.8"

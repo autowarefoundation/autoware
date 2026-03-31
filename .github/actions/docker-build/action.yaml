@@ -15,6 +15,14 @@ inputs:
   build-args:
     description: Additional build args.
     required: false
+  image-artifact-name:
+    description: Name of the exported docker image artifact.
+    default: ""
+    required: false
+  image-tag:
+    description: Tag for the saved docker image.
+    default: autoware:health-check-${{ github.sha }}
+    required: false
 
 runs:
   using: composite
@@ -87,6 +95,13 @@ runs:
           apt-get-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           apt-get-${{ inputs.platform }}-
 
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ github.token }}
+
     - name: Inject cache into docker
       # TODO(youtalk): Use the release version again
       uses: reproducible-containers/buildkit-cache-dance@7c892679bab8ff382a8c88ab7f973d5e30a8f239
@@ -99,18 +114,25 @@ runs:
           }
         skip-extraction: ${{ steps.cache-ccache.outputs.cache-hit && steps.cache-apt-get.outputs.cache-hit }}
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ github.token }}
-
     - name: Run docker build
       uses: docker/build-push-action@v6
       with:
         file: docker/Dockerfile
         context: .
         push: false
+        load: true
+        target: universe-devel
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.platform }}-main
+        tags: ${{ inputs.image-tag }}
+
+    - name: Save Docker image
+      if: ${{ inputs.image-artifact-name != '' }}
+      run: docker save ${{ inputs.image-tag }} | gzip > /tmp/autoware-image.tar.gz
+      shell: bash
+    - name: Upload Docker image artifact
+      if: ${{ inputs.image-artifact-name != '' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.image-artifact-name }}
+        path: /tmp/autoware-image.tar.gz
