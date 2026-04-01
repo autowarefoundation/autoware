@@ -441,7 +441,7 @@
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_1.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_1.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_classifier_mobilenetv2_batch_1.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_1.onnx"
     mode: "644"
     checksum: sha256:455b71b3b20d3a96aa0e49f32714ba50421f668a2f9b9907c30b1346ac8a3703
@@ -449,7 +449,7 @@
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_4.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_4.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_classifier_mobilenetv2_batch_4.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_4.onnx"
     mode: "644"
     checksum: sha256:41bb79a23a4ac57956adb8e9cb3904420db1b0cd032e97b670cc4f8b174ae3fe
@@ -457,39 +457,15 @@
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_6.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_classifier_mobilenetv2_batch_6.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx"
     mode: "644"
     checksum: sha256:e4792eed6a46fdbd02be2f3a4f1ce91f36fa77698493caf3102e445178c0f058
 
-- name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_1.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_1.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_1.onnx"
-    mode: "644"
-    checksum: sha256:55ebb0d117a5e8943f8d1c6769f1d856b533079d4d871d8e923255cc992ad48a
-
-- name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_4.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_4.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_4.onnx"
-    mode: "644"
-    checksum: sha256:684e29843e3128eadb774018730644b3ab9b0a06dc4cdaeed579c2f3fa5d5265
-
-- name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_6.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_6.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_6.onnx"
-    mode: "644"
-    checksum: sha256:44d94540fa8b89dfb39cd9a8523cf010ddfb10ea2f1f9b53bf3618ce7f4912ad
-
 - name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx"
     mode: "644"
     checksum: sha256:b52632fee96d1bc99922e743335ebfd49d6a0645c8a04e615f156e38661add24
@@ -497,7 +473,7 @@
 - name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx"
     mode: "644"
     checksum: sha256:ef0a3052857cdc6f380da524560548b40e9e46f876cccf3cd0cb40ccddae9892
@@ -505,7 +481,7 @@
 - name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx"
     mode: "644"
     checksum: sha256:b56700551254afa985916d03b74372ebc675f2d9b76ee0e39c46e88c37744a4f
@@ -513,7 +489,7 @@
 - name: Download traffic_light_classifier/lamp_labels.txt
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/lamp_labels.txt
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/lamp_labels.txt
     dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels.txt"
     mode: "644"
     checksum: sha256:1a5a49eeec5593963eab8d70f48b8a01bfb07e753e9688eb1510ad26e803579d
@@ -521,10 +497,19 @@
 - name: Download traffic_light_classifier/lamp_labels_ped.txt
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/lamp_labels_ped.txt
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/lamp_labels_ped.txt
     dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels_ped.txt"
     mode: "644"
     checksum: sha256:5427e1b7c2e33acd9565ede29e77992c38137bcf7d7074c73ebbc38080c6bcac
+
+# cspell: ignore comlops
+- name: Download traffic_light_classifier/traffic_light_lamp_recognizer_comlops.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_lamp_recognizer_comlops.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_lamp_recognizer_comlops.onnx"
+    mode: "644"
+    checksum: sha256:300af04a5893961195a9b7ffd9d80364280f328a6dc549f9b1e05d428d96d2e5
 
 # diffusion_planner
 - name: Create diffusion_planner directory inside {{ data_dir }}
