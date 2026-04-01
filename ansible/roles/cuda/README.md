@@ -35,7 +35,8 @@ Follow these instructions to download and install the CUDA Toolkit.
 From: <https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#network-repo-installation-for-ubuntu>
 
 ```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
+# From the Autoware repository root:
+cuda_version=$(sed -n 's/^cuda_version: *"\(.*\)"/\1/p' ansible/roles/cuda/defaults/main.yaml)
 
 os=ubuntu2204
 arch_dir=$(
