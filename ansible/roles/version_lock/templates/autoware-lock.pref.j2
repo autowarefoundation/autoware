@@ -1,0 +1,8 @@
+{% for pkg, ver in locked_packages.items() %}
+{% if ver is not none and ver|string %}
+Package: {{ pkg }}
+Pin: version {{ ver }}
+Pin-Priority: 1001
+
+{% endif %}
+{% endfor %}

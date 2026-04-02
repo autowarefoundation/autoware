@@ -1,0 +1,39 @@
+# Dependency Version Lockfile
+# ROS Distro: humble
+# Platform: arm64
+#
+# Versions are empty by default.
+# Run `ROS_DISTRO=humble ./ansible/scripts/generate_ansible_lockfile.sh` to fill in versions.
+
+ccache:
+containerd.io:
+docker-ce:
+docker-ce-cli:
+docker-compose-plugin:
+gdown:
+geographiclib-tools:
+git-lfs:
+golang:
+pipx:
+python3-bloom:
+python3-colcon-common-extensions:
+python3-colcon-mixin:
+python3-flake8-blind-except:
+python3-flake8-builtins:
+python3-flake8-class-newline:
+python3-flake8-comprehensions:
+python3-flake8-deprecated:
+python3-flake8-docstrings:
+python3-flake8-import-order:
+python3-flake8-quotes:
+python3-pip:
+python3-pytest-cov:
+python3-pytest-repeat:
+python3-pytest-rerunfailures:
+python3-rosdep:
+python3-vcs2l:
+ros-build-essential:
+ros-humble-desktop:
+ros-humble-plotjuggler:
+ros-humble-rmw-cyclonedds-cpp:
+wget:

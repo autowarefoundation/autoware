@@ -3,9 +3,10 @@
   ansible.builtin.apt:
     name: pipx
     state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
 
 - name: Install gdown to download files from CMakeLists.txt
   community.general.pipx:
-    name: gdown
+    name: "{{ 'gdown==' ~ locked_packages['gdown'] if use_locked_versions | default(false) | bool else 'gdown' }}"
     executable: /usr/bin/pipx
