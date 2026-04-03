@@ -11,7 +11,7 @@
     - name: Print args
       ansible.builtin.debug:
         msg:
-          - cuda_version: "{{ cuda_version }}"
+          - cuda_version: "{{ cuda_version | default('(role default)') }}"
     - name: Show a warning if the NVIDIA libraries will not be installed
       ansible.builtin.pause:
         seconds: 10

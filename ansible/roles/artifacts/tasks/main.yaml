@@ -441,7 +441,7 @@
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_1.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_1.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_classifier_mobilenetv2_batch_1.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_1.onnx"
     mode: "644"
     checksum: sha256:455b71b3b20d3a96aa0e49f32714ba50421f668a2f9b9907c30b1346ac8a3703
@@ -449,7 +449,7 @@
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_4.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_4.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_classifier_mobilenetv2_batch_4.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_4.onnx"
     mode: "644"
     checksum: sha256:41bb79a23a4ac57956adb8e9cb3904420db1b0cd032e97b670cc4f8b174ae3fe
@@ -457,39 +457,15 @@
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_6.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_classifier_mobilenetv2_batch_6.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx"
     mode: "644"
     checksum: sha256:e4792eed6a46fdbd02be2f3a4f1ce91f36fa77698493caf3102e445178c0f058
 
-- name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_1.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_1.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_1.onnx"
-    mode: "644"
-    checksum: sha256:55ebb0d117a5e8943f8d1c6769f1d856b533079d4d871d8e923255cc992ad48a
-
-- name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_4.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_4.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_4.onnx"
-    mode: "644"
-    checksum: sha256:684e29843e3128eadb774018730644b3ab9b0a06dc4cdaeed579c2f3fa5d5265
-
-- name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_6.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_6.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_6.onnx"
-    mode: "644"
-    checksum: sha256:44d94540fa8b89dfb39cd9a8523cf010ddfb10ea2f1f9b53bf3618ce7f4912ad
-
 - name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx"
     mode: "644"
     checksum: sha256:b52632fee96d1bc99922e743335ebfd49d6a0645c8a04e615f156e38661add24
@@ -497,7 +473,7 @@
 - name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx"
     mode: "644"
     checksum: sha256:ef0a3052857cdc6f380da524560548b40e9e46f876cccf3cd0cb40ccddae9892
@@ -505,7 +481,7 @@
 - name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx"
     mode: "644"
     checksum: sha256:b56700551254afa985916d03b74372ebc675f2d9b76ee0e39c46e88c37744a4f
@@ -513,7 +489,7 @@
 - name: Download traffic_light_classifier/lamp_labels.txt
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/lamp_labels.txt
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/lamp_labels.txt
     dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels.txt"
     mode: "644"
     checksum: sha256:1a5a49eeec5593963eab8d70f48b8a01bfb07e753e9688eb1510ad26e803579d
@@ -521,10 +497,19 @@
 - name: Download traffic_light_classifier/lamp_labels_ped.txt
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v3/lamp_labels_ped.txt
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/lamp_labels_ped.txt
     dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels_ped.txt"
     mode: "644"
     checksum: sha256:5427e1b7c2e33acd9565ede29e77992c38137bcf7d7074c73ebbc38080c6bcac
+
+# cspell: ignore comlops
+- name: Download traffic_light_classifier/traffic_light_lamp_recognizer_comlops.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_lamp_recognizer_comlops.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_lamp_recognizer_comlops.onnx"
+    mode: "644"
+    checksum: sha256:300af04a5893961195a9b7ffd9d80364280f328a6dc549f9b1e05d428d96d2e5
 
 # diffusion_planner
 - name: Create diffusion_planner directory inside {{ data_dir }}
@@ -532,28 +517,6 @@
     path: "{{ data_dir }}/diffusion_planner"
     mode: "755"
     state: directory
-
-- name: Create diffusion_planner v2.0 directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/diffusion_planner/v2.0"
-    mode: "755"
-    state: directory
-
-- name: Download diffusion_planner/v2.0/diffusion_planner.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v2.0/diffusion_planner.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v2.0/diffusion_planner.onnx"
-    mode: "644"
-    checksum: sha256:622c2c2f21115900c712f80b58560b5a6425be5f70d5aa82a96ef0b13af8c24b
-
-- name: Download diffusion_planner/v2.0/diffusion_planner.param.json
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v2.0/diffusion_planner.param.json
-    dest: "{{ data_dir }}/diffusion_planner/v2.0/diffusion_planner.param.json"
-    mode: "644"
-    checksum: sha256:bf41f12d85b31e363acf84f46d6a9e4e28da6c2ccce0e3fcf91ee4910f4b8453
 
 - name: Create diffusion_planner v3.0 directory inside {{ data_dir }}
   ansible.builtin.file:
@@ -599,6 +562,28 @@
     dest: "{{ data_dir }}/diffusion_planner/v3.1/diffusion_planner.param.json"
     mode: "644"
     checksum: sha256:d726ce7b257ddaf39da8a7dfbd016512e866843c26a9622fdec8a59b45da3e04
+
+- name: Create diffusion_planner v4.0 directory inside {{ data_dir }}
+  ansible.builtin.file:
+    path: "{{ data_dir }}/diffusion_planner/v4.0"
+    mode: "755"
+    state: directory
+
+- name: Download diffusion_planner/v4.0/diffusion_planner.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v4.0/diffusion_planner.onnx
+    dest: "{{ data_dir }}/diffusion_planner/v4.0/diffusion_planner.onnx"
+    mode: "644"
+    checksum: sha256:6fd21662a655e7c262ffa465fc0d93b51d8a7fe1b56f95c6abd110f6cfa15ffd
+
+- name: Download diffusion_planner/v4.0/diffusion_planner.param.json
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v4.0/diffusion_planner.param.json
+    dest: "{{ data_dir }}/diffusion_planner/v4.0/diffusion_planner.param.json"
+    mode: "644"
+    checksum: sha256:d74dfe1b960c67c5e0a7ea5c62f691ade2614aa92062b8f86dd9b0860e81d323
 
 # tensorrt_vad
 - name: Create tensorrt_vad directory inside {{ data_dir }}
@@ -709,18 +694,18 @@
 - name: Download ptv3/ptv3.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v1/ptv3.onnx
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v2/ptv3.onnx
     dest: "{{ data_dir }}/ptv3/ptv3.onnx"
     mode: "644"
-    checksum: sha256:b5d8f7f038599de46e66148d46182600155820c6f6f2fd37e787461f97d143ff
+    checksum: sha256:a2c28b9bc4d52ab4847757f69e4ab716128aeafc0024c221eb106dccf2f2495a
 
 - name: Download ptv3/ml_package_ptv3.param.yaml
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v1/ml_package_ptv3.param.yaml
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v2/ml_package_ptv3.param.yaml
     dest: "{{ data_dir }}/ptv3/ml_package_ptv3.param.yaml"
     mode: "644"
-    checksum: sha256:9a3e35648d6eb46771b208a6534a2dcb19d26efca20a9d8df5abc05a9970d0ec
+    checksum: sha256:ccb620aa8a11528b5b9a9b42c496fd6fe4438fceb8a9fc09c151feedc7bc4fdd
 
 # frnet
 - name: Create lidar_frnet directory inside {{ data_dir }}
@@ -729,21 +714,37 @@
     mode: "755"
     state: directory
 
-- name: Download lidar_frnet/frnet.onnx
+- name: Download lidar_frnet/frnet_ot128.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/frnet/v1/frnet.onnx
-    dest: "{{ data_dir }}/lidar_frnet/frnet.onnx"
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/frnet_ot128.onnx
+    dest: "{{ data_dir }}/lidar_frnet/frnet_ot128.onnx"
     mode: "644"
-    checksum: sha256:acaaf0190e9dbf67e4987542fc57bcec4102a842a40ee24a9dc8fa1948bedf04
+    checksum: sha256:d29bf5950432360d800c22ff86a590d4d9d006acc501563ac611cfa33747c11f
 
-- name: Download lidar_frnet/ml_package_frnet.param.yaml
+- name: Download lidar_frnet/frnet_qt128.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/frnet/v1/ml_package_frnet.param.yaml
-    dest: "{{ data_dir }}/lidar_frnet/ml_package_frnet.param.yaml"
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/frnet_qt128.onnx
+    dest: "{{ data_dir }}/lidar_frnet/frnet_qt128.onnx"
     mode: "644"
-    checksum: sha256:34577cc7902acd942a51f401bdcf560da91c3c80df8d553bfdc775f118b499b8
+    checksum: sha256:647af92790e3d591a19d065fe94d3ded797916ac9ffe5bf96b5e8b8324b31ad2
+
+- name: Download lidar_frnet/ml_package_frnet_ot128.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/ml_package_frnet_ot128.param.yaml
+    dest: "{{ data_dir }}/lidar_frnet/ml_package_frnet_ot128.param.yaml"
+    mode: "644"
+    checksum: sha256:96de220d55a3895131775dba9177e7b8286ea751f5a7cfc20f11e26933fc4575
+
+- name: Download lidar_frnet/ml_package_frnet_qt128.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/ml_package_frnet_qt128.param.yaml
+    dest: "{{ data_dir }}/lidar_frnet/ml_package_frnet_qt128.param.yaml"
+    mode: "644"
+    checksum: sha256:dcbe9cc2821fa94097ae58cab53a1511a3e974d0662f94389657e666e9a61af6
 
 # calibration_status_classifier
 - name: Create calibration_status_classifier directory inside {{ data_dir }}
