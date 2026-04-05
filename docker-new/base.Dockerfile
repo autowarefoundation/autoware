@@ -5,7 +5,6 @@ FROM ros:${ROS_DISTRO}-ros-base AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG ROS_DISTRO
-ARG RMW_IMPLEMENTATION
 ARG USERNAME=aw
 
 RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
@@ -45,8 +44,7 @@ WORKDIR /tmp/ansible
 RUN ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
     ansible-playbook autoware.dev_env.autoware_requirements \
       --tags rmw \
-      -e rosdistro=${ROS_DISTRO} \
-      -e rmw_implementation=${RMW_IMPLEMENTATION}
+      -e rosdistro=${ROS_DISTRO}
 
 COPY docker-new/files/cyclonedds.xml /home/${USERNAME}/cyclonedds.xml
 ENV CYCLONEDDS_URI=file:///home/${USERNAME}/cyclonedds.xml

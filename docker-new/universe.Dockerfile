@@ -39,11 +39,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 FROM universe-dependencies AS universe-dependencies-cuda
 
-ARG CUDA_VERSION
-ARG TENSORRT_VERSION
-ARG SPCONV_VERSION
-ARG CUMM_VERSION
-
 COPY --chown=${USERNAME}:${USERNAME} ansible-galaxy-requirements.yaml /tmp/ansible/
 COPY --chown=${USERNAME}:${USERNAME} ansible/ /tmp/ansible/ansible/
 
@@ -52,12 +47,8 @@ RUN ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && 
     ansible-playbook autoware.dev_env.autoware_requirements \
       --tags nvidia \
       -e "rosdistro=${ROS_DISTRO}" \
-      -e "cuda_version=${CUDA_VERSION}" \
-      -e "tensorrt_version=${TENSORRT_VERSION}" \
       -e install_devel=y \
-      -e cuda_install_drivers=false \
-      -e "spconv_version=${SPCONV_VERSION}" \
-      -e "cumm_version=${CUMM_VERSION}"
+      -e cuda_install_drivers=false
 WORKDIR /home/${USERNAME}
 RUN rm -rf /tmp/ansible
 
@@ -124,11 +115,6 @@ COPY --from=universe-devel /opt/autoware /opt/autoware
 
 FROM universe-runtime-dependencies AS universe-cuda
 
-ARG CUDA_VERSION
-ARG TENSORRT_VERSION
-ARG SPCONV_VERSION
-ARG CUMM_VERSION
-
 COPY --chown=${USERNAME}:${USERNAME} ansible-galaxy-requirements.yaml /tmp/ansible/
 COPY --chown=${USERNAME}:${USERNAME} ansible/ /tmp/ansible/ansible/
 
@@ -137,12 +123,8 @@ RUN ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && 
     ansible-playbook autoware.dev_env.autoware_requirements \
       --tags nvidia \
       -e "rosdistro=${ROS_DISTRO}" \
-      -e "cuda_version=${CUDA_VERSION}" \
-      -e "tensorrt_version=${TENSORRT_VERSION}" \
       -e install_devel=N \
-      -e cuda_install_drivers=false \
-      -e "spconv_version=${SPCONV_VERSION}" \
-      -e "cumm_version=${CUMM_VERSION}"
+      -e cuda_install_drivers=false
 WORKDIR /home/${USERNAME}
 RUN rm -rf /tmp/ansible
 

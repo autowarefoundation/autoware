@@ -3,33 +3,16 @@
   connection: local
   vars:
     rosdistro:
-    rmw_implementation:
-    cuda_version:
-    tensorrt_version:
-    install_devel:
-    cuda_install_drivers:
-    spconv_version:
-    cumm_version:
   pre_tasks:
     - name: Print configuration
       ansible.builtin.debug:
         msg:
           - rosdistro: "{{ rosdistro }}"
-          - rmw_implementation: "{{ rmw_implementation }}"
-          - cuda_version: "{{ cuda_version }}"
-          - tensorrt_version: "{{ tensorrt_version }}"
-          - install_devel: "{{ install_devel }}"
-          - cuda_install_drivers: "{{ cuda_install_drivers }}"
-          - spconv_version: "{{ spconv_version }}"
-          - cumm_version: "{{ cumm_version }}"
       tags: [always]
 
   roles:
     - role: autoware.dev_env.rmw_implementation
       tags: [base, core, universe, rmw]
-      vars:
-        rmw_implementation__rosdistro: "{{ rosdistro }}"
-        rmw_implementation__name: "{{ rmw_implementation }}"
 
     - role: autoware.dev_env.build_tools
       tags: [core, universe, ccache]

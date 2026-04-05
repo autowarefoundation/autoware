@@ -2,26 +2,6 @@ variable "ROS_DISTRO" {
   default = "jazzy"
 }
 
-variable "RMW_IMPLEMENTATION" {
-  default = "rmw_cyclonedds_cpp"
-}
-
-variable "CUDA_VERSION" {
-  default = "12.8"
-}
-
-variable "TENSORRT_VERSION" {
-  default = "10.8.0.43-1+cuda12.8"
-}
-
-variable "SPCONV_VERSION" {
-  default = "2.3.8"
-}
-
-variable "CUMM_VERSION" {
-  default = "0.5.3"
-}
-
 group "default" {
   targets = ["universe", "universe-cuda"]
 }
@@ -31,8 +11,7 @@ target "base" {
   target     = "base"
   tags       = ["autoware:base-${ROS_DISTRO}"]
   args = {
-    ROS_DISTRO         = ROS_DISTRO
-    RMW_IMPLEMENTATION = RMW_IMPLEMENTATION
+    ROS_DISTRO = ROS_DISTRO
   }
 }
 
@@ -97,10 +76,6 @@ target "universe-dependencies-cuda" {
   args = {
     CORE_DEVEL_IMAGE = "autoware-core-devel"
     CORE_IMAGE       = "autoware-core"
-    CUDA_VERSION     = CUDA_VERSION
-    TENSORRT_VERSION = TENSORRT_VERSION
-    SPCONV_VERSION   = SPCONV_VERSION
-    CUMM_VERSION     = CUMM_VERSION
   }
 }
 
@@ -115,10 +90,6 @@ target "universe-devel-cuda" {
   args = {
     CORE_DEVEL_IMAGE = "autoware-core-devel"
     CORE_IMAGE       = "autoware-core"
-    CUDA_VERSION     = CUDA_VERSION
-    TENSORRT_VERSION = TENSORRT_VERSION
-    SPCONV_VERSION   = SPCONV_VERSION
-    CUMM_VERSION     = CUMM_VERSION
   }
 }
 
@@ -175,9 +146,5 @@ target "universe-cuda" {
   args = {
     CORE_DEVEL_IMAGE = "autoware-core-devel"
     CORE_IMAGE       = "autoware-core"
-    CUDA_VERSION     = CUDA_VERSION
-    TENSORRT_VERSION = TENSORRT_VERSION
-    SPCONV_VERSION   = SPCONV_VERSION
-    CUMM_VERSION     = CUMM_VERSION
   }
 }
