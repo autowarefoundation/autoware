@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # check=skip=InvalidDefaultArgInFrom
 ARG BASE_IMAGE
 
@@ -13,7 +14,7 @@ ENV CC="/usr/lib/ccache/gcc"
 ENV CXX="/usr/lib/ccache/g++"
 ENV CCACHE_DIR="/home/aw/.ccache"
 
-COPY --chown=${USERNAME}:${USERNAME} src/core/ /tmp/autoware/src/core/
+COPY --parents --chown=${USERNAME}:${USERNAME} src/core/**/package.xml /tmp/autoware/
 RUN rm -rf /tmp/autoware/src/core/autoware_core /tmp/autoware/src/core/autoware_rviz_plugins
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -29,6 +30,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       --dependency-types=buildtool_export \
       --dependency-types=test
 
+COPY --chown=${USERNAME}:${USERNAME} src/core/ /tmp/autoware/src/core/
+RUN rm -rf /tmp/autoware/src/core/autoware_core /tmp/autoware/src/core/autoware_rviz_plugins
+
 RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000 \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     colcon build \
@@ -39,8 +43,10 @@ RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000 \
 
 FROM core-dependencies AS core-devel
 
-COPY --chown=${USERNAME}:${USERNAME} src/core/autoware_core /tmp/autoware/src/core/autoware_core
-COPY --chown=${USERNAME}:${USERNAME} src/core/autoware_rviz_plugins /tmp/autoware/src/core/autoware_rviz_plugins
+COPY --parents --chown=${USERNAME}:${USERNAME} \
+    src/core/autoware_core/**/package.xml \
+    src/core/autoware_rviz_plugins/**/package.xml \
+    /tmp/autoware/
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
@@ -55,6 +61,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       --dependency-types=buildtool \
       --dependency-types=buildtool_export \
       --dependency-types=test
+
+COPY --chown=${USERNAME}:${USERNAME} src/core/autoware_core /tmp/autoware/src/core/autoware_core
+COPY --chown=${USERNAME}:${USERNAME} src/core/autoware_rviz_plugins /tmp/autoware/src/core/autoware_rviz_plugins
 
 RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000 \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
@@ -71,7 +80,7 @@ ENV AUTOWARE_RUNTIME=1
 COPY --from=core-devel /opt/autoware /opt/autoware
 RUN find /opt/autoware -name '*.so' -exec strip --strip-unneeded {} +
 
-COPY src/core/ /tmp/src/core/
+COPY --parents src/core/**/package.xml /tmp/
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \

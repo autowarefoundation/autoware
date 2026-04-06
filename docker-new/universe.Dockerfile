@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # check=skip=InvalidDefaultArgInFrom,UndefinedVar
 ARG CORE_DEVEL_IMAGE
 ARG CORE_IMAGE
@@ -14,7 +15,7 @@ ENV CMAKE_PREFIX_PATH="/opt/acados${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
 ENV ACADOS_SOURCE_DIR="/opt/acados"
 ENV LD_LIBRARY_PATH="/opt/acados/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
-COPY --chown=${USERNAME}:${USERNAME} src/ /tmp/autoware/src/
+COPY --parents --chown=${USERNAME}:${USERNAME} src/**/package.xml /tmp/autoware/
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
@@ -29,6 +30,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       --dependency-types=buildtool \
       --dependency-types=buildtool_export \
       --dependency-types=test
+
+COPY --chown=${USERNAME}:${USERNAME} src/ /tmp/autoware/src/
 
 FROM universe-dependencies AS universe-dependencies-cuda
 
@@ -75,7 +78,7 @@ ENV CMAKE_PREFIX_PATH="/opt/acados${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
 ENV ACADOS_SOURCE_DIR="/opt/acados"
 ENV LD_LIBRARY_PATH="/opt/acados/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
-COPY --chown=${USERNAME}:${USERNAME} src/ /tmp/src/
+COPY --parents --chown=${USERNAME}:${USERNAME} src/**/package.xml /tmp/
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
