@@ -51,10 +51,8 @@ target "core" {
   }
 }
 
-target "universe-dependencies" {
+target "_universe-base" {
   dockerfile = "docker-new/universe.Dockerfile"
-  target     = "universe-dependencies"
-  tags       = ["autoware:universe-dependencies-${ROS_DISTRO}"]
   contexts = {
     autoware-core-devel = "target:core-devel"
     autoware-core       = "target:core"
@@ -63,88 +61,46 @@ target "universe-dependencies" {
     CORE_DEVEL_IMAGE = "autoware-core-devel"
     CORE_IMAGE       = "autoware-core"
   }
+}
+
+target "universe-dependencies" {
+  inherits = ["_universe-base"]
+  target   = "universe-dependencies"
+  tags     = ["autoware:universe-dependencies-${ROS_DISTRO}"]
 }
 
 target "universe-dependencies-cuda" {
-  dockerfile = "docker-new/universe.Dockerfile"
-  target     = "universe-dependencies-cuda"
-  tags       = ["autoware:universe-dependencies-${ROS_DISTRO}-cuda"]
-  contexts = {
-    autoware-core-devel = "target:core-devel"
-    autoware-core       = "target:core"
-  }
-  args = {
-    CORE_DEVEL_IMAGE = "autoware-core-devel"
-    CORE_IMAGE       = "autoware-core"
-  }
+  inherits = ["_universe-base"]
+  target   = "universe-dependencies-cuda"
+  tags     = ["autoware:universe-dependencies-${ROS_DISTRO}-cuda"]
 }
 
 target "universe-devel-cuda" {
-  dockerfile = "docker-new/universe.Dockerfile"
-  target     = "universe-devel-cuda"
-  tags       = ["autoware:universe-devel-${ROS_DISTRO}-cuda"]
-  contexts = {
-    autoware-core-devel = "target:core-devel"
-    autoware-core       = "target:core"
-  }
-  args = {
-    CORE_DEVEL_IMAGE = "autoware-core-devel"
-    CORE_IMAGE       = "autoware-core"
-  }
+  inherits = ["_universe-base"]
+  target   = "universe-devel-cuda"
+  tags     = ["autoware:universe-devel-${ROS_DISTRO}-cuda"]
 }
 
 target "universe-devel" {
-  dockerfile = "docker-new/universe.Dockerfile"
-  target     = "universe-devel"
-  tags       = ["autoware:universe-devel-${ROS_DISTRO}"]
-  contexts = {
-    autoware-core-devel = "target:core-devel"
-    autoware-core       = "target:core"
-  }
-  args = {
-    CORE_DEVEL_IMAGE = "autoware-core-devel"
-    CORE_IMAGE       = "autoware-core"
-  }
+  inherits = ["_universe-base"]
+  target   = "universe-devel"
+  tags     = ["autoware:universe-devel-${ROS_DISTRO}"]
 }
 
 target "universe-runtime-dependencies" {
-  dockerfile = "docker-new/universe.Dockerfile"
-  target     = "universe-runtime-dependencies"
-  tags       = ["autoware:universe-runtime-dependencies-${ROS_DISTRO}"]
-  contexts = {
-    autoware-core-devel = "target:core-devel"
-    autoware-core       = "target:core"
-  }
-  args = {
-    CORE_DEVEL_IMAGE = "autoware-core-devel"
-    CORE_IMAGE       = "autoware-core"
-  }
+  inherits = ["_universe-base"]
+  target   = "universe-runtime-dependencies"
+  tags     = ["autoware:universe-runtime-dependencies-${ROS_DISTRO}"]
 }
 
 target "universe" {
-  dockerfile = "docker-new/universe.Dockerfile"
-  target     = "universe"
-  tags       = ["autoware:universe-${ROS_DISTRO}"]
-  contexts = {
-    autoware-core-devel = "target:core-devel"
-    autoware-core       = "target:core"
-  }
-  args = {
-    CORE_DEVEL_IMAGE = "autoware-core-devel"
-    CORE_IMAGE       = "autoware-core"
-  }
+  inherits = ["_universe-base"]
+  target   = "universe"
+  tags     = ["autoware:universe-${ROS_DISTRO}"]
 }
 
 target "universe-cuda" {
-  dockerfile = "docker-new/universe.Dockerfile"
-  target     = "universe-cuda"
-  tags       = ["autoware:universe-${ROS_DISTRO}-cuda"]
-  contexts = {
-    autoware-core-devel = "target:core-devel"
-    autoware-core       = "target:core"
-  }
-  args = {
-    CORE_DEVEL_IMAGE = "autoware-core-devel"
-    CORE_IMAGE       = "autoware-core"
-  }
+  inherits = ["_universe-base"]
+  target   = "universe-cuda"
+  tags     = ["autoware:universe-${ROS_DISTRO}-cuda"]
 }
