@@ -46,7 +46,7 @@ ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 FROM universe-dependencies-cuda AS universe-devel-cuda
 
-RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000 \
+RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000,sharing=shared \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     . /opt/autoware/setup.sh && \
     colcon build \
@@ -57,7 +57,7 @@ RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000 \
 
 FROM universe-dependencies AS universe-devel
 
-RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000 \
+RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000,sharing=shared \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     . /opt/autoware/setup.sh && \
     colcon build \
