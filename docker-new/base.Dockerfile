@@ -18,9 +18,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     bash-completion \
     gosu
 
-RUN userdel -r ubuntu 2>/dev/null || true
-
-RUN useradd -m -s /bin/bash -U ${USERNAME} && \
+RUN userdel -r ubuntu 2>/dev/null || true && \
+    useradd -m -s /bin/bash -U ${USERNAME} && \
     echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >/etc/sudoers.d/90-user-nopasswd && \
     chmod 0440 /etc/sudoers.d/90-user-nopasswd && \
     sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /home/${USERNAME}/.bashrc
