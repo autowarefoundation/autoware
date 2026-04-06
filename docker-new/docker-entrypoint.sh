@@ -10,4 +10,9 @@ fi
 # shellcheck source=/dev/null
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
 
+if [ "${AUTOWARE_RUNTIME}" = "1" ] && [ -f /opt/autoware/setup.bash ]; then
+    # shellcheck source=/dev/null
+    source /opt/autoware/setup.bash
+fi
+
 exec gosu "${USERNAME}" "$@"

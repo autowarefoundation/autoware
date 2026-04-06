@@ -74,6 +74,7 @@ RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000 \
     rm -rf /tmp/autoware
 
 FROM ${BASE_IMAGE} AS core
+ENV AUTOWARE_RUNTIME=1
 
 COPY --from=core-devel /opt/autoware /opt/autoware
 
