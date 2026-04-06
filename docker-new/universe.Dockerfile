@@ -112,6 +112,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 FROM universe-runtime-dependencies AS universe
 
 COPY --from=universe-devel /opt/autoware /opt/autoware
+RUN find /opt/autoware -name '*.so' -exec strip --strip-unneeded {} +
 
 FROM universe-runtime-dependencies AS universe-cuda
 
@@ -132,3 +133,4 @@ ENV PATH="/usr/local/cuda/bin${PATH:+:$PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 COPY --from=universe-devel-cuda /opt/autoware /opt/autoware
+RUN find /opt/autoware -name '*.so' -exec strip --strip-unneeded {} +

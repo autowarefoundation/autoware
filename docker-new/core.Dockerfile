@@ -77,6 +77,7 @@ FROM ${BASE_IMAGE} AS core
 ENV AUTOWARE_RUNTIME=1
 
 COPY --from=core-devel /opt/autoware /opt/autoware
+RUN find /opt/autoware -name '*.so' -exec strip --strip-unneeded {} +
 
 COPY src/core/ /tmp/src/core/
 
