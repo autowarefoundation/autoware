@@ -5,12 +5,14 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE} AS core-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+USER ${USERNAME}
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     ansible-playbook autoware.dev_env.autoware_requirements \
       --tags core \
       --skip-tags base \
       -e "rosdistro=${ROS_DISTRO}"
+USER root
 
 ENV CC="/usr/lib/ccache/gcc"
 ENV CXX="/usr/lib/ccache/g++"

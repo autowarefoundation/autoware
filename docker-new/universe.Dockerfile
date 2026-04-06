@@ -6,12 +6,15 @@ ARG CORE_IMAGE
 FROM ${CORE_DEVEL_IMAGE} AS universe-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+USER ${USERNAME}
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    --mount=type=cache,target=/home/aw/.cache/pip,uid=1000,gid=1000 \
     ansible-playbook autoware.dev_env.autoware_requirements \
       --tags universe \
       --skip-tags core,nvidia,artifacts \
       -e "rosdistro=${ROS_DISTRO}"
+USER root
 
 ENV CMAKE_PREFIX_PATH="/opt/acados${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
 ENV ACADOS_SOURCE_DIR="/opt/acados"
@@ -73,12 +76,15 @@ RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000,sharing=shared 
 FROM ${CORE_IMAGE} AS universe-runtime-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+USER ${USERNAME}
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    --mount=type=cache,target=/home/aw/.cache/pip,uid=1000,gid=1000 \
     ansible-playbook autoware.dev_env.autoware_requirements \
       --tags universe \
       --skip-tags core,nvidia,artifacts \
       -e "rosdistro=${ROS_DISTRO}"
+USER root
 
 ENV CMAKE_PREFIX_PATH="/opt/acados${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
 ENV ACADOS_SOURCE_DIR="/opt/acados"
