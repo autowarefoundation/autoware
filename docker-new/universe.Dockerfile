@@ -5,17 +5,10 @@ ARG CORE_IMAGE
 FROM ${CORE_DEVEL_IMAGE} AS universe-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-COPY --chown=${USERNAME}:${USERNAME} ansible-galaxy-requirements.yaml /tmp/ansible/
-COPY --chown=${USERNAME}:${USERNAME} ansible/ /tmp/ansible/ansible/
-
-WORKDIR /tmp/ansible
-RUN ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
-    ansible-playbook autoware.dev_env.autoware_requirements \
+RUN ansible-playbook autoware.dev_env.autoware_requirements \
       --tags universe \
       --skip-tags core,nvidia,artifacts \
       -e "rosdistro=${ROS_DISTRO}"
-WORKDIR /home/${USERNAME}
-RUN rm -rf /tmp/ansible
 
 ENV CMAKE_PREFIX_PATH="/opt/acados${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
 ENV ACADOS_SOURCE_DIR="/opt/acados"
@@ -39,18 +32,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 FROM universe-dependencies AS universe-dependencies-cuda
 
-COPY --chown=${USERNAME}:${USERNAME} ansible-galaxy-requirements.yaml /tmp/ansible/
-COPY --chown=${USERNAME}:${USERNAME} ansible/ /tmp/ansible/ansible/
-
-WORKDIR /tmp/ansible
-RUN ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
-    ansible-playbook autoware.dev_env.autoware_requirements \
+RUN ansible-playbook autoware.dev_env.autoware_requirements \
       --tags nvidia \
       -e "rosdistro=${ROS_DISTRO}" \
       -e install_devel=y \
       -e cuda_install_drivers=false
-WORKDIR /home/${USERNAME}
-RUN rm -rf /tmp/ansible
 
 ENV PATH="/usr/local/cuda/bin${PATH:+:$PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
@@ -80,17 +66,10 @@ RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000 \
 FROM ${CORE_IMAGE} AS universe-runtime-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-COPY --chown=${USERNAME}:${USERNAME} ansible-galaxy-requirements.yaml /tmp/ansible/
-COPY --chown=${USERNAME}:${USERNAME} ansible/ /tmp/ansible/ansible/
-
-WORKDIR /tmp/ansible
-RUN ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
-    ansible-playbook autoware.dev_env.autoware_requirements \
+RUN ansible-playbook autoware.dev_env.autoware_requirements \
       --tags universe \
       --skip-tags core,nvidia,artifacts \
       -e "rosdistro=${ROS_DISTRO}"
-WORKDIR /home/${USERNAME}
-RUN rm -rf /tmp/ansible
 
 ENV CMAKE_PREFIX_PATH="/opt/acados${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
 ENV ACADOS_SOURCE_DIR="/opt/acados"
@@ -117,18 +96,11 @@ RUN pipx uninstall ansible
 
 FROM universe-runtime-dependencies AS universe-cuda
 
-COPY --chown=${USERNAME}:${USERNAME} ansible-galaxy-requirements.yaml /tmp/ansible/
-COPY --chown=${USERNAME}:${USERNAME} ansible/ /tmp/ansible/ansible/
-
-WORKDIR /tmp/ansible
-RUN ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
-    ansible-playbook autoware.dev_env.autoware_requirements \
+RUN ansible-playbook autoware.dev_env.autoware_requirements \
       --tags nvidia \
       -e "rosdistro=${ROS_DISTRO}" \
       -e install_devel=N \
       -e cuda_install_drivers=false
-WORKDIR /home/${USERNAME}
-RUN rm -rf /tmp/ansible
 
 ENV PATH="/usr/local/cuda/bin${PATH:+:$PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"

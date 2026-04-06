@@ -4,18 +4,10 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE} AS core-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-COPY --chown=${USERNAME}:${USERNAME} ansible-galaxy-requirements.yaml /tmp/ansible/
-COPY --chown=${USERNAME}:${USERNAME} ansible/ /tmp/ansible/ansible/
-
-WORKDIR /tmp/ansible
-RUN ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
-    ansible-playbook autoware.dev_env.autoware_requirements \
+RUN ansible-playbook autoware.dev_env.autoware_requirements \
       --tags core \
       --skip-tags base \
       -e "rosdistro=${ROS_DISTRO}"
-
-WORKDIR /home/${USERNAME}
-RUN rm -rf /tmp/ansible
 
 ENV CC="/usr/lib/ccache/gcc"
 ENV CXX="/usr/lib/ccache/g++"
