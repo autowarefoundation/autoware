@@ -37,6 +37,9 @@ RUN --mount=type=cache,target=/home/aw/.cache/pip,uid=1000,gid=1000 \
     python3 -m pipx ensurepath && \
     pipx install --include-deps --force "ansible==10.*"
 
+# Make ansible collections visible to all users (root runs ansible in downstream stages)
+ENV ANSIBLE_COLLECTIONS_PATH="/home/${USERNAME}/.ansible/collections"
+
 COPY --chown=${USERNAME}:${USERNAME} ansible-galaxy-requirements.yaml /tmp/ansible/
 COPY --chown=${USERNAME}:${USERNAME} ansible/ /tmp/ansible/ansible/
 
