@@ -5,7 +5,9 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE} AS core-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN ansible-playbook autoware.dev_env.autoware_requirements \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    ansible-playbook autoware.dev_env.autoware_requirements \
       --tags core \
       --skip-tags base \
       -e "rosdistro=${ROS_DISTRO}"

@@ -43,7 +43,9 @@ COPY --chown=${USERNAME}:${USERNAME} ansible-galaxy-requirements.yaml /tmp/ansib
 COPY --chown=${USERNAME}:${USERNAME} ansible/ /tmp/ansible/ansible/
 
 WORKDIR /tmp/ansible
-RUN ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
     ansible-playbook autoware.dev_env.autoware_requirements \
       --tags rmw \
       -e rosdistro=${ROS_DISTRO}

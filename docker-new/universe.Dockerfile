@@ -6,7 +6,9 @@ ARG CORE_IMAGE
 FROM ${CORE_DEVEL_IMAGE} AS universe-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN ansible-playbook autoware.dev_env.autoware_requirements \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    ansible-playbook autoware.dev_env.autoware_requirements \
       --tags universe \
       --skip-tags core,nvidia,artifacts \
       -e "rosdistro=${ROS_DISTRO}"
@@ -35,7 +37,9 @@ COPY --chown=${USERNAME}:${USERNAME} src/ /tmp/autoware/src/
 
 FROM universe-dependencies AS universe-dependencies-cuda
 
-RUN ansible-playbook autoware.dev_env.autoware_requirements \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    ansible-playbook autoware.dev_env.autoware_requirements \
       --tags nvidia \
       -e "rosdistro=${ROS_DISTRO}" \
       -e install_devel=y \
@@ -69,7 +73,9 @@ RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000,sharing=shared 
 FROM ${CORE_IMAGE} AS universe-runtime-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN ansible-playbook autoware.dev_env.autoware_requirements \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    ansible-playbook autoware.dev_env.autoware_requirements \
       --tags universe \
       --skip-tags core,nvidia,artifacts \
       -e "rosdistro=${ROS_DISTRO}"
@@ -102,7 +108,9 @@ USER root
 
 FROM universe-runtime-dependencies AS universe-cuda
 
-RUN ansible-playbook autoware.dev_env.autoware_requirements \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    ansible-playbook autoware.dev_env.autoware_requirements \
       --tags nvidia \
       -e "rosdistro=${ROS_DISTRO}" \
       -e install_devel=N \
