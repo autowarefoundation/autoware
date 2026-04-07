@@ -30,11 +30,24 @@ jobs:
             .github/workflows/docker-build-new.yaml
             .github/workflows/docker-build-and-push-new.yaml
 
-  build-base:
+  build-base-humble:
     needs: changed-files
     if: needs.changed-files.outputs.should-build == 'true'
     uses: ./.github/workflows/docker-build-new.yaml
     with:
       bake-group: ci-base
+      ros-distro: humble
+      target-image: autoware-new
+      target-tags: base-humble
+      free-disk-space: false
+
+  build-base-jazzy:
+    needs: changed-files
+    if: needs.changed-files.outputs.should-build == 'true'
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-base
+      ros-distro: jazzy
       target-image: autoware-new
       target-tags: base-jazzy
+      free-disk-space: false
