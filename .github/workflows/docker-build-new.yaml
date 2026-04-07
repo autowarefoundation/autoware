@@ -129,7 +129,7 @@ jobs:
 
   manifest:
     needs: build
-    if: needs.build.result == 'success' && !(github.event_name == 'workflow_dispatch' && github.ref_name != 'main')
+    if: needs.build.result == 'success'
     runs-on: ubuntu-24.04
     steps:
       - name: Login to GitHub Container Registry
@@ -142,11 +142,14 @@ jobs:
       - name: Create multi-arch manifests
         env:
           IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+          REF_SUFFIX: ${{ github.event_name == 'workflow_dispatch' && github.ref_name != 'main' && format('-{0}', github.ref_name) || '' }}
         run: |
+          ref_suffix="${REF_SUFFIX//\//-}"
           for tag in ${{ inputs.target-tags }}; do
-            echo "Creating manifest: ${tag}"
-            docker manifest create "${IMAGE}:${tag}" \
-              "${IMAGE}:${tag}-amd64" \
-              "${IMAGE}:${tag}-arm64"
-            docker manifest push "${IMAGE}:${tag}"
+            manifest_tag="${tag}${ref_suffix}"
+            echo "Creating manifest: ${manifest_tag}"
+            docker manifest create "${IMAGE}:${manifest_tag}" \
+              "${IMAGE}:${manifest_tag}-amd64" \
+              "${IMAGE}:${manifest_tag}-arm64"
+            docker manifest push "${IMAGE}:${manifest_tag}"
           done
