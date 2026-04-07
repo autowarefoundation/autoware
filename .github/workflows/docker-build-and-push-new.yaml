@@ -61,6 +61,7 @@ jobs:
       target-image: autoware-new
       target-tags: core-dependencies-humble core-devel-humble core-humble
       needs-source: true
+      free-disk-space: false
 
   build-core-jazzy:
     needs: build-base-jazzy
@@ -71,3 +72,4 @@ jobs:
       target-image: autoware-new
       target-tags: core-dependencies-jazzy core-devel-jazzy core-jazzy
       needs-source: true
+      free-disk-space: false
