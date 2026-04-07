@@ -64,19 +64,19 @@ Tag pattern: `<stage>-<ros_distro>[-<date>|-<version>]`
 
 Available images (replace `jazzy` with `humble` for other distros):
 
-| Tag | Description |
-|---|---|
-| `base-jazzy` | ROS base + ansible + user aw |
-| `core-dependencies-jazzy` | Build deps + core packages (except autoware_core) |
-| `core-devel-jazzy` | Full core development image |
-| `core-jazzy` | Lightweight core runtime |
-| `universe-dependencies-jazzy` | Universe build dependencies |
-| `universe-dependencies-cuda-jazzy` | Universe + CUDA dev libs |
-| `universe-devel-jazzy` | Full universe development (no CUDA) |
-| `universe-devel-cuda-jazzy` | Full universe development with CUDA |
-| `universe-runtime-dependencies-jazzy` | Universe runtime dependencies |
-| `universe-jazzy` | Runtime without GPU |
-| `universe-cuda-jazzy` | Runtime with GPU |
+| Tag                                   | Description                                       |
+| ------------------------------------- | ------------------------------------------------- |
+| `base-jazzy`                          | ROS base + ansible + user aw                      |
+| `core-dependencies-jazzy`             | Build deps + core packages (except autoware_core) |
+| `core-devel-jazzy`                    | Full core development image                       |
+| `core-jazzy`                          | Lightweight core runtime                          |
+| `universe-dependencies-jazzy`         | Universe build dependencies                       |
+| `universe-dependencies-cuda-jazzy`    | Universe + CUDA dev libs                          |
+| `universe-devel-jazzy`                | Full universe development (no CUDA)               |
+| `universe-devel-cuda-jazzy`           | Full universe development with CUDA               |
+| `universe-runtime-dependencies-jazzy` | Universe runtime dependencies                     |
+| `universe-jazzy`                      | Runtime without GPU                               |
+| `universe-cuda-jazzy`                 | Runtime with GPU                                  |
 
 ## Build locally
 
