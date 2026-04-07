@@ -129,7 +129,7 @@ jobs:
 
   manifest:
     needs: build
-    if: needs.build.result == 'success'
+    if: needs.build.result == 'success' && !(github.event_name == 'workflow_dispatch' && github.ref_name != 'main')
     runs-on: ubuntu-24.04
     steps:
       - name: Login to GitHub Container Registry
