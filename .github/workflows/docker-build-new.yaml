@@ -106,6 +106,7 @@ jobs:
       - name: Build and push
         uses: docker/bake-action@v7
         env:
+          ROS_DISTRO: ${{ inputs.ros-distro }}
           REGISTRY: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
           PLATFORM: ${{ matrix.platform }}
           TAG_DATE: ${{ steps.date.outputs.date }}
