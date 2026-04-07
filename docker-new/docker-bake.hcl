@@ -2,14 +2,42 @@ variable "ROS_DISTRO" {
   default = "jazzy"
 }
 
+// CI variables: set via environment in GitHub Actions, empty for local builds
+variable "REGISTRY" {
+  default = ""
+}
+variable "PLATFORM" {
+  default = ""
+}
+variable "TAG_DATE" {
+  default = ""
+}
+variable "TAG_VERSION" {
+  default = ""
+}
+
+function "tags" {
+  params = [name]
+  result = compact(concat(
+    ["autoware:${name}-${ROS_DISTRO}"],
+    REGISTRY != "" ? ["${REGISTRY}:${name}-${ROS_DISTRO}-${PLATFORM}"] : [],
+    REGISTRY != "" && TAG_DATE != "" ? ["${REGISTRY}:${name}-${ROS_DISTRO}-${TAG_DATE}-${PLATFORM}"] : [],
+    REGISTRY != "" && TAG_VERSION != "" ? ["${REGISTRY}:${name}-${ROS_DISTRO}-${TAG_VERSION}-${PLATFORM}"] : [],
+  ))
+}
+
 group "default" {
   targets = ["universe", "universe-cuda"]
+}
+
+group "ci-base" {
+  targets = ["base"]
 }
 
 target "base" {
   dockerfile = "docker-new/base.Dockerfile"
   target     = "base"
-  tags       = ["autoware:base-${ROS_DISTRO}"]
+  tags       = tags("base")
   args = {
     ROS_DISTRO = ROS_DISTRO
   }
@@ -18,7 +46,7 @@ target "base" {
 target "core-dependencies" {
   dockerfile = "docker-new/core.Dockerfile"
   target     = "core-dependencies"
-  tags       = ["autoware:core-dependencies-${ROS_DISTRO}"]
+  tags       = tags("core-dependencies")
   contexts = {
     autoware-base = "target:base"
   }
@@ -30,7 +58,7 @@ target "core-dependencies" {
 target "core-devel" {
   dockerfile = "docker-new/core.Dockerfile"
   target     = "core-devel"
-  tags       = ["autoware:core-devel-${ROS_DISTRO}"]
+  tags       = tags("core-devel")
   contexts = {
     autoware-base = "target:base"
   }
@@ -42,7 +70,7 @@ target "core-devel" {
 target "core" {
   dockerfile = "docker-new/core.Dockerfile"
   target     = "core"
-  tags       = ["autoware:core-${ROS_DISTRO}"]
+  tags       = tags("core")
   contexts = {
     autoware-base = "target:base"
   }
@@ -66,41 +94,41 @@ target "_universe-base" {
 target "universe-dependencies" {
   inherits = ["_universe-base"]
   target   = "universe-dependencies"
-  tags     = ["autoware:universe-dependencies-${ROS_DISTRO}"]
+  tags     = tags("universe-dependencies")
 }
 
 target "universe-dependencies-cuda" {
   inherits = ["_universe-base"]
   target   = "universe-dependencies-cuda"
-  tags     = ["autoware:universe-dependencies-${ROS_DISTRO}-cuda"]
+  tags     = tags("universe-dependencies-cuda")
 }
 
 target "universe-devel-cuda" {
   inherits = ["_universe-base"]
   target   = "universe-devel-cuda"
-  tags     = ["autoware:universe-devel-${ROS_DISTRO}-cuda"]
+  tags     = tags("universe-devel-cuda")
 }
 
 target "universe-devel" {
   inherits = ["_universe-base"]
   target   = "universe-devel"
-  tags     = ["autoware:universe-devel-${ROS_DISTRO}"]
+  tags     = tags("universe-devel")
 }
 
 target "universe-runtime-dependencies" {
   inherits = ["_universe-base"]
   target   = "universe-runtime-dependencies"
-  tags     = ["autoware:universe-runtime-dependencies-${ROS_DISTRO}"]
+  tags     = tags("universe-runtime-dependencies")
 }
 
 target "universe" {
   inherits = ["_universe-base"]
   target   = "universe"
-  tags     = ["autoware:universe-${ROS_DISTRO}"]
+  tags     = tags("universe")
 }
 
 target "universe-cuda" {
   inherits = ["_universe-base"]
   target   = "universe-cuda"
-  tags     = ["autoware:universe-${ROS_DISTRO}-cuda"]
+  tags     = tags("universe-cuda")
 }

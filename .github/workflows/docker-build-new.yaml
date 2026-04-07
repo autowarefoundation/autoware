@@ -1,0 +1,139 @@
+name: docker-build-new-reusable
+
+on:
+  workflow_call:
+    inputs:
+      bake-group:
+        description: HCL group to build (e.g. ci-base, ci-core)
+        type: string
+        required: true
+      runner-amd64:
+        description: Runner for amd64 builds
+        type: string
+        default: ubuntu-24.04
+      runner-arm64:
+        description: Runner for arm64 builds
+        type: string
+        default: ubuntu-24.04-arm
+      ros-distro:
+        description: ROS distribution
+        type: string
+        default: jazzy
+      cache-key-prefix:
+        description: Extra prefix for cache key separation
+        type: string
+        default: ""
+      target-image:
+        description: Registry image name
+        type: string
+        default: autoware
+      target-tags:
+        description: Space-separated tag prefixes for multi-arch manifests (e.g. 'base-jazzy')
+        type: string
+        required: true
+      needs-source:
+        description: Whether to clone source repos via vcs import
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [amd64, arm64]
+        include:
+          - platform: amd64
+            arch-platform: linux/amd64
+          - platform: arm64
+            arch-platform: linux/arm64
+    runs-on: ${{ matrix.platform == 'amd64' && inputs.runner-amd64 || inputs.runner-arm64 }}
+    steps:
+      - name: Change permission of workspace
+        run: sudo chown -R $USER:$USER ${{ github.workspace }}
+
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Free disk space
+        if: runner.environment == 'github-hosted'
+        uses: ./.github/actions/free-disk-space
+
+      - name: Import source repos
+        if: inputs.needs-source
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install python3-vcs2l
+          mkdir -p src
+          vcs import --shallow src < repositories/autoware.repos
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 2
+          install: true
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - name: Set tag date
+        id: date
+        run: echo "date=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Set tag version
+        id: version
+        if: github.ref_type == 'tag'
+        run: echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/bake-action@v7
+        env:
+          REGISTRY: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+          PLATFORM: ${{ matrix.platform }}
+          TAG_DATE: ${{ steps.date.outputs.date }}
+          TAG_VERSION: ${{ steps.version.outputs.version }}
+        with:
+          push: true
+          targets: ${{ inputs.bake-group }}
+          files: docker-new/docker-bake.hcl
+          provenance: false
+          set: |
+            *.platform=${{ matrix.arch-platform }}
+            *.args.ROS_DISTRO=${{ inputs.ros-distro }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-${{ github.ref_name }},mode=max,ignore-error=true
+
+      - name: Show disk space
+        if: always()
+        run: df -h
+
+  manifest:
+    needs: build
+    if: needs.build.result == 'success'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - name: Create multi-arch manifests
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+        run: |
+          for tag in ${{ inputs.target-tags }}; do
+            echo "Creating manifest: ${tag}"
+            docker manifest create "${IMAGE}:${tag}" \
+              "${IMAGE}:${tag}-amd64" \
+              "${IMAGE}:${tag}-arm64"
+            docker manifest push "${IMAGE}:${tag}"
+          done

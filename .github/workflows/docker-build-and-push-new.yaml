@@ -1,0 +1,40 @@
+name: docker-build-and-push-new
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "*.*.*"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changed-files:
+    runs-on: ubuntu-24.04
+    outputs:
+      should-build: ${{ steps.check.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_type == 'tag') }}
+    steps:
+      - uses: actions/checkout@v6
+      - id: check
+        uses: step-security/changed-files@v47
+        with:
+          files: |
+            docker-new/**
+            ansible/**
+            ansible-galaxy-requirements.yaml
+            repositories/*.repos
+            .github/workflows/docker-build-new.yaml
+            .github/workflows/docker-build-and-push-new.yaml
+
+  build-base:
+    needs: changed-files
+    if: needs.changed-files.outputs.should-build == 'true'
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-base
+      target-image: autoware-new
+      target-tags: base-jazzy
