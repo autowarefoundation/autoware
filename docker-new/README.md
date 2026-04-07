@@ -44,7 +44,41 @@ graph TD
 | `universe`                      | Runtime image with compiled autoware (no CUDA)                 | Deployment without GPU                                     |
 | `universe-cuda`                 | Runtime image with compiled autoware + CUDA runtime libs       | Deployment with GPU                                        |
 
-## Build
+## Pull from GHCR
+
+Pre-built multi-arch images (amd64 + arm64) are available on GHCR:
+
+```bash
+# Pull a specific image
+docker pull ghcr.io/autowarefoundation/autoware-new:base-jazzy
+docker pull ghcr.io/autowarefoundation/autoware-new:base-humble
+
+# Pull a dated version (for pinning)
+docker pull ghcr.io/autowarefoundation/autoware-new:base-jazzy-20260407
+
+# Pull a release version
+docker pull ghcr.io/autowarefoundation/autoware-new:base-jazzy-1.2.3
+```
+
+Tag pattern: `<stage>-<ros_distro>[-<date>|-<version>]`
+
+Available images (replace `jazzy` with `humble` for other distros):
+
+| Tag | Description |
+|---|---|
+| `base-jazzy` | ROS base + ansible + user aw |
+| `core-dependencies-jazzy` | Build deps + core packages (except autoware_core) |
+| `core-devel-jazzy` | Full core development image |
+| `core-jazzy` | Lightweight core runtime |
+| `universe-dependencies-jazzy` | Universe build dependencies |
+| `universe-dependencies-cuda-jazzy` | Universe + CUDA dev libs |
+| `universe-devel-jazzy` | Full universe development (no CUDA) |
+| `universe-devel-cuda-jazzy` | Full universe development with CUDA |
+| `universe-runtime-dependencies-jazzy` | Universe runtime dependencies |
+| `universe-jazzy` | Runtime without GPU |
+| `universe-cuda-jazzy` | Runtime with GPU |
+
+## Build locally
 
 From the repository root:
 
@@ -53,19 +87,13 @@ From the repository root:
 docker buildx bake -f docker-new/docker-bake.hcl
 
 # Build a specific target (dependencies are resolved automatically)
-docker buildx bake -f docker-new/docker-bake.hcl core-dependencies
+docker buildx bake -f docker-new/docker-bake.hcl base
 docker buildx bake -f docker-new/docker-bake.hcl core-devel
-docker buildx bake -f docker-new/docker-bake.hcl universe-dependencies
-docker buildx bake -f docker-new/docker-bake.hcl universe-dependencies-cuda
-docker buildx bake -f docker-new/docker-bake.hcl universe-devel
-docker buildx bake -f docker-new/docker-bake.hcl universe-devel-cuda
-docker buildx bake -f docker-new/docker-bake.hcl core
-docker buildx bake -f docker-new/docker-bake.hcl universe-runtime-dependencies
 docker buildx bake -f docker-new/docker-bake.hcl universe
 docker buildx bake -f docker-new/docker-bake.hcl universe-cuda
 
-# Override variables
-docker buildx bake -f docker-new/docker-bake.hcl --set *.args.ROS_DISTRO=humble
+# Build for humble
+ROS_DISTRO=humble docker buildx bake -f docker-new/docker-bake.hcl base
 ```
 
 ## Usage
@@ -89,14 +117,23 @@ docker run --rm -it \
   -v $HOME/projects/autoware:/home/aw/autoware \
   -w /home/aw/autoware \
   --runtime=nvidia \
-  autoware:universe-jazzy-cuda \
+  ghcr.io/autowarefoundation/autoware-new:universe-cuda-jazzy \
   bash -c "source /opt/autoware/setup.bash && exec bash"
 ```
 
-Or run without volume mounting (the `autoware` folder is not present in the container):
+Or run without volume mounting:
 
 ```bash
 docker run --rm -it \
   --net host \
-  autoware:core-jazzy
+  ghcr.io/autowarefoundation/autoware-new:core-jazzy
+```
+
+For locally built images, replace the GHCR path with the local tag:
+
+```bash
+docker run --rm -it \
+  --net host \
+  autoware:universe-cuda-jazzy \
+  bash -c "source /opt/autoware/setup.bash && exec bash"
 ```
