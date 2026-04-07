@@ -1,0 +1,7 @@
+## PALTAの基本方針について
+基本的に安定版を使用したいので、extra-pkgとnightlyは使用しない方向で進めようと思っています。
+よくバージョンが更新されるuniverse,launchは凍結・開発用にforkしています。
+
+基本的にdev-paltaからbranchを切って開発を進めてください。
+
+※　基本的にrvizは更新しないようお願いします。codexやclaudeを使用する場合はagent.mdは共有しないでください。パラメータについてはautoware launchに必ずPRとその理由を記載してください。
