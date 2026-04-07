@@ -66,8 +66,7 @@ jobs:
       - name: Import source repos
         if: inputs.needs-source
         run: |
-          sudo apt-get -y update
-          sudo apt-get -y install python3-vcs2l
+          pipx install vcs2l
           mkdir -p src
           vcs import --shallow src < repositories/autoware.repos
 
