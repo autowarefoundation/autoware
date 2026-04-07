@@ -91,6 +91,11 @@ jobs:
         if: github.ref_type == 'tag'
         run: echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
 
+      - name: Set tag ref
+        id: ref
+        if: github.event_name == 'workflow_dispatch' && github.ref_name != 'main'
+        run: echo "ref=${GITHUB_REF_NAME//\//-}" >> "$GITHUB_OUTPUT"
+
       - name: Build and push
         uses: docker/bake-action@v7
         env:
@@ -98,6 +103,7 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
           TAG_DATE: ${{ steps.date.outputs.date }}
           TAG_VERSION: ${{ steps.version.outputs.version }}
+          TAG_REF: ${{ steps.ref.outputs.ref }}
         with:
           push: true
           targets: ${{ inputs.bake-group }}
