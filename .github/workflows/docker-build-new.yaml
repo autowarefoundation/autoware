@@ -77,7 +77,6 @@ jobs:
           buildkitd-config-inline: |
             [worker.oci]
               max-parallelism = 2
-          install: true
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4
@@ -85,6 +84,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
+
+      - name: Sanitize ref name
+        id: sanitize
+        run: echo "ref_name=${GITHUB_REF_NAME//\//-}" >> "$GITHUB_OUTPUT"
 
       - name: Set tag date
         id: date
@@ -116,9 +119,9 @@ jobs:
           set: |
             *.platform=${{ matrix.arch-platform }}
             *.args.ROS_DISTRO=${{ inputs.ros-distro }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-${{ github.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-${{ github.ref_name }},mode=max,ignore-error=true
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-${{ steps.sanitize.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: Show disk space
         if: always()
