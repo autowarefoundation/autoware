@@ -38,6 +38,10 @@ group "ci-base" {
   targets = ["base"]
 }
 
+group "ci-core" {
+  targets = ["core-dependencies", "core-devel", "core"]
+}
+
 target "base" {
   dockerfile = "docker-new/base.Dockerfile"
   target     = "base"

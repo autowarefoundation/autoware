@@ -51,3 +51,23 @@ jobs:
       target-image: autoware-new
       target-tags: base-jazzy
       free-disk-space: false
+
+  build-core-humble:
+    needs: build-base-humble
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-core
+      ros-distro: humble
+      target-image: autoware-new
+      target-tags: core-dependencies-humble core-devel-humble core-humble
+      needs-source: true
+
+  build-core-jazzy:
+    needs: build-base-jazzy
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-core
+      ros-distro: jazzy
+      target-image: autoware-new
+      target-tags: core-dependencies-jazzy core-devel-jazzy core-jazzy
+      needs-source: true
