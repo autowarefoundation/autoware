@@ -22,7 +22,7 @@ variable "TAG_REF" {
 function "tags" {
   params = [name]
   result = compact(concat(
-    ["autoware:${name}-${ROS_DISTRO}"],
+    REGISTRY == "" ? ["autoware:${name}-${ROS_DISTRO}"] : [],
     REGISTRY != "" && TAG_REF == "" ? ["${REGISTRY}:${name}-${ROS_DISTRO}-${PLATFORM}"] : [],
     REGISTRY != "" && TAG_DATE != "" && TAG_REF == "" ? ["${REGISTRY}:${name}-${ROS_DISTRO}-${TAG_DATE}-${PLATFORM}"] : [],
     REGISTRY != "" && TAG_VERSION != "" ? ["${REGISTRY}:${name}-${ROS_DISTRO}-${TAG_VERSION}-${PLATFORM}"] : [],
