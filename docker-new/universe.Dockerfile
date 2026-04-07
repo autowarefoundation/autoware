@@ -65,6 +65,7 @@ RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000,sharing=shared 
 FROM universe-dependencies AS universe-devel
 
 RUN --mount=type=cache,target=/home/aw/.ccache,uid=1000,gid=1000,sharing=shared \
+    CCACHE_READONLY=1 \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     . /opt/autoware/setup.sh && \
     colcon build \
