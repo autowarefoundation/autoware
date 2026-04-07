@@ -112,6 +112,7 @@ jobs:
           TAG_VERSION: ${{ steps.version.outputs.version }}
           TAG_REF: ${{ steps.ref.outputs.ref }}
         with:
+          source: .
           push: true
           targets: ${{ inputs.bake-group }}
           files: docker-new/docker-bake.hcl
