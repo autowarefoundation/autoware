@@ -19,6 +19,15 @@ variable "TAG_REF" {
   default = ""
 }
 
+// When true, cross-group context references pull pre-built images from the
+// registry instead of rebuilding via target:. Set in CI where each group
+// builds in a separate job and upstream images are already pushed.
+variable "USE_REGISTRY_CONTEXTS" {
+  default = false
+}
+
+// IMPORTANT: The first element must always be the plain name-distro-platform tag
+// because ctx() uses tags(name)[0] to construct docker-image:// references.
 function "tags" {
   params = [name]
   result = compact(concat(
@@ -28,6 +37,13 @@ function "tags" {
     REGISTRY != "" && TAG_VERSION != "" ? ["${REGISTRY}:${name}-${ROS_DISTRO}-${TAG_VERSION}-${PLATFORM}"] : [],
     REGISTRY != "" && TAG_REF != "" ? ["${REGISTRY}:${name}-${ROS_DISTRO}-${TAG_REF}-${PLATFORM}"] : [],
   ))
+}
+
+// Returns "docker-image://..." when USE_REGISTRY_CONTEXTS is true (CI),
+// or "target:..." when false (local builds).
+function "ctx" {
+  params = [name]
+  result = USE_REGISTRY_CONTEXTS ? "docker-image://${tags(name)[0]}" : "target:${name}"
 }
 
 group "default" {
@@ -65,7 +81,7 @@ target "core-dependencies" {
   target     = "core-dependencies"
   tags       = tags("core-dependencies")
   contexts = {
-    autoware-base = "target:base"
+    autoware-base = ctx("base")
   }
   args = {
     BASE_IMAGE = "autoware-base"
@@ -77,7 +93,7 @@ target "core-devel" {
   target     = "core-devel"
   tags       = tags("core-devel")
   contexts = {
-    autoware-base = "target:base"
+    autoware-base = ctx("base")
   }
   args = {
     BASE_IMAGE = "autoware-base"
@@ -89,7 +105,7 @@ target "core" {
   target     = "core"
   tags       = tags("core")
   contexts = {
-    autoware-base = "target:base"
+    autoware-base = ctx("base")
   }
   args = {
     BASE_IMAGE = "autoware-base"
@@ -99,8 +115,8 @@ target "core" {
 target "_universe-base" {
   dockerfile = "docker-new/universe.Dockerfile"
   contexts = {
-    autoware-core-devel = "target:core-devel"
-    autoware-core       = "target:core"
+    autoware-core-devel = ctx("core-devel")
+    autoware-core       = ctx("core")
   }
   args = {
     CORE_DEVEL_IMAGE = "autoware-core-devel"

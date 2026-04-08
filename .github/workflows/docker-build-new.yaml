@@ -35,7 +35,6 @@ on:
         description: Whether to free disk space before building
         type: boolean
         default: true
-
 jobs:
   build:
     strategy:
@@ -109,7 +108,8 @@ jobs:
       - name: "📋 Prepare build metadata"
         id: meta
         run: |
-          echo "ref_name=${GITHUB_REF_NAME//\//-}" >> "$GITHUB_OUTPUT"
+          ref_name="${GITHUB_REF_NAME//\//-}"
+          echo "ref_name=${ref_name}" >> "$GITHUB_OUTPUT"
           echo "date=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
 
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
@@ -117,7 +117,7 @@ jobs:
           fi
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.ref_name }}" != "main" ]]; then
-            echo "ref=${GITHUB_REF_NAME//\//-}" >> "$GITHUB_OUTPUT"
+            echo "ref=${ref_name}" >> "$GITHUB_OUTPUT"
           fi
 
           echo "::group::Build info"
@@ -137,6 +137,7 @@ jobs:
           TAG_DATE: ${{ steps.meta.outputs.date }}
           TAG_VERSION: ${{ steps.meta.outputs.version }}
           TAG_REF: ${{ steps.meta.outputs.ref }}
+          USE_REGISTRY_CONTEXTS: ${{ inputs.bake-group != 'ci-base' }}
         with:
           source: .
           push: true
@@ -147,7 +148,9 @@ jobs:
             *.platform=${{ matrix.arch-platform }}
             *.args.ROS_DISTRO=${{ inputs.ros-distro }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-main
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.platform }}-main
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: "📊 Build summary"
