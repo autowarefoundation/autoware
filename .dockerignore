@@ -12,7 +12,6 @@ docker
 !docker/scripts
 !docker/tools
 !docker/rhel-extra-deps.repos
-!docker/boost175_area_strategy_patch.hpp
 
 # Ignore a part of files under src
 src/**/.*
