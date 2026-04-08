@@ -10,7 +10,7 @@ This document describes how to build Autoware container images on AlmaLinux 9 (R
 | Package manager    | apt-get                              | dnf                                                  |
 | ROS 2 installation | Inherited from base image            | RHEL 9 binary tarball downloaded in `base` stage     |
 | System setup       | `setup-dev-env.sh` (Ansible)         | Direct `dnf install`                                 |
-| CUDA               | Supported (devel-cuda / cuda stages) | Not supported (COLCON_IGNOREd)                       |
+| CUDA               | Supported (devel-cuda / cuda stages) | Not supported (COLCON_IGNORE)                       |
 | Extra ROS packages | Inherited from base image            | `rhel-extra-deps.repos` (37 repos built from source) |
 
 ## Prerequisites
