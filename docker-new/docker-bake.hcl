@@ -42,6 +42,15 @@ group "ci-core" {
   targets = ["core-dependencies", "core-devel", "core"]
 }
 
+group "ci-universe" {
+  targets = ["universe-dependencies", "universe-devel",
+             "universe-runtime-dependencies", "universe"]
+}
+
+group "ci-universe-cuda" {
+  targets = ["universe-dependencies-cuda", "universe-devel-cuda", "universe-cuda"]
+}
+
 target "base" {
   dockerfile = "docker-new/base.Dockerfile"
   target     = "base"

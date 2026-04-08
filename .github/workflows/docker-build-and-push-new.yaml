@@ -73,3 +73,45 @@ jobs:
       target-tags: core-dependencies-jazzy core-devel-jazzy core-jazzy
       needs-source: true
       free-disk-space: false
+
+  build-universe-humble:
+    needs: build-core-humble
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-universe
+      ros-distro: humble
+      target-image: autoware-new
+      target-tags: universe-dependencies-humble universe-devel-humble universe-runtime-dependencies-humble universe-humble
+      needs-source: true
+
+  build-universe-jazzy:
+    needs: build-core-jazzy
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-universe
+      ros-distro: jazzy
+      target-image: autoware-new
+      target-tags: universe-dependencies-jazzy universe-devel-jazzy universe-runtime-dependencies-jazzy universe-jazzy
+      needs-source: true
+
+  build-universe-cuda-humble:
+    needs: build-core-humble
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-universe-cuda
+      ros-distro: humble
+      target-image: autoware-new
+      target-tags: universe-dependencies-cuda-humble universe-devel-cuda-humble universe-cuda-humble
+      needs-source: true
+      cache-key-prefix: cuda-
+
+  build-universe-cuda-jazzy:
+    needs: build-core-jazzy
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-universe-cuda
+      ros-distro: jazzy
+      target-image: autoware-new
+      target-tags: universe-dependencies-cuda-jazzy universe-devel-cuda-jazzy universe-cuda-jazzy
+      needs-source: true
+      cache-key-prefix: cuda-
