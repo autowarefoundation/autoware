@@ -27,10 +27,6 @@ on:
         description: Registry image name
         type: string
         default: autoware
-      target-tags:
-        description: Space-separated tag prefixes for multi-arch manifests (e.g. 'base-jazzy')
-        type: string
-        required: true
       needs-source:
         description: Whether to clone source repos via vcs import
         type: boolean
@@ -52,12 +48,25 @@ jobs:
           - platform: arm64
             arch-platform: linux/arm64
     runs-on: ${{ matrix.platform == 'amd64' && inputs.runner-amd64 || inputs.runner-arm64 }}
+    outputs:
+      target-tags: ${{ steps.compute-tags.outputs.tags }}
     steps:
       - name: Change permission of workspace
         run: sudo chown -R $USER:$USER ${{ github.workspace }}
 
       - name: Check out repository
         uses: actions/checkout@v6
+
+      - name: Compute manifest tags from HCL
+        id: compute-tags
+        run: |
+          targets=$(docker buildx bake -f docker-new/docker-bake.hcl --print ${{ inputs.bake-group }} 2>/dev/null \
+            | jq -r '.group."${{ inputs.bake-group }}".targets[]')
+          tags=""
+          for t in $targets; do
+            tags="${tags:+$tags }${t}-${{ inputs.ros-distro }}"
+          done
+          echo "tags=${tags}" >> "$GITHUB_OUTPUT"
 
       - name: Free disk space
         if: inputs.free-disk-space && runner.environment == 'github-hosted'
@@ -146,7 +155,7 @@ jobs:
           REF_SUFFIX: ${{ github.event_name == 'workflow_dispatch' && github.ref_name != 'main' && format('-{0}', github.ref_name) || '' }}
         run: |
           ref_suffix="${REF_SUFFIX//\//-}"
-          for tag in ${{ inputs.target-tags }}; do
+          for tag in ${{ needs.build.outputs.target-tags }}; do
             manifest_tag="${tag}${ref_suffix}"
             echo "Creating manifest: ${manifest_tag}"
             docker manifest create "${IMAGE}:${manifest_tag}" \

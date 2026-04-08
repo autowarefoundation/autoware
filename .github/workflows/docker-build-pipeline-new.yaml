@@ -19,7 +19,6 @@ jobs:
       bake-group: ci-base
       ros-distro: ${{ inputs.ros-distro }}
       target-image: ${{ inputs.target-image }}
-      target-tags: base-${{ inputs.ros-distro }}
       free-disk-space: false
 
   build-core:
@@ -29,7 +28,6 @@ jobs:
       bake-group: ci-core
       ros-distro: ${{ inputs.ros-distro }}
       target-image: ${{ inputs.target-image }}
-      target-tags: core-dependencies-${{ inputs.ros-distro }} core-devel-${{ inputs.ros-distro }} core-${{ inputs.ros-distro }}
       needs-source: true
       free-disk-space: false
 
@@ -40,7 +38,6 @@ jobs:
       bake-group: ci-universe
       ros-distro: ${{ inputs.ros-distro }}
       target-image: ${{ inputs.target-image }}
-      target-tags: universe-dependencies-${{ inputs.ros-distro }} universe-devel-${{ inputs.ros-distro }} universe-runtime-dependencies-${{ inputs.ros-distro }} universe-${{ inputs.ros-distro }}
       needs-source: true
 
   build-universe-cuda:
@@ -50,6 +47,5 @@ jobs:
       bake-group: ci-universe-cuda
       ros-distro: ${{ inputs.ros-distro }}
       target-image: ${{ inputs.target-image }}
-      target-tags: universe-dependencies-cuda-${{ inputs.ros-distro }} universe-devel-cuda-${{ inputs.ros-distro }} universe-cuda-${{ inputs.ros-distro }}
       needs-source: true
       cache-key-prefix: cuda-
