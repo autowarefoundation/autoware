@@ -1,3 +1,18 @@
+## build手順
+```
+cd path/to/PALTA_autoware
+vcs import src < repositories/autoware.repos
+
+# bashrcに追加することを推奨
+source /opt/ros/humble/setup.bash
+
+sudo apt update && sudo apt upgrade
+rosdep update
+rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO
+
+MAKEFLAGS="-j1" colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --parallel-workers 1
+
+```
 # Autoware - the world's leading open-source software project for autonomous driving
 
 ![Autoware_RViz](https://user-images.githubusercontent.com/63835446/158918717-58d6deaf-93fb-47f9-891d-e242b02cba7b.png)
