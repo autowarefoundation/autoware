@@ -1,0 +1,479 @@
+ARG ROS_DISTRO=jazzy
+
+# =============================================================================
+# Stage: base
+# AlmaLinux 9 + ROS 2 Jazzy binary + Autoware system dependencies
+# =============================================================================
+FROM almalinux:9 AS base
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
+# System setup
+RUN dnf install -y epel-release 'dnf-command(config-manager)' && \
+    dnf config-manager --set-enabled crb && \
+    dnf install -y --skip-broken \
+      bzip2 tar wget curl git cmake gcc-c++ make ccache sudo \
+      python3-devel python3-pip python3-colcon-common-extensions \
+      python3-rosdep python3-vcstool python3-empy python3-lark-parser \
+      python3-numpy python3-pytest python3-setuptools \
+      pcl-devel fmt-devel tbb-devel opencv-devel \
+      protobuf-devel protobuf-compiler \
+      json-devel libcap-devel \
+      libuuid-devel libpng-devel libyaml-devel yaml-cpp-devel \
+      eigen3-devel boost-devel assimp-devel \
+      spdlog-devel sqlite-devel tinyxml2-devel libxml2-devel \
+      libcurl-devel openssl-devel CUnit-devel \
+      qt5-qtbase-devel console-bridge-devel orocos-kdl-devel \
+      bullet-devel freetype-devel libX11-devel mesa-libGL-devel libpcap-devel asio-devel \
+      --refresh && \
+    dnf install -y --skip-broken \
+      GeographicLib-devel range-v3-devel octomap-devel expected-devel 2>/dev/null || true && \
+    dnf clean all
+
+# Install ROS 2 Jazzy RHEL9 binary
+RUN cd /tmp && \
+    wget -q https://github.com/ros2/ros2/releases/download/release-jazzy-20260128/ros2-jazzy-20260128-linux-rhel9-amd64.tar.bz2 && \
+    mkdir -p /opt/ros/jazzy && \
+    tar xf ros2-jazzy-20260128-linux-rhel9-amd64.tar.bz2 --strip-components=1 -C /opt/ros/jazzy && \
+    rm -f /tmp/ros2-jazzy-*.tar.bz2
+
+# rosdep init + update
+RUN rosdep init 2>/dev/null || true && rosdep update
+
+# Install rosdep deps for the ROS 2 binary
+RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
+    rosdep install --from-paths /opt/ros/${ROS_DISTRO}/share --ignore-src -y --skip-keys "rti-connext-dds-6.0.1" 2>&1 || true
+
+# Python deps for generate_parameter_library
+RUN pip3 install jinja2 typeguard 2>/dev/null || true
+
+# colcon mixin
+RUN pip3 install colcon-mixin 2>/dev/null || true && \
+    colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml 2>/dev/null || true && \
+    colcon mixin update default 2>/dev/null || true
+
+# yaml-cpp alias (RHEL 9 yaml-cpp 0.6.3 exports "yaml-cpp", ROS 2 expects "yaml-cpp::yaml-cpp")
+RUN if [ -f /usr/lib64/cmake/yaml-cpp/yaml-cpp-config.cmake ]; then \
+    echo -e '\nif(TARGET yaml-cpp AND NOT TARGET yaml-cpp::yaml-cpp)\n  add_library(yaml-cpp::yaml-cpp ALIAS yaml-cpp)\nendif()' \
+    >> /usr/lib64/cmake/yaml-cpp/yaml-cpp-config.cmake; fi
+
+# magic_enum (header-only, not in RHEL repos)
+RUN cd /tmp && \
+    wget -q https://github.com/Neargye/magic_enum/archive/refs/tags/v0.9.7.tar.gz && \
+    tar xf v0.9.7.tar.gz && \
+    cp -r magic_enum-0.9.7/include/magic_enum /usr/include/ && \
+    ln -sf /usr/include/magic_enum/magic_enum.hpp /usr/include/magic_enum.hpp && \
+    rm -rf /tmp/v0.9.7.tar.gz /tmp/magic_enum-0.9.7
+
+# png++ (header-only C++ wrapper for libpng, not in RHEL repos)
+RUN cd /tmp && \
+    wget -q https://download.savannah.nongnu.org/releases/pngpp/png++-0.2.10.tar.gz && \
+    tar xf png++-0.2.10.tar.gz && \
+    mkdir -p /usr/include/png++ && \
+    cp png++-0.2.10/*.hpp /usr/include/png++/ && \
+    rm -rf /tmp/png++-0.2.10.tar.gz /tmp/png++-0.2.10
+
+ENV LANG=en_US.UTF-8
+WORKDIR /autoware
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: source-deps
+# Clone extra ROS packages not in the RHEL binary (ros-base only, no desktop)
+# =============================================================================
+FROM base AS source-deps
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+WORKDIR /autoware
+COPY docker/rhel-extra-deps.repos /autoware/rhel-extra-deps.repos
+RUN mkdir -p src && vcs import --shallow src --retry 3 < rhel-extra-deps.repos 2>&1 || true
+# nav2 repo: only keep nav2_msgs and nav2_common
+RUN find src/nav2_msgs -type f -name 'package.xml' \
+  ! -path '*/nav2_msgs/package.xml' \
+  ! -path '*/nav2_common/package.xml' \
+  -exec sh -c 'touch "$(dirname "$1")"/COLCON_IGNORE' _ {} \; 2>/dev/null || true
+# ros_canopen repo: only keep can_msgs
+RUN find src/ros_canopen -type f -name 'package.xml' \
+  ! -path '*/can_msgs/package.xml' \
+  -exec sh -c 'touch "$(dirname "$1")"/COLCON_IGNORE' _ {} \; 2>/dev/null || true
+# foxglove-sdk repo: only keep foxglove_msgs
+RUN find src/foxglove_sdk -type f -name 'package.xml' \
+  ! -path '*/foxglove_msgs/package.xml' \
+  -exec sh -c 'touch "$(dirname "$1")"/COLCON_IGNORE' _ {} \; 2>/dev/null || true
+# generate_parameter_library: ignore examples (need ros2_control_cmake)
+RUN for d in example example_python example_cmake_python example_external; do \
+    [ -d "src/generate_parameter_library/$d" ] && touch "src/generate_parameter_library/$d/COLCON_IGNORE"; \
+    done 2>/dev/null || true
+# grid_map_costmap_2d: needs nav2_costmap_2d which is COLCON_IGNOREd
+RUN find src/grid_map -name 'grid_map_costmap_2d' -type d \
+  -exec touch {}/COLCON_IGNORE \; 2>/dev/null || true
+# vision_msgs_rviz_plugins: needs rviz which is not on RHEL headless
+RUN find src/vision_msgs -name 'vision_msgs_rviz_plugins' -type d \
+  -exec touch {}/COLCON_IGNORE \; 2>/dev/null || true
+# joystick_drivers: ignore spacenav and wiimote (need system libs not on RHEL)
+RUN for pkg in spacenav wiimote wiimote_msgs; do \
+    find src/joystick_drivers -name "$pkg" -type d -exec touch {}/COLCON_IGNORE \; 2>/dev/null; done || true
+
+# =============================================================================
+# Stage: rosdep-depend
+# =============================================================================
+FROM source-deps AS rosdep-depend
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
+COPY docker/scripts/resolve_rosdep_keys_rhel.sh /autoware/resolve_rosdep_keys.sh
+RUN chmod +x /autoware/resolve_rosdep_keys.sh
+
+COPY src /autoware/autoware_src
+RUN rm -rf /autoware/autoware_src/universe/external/trt_batched_nms \
+  /autoware/autoware_src/universe/external/cuda_blackboard \
+  /autoware/autoware_src/universe/external/bevdet_vendor \
+  /autoware/autoware_src/universe/external/negotiated
+# Resolve rosdep for both extra deps (src/) and Autoware (autoware_src/)
+RUN rosdep update && \
+    /autoware/resolve_rosdep_keys.sh /autoware/autoware_src "${ROS_DISTRO}" \
+    > /rosdep-all-depend-packages.txt && \
+    /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" \
+    >> /rosdep-all-depend-packages.txt && \
+    sort -u -o /rosdep-all-depend-packages.txt /rosdep-all-depend-packages.txt && \
+    cat /rosdep-all-depend-packages.txt
+# Resolve exec-only (runtime) rosdep dependencies
+RUN /autoware/resolve_rosdep_keys.sh /autoware/autoware_src "${ROS_DISTRO}" "--dependency-types=exec" \
+    > /rosdep-exec-depend-packages.txt && \
+    /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" "--dependency-types=exec" \
+    >> /rosdep-exec-depend-packages.txt && \
+    sort -u -o /rosdep-exec-depend-packages.txt /rosdep-exec-depend-packages.txt && \
+    echo "=== Runtime (exec) packages ===" && cat /rosdep-exec-depend-packages.txt && \
+    rm -rf /autoware/autoware_src
+
+# =============================================================================
+# Stage: core-common-devel
+# =============================================================================
+FROM base AS core-common-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+COPY docker/scripts/build_and_clean_rhel.sh /autoware/build_and_clean.sh
+RUN chmod +x /autoware/build_and_clean.sh
+
+# Copy extra ROS dependency sources (not in RHEL binary)
+COPY --from=source-deps /autoware/src /autoware/deps_src
+
+# Patch deps_src: M_PIf, CUDA COLCON_IGNORE, duplicates
+RUN grep -rl 'M_PIf' /autoware/deps_src/ --include='*.hpp' --include='*.cpp' 2>/dev/null | \
+    xargs -r sed -i '1i #ifndef M_PIf\n#define M_PIf static_cast<float>(M_PI)\n#endif' 2>/dev/null || true
+RUN for pkg in autoware_cuda_dependency_meta autoware_cuda_utils cuda_blackboard; do \
+    find /autoware/deps_src -name "$pkg" -type d -exec touch {}/COLCON_IGNORE \; 2>/dev/null; done || true
+RUN find /autoware/deps_src -path "*/autoware_agnocast_wrapper/package.xml" \
+    -exec sh -c 'touch $(dirname {})/COLCON_IGNORE' \; 2>/dev/null || true
+
+# Install rosdep system deps
+COPY --from=rosdep-depend /rosdep-all-depend-packages.txt /tmp/rosdep-all-depend-packages.txt
+RUN PKGS=$(cat /tmp/rosdep-all-depend-packages.txt | tr '\n' ' ' | xargs) && \
+    if [ -n "$PKGS" ]; then dnf install -y --skip-broken $PKGS 2>&1 || true; fi && \
+    dnf clean all 2>/dev/null || true
+
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
+  --mount=type=bind,source=src/core/autoware_adapi_msgs,target=/autoware/src/core/autoware_adapi_msgs \
+  --mount=type=bind,source=src/core/autoware_cmake,target=/autoware/src/core/autoware_cmake \
+  --mount=type=bind,source=src/core/autoware_internal_msgs,target=/autoware/src/core/autoware_internal_msgs \
+  --mount=type=bind,source=src/core/autoware_lanelet2_extension,target=/autoware/src/core/autoware_lanelet2_extension \
+  --mount=type=bind,source=src/core/autoware_msgs,target=/autoware/src/core/autoware_msgs \
+  --mount=type=bind,source=src/core/autoware_utils,target=/autoware/src/core/autoware_utils \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware "" "/autoware/src /autoware/deps_src"
+# Remove deps_src after build so child stages don't rediscover/rebuild them
+RUN rm -rf /autoware/deps_src
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: core-devel
+# =============================================================================
+FROM core-common-devel AS core-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
+  --mount=type=bind,source=src/core/autoware_core,target=/autoware/src/core/autoware_core \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: universe-common-devel
+# =============================================================================
+FROM core-devel AS universe-common-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
+  --mount=type=bind,source=src/universe/autoware_universe/common,target=/autoware/src/universe/autoware_universe/common,rw \
+  --mount=type=bind,source=src/universe/external/eagleye,target=/autoware/src/universe/external/eagleye \
+  --mount=type=bind,source=src/universe/external/glog,target=/autoware/src/universe/external/glog \
+  --mount=type=bind,source=src/universe/external/llh_converter,target=/autoware/src/universe/external/llh_converter \
+  --mount=type=bind,source=src/universe/external/managed_transform_buffer,target=/autoware/src/universe/external/managed_transform_buffer \
+  --mount=type=bind,source=src/universe/external/morai_msgs,target=/autoware/src/universe/external/morai_msgs \
+  --mount=type=bind,source=src/universe/external/muSSP,target=/autoware/src/universe/external/muSSP \
+  --mount=type=bind,source=src/universe/external/pointcloud_to_laserscan,target=/autoware/src/universe/external/pointcloud_to_laserscan \
+  --mount=type=bind,source=src/universe/external/rtklib_ros_bridge,target=/autoware/src/universe/external/rtklib_ros_bridge \
+  --mount=type=bind,source=src/universe/external/tier4_autoware_msgs,target=/autoware/src/universe/external/tier4_autoware_msgs \
+  --mount=type=bind,source=src/middleware/external,target=/autoware/src/middleware/external \
+  --mount=type=bind,source=src/launcher,target=/autoware/src/launcher \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: universe-sensing-perception-devel (no CUDA)
+# =============================================================================
+FROM universe-common-devel AS universe-sensing-perception-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_perception_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_perception_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_sensing_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_sensing_launch \
+  --mount=type=bind,source=src/universe/autoware_universe/perception,target=/autoware/src/universe/autoware_universe/perception \
+  --mount=type=bind,source=src/universe/autoware_universe/sensing,target=/autoware/src/universe/autoware_universe/sensing \
+  --mount=type=bind,source=src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator,target=/autoware/src/universe/autoware_universe/evaluator/autoware_perception_online_evaluator \
+  --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: universe-localization-mapping-devel
+# =============================================================================
+FROM universe-common-devel AS universe-localization-mapping-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_localization_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_localization_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_map_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_map_launch \
+  --mount=type=bind,source=src/universe/autoware_universe/localization,target=/autoware/src/universe/autoware_universe/localization \
+  --mount=type=bind,source=src/universe/autoware_universe/map,target=/autoware/src/universe/autoware_universe/map \
+  --mount=type=bind,source=src/universe/autoware_universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware_universe/sensing/autoware_pcl_extensions \
+  --mount=type=bind,source=src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor \
+  --mount=type=bind,source=src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer,target=/autoware/src/universe/autoware_universe/system/autoware_default_adapi_helpers/autoware_automatic_pose_initializer \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: universe-planning-control-devel
+# =============================================================================
+FROM universe-common-devel AS universe-planning-control-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_control_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_control_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_planning_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_planning_launch \
+  --mount=type=bind,source=src/universe/autoware_universe/control,target=/autoware/src/universe/autoware_universe/control \
+  --mount=type=bind,source=src/universe/autoware_universe/planning,target=/autoware/src/universe/autoware_universe/planning \
+  --mount=type=bind,source=src/universe/autoware_universe/evaluator/autoware_control_evaluator,target=/autoware/src/universe/autoware_universe/evaluator/autoware_control_evaluator \
+  --mount=type=bind,source=src/universe/autoware_universe/evaluator/autoware_planning_evaluator,target=/autoware/src/universe/autoware_universe/evaluator/autoware_planning_evaluator \
+  --mount=type=bind,source=src/universe/autoware_universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware_universe/sensing/autoware_pcl_extensions \
+  --mount=type=bind,source=src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware_universe/sensing/autoware_pointcloud_preprocessor \
+  --mount=type=bind,source=src/universe/autoware_universe/vehicle/autoware_external_cmd_converter,target=/autoware/src/universe/autoware_universe/vehicle/autoware_external_cmd_converter \
+  --mount=type=bind,source=src/universe/autoware_universe/vehicle/autoware_raw_vehicle_cmd_converter,target=/autoware/src/universe/autoware_universe/vehicle/autoware_raw_vehicle_cmd_converter \
+  --mount=type=bind,source=src/universe/autoware_universe/system/autoware_command_mode_types,target=/autoware/src/universe/autoware_universe/system/autoware_command_mode_types \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: universe-vehicle-system-devel
+# =============================================================================
+FROM universe-common-devel AS universe-vehicle-system-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_vehicle_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_vehicle_launch \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_system_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_system_launch \
+  --mount=type=bind,source=src/universe/autoware_universe/vehicle,target=/autoware/src/universe/autoware_universe/vehicle \
+  --mount=type=bind,source=src/universe/autoware_universe/system,target=/autoware/src/universe/autoware_universe/system \
+  --mount=type=bind,source=src/core/autoware_core/map/autoware_map_height_fitter,target=/autoware/src/core/autoware_core/map/autoware_map_height_fitter \
+  --mount=type=bind,source=src/universe/autoware_universe/localization/autoware_pose2twist,target=/autoware/src/universe/autoware_universe/localization/autoware_pose2twist \
+  --mount=type=bind,source=src/universe/autoware_universe/planning/planning_validator,target=/autoware/src/universe/autoware_universe/planning/planning_validator \
+  --mount=type=bind,source=src/sensor_component/external/sensor_component_description,target=/autoware/src/sensor_component/external/sensor_component_description \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: universe-visualization-devel
+# =============================================================================
+FROM universe-common-devel AS universe-visualization-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
+  --mount=type=bind,source=src/universe/autoware_universe/visualization,target=/autoware/src/universe/autoware_universe/visualization \
+  --mount=type=bind,source=src/core/autoware_rviz_plugins,target=/autoware/src/core/autoware_rviz_plugins \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: universe-api-devel
+# =============================================================================
+FROM universe-common-devel AS universe-api-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch/tier4_autoware_api_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch/tier4_autoware_api_launch \
+  --mount=type=bind,source=src/universe/autoware_universe/system/autoware_default_adapi_universe,target=/autoware/src/universe/autoware_universe/system/autoware_default_adapi_universe \
+  --mount=type=bind,source=src/universe/autoware_universe/evaluator/autoware_evaluation_adapter,target=/autoware/src/universe/autoware_universe/evaluator/autoware_evaluation_adapter \
+  --mount=type=bind,source=src/core/autoware_core/api/autoware_adapi_adaptors,target=/autoware/src/core/autoware_core/api/autoware_adapi_adaptors \
+  --mount=type=bind,source=src/universe/autoware_universe/system/autoware_diagnostic_graph_utils,target=/autoware/src/universe/autoware_universe/system/autoware_diagnostic_graph_utils \
+  --mount=type=bind,source=src/core/autoware_core/map/autoware_map_height_fitter,target=/autoware/src/core/autoware_core/map/autoware_map_height_fitter \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: universe-devel (aggregates all)
+# =============================================================================
+FROM universe-common-devel AS universe-devel
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+
+COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
+COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
+COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
+COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
+COPY --from=universe-visualization-devel /opt/autoware /opt/autoware
+COPY --from=universe-api-devel /opt/autoware /opt/autoware
+
+RUN find /opt/autoware -type f \( -executable -o -name "*.so" \) -exec strip --strip-unneeded --remove-section=.comment --remove-section=.note {} \; 2>/dev/null || true
+
+RUN --mount=type=cache,target="${CCACHE_DIR}" \
+  --mount=type=bind,source=src/sensor_component,target=/autoware/src/sensor_component,rw \
+  --mount=type=bind,source=src/universe/autoware_universe/evaluator,target=/autoware/src/universe/autoware_universe/evaluator \
+  --mount=type=bind,source=src/launcher/autoware_launch/tier4_universe_launch,target=/autoware/src/launcher/autoware_launch/tier4_universe_launch \
+  --mount=type=bind,source=src/universe/autoware_universe/simulator,target=/autoware/src/universe/autoware_universe/simulator \
+  source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  && source /opt/autoware/setup.bash \
+  && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: runtime-base
+# Minimal AlmaLinux 9 + ROS 2 binary (runtime libraries only, no build tools)
+# =============================================================================
+FROM almalinux:9 AS runtime-base
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO=jazzy
+
+RUN dnf install -y epel-release 'dnf-command(config-manager)' && \
+    dnf config-manager --set-enabled crb && \
+    dnf install -y --skip-broken \
+      sudo which python3 python3-pip python3-pyyaml python3-numpy \
+      libatomic lttng-ust \
+      pcl-tools fmt tbb opencv \
+      protobuf \
+      json libuuid libpng libyaml yaml-cpp \
+      boost assimp \
+      spdlog sqlite tinyxml2 libxml2 \
+      libcurl openssl \
+      qt5-qtbase console-bridge orocos-kdl \
+      bullet freetype libX11 mesa-libGL libpcap \
+      GeographicLib octomap \
+      --refresh 2>&1 || true && \
+    dnf clean all
+
+# Copy ROS 2 Jazzy binary from build base
+COPY --from=base /opt/ros /opt/ros
+
+# Python runtime deps for ros2cli and ROS 2 tools
+RUN pip3 install packaging empy lark psutil argcomplete netifaces catkin_pkg 2>/dev/null || true
+
+# Install gosu for entrypoint UID remapping
+RUN curl -fsSL https://github.com/tianon/gosu/releases/download/1.17/gosu-amd64 \
+      -o /usr/sbin/gosu && chmod +x /usr/sbin/gosu
+
+ENV ROS_DISTRO=${ROS_DISTRO}
+ENV LANG=en_US.UTF-8
+WORKDIR /autoware
+
+COPY docker/etc/ros_entrypoint.sh /ros_entrypoint.sh
+RUN chmod +x /ros_entrypoint.sh
+
+# =============================================================================
+# Stage: core (runtime)
+# =============================================================================
+FROM runtime-base AS core
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
+COPY --from=rosdep-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
+RUN PKGS=$(cat /tmp/rosdep-exec-depend-packages.txt | tr '\n' ' ' | xargs) && \
+    if [ -n "$PKGS" ]; then dnf install -y --skip-broken $PKGS 2>&1 || true; fi && \
+    dnf clean all 2>/dev/null || true && \
+    rm -f /tmp/rosdep-exec-depend-packages.txt
+
+COPY --from=core-devel /opt/autoware /opt/autoware
+
+# Remove broken package entries (build failures left partial share dirs without local_setup.bash)
+# Skip ament_index, colcon-core, and other special directories
+RUN for d in /opt/autoware/share/*/; do \
+      pkg=$(basename "$d"); \
+      case "$pkg" in ament_index|colcon-core) continue;; esac; \
+      [ ! -f "$d/local_setup.bash" ] && rm -rf "$d"; \
+    done 2>/dev/null || true
+
+COPY docker/etc/.bash_aliases /root/.bash_aliases
+RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+# =============================================================================
+# Stage: universe (runtime)
+# =============================================================================
+FROM runtime-base AS universe
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+
+COPY --from=rosdep-depend /rosdep-exec-depend-packages.txt /tmp/rosdep-exec-depend-packages.txt
+RUN PKGS=$(cat /tmp/rosdep-exec-depend-packages.txt | tr '\n' ' ' | xargs) && \
+    if [ -n "$PKGS" ]; then dnf install -y --skip-broken $PKGS 2>&1 || true; fi && \
+    dnf clean all 2>/dev/null || true && \
+    rm -f /tmp/rosdep-exec-depend-packages.txt
+
+COPY --from=universe-devel /opt/autoware /opt/autoware
+
+# Remove broken package entries (build failures left partial share dirs without local_setup.bash)
+# Skip ament_index, colcon-core, and other special directories
+RUN for d in /opt/autoware/share/*/; do \
+      pkg=$(basename "$d"); \
+      case "$pkg" in ament_index|colcon-core) continue;; esac; \
+      [ ! -f "$d/local_setup.bash" ] && rm -rf "$d"; \
+    done 2>/dev/null || true
+
+COPY docker/etc/.bash_aliases /root/.bash_aliases
+RUN echo "source /opt/autoware/setup.bash" > /etc/bash.bashrc
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
