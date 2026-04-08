@@ -19,7 +19,7 @@ function build_and_clean() {
     set +e
 
     # M_PIf/M_PI_2f/M_PI_4f: C23 constants not available in GCC 11 (RHEL 9)
-    grep -rl 'M_PIf\b' /autoware/src/ --include='*.hpp' --include='*.cpp' 2>/dev/null | \
+    grep -rl 'M_PIf\b' /autoware/src/ --include='*.hpp' --include='*.cpp' 2>/dev/null |
         while read -r f; do
             if ! grep -q 'ifndef M_PIf' "$f" 2>/dev/null; then
                 sed -i '1i #ifndef M_PIf\n#define M_PIf static_cast<float>(M_PI)\n#endif\n#ifndef M_PI_2f\n#define M_PI_2f static_cast<float>(M_PI_2)\n#endif\n#ifndef M_PI_4f\n#define M_PI_4f static_cast<float>(M_PI_4)\n#endif' "$f" 2>/dev/null
@@ -28,16 +28,16 @@ function build_and_clean() {
 
     # COLCON_IGNORE CUDA packages in bind-mounted source
     for pkg in autoware_cuda_dependency_meta autoware_cuda_utils autoware_cuda_pointcloud_preprocessor \
-      autoware_tensorrt_common autoware_tensorrt_plugins autoware_tensorrt_yolox autoware_tensorrt_classifier \
-      autoware_tensorrt_bevdet autoware_tensorrt_bevformer autoware_tensorrt_vad \
-      autoware_lidar_centerpoint autoware_lidar_transfusion autoware_lidar_frnet \
-      autoware_lidar_apollo_instance_segmentation autoware_bevfusion autoware_bytetrack \
-      autoware_camera_streampetr autoware_ptv3 autoware_simpl_prediction \
-      autoware_image_projection_based_fusion autoware_traffic_light_classifier \
-      autoware_traffic_light_fine_detector autoware_ground_segmentation_cuda \
-      autoware_probabilistic_occupancy_grid_map autoware_calibration_status_classifier \
-      autoware_diffusion_planner autoware_shape_estimation \
-      bevdet_vendor trt_batched_nms cuda_blackboard; do
+        autoware_tensorrt_common autoware_tensorrt_plugins autoware_tensorrt_yolox autoware_tensorrt_classifier \
+        autoware_tensorrt_bevdet autoware_tensorrt_bevformer autoware_tensorrt_vad \
+        autoware_lidar_centerpoint autoware_lidar_transfusion autoware_lidar_frnet \
+        autoware_lidar_apollo_instance_segmentation autoware_bevfusion autoware_bytetrack \
+        autoware_camera_streampetr autoware_ptv3 autoware_simpl_prediction \
+        autoware_image_projection_based_fusion autoware_traffic_light_classifier \
+        autoware_traffic_light_fine_detector autoware_ground_segmentation_cuda \
+        autoware_probabilistic_occupancy_grid_map autoware_calibration_status_classifier \
+        autoware_diffusion_planner autoware_shape_estimation \
+        bevdet_vendor trt_batched_nms cuda_blackboard; do
         find /autoware/src -name "$pkg" -type d -exec touch {}/COLCON_IGNORE \; 2>/dev/null
     done
     # Duplicate autoware_agnocast_wrapper fix
@@ -55,9 +55,9 @@ function build_and_clean() {
     # and default_strategy errors for custom Point types (Eigen-based Point2d).
     # Patch these headers to include the full cartesian strategy set.
     for bhpp in \
-      /usr/include/boost/geometry/algorithms/correct.hpp \
-      /usr/include/boost/geometry/algorithms/is_valid.hpp \
-      /usr/include/boost/geometry/algorithms/detail/is_valid/polygon.hpp; do
+        /usr/include/boost/geometry/algorithms/correct.hpp \
+        /usr/include/boost/geometry/algorithms/is_valid.hpp \
+        /usr/include/boost/geometry/algorithms/detail/is_valid/polygon.hpp; do
         if [ -f "$bhpp" ] && ! grep -q 'strategies/cartesian.hpp' "$bhpp"; then
             sed -i '1i #include <boost/geometry/strategies/cartesian.hpp>  // RHEL Boost 1.75 compat' "$bhpp" 2>/dev/null
         fi
@@ -66,8 +66,8 @@ function build_and_clean() {
     # Patch: boost::geometry::is_valid() fails on Boost < 1.77 with Eigen-based Point2d
     # Replace with a simpler polygon size check on older Boost
     for rcpf in \
-      /autoware/src/core/autoware_utils/autoware_utils_geometry/src/geometry/random_concave_polygon.cpp \
-      /autoware/src/universe/autoware_universe/common/autoware_universe_utils/src/geometry/random_concave_polygon.cpp; do
+        /autoware/src/core/autoware_utils/autoware_utils_geometry/src/geometry/random_concave_polygon.cpp \
+        /autoware/src/universe/autoware_universe/common/autoware_universe_utils/src/geometry/random_concave_polygon.cpp; do
         if [ -f "$rcpf" ]; then
             sed -i 's|!is_convex(poly) && boost::geometry::is_valid(poly) && poly.outer().size() != vertices|!is_convex(poly) \&\& poly.outer().size() > 3 \&\& poly.outer().size() != vertices /* Boost 1.75 compat: is_valid removed */|' "$rcpf" 2>/dev/null
         fi
