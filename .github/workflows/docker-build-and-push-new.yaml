@@ -28,90 +28,19 @@ jobs:
             ansible-galaxy-requirements.yaml
             repositories/*.repos
             .github/workflows/docker-build-new.yaml
+            .github/workflows/docker-build-pipeline-new.yaml
             .github/workflows/docker-build-and-push-new.yaml
 
-  build-base-humble:
+  humble:
     needs: changed-files
     if: needs.changed-files.outputs.should-build == 'true'
-    uses: ./.github/workflows/docker-build-new.yaml
+    uses: ./.github/workflows/docker-build-pipeline-new.yaml
     with:
-      bake-group: ci-base
       ros-distro: humble
-      target-image: autoware-new
-      target-tags: base-humble
-      free-disk-space: false
 
-  build-base-jazzy:
+  jazzy:
     needs: changed-files
     if: needs.changed-files.outputs.should-build == 'true'
-    uses: ./.github/workflows/docker-build-new.yaml
+    uses: ./.github/workflows/docker-build-pipeline-new.yaml
     with:
-      bake-group: ci-base
       ros-distro: jazzy
-      target-image: autoware-new
-      target-tags: base-jazzy
-      free-disk-space: false
-
-  build-core-humble:
-    needs: build-base-humble
-    uses: ./.github/workflows/docker-build-new.yaml
-    with:
-      bake-group: ci-core
-      ros-distro: humble
-      target-image: autoware-new
-      target-tags: core-dependencies-humble core-devel-humble core-humble
-      needs-source: true
-      free-disk-space: false
-
-  build-core-jazzy:
-    needs: build-base-jazzy
-    uses: ./.github/workflows/docker-build-new.yaml
-    with:
-      bake-group: ci-core
-      ros-distro: jazzy
-      target-image: autoware-new
-      target-tags: core-dependencies-jazzy core-devel-jazzy core-jazzy
-      needs-source: true
-      free-disk-space: false
-
-  build-universe-humble:
-    needs: build-core-humble
-    uses: ./.github/workflows/docker-build-new.yaml
-    with:
-      bake-group: ci-universe
-      ros-distro: humble
-      target-image: autoware-new
-      target-tags: universe-dependencies-humble universe-devel-humble universe-runtime-dependencies-humble universe-humble
-      needs-source: true
-
-  build-universe-jazzy:
-    needs: build-core-jazzy
-    uses: ./.github/workflows/docker-build-new.yaml
-    with:
-      bake-group: ci-universe
-      ros-distro: jazzy
-      target-image: autoware-new
-      target-tags: universe-dependencies-jazzy universe-devel-jazzy universe-runtime-dependencies-jazzy universe-jazzy
-      needs-source: true
-
-  build-universe-cuda-humble:
-    needs: build-core-humble
-    uses: ./.github/workflows/docker-build-new.yaml
-    with:
-      bake-group: ci-universe-cuda
-      ros-distro: humble
-      target-image: autoware-new
-      target-tags: universe-dependencies-cuda-humble universe-devel-cuda-humble universe-cuda-humble
-      needs-source: true
-      cache-key-prefix: cuda-
-
-  build-universe-cuda-jazzy:
-    needs: build-core-jazzy
-    uses: ./.github/workflows/docker-build-new.yaml
-    with:
-      bake-group: ci-universe-cuda
-      ros-distro: jazzy
-      target-image: autoware-new
-      target-tags: universe-dependencies-cuda-jazzy universe-devel-cuda-jazzy universe-cuda-jazzy
-      needs-source: true
-      cache-key-prefix: cuda-

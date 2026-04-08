@@ -1,0 +1,55 @@
+name: docker-build-pipeline-new
+
+on:
+  workflow_call:
+    inputs:
+      ros-distro:
+        description: ROS distribution
+        type: string
+        required: true
+      target-image:
+        description: Registry image name
+        type: string
+        default: autoware-new
+
+jobs:
+  build-base:
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-base
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      target-tags: base-${{ inputs.ros-distro }}
+      free-disk-space: false
+
+  build-core:
+    needs: build-base
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-core
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      target-tags: core-dependencies-${{ inputs.ros-distro }} core-devel-${{ inputs.ros-distro }} core-${{ inputs.ros-distro }}
+      needs-source: true
+      free-disk-space: false
+
+  build-universe:
+    needs: build-core
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-universe
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      target-tags: universe-dependencies-${{ inputs.ros-distro }} universe-devel-${{ inputs.ros-distro }} universe-runtime-dependencies-${{ inputs.ros-distro }} universe-${{ inputs.ros-distro }}
+      needs-source: true
+
+  build-universe-cuda:
+    needs: build-core
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-universe-cuda
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      target-tags: universe-dependencies-cuda-${{ inputs.ros-distro }} universe-devel-cuda-${{ inputs.ros-distro }} universe-cuda-${{ inputs.ros-distro }}
+      needs-source: true
+      cache-key-prefix: cuda-
