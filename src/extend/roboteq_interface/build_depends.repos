@@ -1,0 +1,21 @@
+repositories:
+  core/common:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_common.git
+    version: main
+  autoware/universe:
+    type: git
+    url: https://github.com/tier4/autoware.universe.git
+    version: tier4/main
+  msgs/tier4_autoware_msgs:
+    type: git
+    url: https://github.com/tier4/tier4_autoware_msgs.git
+    version: tier4/universe
+  msgs/auto_msgs:
+    type: git
+    url: https://github.com/tier4/autoware_auto_msgs.git
+    version: tier4/main
+  msgs/autoware_msgs:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_msgs.git
+    version: main

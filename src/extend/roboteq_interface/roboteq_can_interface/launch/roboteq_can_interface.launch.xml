@@ -1,0 +1,11 @@
+<launch>
+  <arg name="node_id" default="1"/>
+
+  <node pkg="roboteq_can_interface" name="roboteq_can_interface" exec="roboteq_can_interface" output="screen">
+    <remap from="~/input/motor_cmd" to="motor_cmd"/>
+    <remap from="~/output/motor_status" to="motor_status"/>
+    <remap from="~/output/controller_status" to="controller_status"/>
+    <remap from="~/output/battery_status" to="battery_status"/>
+    <param name="node_id" value="$(var node_id)"/>
+  </node>
+</launch>

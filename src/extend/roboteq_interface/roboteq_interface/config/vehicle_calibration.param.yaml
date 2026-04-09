@@ -1,0 +1,3 @@
+/**:
+  ros__parameters:
+    speed_scale_factor: 1.0 # [-] speed scale factor

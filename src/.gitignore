@@ -1,6 +1,14 @@
-# Ignore everything in this folder and all subdirectories
+# 1. すべてを無視
 *
 
-# EXCEPT: Re-include the necessary files.
+# 2. README.md と .gitignore は許可
 !README.md
 !.gitignore
+
+# 3. 目的のディレクトリまでのパスを順に許可する
+# (ディレクトリ自体を許可しないと、その中のファイルまで Git が見に行けないため)
+!extend/
+!extend/roboteq_interface/
+
+# 4. 許可したディレクトリの中身すべてを許可
+!extend/roboteq_interface/**
