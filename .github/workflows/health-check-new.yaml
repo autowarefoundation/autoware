@@ -1,0 +1,174 @@
+name: health-check-new
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+  schedule:
+    - cron: 0 12 * * *
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  label-check:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
+    with:
+      label: run:health-check-new
+
+  docker-build:
+    needs: label-check
+    if: ${{ needs.label-check.outputs.result == 'true' ||
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build-type: [main, nightly, main-arm64]
+        include:
+          - build-type: main
+            platform: amd64
+            runner: "['self-hosted','Linux','X64']"
+          - build-type: nightly
+            platform: amd64
+            runner: "['ubuntu-24.04']"
+          - build-type: main-arm64
+            platform: arm64
+            runner: "['ubuntu-24.04-arm']"
+    runs-on: ${{ fromJson(matrix.runner) }}
+    steps:
+      - name: "🔧 Change permission of workspace"
+        run: |
+          sudo rm -rf ${{ github.workspace }}/scenario_out
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+
+      - name: "📥 Check out repository"
+        uses: actions/checkout@v6
+
+      - name: "📂 Get changed files"
+        id: changed-files
+        uses: step-security/changed-files@v47
+        with:
+          files: |
+            repositories/*.repos
+            .github/workflows/health-check-new.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker-new/**
+
+      - name: "💻 Runner specs"
+        run: |
+          echo "::group::CPU"
+          lscpu | grep -E "^(Architecture|CPU\(s\)|Model name|Thread|Core|Socket)"
+          echo "::endgroup::"
+          echo "::group::Memory"
+          free -h
+          echo "::endgroup::"
+          echo "::group::Disk"
+          df -h /
+          echo "::endgroup::"
+
+      - name: "🧹 Free disk space"
+        if: ${{ matrix.build-type != 'main' &&
+          (steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch') }}
+        uses: ./.github/actions/free-disk-space
+
+      - name: "💾 Create additional swap"
+        if: ${{ matrix.platform == 'arm64' &&
+          (steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch') }}
+        run: |
+          sudo fallocate -l 8G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          free -h
+
+      - name: "📦 Import source repos"
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
+        run: |
+          pipx install vcs2l
+          mkdir -p src
+          vcs import --shallow src < repositories/autoware.repos
+
+      - name: "📦 Overlay nightly repos"
+        if: ${{ matrix.build-type == 'nightly' &&
+          (steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch') }}
+        run: |
+          vcs import --shallow --force src < repositories/autoware-nightly.repos
+
+      - name: "🐳 Setup Docker Buildx"
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
+        uses: docker/setup-buildx-action@v4
+        with:
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 2
+
+      - name: "🔑 Login to GitHub Container Registry"
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - name: "🔨 Build Autoware (docker-new)"
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
+        uses: docker/bake-action@v7
+        env:
+          ROS_DISTRO: humble
+        with:
+          source: .
+          targets: universe-devel
+          files: docker-new/docker-bake.hcl
+          load: true
+          provenance: false
+          set: |
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.platform }}-main
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.build-type }}-${{ matrix.platform }}-main
+
+      - name: "💾 Save Docker image"
+        if: ${{ matrix.build-type == 'main' &&
+          (steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch') }}
+        run: docker save autoware:universe-devel-humble | gzip > /tmp/autoware-image.tar.gz
+
+      - name: "📤 Upload Docker image artifact"
+        if: ${{ matrix.build-type == 'main' &&
+          (steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch') }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: autoware-image
+          path: /tmp/autoware-image.tar.gz
+
+      - name: "📊 Disk space"
+        if: always()
+        run: df -h
+
+  scenario-test:
+    needs: docker-build
+    uses: ./.github/workflows/scenario-test-reusable.yaml
+    with:
+      autoware_container_image: autoware:universe-devel-humble
