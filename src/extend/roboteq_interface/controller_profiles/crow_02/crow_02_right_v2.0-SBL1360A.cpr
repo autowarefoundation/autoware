@@ -1,0 +1,1314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ControllerProfile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="1.0">
+  <Firmware>Roboteq v2.01 SBL1XXXA 11/14/2019</Firmware>
+  <Roborun>Rev 2.1. 12/22/20</Roborun>
+  <ControlTree Name="RCBSBL1XXXA">
+    <Item Command="BRUN" Index="1" Node="Start-up|Scripting|Script Auto-Start">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ACS" Index="1" Node="Start-up|Analog Start-up|Center Command to Start">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="TELS" Index="1" Node="Start-up|Telemetry|Telemetry String">
+      <ArgumentType>String</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>?BS 1:?FF:?V 2:?D:?DO:?AI 1:# 3</Value>
+    </Item>
+    <Item Command="CPRI" Index="1" Node="Commands|Command Priorities|Priority 1">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="CPRI" Index="2" Node="Commands|Command Priorities|Priority 2">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="CPRI" Index="3" Node="Commands|Command Priorities|Priority 3">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>3</Value>
+    </Item>
+    <Item Command="DFC" Index="1" Node="Commands|Command Priorities|Default Command Value">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="CLIN" Index="1" Node="Commands|Command Adjustments|Linearity 1">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="CLIN" Index="2" Node="Commands|Command Adjustments|Linearity 2">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="RWD" Index="1" Node="Commands|Command Safety|RS232 Safety|Watchdog (ms)">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>200</Value>
+    </Item>
+    <Item Command="PMS" Index="1" Node="Commands|Command Safety|Pulse Safety|Keep within Min/Max">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="AMS" Index="1" Node="Commands|Command Safety|Analog Safety|Keep within Guard Bands">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="CEN" Index="1" Node="CAN|CAN Mode">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="CBR" Index="1" Node="CAN|Bit Rate">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2</Value>
+    </Item>
+    <Item Command="CNOD" Index="1" Node="CAN|Node ID">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="CLSN" Index="1" Node="CAN|Listen Node ID">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>4</Value>
+    </Item>
+    <Item Command="CHB" Index="1" Node="CAN|Heartbeat (ms)">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>100</Value>
+    </Item>
+    <Item Command="CSRT" Index="1" Node="CAN|MiniCAN Send Rate (ms)">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>100</Value>
+    </Item>
+    <Item Command="CTPS" Index="1" Node="CAN|CANOpen TPDO Send Rate|TPDO 1 Send Rate (ms)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>20</Value>
+    </Item>
+    <Item Command="CTPS" Index="2" Node="CAN|CANOpen TPDO Send Rate|TPDO 2 Send Rate (ms)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>100</Value>
+    </Item>
+    <Item Command="CTPS" Index="3" Node="CAN|CANOpen TPDO Send Rate|TPDO 3 Send Rate (ms)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>100</Value>
+    </Item>
+    <Item Command="CTPS" Index="4" Node="CAN|CANOpen TPDO Send Rate|TPDO 4 Send Rate (ms)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>100</Value>
+    </Item>
+    <Item Command="CTT" Index="1" Node="CAN|CANOpen Transmission Type|TPDO 1 Transmission Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>255</Value>
+    </Item>
+    <Item Command="CTT" Index="2" Node="CAN|CANOpen Transmission Type|TPDO 2 Transmission Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>255</Value>
+    </Item>
+    <Item Command="CTT" Index="3" Node="CAN|CANOpen Transmission Type|TPDO 3 Transmission Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>255</Value>
+    </Item>
+    <Item Command="CTT" Index="4" Node="CAN|CANOpen Transmission Type|TPDO 4 Transmission Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>255</Value>
+    </Item>
+    <Item Command="CAS" Index="1" Node="CAN|CANOpen Autostart">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="FSA" Index="1" Node="CAN|DS402 FSA">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="DMOD" Index="1" Node="ModBus|ModBus Mode">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="MNOD" Index="1" Node="ModBus|ModBus Slave ID">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="MDAL" Index="1" Node="ModBus|Data Alignment">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EMOD" Index="1" Node="Encoder|Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="EPPR" Index="1" Node="Encoder|Pulses/Rev">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>100</Value>
+    </Item>
+    <Item Command="ELL" Index="1" Node="Encoder|Min Limit">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>-20000</Value>
+    </Item>
+    <Item Command="EHL" Index="1" Node="Encoder|Max Limit">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>20000</Value>
+    </Item>
+    <Item Command="EHOME" Index="1" Node="Encoder|Home Count">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ELLA" Index="1" Node="Encoder|Action at Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="EHLA" Index="1" Node="Encoder|Action at Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="DINL" Index="1" Node="Digital Inputs|DIn1|Active Level">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="DINA" Index="1" Node="Digital Inputs|DIn1|Action">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>19</Value>
+    </Item>
+    <Item Command="DINL" Index="2" Node="Digital Inputs|DIn2|Active Level">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="DINA" Index="2" Node="Digital Inputs|DIn2|Action">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="DINL" Index="3" Node="Digital Inputs|DIn3|Active Level">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="DINA" Index="3" Node="Digital Inputs|DIn3|Action">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="DINL" Index="4" Node="Digital Inputs|DIn4|Active Level">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="DINA" Index="4" Node="Digital Inputs|DIn4|Action">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="DINL" Index="5" Node="Digital Inputs|DIn5|Active Level">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="DINA" Index="5" Node="Digital Inputs|DIn5|Action">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="DINL" Index="6" Node="Digital Inputs|DIn6|Active Level">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="DINA" Index="6" Node="Digital Inputs|DIn6|Action">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMOD" Index="1" Node="Analog Inputs|AIn1|Conversion Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="AINA" Index="1" Node="Analog Inputs|AIn1|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMIN" Index="1" Node="Analog Inputs|AIn1|Range|Input Min (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>250</Value>
+    </Item>
+    <Item Command="ACTR" Index="1" Node="Analog Inputs|AIn1|Range|Input Center (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2500</Value>
+    </Item>
+    <Item Command="AMAX" Index="1" Node="Analog Inputs|AIn1|Range|Input Max (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>4750</Value>
+    </Item>
+    <Item Command="APOL" Index="1" Node="Analog Inputs|AIn1|Conversion Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ADB" Index="1" Node="Analog Inputs|AIn1|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="AMINA" Index="1" Node="Analog Inputs|AIn1|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMAXA" Index="1" Node="Analog Inputs|AIn1|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMOD" Index="2" Node="Analog Inputs|AIn2|Conversion Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="AINA" Index="2" Node="Analog Inputs|AIn2|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMIN" Index="2" Node="Analog Inputs|AIn2|Range|Input Min (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>250</Value>
+    </Item>
+    <Item Command="ACTR" Index="2" Node="Analog Inputs|AIn2|Range|Input Center (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2500</Value>
+    </Item>
+    <Item Command="AMAX" Index="2" Node="Analog Inputs|AIn2|Range|Input Max (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>4750</Value>
+    </Item>
+    <Item Command="APOL" Index="2" Node="Analog Inputs|AIn2|Conversion Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ADB" Index="2" Node="Analog Inputs|AIn2|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="AMINA" Index="2" Node="Analog Inputs|AIn2|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMAXA" Index="2" Node="Analog Inputs|AIn2|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMOD" Index="3" Node="Analog Inputs|AIn3|Conversion Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="AINA" Index="3" Node="Analog Inputs|AIn3|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMIN" Index="3" Node="Analog Inputs|AIn3|Range|Input Min (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>250</Value>
+    </Item>
+    <Item Command="ACTR" Index="3" Node="Analog Inputs|AIn3|Range|Input Center (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2500</Value>
+    </Item>
+    <Item Command="AMAX" Index="3" Node="Analog Inputs|AIn3|Range|Input Max (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>4750</Value>
+    </Item>
+    <Item Command="APOL" Index="3" Node="Analog Inputs|AIn3|Conversion Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ADB" Index="3" Node="Analog Inputs|AIn3|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="AMINA" Index="3" Node="Analog Inputs|AIn3|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMAXA" Index="3" Node="Analog Inputs|AIn3|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMOD" Index="4" Node="Analog Inputs|AIn4|Conversion Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="AINA" Index="4" Node="Analog Inputs|AIn4|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMIN" Index="4" Node="Analog Inputs|AIn4|Range|Input Min (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>250</Value>
+    </Item>
+    <Item Command="ACTR" Index="4" Node="Analog Inputs|AIn4|Range|Input Center (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2500</Value>
+    </Item>
+    <Item Command="AMAX" Index="4" Node="Analog Inputs|AIn4|Range|Input Max (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>4750</Value>
+    </Item>
+    <Item Command="APOL" Index="4" Node="Analog Inputs|AIn4|Conversion Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ADB" Index="4" Node="Analog Inputs|AIn4|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="AMINA" Index="4" Node="Analog Inputs|AIn4|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMAXA" Index="4" Node="Analog Inputs|AIn4|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMOD" Index="5" Node="Analog Inputs|AIn5|Conversion Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="AINA" Index="5" Node="Analog Inputs|AIn5|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMIN" Index="5" Node="Analog Inputs|AIn5|Range|Input Min (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>250</Value>
+    </Item>
+    <Item Command="ACTR" Index="5" Node="Analog Inputs|AIn5|Range|Input Center (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2500</Value>
+    </Item>
+    <Item Command="AMAX" Index="5" Node="Analog Inputs|AIn5|Range|Input Max (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>4750</Value>
+    </Item>
+    <Item Command="APOL" Index="5" Node="Analog Inputs|AIn5|Conversion Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ADB" Index="5" Node="Analog Inputs|AIn5|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="AMINA" Index="5" Node="Analog Inputs|AIn5|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMAXA" Index="5" Node="Analog Inputs|AIn5|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMOD" Index="6" Node="Analog Inputs|AIn6|Conversion Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="AINA" Index="6" Node="Analog Inputs|AIn6|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMIN" Index="6" Node="Analog Inputs|AIn6|Range|Input Min (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>250</Value>
+    </Item>
+    <Item Command="ACTR" Index="6" Node="Analog Inputs|AIn6|Range|Input Center (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2500</Value>
+    </Item>
+    <Item Command="AMAX" Index="6" Node="Analog Inputs|AIn6|Range|Input Max (mV)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>4750</Value>
+    </Item>
+    <Item Command="APOL" Index="6" Node="Analog Inputs|AIn6|Conversion Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ADB" Index="6" Node="Analog Inputs|AIn6|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="AMINA" Index="6" Node="Analog Inputs|AIn6|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="AMAXA" Index="6" Node="Analog Inputs|AIn6|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMOD" Index="1" Node="Pulse Inputs|PIn1|Capture Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PINA" Index="1" Node="Pulse Inputs|PIn1|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMIN" Index="1" Node="Pulse Inputs|PIn1|Range|Input Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1000</Value>
+    </Item>
+    <Item Command="PCTR" Index="1" Node="Pulse Inputs|PIn1|Range|Input Center">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1500</Value>
+    </Item>
+    <Item Command="PMAX" Index="1" Node="Pulse Inputs|PIn1|Range|Input Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2000</Value>
+    </Item>
+    <Item Command="PPOL" Index="1" Node="Pulse Inputs|PIn1|Capture Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PDB" Index="1" Node="Pulse Inputs|PIn1|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="PMINA" Index="1" Node="Pulse Inputs|PIn1|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMAXA" Index="1" Node="Pulse Inputs|PIn1|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMOD" Index="2" Node="Pulse Inputs|PIn2|Capture Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PINA" Index="2" Node="Pulse Inputs|PIn2|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMIN" Index="2" Node="Pulse Inputs|PIn2|Range|Input Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1000</Value>
+    </Item>
+    <Item Command="PCTR" Index="2" Node="Pulse Inputs|PIn2|Range|Input Center">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1500</Value>
+    </Item>
+    <Item Command="PMAX" Index="2" Node="Pulse Inputs|PIn2|Range|Input Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2000</Value>
+    </Item>
+    <Item Command="PPOL" Index="2" Node="Pulse Inputs|PIn2|Capture Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PDB" Index="2" Node="Pulse Inputs|PIn2|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="PMINA" Index="2" Node="Pulse Inputs|PIn2|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMAXA" Index="2" Node="Pulse Inputs|PIn2|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMOD" Index="3" Node="Pulse Inputs|PIn3|Capture Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PINA" Index="3" Node="Pulse Inputs|PIn3|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMIN" Index="3" Node="Pulse Inputs|PIn3|Range|Input Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1000</Value>
+    </Item>
+    <Item Command="PCTR" Index="3" Node="Pulse Inputs|PIn3|Range|Input Center">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1500</Value>
+    </Item>
+    <Item Command="PMAX" Index="3" Node="Pulse Inputs|PIn3|Range|Input Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2000</Value>
+    </Item>
+    <Item Command="PPOL" Index="3" Node="Pulse Inputs|PIn3|Capture Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PDB" Index="3" Node="Pulse Inputs|PIn3|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="PMINA" Index="3" Node="Pulse Inputs|PIn3|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMAXA" Index="3" Node="Pulse Inputs|PIn3|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMOD" Index="4" Node="Pulse Inputs|PIn4|Capture Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PINA" Index="4" Node="Pulse Inputs|PIn4|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMIN" Index="4" Node="Pulse Inputs|PIn4|Range|Input Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1000</Value>
+    </Item>
+    <Item Command="PCTR" Index="4" Node="Pulse Inputs|PIn4|Range|Input Center">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1500</Value>
+    </Item>
+    <Item Command="PMAX" Index="4" Node="Pulse Inputs|PIn4|Range|Input Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2000</Value>
+    </Item>
+    <Item Command="PPOL" Index="4" Node="Pulse Inputs|PIn4|Capture Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PDB" Index="4" Node="Pulse Inputs|PIn4|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="PMINA" Index="4" Node="Pulse Inputs|PIn4|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMAXA" Index="4" Node="Pulse Inputs|PIn4|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMOD" Index="5" Node="Pulse Inputs|PIn5|Capture Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PINA" Index="5" Node="Pulse Inputs|PIn5|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMIN" Index="5" Node="Pulse Inputs|PIn5|Range|Input Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1000</Value>
+    </Item>
+    <Item Command="PCTR" Index="5" Node="Pulse Inputs|PIn5|Range|Input Center">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1500</Value>
+    </Item>
+    <Item Command="PMAX" Index="5" Node="Pulse Inputs|PIn5|Range|Input Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2000</Value>
+    </Item>
+    <Item Command="PPOL" Index="5" Node="Pulse Inputs|PIn5|Capture Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PDB" Index="5" Node="Pulse Inputs|PIn5|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="PMINA" Index="5" Node="Pulse Inputs|PIn5|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMAXA" Index="5" Node="Pulse Inputs|PIn5|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMOD" Index="6" Node="Pulse Inputs|PIn6|Capture Type">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PINA" Index="6" Node="Pulse Inputs|PIn6|Input Use">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMIN" Index="6" Node="Pulse Inputs|PIn6|Range|Input Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1000</Value>
+    </Item>
+    <Item Command="PCTR" Index="6" Node="Pulse Inputs|PIn6|Range|Input Center">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1500</Value>
+    </Item>
+    <Item Command="PMAX" Index="6" Node="Pulse Inputs|PIn6|Range|Input Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2000</Value>
+    </Item>
+    <Item Command="PPOL" Index="6" Node="Pulse Inputs|PIn6|Capture Polarity">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="PDB" Index="6" Node="Pulse Inputs|PIn6|Input Deadband (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>5</Value>
+    </Item>
+    <Item Command="PMINA" Index="6" Node="Pulse Inputs|PIn6|Action on Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="PMAXA" Index="6" Node="Pulse Inputs|PIn6|Action on Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="DOL" Index="1" Node="Digital Outputs|DOut1|Active Level">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="DOA" Index="1" Node="Digital Outputs|DOut1|Activate when">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="DOL" Index="2" Node="Digital Outputs|DOut2|Active Level">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="DOA" Index="2" Node="Digital Outputs|DOut2|Activate when">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="EE" Index="1" Node="User-Defined Values|1">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="2" Node="User-Defined Values|2">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="3" Node="User-Defined Values|3">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="4" Node="User-Defined Values|4">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="5" Node="User-Defined Values|5">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="6" Node="User-Defined Values|6">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="7" Node="User-Defined Values|7">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="8" Node="User-Defined Values|8">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="9" Node="User-Defined Values|9">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="10" Node="User-Defined Values|10">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="11" Node="User-Defined Values|11">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="12" Node="User-Defined Values|12">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="13" Node="User-Defined Values|13">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="14" Node="User-Defined Values|14">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="15" Node="User-Defined Values|15">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="16" Node="User-Defined Values|16">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="17" Node="User-Defined Values|17">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="18" Node="User-Defined Values|18">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="19" Node="User-Defined Values|19">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="20" Node="User-Defined Values|20">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="21" Node="User-Defined Values|21">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="22" Node="User-Defined Values|22">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="23" Node="User-Defined Values|23">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="24" Node="User-Defined Values|24">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="25" Node="User-Defined Values|25">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="26" Node="User-Defined Values|26">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="27" Node="User-Defined Values|27">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="28" Node="User-Defined Values|28">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="29" Node="User-Defined Values|29">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="30" Node="User-Defined Values|30">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="31" Node="User-Defined Values|31">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="EE" Index="32" Node="User-Defined Values|32">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+  </ControlTree>
+  <PowerTree Name="v2.0:SBL1360A">
+    <Item Command="PWMF" Index="1" Node="General|PWM Frequency (kHz)">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>10</Multiplier>
+      <Value>160</Value>
+    </Item>
+    <Item Command="OVL" Index="1" Node="General|Voltage Limits|Over Voltage Limit (V)">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>10</Multiplier>
+      <Value>600</Value>
+    </Item>
+    <Item Command="OVH" Index="1" Node="General|Voltage Limits|Over Voltage Hysteresis (V)">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>10</Multiplier>
+      <Value>50</Value>
+    </Item>
+    <Item Command="UVL" Index="1" Node="General|Voltage Limits|Under Voltage Limit (V)">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>10</Multiplier>
+      <Value>100</Value>
+    </Item>
+    <Item Command="THLD" Index="1" Node="General|Short Circuit Protection">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="OTL" Index="1" Node="General|Over Temperature Limit">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>80</Value>
+    </Item>
+    <Item Command="BKD" Index="1" Node="General|Brake Delay (ms)">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>250</Value>
+    </Item>
+    <Item Command="STO" Index="1" Node="General|STO Enable">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="MXMD" Index="1" Node="General|Mixing">
+      <ArgumentType>IntegerValue</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="MDIR" Index="1" Node="Motor|Motor Configuration|Motor Direction">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="BPOL" Index="1" Node="Motor|Motor Configuration|Number of Pole Pairs">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>15</Value>
+    </Item>
+    <Item Command="SWD" Index="1" Node="Motor|Motor Configuration|Swap Windings">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="TNM" Index="1" Node="Motor|Motor Configuration|Torque Constant (Nm/A)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1000</Multiplier>
+      <Value>1000</Value>
+    </Item>
+    <Item Command="BLFB" Index="1" Node="Motor|Motor Configuration|Closed Loop Feedback Sensor">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="BLSTD" Index="1" Node="Motor|Motor Configuration|Stall Detection">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2</Value>
+    </Item>
+    <Item Command="SED" Index="1" Node="Motor|Motor Configuration|Sensor Error Detection">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2</Value>
+    </Item>
+    <Item Command="BMOD" Index="1" Node="Motor|Motor Configuration|Switching Mode">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="BZPW" Index="1" Node="Motor|Motor Configuration|Reference Seek Power (A)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>10</Multiplier>
+      <Value>35</Value>
+    </Item>
+    <Item Command="HSM" Index="1" Node="Motor|Motor Configuration|Hall Counter|Hall Sensor Map">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="HPO" Index="1" Node="Motor|Motor Configuration|Hall Counter|Hall Position">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="BLL" Index="1" Node="Motor|Motor Configuration|Hall Counter|Min Limit">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>-20000</Value>
+    </Item>
+    <Item Command="BHL" Index="1" Node="Motor|Motor Configuration|Hall Counter|Max Limit">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>20000</Value>
+    </Item>
+    <Item Command="BHOME" Index="1" Node="Motor|Motor Configuration|Hall Counter|Home Count">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="BLLA" Index="1" Node="Motor|Motor Configuration|Hall Counter|Action at Min">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="BHLA" Index="1" Node="Motor|Motor Configuration|Hall Counter|Action at Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>16</Value>
+    </Item>
+    <Item Command="SPOL" Index="1" Node="Motor|Motor Configuration|Sinusoidal Settings|SinCos/SSI Sensor Poles">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>30</Value>
+    </Item>
+    <Item Command="PSA" Index="1" Node="Motor|Motor Configuration|Sinusoidal Settings|Sensor Phase Shift Angle">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>128</Value>
+    </Item>
+    <Item Command="BFBK" Index="1" Node="Motor|Motor Configuration|Sinusoidal Settings|Sinusoidal Angle Sensor">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="BADJ" Index="1" Node="Motor|Motor Configuration|Sinusoidal Settings|Angle Zero Adjust">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="KPF" Index="1" Node="Motor|Motor Configuration|Sinusoidal Settings|FOC Parameters|Flux Proportional Gain">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1000000</Multiplier>
+      <Value>3000</Value>
+    </Item>
+    <Item Command="KIF" Index="1" Node="Motor|Motor Configuration|Sinusoidal Settings|FOC Parameters|Flux Integral Gain">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1000000</Multiplier>
+      <Value>300000</Value>
+    </Item>
+    <Item Command="KPF" Index="2" Node="Motor|Motor Configuration|Sinusoidal Settings|FOC Parameters|Torque Proportional Gain">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1000000</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="KIF" Index="2" Node="Motor|Motor Configuration|Sinusoidal Settings|FOC Parameters|Torque Integral Gain">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1000000</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="HSAT" Index="1" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Negative Direction|1">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>437</Value>
+    </Item>
+    <Item Command="HSAT" Index="2" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Negative Direction|2">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>92</Value>
+    </Item>
+    <Item Command="HSAT" Index="3" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Negative Direction|3">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>11</Value>
+    </Item>
+    <Item Command="HSAT" Index="4" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Negative Direction|4">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>263</Value>
+    </Item>
+    <Item Command="HSAT" Index="5" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Negative Direction|5">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>345</Value>
+    </Item>
+    <Item Command="HSAT" Index="6" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Negative Direction|6">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>182</Value>
+    </Item>
+    <Item Command="HSAT" Index="7" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Positive Direction|1">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>409</Value>
+    </Item>
+    <Item Command="HSAT" Index="8" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Positive Direction|2">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>76</Value>
+    </Item>
+    <Item Command="HSAT" Index="9" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Positive Direction|3">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>501</Value>
+    </Item>
+    <Item Command="HSAT" Index="10" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Positive Direction|4">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>248</Value>
+    </Item>
+    <Item Command="HSAT" Index="11" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Positive Direction|5">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>329</Value>
+    </Item>
+    <Item Command="HSAT" Index="12" Node="Motor|Motor Configuration|Sinusoidal Settings|Hall Sensor Angle Table|Positive Direction|6">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>154</Value>
+    </Item>
+    <Item Command="ZSMC" Index="1" Node="Motor|Motor Configuration|Sinusoidal Settings|Sine/Cosine Calibration Values|Sine Zero Point">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ZSMC" Index="2" Node="Motor|Motor Configuration|Sinusoidal Settings|Sine/Cosine Calibration Values|Cosine Zero Point">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ZSMC" Index="3" Node="Motor|Motor Configuration|Sinusoidal Settings|Sine/Cosine Calibration Values|Sine/Cosine Ratio">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ZSMA" Index="1" Node="Motor|Motor Configuration|Sinusoidal Settings|Sine/Cosine Calibration Values|Cosine Amplitude">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ALIM" Index="1" Node="Motor|Motor Output|Amps Limits|Amps Limit (A)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>10</Multiplier>
+      <Value>250</Value>
+    </Item>
+    <Item Command="ATRIG" Index="1" Node="Motor|Motor Output|Amps Limits|Amps Trigger (A)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>10</Multiplier>
+      <Value>300</Value>
+    </Item>
+    <Item Command="ATGA" Index="1" Node="Motor|Motor Output|Amps Limits|Amps Trigger Action">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>18</Value>
+    </Item>
+    <Item Command="ATGD" Index="1" Node="Motor|Motor Output|Amps Limits|Amps Trigger Delay (ms)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>500</Value>
+    </Item>
+    <Item Command="MXPF" Index="1" Node="Motor|Motor Output|Power Adjust|Max Power Fwd (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>100</Value>
+    </Item>
+    <Item Command="MXPR" Index="1" Node="Motor|Motor Output|Power Adjust|Max Power Rev (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>100</Value>
+    </Item>
+    <Item Command="MXRPM" Index="1" Node="Motor|Motor Output|Speed &amp;amp; Acceleration|Max Speed (RPM)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1000</Value>
+    </Item>
+    <Item Command="MAC" Index="1" Node="Motor|Motor Output|Speed &amp;amp; Acceleration|Acceleration (RPM/s)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>10</Multiplier>
+      <Value>20000</Value>
+    </Item>
+    <Item Command="MDEC" Index="1" Node="Motor|Motor Output|Speed &amp;amp; Acceleration|Deceleration (RPM/s)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>10</Multiplier>
+      <Value>20000</Value>
+    </Item>
+    <Item Command="EDEC" Index="1" Node="Motor|Motor Output|Speed &amp;amp; Acceleration|Fault Deceleration (RPM/s)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>10</Multiplier>
+      <Value>20000</Value>
+    </Item>
+    <Item Command="MMOD" Index="1" Node="Motor|Motor Output|Operating Mode">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1</Value>
+    </Item>
+    <Item Command="MVEL" Index="1" Node="Motor|Motor Output|Closed Loop Parameters|Position Mode Velocity (RPM)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>1000</Value>
+    </Item>
+    <Item Command="MXTRN" Index="1" Node="Motor|Motor Output|Closed Loop Parameters|Position Turns Min to Max">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>100</Multiplier>
+      <Value>44444</Value>
+    </Item>
+    <Item Command="KP" Index="1" Node="Motor|Motor Output|Closed Loop Parameters|Proportional Gain">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1000000</Multiplier>
+      <Value>2000000</Value>
+    </Item>
+    <Item Command="KI" Index="1" Node="Motor|Motor Output|Closed Loop Parameters|Integral Gain">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1000000</Multiplier>
+      <Value>20000000</Value>
+    </Item>
+    <Item Command="KD" Index="1" Node="Motor|Motor Output|Closed Loop Parameters|Differential Gain">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1000000</Multiplier>
+      <Value>0</Value>
+    </Item>
+    <Item Command="ICAP" Index="1" Node="Motor|Motor Output|Closed Loop Parameters|Integrator Limit (%)">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>80</Value>
+    </Item>
+    <Item Command="CLERD" Index="1" Node="Motor|Motor Output|Closed Loop Parameters|Loop Error Detection">
+      <ArgumentType>IntegerList</ArgumentType>
+      <Multiplier>1</Multiplier>
+      <Value>2</Value>
+    </Item>
+  </PowerTree>
+</ControllerProfile>

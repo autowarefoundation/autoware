@@ -1,0 +1,64 @@
+<launch>
+  <arg name="mode" default="serial" description="options: can, serial"/>
+  <arg name="can_device" default="can0"/>
+  <arg name="left_serial_port" default="/dev/ttyFixed7"/>
+  <arg name="right_serial_port" default="/dev/ttyFixed6"/>
+  <arg name="vehicle_calibration_param_path" default="$(find-pkg-share roboteq_interface)/config/vehicle_calibration.param.yaml"/>
+
+  <!-- Global parameters -->
+  <!-- Do not add "group" in order to propagate global parameters -->
+  <include file="$(find-pkg-share global_parameter_loader)/launch/global_params.launch.py">
+    <arg name="vehicle_model" value="crow"/>
+  </include>
+
+  <!-- can interface -->
+  <group if="$(eval &quot;'$(var mode)'=='can'&quot;)">
+    <include file="$(find-pkg-share ros2_socketcan)/launch/socket_can_bridge.launch.xml">
+      <arg name="interface" value="$(var can_device)"/>
+      <arg name="receiver_interval_sec" value="0.02"/>
+      <arg name="sender_timeout_sec" value="0.02"/>
+    </include>
+
+    <group>
+      <push-ros-namespace namespace="roboteq/left"/>
+      <include file="$(find-pkg-share roboteq_can_interface)/launch/roboteq_can_interface.launch.xml">
+        <arg name="node_id" value="1"/>
+      </include>
+    </group>
+    <group>
+      <push-ros-namespace namespace="roboteq/right"/>
+      <include file="$(find-pkg-share roboteq_can_interface)/launch/roboteq_can_interface.launch.xml">
+        <arg name="node_id" value="2"/>
+      </include>
+    </group>
+  </group>
+
+  <!-- serial interface -->
+  <group if="$(eval &quot;'$(var mode)'=='serial'&quot;)">
+    <group>
+      <push-ros-namespace namespace="roboteq/left"/>
+      <include file="$(find-pkg-share roboteq_serial_interface)/launch/roboteq_serial_interface.launch.xml">
+        <arg name="serial_port" value="$(var left_serial_port)"/>
+      </include>
+    </group>
+    <group>
+      <push-ros-namespace namespace="roboteq/right"/>
+      <include file="$(find-pkg-share roboteq_serial_interface)/launch/roboteq_serial_interface.launch.xml">
+        <arg name="serial_port" value="$(var right_serial_port)"/>
+      </include>
+    </group>
+  </group>
+
+  <arg name="loop_rate" default="50.0"/>
+  <arg name="control_cmd_timeout_sec" default="0.5"/>
+  <arg name="roboteq_status_timeout_sec" default="0.5"/>
+  <arg name="vehicle_velocity_limit" default="0.83"/>
+  <!-- velocity limit on vehicle interface, unit is [mps]. 0.83mps ≒ 3.0kmph -->
+  <node pkg="roboteq_interface" name="roboteq_interface" exec="roboteq_interface" output="log">
+    <param name="loop_rate" value="$(var loop_rate)"/>
+    <param name="control_cmd_timeout_sec" value="$(var control_cmd_timeout_sec)"/>
+    <param name="roboteq_status_timeout_sec" value="$(var roboteq_status_timeout_sec)"/>
+    <param name="vehicle_velocity_limit" value="$(var vehicle_velocity_limit)"/>
+    <param from="$(var vehicle_calibration_param_path)"/>
+  </node>
+</launch>

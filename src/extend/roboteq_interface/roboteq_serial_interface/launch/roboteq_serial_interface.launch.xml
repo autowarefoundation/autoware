@@ -1,0 +1,9 @@
+<launch>
+  <arg name="serial_port" default="/dev/ttyUSB0"/>
+
+  <node pkg="roboteq_serial_interface" name="roboteq_serial_interface" exec="roboteq_serial_interface" output="log">
+    <remap from="~/input/command" to="command"/>
+    <remap from="~/output/status" to="status"/>
+    <param name="serial_port" value="$(var serial_port)"/>
+  </node>
+</launch>
