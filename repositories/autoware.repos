@@ -130,3 +130,6 @@ repositories:
   extend/common:
     type: git
     url: git@github.com:cafeline/PALRA_dev.git
+  extend/lsdb_interface:
+    type: git
+    url: https://github.com/tier4/lsdb_interface.git
