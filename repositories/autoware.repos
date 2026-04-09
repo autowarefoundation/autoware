@@ -133,3 +133,6 @@ repositories:
   extend/lsdb_interface:
     type: git
     url: https://github.com/tier4/lsdb_interface.git
+  extend/dio_ros_driver:
+    type: git
+    url: https://github.com/tier4/dio_ros_driver.git

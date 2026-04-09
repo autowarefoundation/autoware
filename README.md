@@ -10,6 +10,9 @@ sudo apt update && sudo apt upgrade
 rosdep update
 rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO
 
+# lsdb_interfaceのビルドで依存するautoware_auto_msgsをマニュアルで入れる
+sudo apt install ros-humble-autoware-auto-msgs
+
 MAKEFLAGS="-j1" colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --parallel-workers 1
 
 ```
