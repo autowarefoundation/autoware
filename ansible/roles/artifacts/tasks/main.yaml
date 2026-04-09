@@ -510,7 +510,13 @@
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_lamp_recognizer_comlops.onnx"
     mode: "644"
     checksum: sha256:300af04a5893961195a9b7ffd9d80364280f328a6dc549f9b1e05d428d96d2e5
-
+- name: Download traffic_light_classifier/v4/lamp_recognizer_ml.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/lamp_recognizer_ml.param.yaml
+    dest: "{{ data_dir }}/traffic_light_classifier/lamp_recognizer_ml.param.yaml"
+    mode: "644"
+    checksum: sha256:80d92943a036ac454aac200a3be83d693dacab924c869f556ef09f70deab097a
 # diffusion_planner
 - name: Create diffusion_planner directory inside {{ data_dir }}
   ansible.builtin.file:
