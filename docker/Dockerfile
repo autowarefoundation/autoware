@@ -25,6 +25,7 @@ COPY src/core/autoware_cmake /autoware/src/core/autoware_cmake
 COPY src/core/autoware_internal_msgs /autoware/src/core/autoware_internal_msgs
 COPY src/core/autoware_lanelet2_extension /autoware/src/core/autoware_lanelet2_extension
 COPY src/core/autoware_msgs /autoware/src/core/autoware_msgs
+COPY src/core/autoware_system_designer /autoware/src/core/autoware_system_designer
 COPY src/core/autoware_utils /autoware/src/core/autoware_utils
 RUN rosdep update && /autoware/resolve_rosdep_keys.sh /autoware/src "${ROS_DISTRO}" \
   > /rosdep-core-common-depend-packages.txt \
@@ -222,6 +223,7 @@ RUN --mount=type=cache,target="${CCACHE_DIR}" \
   --mount=type=bind,source=src/core/autoware_internal_msgs,target=/autoware/src/core/autoware_internal_msgs \
   --mount=type=bind,source=src/core/autoware_lanelet2_extension,target=/autoware/src/core/autoware_lanelet2_extension \
   --mount=type=bind,source=src/core/autoware_msgs,target=/autoware/src/core/autoware_msgs \
+  --mount=type=bind,source=src/core/autoware_system_designer,target=/autoware/src/core/autoware_system_designer \
   --mount=type=bind,source=src/core/autoware_utils,target=/autoware/src/core/autoware_utils \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && /autoware/build_and_clean.sh "${CCACHE_DIR}" /opt/autoware
