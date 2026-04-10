@@ -1,6 +1,9 @@
 - name: Set up source development environments for Autoware Universe
   hosts: localhost
   connection: local
+  module_defaults:
+    ansible.builtin.get_url:
+      timeout: 300
   vars_prompt:
     - name: prompt_install_nvidia
       prompt: |-

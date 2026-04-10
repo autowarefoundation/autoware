@@ -8,7 +8,7 @@
 - name: Download yabloc_pose_initializer/resources.tar.gz
   become: true
   ansible.builtin.get_url:
-    url: https://s3.ap-northeast-2.wasabisys.com/pinto-model-zoo/136_road-segmentation-adas-0001/resources.tar.gz
+    url: https://autoware-files.s3.us-west-2.amazonaws.com/models/yabloc/136_road-segmentation-adas-0001/resources.tar.gz
     dest: "{{ data_dir }}/yabloc_pose_initializer/resources.tar.gz"
     mode: "644"
     checksum: sha256:1f660e15f95074bade32b1f80dbf618e9cee1f0b9f76d3f4671cb9be7f56eb3a
