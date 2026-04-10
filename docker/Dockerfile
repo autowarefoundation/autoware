@@ -175,6 +175,7 @@ FROM rosdep-depend AS rosdep-universe-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
+COPY src/core /autoware/src/core
 COPY src/launcher /autoware/src/launcher
 COPY src/sensor_component /autoware/src/sensor_component
 COPY src/universe /autoware/src/universe
