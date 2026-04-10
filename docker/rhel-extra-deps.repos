@@ -1,0 +1,154 @@
+repositories:
+  geographic_info:
+    type: git
+    url: https://github.com/ros-geographic-info/geographic_info.git
+    version: ros2
+  perception_pcl:
+    type: git
+    url: https://github.com/ros-perception/perception_pcl.git
+    version: jazzy
+  pcl_msgs:
+    type: git
+    url: https://github.com/ros-perception/pcl_msgs.git
+    version: ros2
+  vision_opencv:
+    type: git
+    url: https://github.com/ros-perception/vision_opencv.git
+    version: rolling
+  image_common:
+    type: git
+    url: https://github.com/ros-perception/image_common.git
+    version: jazzy
+  diagnostics:
+    type: git
+    url: https://github.com/ros/diagnostics.git
+    version: ros2
+  bond_core:
+    type: git
+    url: https://github.com/ros/bond_core.git
+    version: ros2
+  laser_geometry:
+    type: git
+    url: https://github.com/ros-perception/laser_geometry.git
+    version: ros2
+  grid_map:
+    type: git
+    url: https://github.com/ANYbotics/grid_map.git
+    version: jazzy
+  Lanelet2:
+    type: git
+    url: https://github.com/fzi-forschungszentrum-informatik/Lanelet2.git
+    version: master
+  mrt_cmake_modules:
+    type: git
+    url: https://github.com/KIT-MRT/mrt_cmake_modules.git
+    version: master
+  osqp_vendor:
+    type: git
+    url: https://github.com/tier4/osqp_vendor.git
+    version: main
+  topic_tools:
+    type: git
+    url: https://github.com/ros-tooling/topic_tools.git
+    version: main
+  angles:
+    type: git
+    url: https://github.com/ros/angles.git
+    version: ros2
+  filters:
+    type: git
+    url: https://github.com/ros/filters.git
+    version: ros2
+  octomap_msgs:
+    type: git
+    url: https://github.com/OctoMap/octomap_msgs.git
+    version: ros2
+  radar_msgs:
+    type: git
+    url: https://github.com/ros-perception/radar_msgs.git
+    version: ros2
+  vision_msgs:
+    type: git
+    url: https://github.com/ros-perception/vision_msgs.git
+    version: ros2
+  ros_canopen:
+    type: git
+    url: https://github.com/ros-industrial/ros_canopen.git
+    version: dashing-devel
+  foxglove_sdk:
+    type: git
+    url: https://github.com/foxglove/foxglove-sdk.git
+    version: main
+  udp_msgs:
+    type: git
+    url: https://github.com/flynneva/udp_msgs.git
+    version: main
+  xacro:
+    type: git
+    url: https://github.com/ros/xacro.git
+    version: ros2
+  joystick_drivers:
+    type: git
+    url: https://github.com/ros-drivers/joystick_drivers.git
+    version: ros2
+  tf_transformations:
+    type: git
+    url: https://github.com/DLu/tf_transformations.git
+    version: main
+  cpp_polyfills:
+    type: git
+    url: https://github.com/PickNikRobotics/cpp_polyfills.git
+    version: main
+  RSL:
+    type: git
+    url: https://github.com/PickNikRobotics/RSL.git
+    version: main
+  generate_parameter_library:
+    type: git
+    url: https://github.com/PickNikRobotics/generate_parameter_library.git
+    version: humble
+  rviz_2d_overlay_plugins:
+    type: git
+    url: https://github.com/teamspatzenhirn/rviz_2d_overlay_plugins.git
+    version: main
+  ublox:
+    type: git
+    url: https://github.com/KumarRobotics/ublox.git
+    version: ros2
+  rtcm_msgs:
+    type: git
+    url: https://github.com/tilk/rtcm_msgs.git
+    version: master
+  nmea_msgs:
+    type: git
+    url: https://github.com/ros-drivers/nmea_msgs.git
+    version: ros2
+  velodyne:
+    type: git
+    url: https://github.com/ros-drivers/velodyne.git
+    version: jazzy-devel
+  ackermann_msgs:
+    type: git
+    url: https://github.com/ros-drivers/ackermann_msgs.git
+    version: ros2
+  nav2_msgs:
+    type: git
+    url: https://github.com/ros-navigation/navigation2.git
+    version: jazzy
+  point_cloud_transport:
+    type: git
+    url: https://github.com/ros-perception/point_cloud_transport.git
+    version: jazzy
+  proxsuite:
+    type: git
+    url: https://github.com/Simple-Robotics/proxsuite.git
+    version: devel
+  point_cloud_msg_wrapper:
+    type: git
+    url: https://gitlab.com/ApexAI/point_cloud_msg_wrapper.git
+    version: rolling
+  behaviortree_cpp:
+    type: git
+    url: https://github.com/BehaviorTree/BehaviorTree.CPP.git
+    version: v3.8
+# Cache-bust: 1775602888
