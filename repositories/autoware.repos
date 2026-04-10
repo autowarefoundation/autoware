@@ -32,6 +32,10 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_rviz_plugins.git
     version: 0.4.0
+  core/autoware_system_designer:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_system_designer.git
+    version: v0.3.1
   # universe
   universe/autoware_universe:
     type: git
