@@ -12,7 +12,7 @@ rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO
 
 # lsdb_interfaceのビルドで依存するやつらをマニュアルで入れる
 sudo apt install ros-humble-autoware-auto-msgs
-sudo apt install autoware-vehicle-info-utils
+sudo apt install ros-humble-autoware-vehicle-info-utils
 
 MAKEFLAGS="-j1" colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --parallel-workers 1
 
