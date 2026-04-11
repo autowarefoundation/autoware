@@ -21,6 +21,7 @@ print_help() {
     echo "                  Download artifacts"
     echo "  --module        Specify the module (default: all)"
     echo "  --ros-distro    Specify ROS distribution (humble or jazzy, default: humble)"
+    echo "  --locked        Use locked package versions for reproducible builds"
     echo ""
 }
 
@@ -72,6 +73,10 @@ while [ "$1" != "" ]; do
     --ros-distro)
         option_ros_distro="$2"
         shift
+        ;;
+    --locked)
+        # Use locked package versions for reproducible builds.
+        option_locked=true
         ;;
     *)
         args+=("$1")
@@ -155,6 +160,19 @@ fi
 option_ros_distro="${option_ros_distro:-humble}"
 export ROS_DISTRO="$option_ros_distro"
 ansible_args+=("--extra-vars" "rosdistro=$option_ros_distro")
+
+# Check locked option
+ansible_args+=("--extra-vars" "use_locked_versions=${option_locked:-false}")
+if [ "$option_locked" = "true" ]; then
+    arch=$(dpkg --print-architecture)
+    lockfile="$SCRIPT_DIR/ansible/vars/locked-versions-${rosdistro:-humble}-${arch}.yaml"
+    if [ -f "$lockfile" ]; then
+        ansible_args+=("--extra-vars" "lockfile_path=${lockfile}")
+    else
+        echo -e "\e[31mError: Lockfile not found: $lockfile\e[0m" >&2
+        exit 1
+    fi
+fi
 
 # Install sudo
 if ! (command -v sudo >/dev/null 2>&1); then

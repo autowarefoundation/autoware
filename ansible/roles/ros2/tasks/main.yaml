@@ -1,35 +1,38 @@
-- name: Get latest release information of ros-apt-source package
-  ansible.builtin.uri:
-    url: https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest
-    method: GET
-    return_content: true
-  register: ros2__ros_apt_release_info
+- name: Download and install ros-apt-source package
+  when: not (use_locked_versions | default(false) | bool)
+  block:
+    - name: Get latest release information of ros-apt-source package
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest
+        method: GET
+        return_content: true
+      register: ros2__ros_apt_release_info
 
-- name: Extract latest version of ros-apt-source package
-  ansible.builtin.set_fact:
-    ros2__ros_apt_source_version: "{{ (ros2__ros_apt_release_info.content | from_json).tag_name }}"
+    - name: Extract latest version of ros-apt-source package
+      ansible.builtin.set_fact:
+        ros2__ros_apt_source_version: "{{ (ros2__ros_apt_release_info.content | from_json).tag_name }}"
 
-- name: Save result of 'source /etc/os-release && echo $UBUNTU_CODENAME'
-  ansible.builtin.shell: bash -c 'source /etc/os-release && echo $UBUNTU_CODENAME'
-  register: ros2__ubuntu_codename
-  changed_when: false
+    - name: Save result of 'source /etc/os-release && echo $UBUNTU_CODENAME'
+      ansible.builtin.shell: bash -c 'source /etc/os-release && echo $UBUNTU_CODENAME'
+      register: ros2__ubuntu_codename
+      changed_when: false
 
-- name: Get ros2-apt-source package
-  ansible.builtin.get_url:
-    url: https://github.com/ros-infrastructure/ros-apt-source/releases/download/{{ ros2__ros_apt_source_version }}/ros2-apt-source_{{ ros2__ros_apt_source_version }}.{{ ros2__ubuntu_codename.stdout }}_all.deb
-    dest: /tmp/ros2-apt-source.deb
-    mode: "0644"
+    - name: Get ros2-apt-source package
+      ansible.builtin.get_url:
+        url: https://github.com/ros-infrastructure/ros-apt-source/releases/download/{{ ros2__ros_apt_source_version }}/ros2-apt-source_{{ ros2__ros_apt_source_version }}.{{ ros2__ubuntu_codename.stdout }}_all.deb
+        dest: /tmp/ros2-apt-source.deb
+        mode: "0644"
 
-- name: Install ros2-apt-source package
-  ansible.builtin.apt:
-    deb: /tmp/ros2-apt-source.deb
-    state: present
-  become: true
+    - name: Install ros2-apt-source package
+      ansible.builtin.apt:
+        deb: /tmp/ros2-apt-source.deb
+        state: present
+      become: true
 
-- name: Delete installed .deb file
-  ansible.builtin.file:
-    path: /tmp/ros2-apt-source.deb
-    state: absent
+    - name: Delete installed .deb file
+      ansible.builtin.file:
+        path: /tmp/ros2-apt-source.deb
+        state: absent
 
 - name: Hold check of ros-{{ rosdistro + '-' + ros2_installation_type }}
   ansible.builtin.command: apt-mark showhold
@@ -41,6 +44,7 @@
   ansible.builtin.apt:
     name: ros-{{ rosdistro }}-{{ ros2_installation_type }}
     state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
   when: "'ros-' + rosdistro + '-' + ros2_installation_type not in ros2_held_ros_packages.stdout"
   register: ros2_install_result

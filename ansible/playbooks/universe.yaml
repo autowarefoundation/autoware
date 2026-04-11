@@ -40,6 +40,7 @@
           [Warning] Skipping installation of NVIDIA libraries. Please manually install them if you plan to use any dependent components.
       when: prompt_install_nvidia != 'y'
   roles:
+    - role: autoware.dev_env.version_lock
     # Autoware base dependencies
     - role: autoware.dev_env.ros2
     - role: autoware.dev_env.ros2_dev_tools
