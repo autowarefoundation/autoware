@@ -50,7 +50,7 @@ jobs:
     outputs:
       target-tags: ${{ steps.compute-tags.outputs.tags }}
     steps:
-      - name: "💻 Runner specs"
+      - name: 💻 Runner specs
         run: |
           echo "::group::CPU"
           lscpu | grep -E "^(Architecture|CPU\(s\)|Model name|Thread|Core|Socket)"
@@ -62,13 +62,13 @@ jobs:
           df -h /
           echo "::endgroup::"
 
-      - name: "🔧 Change permission of workspace"
+      - name: 🔧 Change permission of workspace
         run: sudo chown -R $USER:$USER ${{ github.workspace }}
 
-      - name: "📥 Check out repository"
+      - name: 📥 Check out repository
         uses: actions/checkout@v6
 
-      - name: "🏷️ Compute manifest tags from HCL"
+      - name: 🏷️ Compute manifest tags from HCL
         id: compute-tags
         run: |
           targets=$(docker buildx bake -f docker-new/docker-bake.hcl --print ${{ inputs.bake-group }} 2>/dev/null \
@@ -80,32 +80,32 @@ jobs:
           echo "tags=${tags}" >> "$GITHUB_OUTPUT"
           echo "::notice::Manifest tags: ${tags}"
 
-      - name: "🧹 Free disk space"
+      - name: 🧹 Free disk space
         if: inputs.free-disk-space && runner.environment == 'github-hosted'
         uses: ./.github/actions/free-disk-space
 
-      - name: "📦 Import source repos"
+      - name: 📦 Import source repos
         if: inputs.needs-source
         run: |
           pipx install vcs2l
           mkdir -p src
           vcs import --shallow src < repositories/autoware.repos
 
-      - name: "🐳 Setup Docker Buildx"
+      - name: 🐳 Setup Docker Buildx
         uses: docker/setup-buildx-action@v4
         with:
           buildkitd-config-inline: |
             [worker.oci]
               max-parallelism = 2
 
-      - name: "🔑 Login to GitHub Container Registry"
+      - name: 🔑 Login to GitHub Container Registry
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
 
-      - name: "📋 Prepare build metadata"
+      - name: 📋 Prepare build metadata
         id: meta
         run: |
           ref_name="${GITHUB_REF_NAME//\//-}"
@@ -128,7 +128,7 @@ jobs:
           echo "  Event:    ${{ github.event_name }}"
           echo "::endgroup::"
 
-      - name: "🔨 Build and push [${{ inputs.bake-group }}] (${{ matrix.platform }})"
+      - name: 🔨 Build and push [${{ inputs.bake-group }}] (${{ matrix.platform }})
         uses: docker/bake-action@v7
         env:
           ROS_DISTRO: ${{ inputs.ros-distro }}
@@ -153,7 +153,7 @@ jobs:
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.platform }}-main
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
 
-      - name: "📊 Build summary"
+      - name: 📊 Build summary
         if: always()
         env:
           IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
@@ -179,14 +179,14 @@ jobs:
     if: needs.build.result == 'success'
     runs-on: ubuntu-24.04
     steps:
-      - name: "🔑 Login to GitHub Container Registry"
+      - name: 🔑 Login to GitHub Container Registry
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
 
-      - name: "🔗 Create multi-arch manifests"
+      - name: 🔗 Create multi-arch manifests
         env:
           IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
           REF_SUFFIX: ${{ github.event_name == 'workflow_dispatch' && github.ref_name != 'main' && format('-{0}', github.ref_name) || '' }}
@@ -202,7 +202,7 @@ jobs:
             echo "::endgroup::"
           done
 
-      - name: "📊 Manifest summary"
+      - name: 📊 Manifest summary
         env:
           IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
           REF_SUFFIX: ${{ github.event_name == 'workflow_dispatch' && github.ref_name != 'main' && format('-{0}', github.ref_name) || '' }}

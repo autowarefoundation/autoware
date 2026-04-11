@@ -3,3 +3,4 @@ ignored:
   - DL3013 # Pin versions in pip. Instead of `pip install <package>`, use `pip install <package>==<version>`
   - DL3015 # Avoid additional packages by specifying `--no-install-recommends`
   - DL3009 # Delete the apt-get lists after installing something
+  - DL3002 # Last USER should not be root (multi-stage builds need root in intermediate stages)
