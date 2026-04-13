@@ -44,6 +44,40 @@ graph TD
 | `universe`                      | Runtime image with compiled autoware (no CUDA)                                       | Deployment without GPU                                     |
 | `universe-cuda`                 | Runtime image with compiled autoware + CUDA runtime libs                             | Deployment with GPU                                        |
 
+## Pull from GHCR
+
+Pre-built multi-arch images (amd64 + arm64) are available on GHCR:
+
+```bash
+# Pull a specific image
+docker pull ghcr.io/autowarefoundation/autoware-new:base-jazzy
+docker pull ghcr.io/autowarefoundation/autoware-new:base-humble
+
+# Pull a dated version (for pinning)
+docker pull ghcr.io/autowarefoundation/autoware-new:base-jazzy-20260407
+
+# Pull a release version
+docker pull ghcr.io/autowarefoundation/autoware-new:base-jazzy-1.2.3
+```
+
+Tag pattern: `<stage>-<ros_distro>[-<date>|-<version>]`
+
+Available images (replace `jazzy` with `humble` for other distros):
+
+| Tag                                   | Description                                       |
+| ------------------------------------- | ------------------------------------------------- |
+| `base-jazzy`                          | ROS base + ansible + user aw                      |
+| `core-dependencies-jazzy`             | Build deps + core packages (except autoware_core) |
+| `core-devel-jazzy`                    | Full core development image                       |
+| `core-jazzy`                          | Lightweight core runtime                          |
+| `universe-dependencies-jazzy`         | Universe build dependencies                       |
+| `universe-dependencies-cuda-jazzy`    | Universe + CUDA dev libs                          |
+| `universe-devel-jazzy`                | Full universe development (no CUDA)               |
+| `universe-devel-cuda-jazzy`           | Full universe development with CUDA               |
+| `universe-runtime-dependencies-jazzy` | Universe runtime dependencies                     |
+| `universe-jazzy`                      | Runtime without GPU                               |
+| `universe-cuda-jazzy`                 | Runtime with GPU                                  |
+
 ## Build locally
 
 From the repository root. Targets beyond `base` require source repositories under `src/`:
