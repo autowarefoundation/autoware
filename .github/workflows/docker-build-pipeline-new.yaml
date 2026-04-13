@@ -1,0 +1,51 @@
+name: docker-build-pipeline-new
+
+on:
+  workflow_call:
+    inputs:
+      ros-distro:
+        description: ROS distribution
+        type: string
+        required: true
+      target-image:
+        description: Registry image name
+        type: string
+        default: autoware-new
+
+jobs:
+  build-base:
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-base
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      free-disk-space: false
+
+  build-core:
+    needs: build-base
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-core
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      needs-source: true
+      free-disk-space: false
+
+  build-universe:
+    needs: build-core
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-universe
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      needs-source: true
+
+  build-universe-cuda:
+    needs: build-core
+    uses: ./.github/workflows/docker-build-new.yaml
+    with:
+      bake-group: ci-universe-cuda
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      needs-source: true
+      cache-key-prefix: cuda-
