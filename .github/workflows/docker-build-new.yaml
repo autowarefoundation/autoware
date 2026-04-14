@@ -147,11 +147,11 @@ jobs:
           set: |
             *.platform=${{ matrix.arch-platform }}
             *.args.ROS_DISTRO=${{ inputs.ros-distro }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-main
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ inputs.ros-distro }}-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.ros-distro }}-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ inputs.ros-distro }}-${{ matrix.platform }}-main
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.ros-distro }}-${{ matrix.platform }}-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ inputs.ros-distro }}-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: 📊 Build summary
         if: always()
