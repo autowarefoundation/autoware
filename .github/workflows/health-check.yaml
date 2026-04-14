@@ -143,8 +143,8 @@ jobs:
           load: true
           provenance: false
           set: |
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.platform }}-main
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.build-type }}-${{ matrix.platform }}-main
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:humble-${{ matrix.platform }}-main
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.build-type }}-humble-${{ matrix.platform }}-main
 
       - name: 💾 Save Docker image
         if: ${{ matrix.build-type == 'main' &&
