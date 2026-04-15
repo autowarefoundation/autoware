@@ -36,6 +36,11 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_system_designer.git
     version: v0.3.2
+  # Temporary pin, see https://github.com/autowarefoundation/autoware_core/issues/1031
+  core/external/rviz_2d_overlay_plugins:
+    type: git
+    url: https://github.com/teamspatzenhirn/rviz_2d_overlay_plugins.git
+    version: 1.4.0
   # universe
   universe/autoware_universe:
     type: git
