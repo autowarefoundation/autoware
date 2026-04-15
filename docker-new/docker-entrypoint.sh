@@ -7,6 +7,15 @@ if [ -n "${HOST_UID}" ] && [ -n "${HOST_GID}" ]; then
     groupmod -g "${HOST_GID}" "${USERNAME}" >/dev/null 2>&1 || true
 fi
 
+# Enable multicast on loopback so DDS discovery works when pinned to lo
+ip link set lo multicast on >/dev/null 2>&1 || true
+
+# Apply system-wide network tuning for DDS (needs --privileged or --cap-add=NET_ADMIN)
+# https://autowarefoundation.github.io/autoware-documentation/main/installation/additional-settings-for-developers/network-configuration/dds-settings/#tune-system-wide-network-settings
+sysctl -w net.core.rmem_max=2147483647 >/dev/null 2>&1 || true
+sysctl -w net.ipv4.ipfrag_time=3 >/dev/null 2>&1 || true
+sysctl -w net.ipv4.ipfrag_high_thresh=134217728 >/dev/null 2>&1 || true
+
 # shellcheck source=/dev/null
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
 
