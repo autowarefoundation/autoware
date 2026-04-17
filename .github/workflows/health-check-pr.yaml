@@ -1,0 +1,32 @@
+name: health-check-pr
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+    paths:
+      - repositories/*.repos
+      - .github/workflows/health-check.yaml
+      - .github/workflows/health-check-pr.yaml
+      - .github/workflows/health-check-reusable.yaml
+      - ansible-galaxy-requirements.yaml
+      - ansible/**
+      - docker-new/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  require-label:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
+    with:
+      label: run:health-check
+
+  health-check:
+    needs: require-label
+    uses: ./.github/workflows/health-check-reusable.yaml
+    secrets: inherit
