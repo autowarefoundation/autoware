@@ -29,6 +29,10 @@ jobs:
       - name: 📥 Check out repository
         uses: actions/checkout@v6
 
+      - name: 🏷️ Compute cache ref
+        id: meta
+        run: echo "ref_name=${GITHUB_REF_NAME//\//-}" >> "$GITHUB_OUTPUT"
+
       - name: 💻 Runner specs
         run: |
           echo "::group::CPU"
@@ -72,6 +76,54 @@ jobs:
             [worker.oci]
               max-parallelism = 2
 
+      # Read-only restore of the BuildKit mount cache populated by the
+      # main docker-new pipeline's `ci-universe` group. Same mount IDs
+      # (apt/ccache/pip/pipx keyed by ROS_DISTRO) as the main build, so
+      # health-check reuses whatever tarball main last saved for this
+      # platform. No cache-save here: health-check does not write back.
+      - name: 💾 Restore BuildKit cache mounts (read-only)
+        id: cache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: cache-mounts
+          key: buildkit-mounts-ci-universe-humble-${{ matrix.platform }}-${{ github.sha }}
+          restore-keys: |
+            buildkit-mounts-ci-universe-humble-${{ matrix.platform }}-
+
+      - name: 💉 Inject BuildKit cache mounts
+        uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          cache-map: |
+            {
+              "cache-mounts/apt-cache": {
+                "id": "apt-cache-humble",
+                "target": "/var/cache/apt"
+              },
+              "cache-mounts/apt-lists": {
+                "id": "apt-lists-humble",
+                "target": "/var/lib/apt/lists"
+              },
+              "cache-mounts/ccache": {
+                "id": "ccache-humble",
+                "target": "/home/aw/.ccache",
+                "uid": "1000",
+                "gid": "1000"
+              },
+              "cache-mounts/pip": {
+                "id": "pip-cache",
+                "target": "/home/aw/.cache/pip",
+                "uid": "1000",
+                "gid": "1000"
+              },
+              "cache-mounts/pipx": {
+                "id": "pipx-cache",
+                "target": "/home/aw/.cache/pipx",
+                "uid": "1000",
+                "gid": "1000"
+              }
+            }
+          skip-extraction: ${{ steps.cache-restore.outputs.cache-hit }}
+
       - name: 🔑 Login to GitHub Container Registry
         uses: docker/login-action@v4
         with:
@@ -89,8 +141,9 @@ jobs:
           files: docker-new/docker-bake.hcl
           provenance: false
           set: |
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:humble-${{ matrix.platform }}-main
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.build-type }}-humble-${{ matrix.platform }}-main
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: 📊 Disk space
         if: always()
