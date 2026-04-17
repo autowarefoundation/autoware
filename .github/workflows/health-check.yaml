@@ -1,6 +1,9 @@
 name: health-check
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     types:
       - opened
@@ -17,15 +20,15 @@ concurrency:
 
 jobs:
   require-label:
+    if: github.event_name == 'pull_request'
     uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
     with:
       label: run:health-check
 
   docker-build:
     needs: require-label
-    if: ${{ needs.require-label.outputs.result == 'true' ||
-      github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' }}
+    if: ${{ always() && (needs.require-label.outputs.result == 'true' ||
+      github.event_name != 'pull_request') }}
     strategy:
       fail-fast: false
       matrix:
@@ -80,15 +83,13 @@ jobs:
       - name: 🧹 Free disk space
         if: ${{ matrix.build-type != 'main' &&
           (steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch') }}
+          github.event_name != 'pull_request') }}
         uses: ./.github/actions/free-disk-space
 
       - name: 💾 Create additional swap
         if: ${{ matrix.platform == 'arm64' &&
           (steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch') }}
+          github.event_name != 'pull_request') }}
         run: |
           sudo fallocate -l 8G /mnt/swapfile
           sudo chmod 600 /mnt/swapfile
@@ -98,8 +99,7 @@ jobs:
 
       - name: 📦 Import source repos
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch' }}
+          github.event_name != 'pull_request' }}
         run: |
           pipx install vcs2l
           mkdir -p src
@@ -108,15 +108,13 @@ jobs:
       - name: 📦 Overlay nightly repos
         if: ${{ matrix.build-type == 'nightly' &&
           (steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch') }}
+          github.event_name != 'pull_request') }}
         run: |
           vcs import --shallow --force src < repositories/autoware-nightly.repos
 
       - name: 🐳 Setup Docker Buildx
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch' }}
+          github.event_name != 'pull_request' }}
         uses: docker/setup-buildx-action@v4
         with:
           buildkitd-config-inline: |
@@ -131,8 +129,7 @@ jobs:
       - name: 💾 Restore BuildKit cache mounts (read-only)
         id: cache-restore
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch' }}
+          github.event_name != 'pull_request' }}
         uses: actions/cache/restore@v5
         with:
           path: cache-mounts
@@ -142,8 +139,7 @@ jobs:
 
       - name: 💉 Inject BuildKit cache mounts
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch' }}
+          github.event_name != 'pull_request' }}
         uses: reproducible-containers/buildkit-cache-dance@v3
         with:
           cache-map: |
@@ -179,8 +175,7 @@ jobs:
 
       - name: 🔑 Login to GitHub Container Registry
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch' }}
+          github.event_name != 'pull_request' }}
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -189,8 +184,7 @@ jobs:
 
       - name: 🔨 Build Autoware (docker-new)
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch' }}
+          github.event_name != 'pull_request' }}
         uses: docker/bake-action@v7
         env:
           ROS_DISTRO: humble
