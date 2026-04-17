@@ -16,14 +16,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  label-check:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
+  require-label:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
     with:
       label: run:health-check
 
   docker-build:
-    needs: label-check
-    if: ${{ needs.label-check.outputs.result == 'true' ||
+    needs: require-label
+    if: ${{ needs.require-label.outputs.result == 'true' ||
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' }}
     strategy:
@@ -198,7 +198,6 @@ jobs:
           source: .
           targets: universe-devel
           files: docker-new/docker-bake.hcl
-          load: false
           provenance: false
           set: |
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}

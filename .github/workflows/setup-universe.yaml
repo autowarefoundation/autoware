@@ -2,13 +2,25 @@ name: setup-universe
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  require-label:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
+    with:
+      label: run:health-check
+
   setup-universe:
+    needs: require-label
+    if: ${{ needs.require-label.outputs.result == 'true' }}
     runs-on: [self-hosted, Linux, X64]
     strategy:
       fail-fast: false
