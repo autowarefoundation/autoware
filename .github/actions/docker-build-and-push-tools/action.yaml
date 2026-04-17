@@ -40,8 +40,10 @@ runs:
             max-parallelism = ${{ inputs.max-parallelism }}
         install: true
 
+    # TODO: temporarily disabled via `if: false`. Re-enable once cache saving is needed again.
     - name: Cache ccache
       uses: actions/cache@v4
+      if: false
       with:
         path: |
           root-ccache
@@ -49,8 +51,10 @@ runs:
         restore-keys: |
           ccache-tools-${{ inputs.platform }}-
 
+    # TODO: temporarily disabled via `if: false`. Re-enable once cache saving is needed again.
     - name: Cache apt-get
       uses: actions/cache@v4
+      if: false
       with:
         path: |
           var-cache-apt

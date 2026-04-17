@@ -1,0 +1,7 @@
+- name: Install RMW implementation
+  hosts: localhost
+  connection: local
+  vars:
+    rosdistro:
+  roles:
+    - role: autoware.dev_env.rmw_implementation

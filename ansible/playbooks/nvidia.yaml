@@ -1,0 +1,10 @@
+- name: Install NVIDIA CUDA stack
+  hosts: localhost
+  connection: local
+  vars:
+    install_devel: N
+    cuda_install_drivers: false
+  roles:
+    - role: autoware.dev_env.cuda
+    - role: autoware.dev_env.tensorrt
+    - role: autoware.dev_env.spconv

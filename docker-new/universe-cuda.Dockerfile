@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1
-# check=skip=InvalidDefaultArgInFrom
-ARG BASE_IMAGE
+# check=skip=InvalidDefaultArgInFrom,UndefinedVar
+ARG BASE_CUDA_RUNTIME_IMAGE
+ARG BASE_CUDA_DEVEL_IMAGE
 
-FROM ${BASE_IMAGE} AS core-dependencies
+FROM ${BASE_CUDA_DEVEL_IMAGE} AS universe-dependencies-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
@@ -18,78 +19,54 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     cd /tmp/ansible && \
     ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
     ansible-playbook autoware.dev_env.autoware_requirements \
-      --tags core \
-      --skip-tags base \
+      --tags core,acados \
+      --skip-tags base,nvidia \
       -e "rosdistro=${ROS_DISTRO}" && \
+    sudo rm -rf /opt/acados/.git /opt/acados/examples /opt/acados/docs /opt/acados/test && \
     pipx uninstall ansible
 USER root
 
 ENV CC="/usr/lib/ccache/gcc"
 ENV CXX="/usr/lib/ccache/g++"
 ENV CCACHE_DIR="/home/aw/.ccache"
+ENV CMAKE_PREFIX_PATH="/opt/acados${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+ENV ACADOS_SOURCE_DIR="/opt/acados"
+ENV LD_LIBRARY_PATH="/opt/acados/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
-COPY --parents --chown=${USERNAME}:${USERNAME} src/core/**/package.xml /tmp/autoware/
-RUN rm -rf /tmp/autoware/src/core/autoware_core /tmp/autoware/src/core/autoware_rviz_plugins
+# hadolint ignore=DL3022
+COPY --from=autoware-core-devel /opt/autoware /opt/autoware
+
+COPY --parents --chown=${USERNAME}:${USERNAME} src/**/package.xml /tmp/autoware/
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
     apt-get update && \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
-    rosdep install -y --from-paths /tmp/autoware/src/core \
+    . /opt/autoware/setup.sh && \
+    rosdep install -y --from-paths /tmp/autoware/src \
       --ignore-src \
       --rosdistro "${ROS_DISTRO}" \
       --dependency-types=build \
       --dependency-types=build_export \
       --dependency-types=buildtool \
       --dependency-types=buildtool_export \
-      --dependency-types=test
+      --dependency-types=test && \
+    rm -rf /tmp/autoware
 
-RUN --mount=type=bind,source=src/core,target=/tmp/autoware/src/core,rw \
-    --mount=type=cache,id=ccache-${ROS_DISTRO},target=/home/aw/.ccache,uid=1000,gid=1000 \
-    rm -rf /tmp/autoware/src/core/autoware_core \
-           /tmp/autoware/src/core/autoware_rviz_plugins && \
-    . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
-    colcon build \
-      --base-paths /tmp/autoware/src/core \
-      --install-base /opt/autoware \
-      --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    rm -rf build log
-
-FROM core-dependencies AS core-devel
+FROM universe-dependencies-cuda AS universe-devel-cuda
 ARG ROS_DISTRO
 
-COPY --parents --chown=${USERNAME}:${USERNAME} \
-    src/core/autoware_core/**/package.xml \
-    src/core/autoware_rviz_plugins/**/package.xml \
-    /tmp/autoware/
-
-RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
-    apt-get update && \
-    . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
-    . /opt/autoware/setup.sh && \
-    rosdep install -y --from-paths /tmp/autoware/src/core \
-      --ignore-src \
-      --rosdistro "${ROS_DISTRO}" \
-      --dependency-types=build \
-      --dependency-types=build_export \
-      --dependency-types=buildtool \
-      --dependency-types=buildtool_export \
-      --dependency-types=test
-
-RUN --mount=type=bind,source=src/core/autoware_core,target=/tmp/autoware/src/core/autoware_core \
-    --mount=type=bind,source=src/core/autoware_rviz_plugins,target=/tmp/autoware/src/core/autoware_rviz_plugins \
-    --mount=type=cache,id=ccache-${ROS_DISTRO},target=/home/aw/.ccache,uid=1000,gid=1000 \
+RUN --mount=type=bind,source=src,target=/tmp/autoware/src \
+    --mount=type=cache,id=ccache-${ROS_DISTRO},target=/home/aw/.ccache,uid=1000,gid=1000,sharing=shared \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     . /opt/autoware/setup.sh && \
     colcon build \
-      --base-paths /tmp/autoware/src/core/autoware_core \
-                   /tmp/autoware/src/core/autoware_rviz_plugins \
+      --base-paths /tmp/autoware/src \
       --install-base /opt/autoware \
       --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     rm -rf build log
 
-FROM ${BASE_IMAGE} AS core
+FROM ${BASE_CUDA_RUNTIME_IMAGE} AS universe-cuda
 ARG ROS_DISTRO
 ENV AUTOWARE_RUNTIME=1
 
@@ -111,18 +88,23 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     pipx uninstall ansible
 USER root
 
-COPY --from=core-devel /opt/autoware /opt/autoware
-RUN find /opt/autoware -name '*.so' -exec strip --strip-unneeded {} +
-
-COPY --parents src/core/**/package.xml /tmp/
+COPY --parents --chown=${USERNAME}:${USERNAME} src/**/package.xml /tmp/
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
     apt-get update && \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
-    sudo apt-get install -y "ros-${ROS_DISTRO}-topic-tools" && \
-    rosdep install -y --from-paths /tmp/src/core \
+    sudo apt-get install -y --no-install-recommends "ros-${ROS_DISTRO}-topic-tools" && \
+    rosdep install -y --from-paths /tmp/src \
       --dependency-types=exec \
       --ignore-src \
       --rosdistro "${ROS_DISTRO}" && \
     rm -rf /tmp/src
+
+COPY --from=universe-devel-cuda /opt/acados /opt/acados
+COPY --from=universe-devel-cuda /opt/autoware /opt/autoware
+RUN find /opt/autoware -name '*.so' -exec strip --strip-unneeded {} +
+
+ENV CMAKE_PREFIX_PATH="/opt/acados${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+ENV ACADOS_SOURCE_DIR="/opt/acados"
+ENV LD_LIBRARY_PATH="/opt/acados/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"

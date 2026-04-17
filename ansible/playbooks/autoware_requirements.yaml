@@ -23,14 +23,14 @@
     - role: autoware.dev_env.ros2_dev_tools
       tags: [core, universe, ros2_dev_tools]
 
-    - role: autoware.dev_env.acados
-      tags: [universe, acados]
+    - role: autoware.dev_env.qt5ct_setup
+      tags: [core, universe, qt5ct_setup]
 
     - role: autoware.dev_env.geographiclib
-      tags: [universe, geographiclib]
+      tags: [core, universe, geographiclib]
 
-    - role: autoware.dev_env.qt5ct_setup
-      tags: [universe, qt5ct_setup]
+    - role: autoware.dev_env.acados
+      tags: [universe, acados]
 
     - role: autoware.dev_env.cuda
       tags: [universe, nvidia, cuda]
