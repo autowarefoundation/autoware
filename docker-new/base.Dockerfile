@@ -13,7 +13,13 @@ RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
     echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/99-no-recommends && \
     echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/99-retries && \
     echo 'Acquire::http::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries && \
-    echo 'Acquire::https::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries
+    echo 'Acquire::https::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries && \
+    if [ -f /etc/apt/sources.list ]; then \
+      sed -i '/^deb http:\/\/archive\.ubuntu\.com\/ubuntu/{h;s|archive\.ubuntu\.com|azure.archive.ubuntu.com|;G}' /etc/apt/sources.list; \
+    fi && \
+    if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then \
+      sed -i 's|^URIs: http://archive\.ubuntu\.com/ubuntu|URIs: http://azure.archive.ubuntu.com/ubuntu http://archive.ubuntu.com/ubuntu|' /etc/apt/sources.list.d/ubuntu.sources; \
+    fi
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
