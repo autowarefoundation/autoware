@@ -1,0 +1,35 @@
+services:
+  awsim:
+    image: ghcr.io/autowarefoundation/autoware-new:universe-cuda-jazzy
+    privileged: true
+    runtime: nvidia
+    network_mode: host
+    stdin_open: true
+    tty: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+      - HOST_UID=${HOST_UID:-1000}
+      - HOST_GID=${HOST_GID:-1000}
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${HOME}/autoware_map:/home/aw/autoware_map
+      - ${HOME}/autoware_data:/home/aw/autoware_data
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command:
+      - bash
+      - -c
+      - |
+        ros2 launch autoware_launch e2e_simulator.launch.xml \
+          vehicle_model:=sample_vehicle \
+          sensor_model:=awsim_sensor_kit \
+          map_path:=/home/aw/autoware_map/Shinjuku-Map/map
+        exec bash
