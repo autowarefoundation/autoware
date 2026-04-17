@@ -1,0 +1,17 @@
+services:
+  autoware:
+    image: ghcr.io/autowarefoundation/autoware-new:universe-devel-jazzy
+    privileged: true
+    stdin_open: true
+    tty: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - HOST_UID=${HOST_UID:-1000}
+      - HOST_GID=${HOST_GID:-1000}
+      - QT_X11_NO_MITSHM=1
+      - LIBGL_ALWAYS_SOFTWARE=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${HOME}/autoware_map:/home/aw/autoware_map
+      - ${HOME}/autoware_data:/home/aw/autoware_data
+    command: bash

@@ -1,0 +1,134 @@
+# Stitches the per-arch tags pushed by docker-build-new.yaml into
+# multi-arch manifests. Runs once per ROS distro after both the amd64
+# and arm64 pipelines have finished. The set of targets is derived from
+# the `default` group in docker-new/docker-bake.hcl, and the suffix set
+# mirrors the `tags()` function there so every per-arch variant the
+# build side pushed (plain, dated, versioned, ref-named) gets stitched.
+
+name: docker-manifest-new
+
+on:
+  workflow_call:
+    inputs:
+      ros-distro:
+        description: ROS distribution
+        type: string
+        required: true
+      target-image:
+        description: Registry image name
+        type: string
+        default: autoware-new
+
+jobs:
+  manifest:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+      ROS_DISTRO: ${{ inputs.ros-distro }}
+      VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v6
+
+      - name: 🐳 Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: 🔑 Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - name: 🧭 Discover manifest targets
+        id: targets
+        run: |
+          set -euo pipefail
+          targets=$(docker buildx bake -f docker-new/docker-bake.hcl --print default \
+            | jq -r '.group.default.targets[]')
+          if [ -z "$targets" ]; then
+            echo "::error::No targets found in default group of docker-new/docker-bake.hcl"
+            exit 1
+          fi
+          echo "Found $(echo "$targets" | wc -l) target(s)"
+          {
+            echo "list<<EOF"
+            echo "$targets"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: 🏷️ Build manifest tag list
+        id: tags
+        env:
+          TARGETS: ${{ steps.targets.outputs.list }}
+        run: |
+          set -euo pipefail
+
+          date=$(date +'%Y%m%d')
+          ref=""
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.ref_name }}" != "main" ]]; then
+            ref="${GITHUB_REF_NAME//\//-}"
+          fi
+
+          # Mirror tags() in docker-new/docker-bake.hcl so every per-arch
+          # variant the build pushed gets a multi-arch counterpart:
+          #   - TAG_REF empty → plain + (dated if TAG_DATE)
+          #   - TAG_REF set   → only the ref variant (plain is not pushed)
+          #   - TAG_VERSION set (tag push) → add versioned variant
+          suffixes=()
+          if [ -z "$ref" ]; then
+            suffixes+=("")
+            [ -n "$date" ] && suffixes+=("-$date")
+          else
+            suffixes+=("-$ref")
+          fi
+          [ -n "$VERSION" ] && suffixes+=("-$VERSION")
+
+          tags=""
+          while IFS= read -r t; do
+            [ -z "$t" ] && continue
+            for suffix in "${suffixes[@]}"; do
+              tags+="${t}-${ROS_DISTRO}${suffix}"$'\n'
+            done
+          done <<< "$TARGETS"
+
+          echo "Built $(printf '%s' "$tags" | grep -c .) manifest tag(s) across ${#suffixes[@]} variant(s)"
+          {
+            echo "list<<EOF"
+            printf '%s' "$tags"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: 🔗 Create multi-arch manifests
+        env:
+          TAGS: ${{ steps.tags.outputs.list }}
+        run: |
+          set -euo pipefail
+          while IFS= read -r tag; do
+            [ -z "$tag" ] && continue
+            echo "::group::📦 ${tag}"
+            docker manifest create "${IMAGE}:${tag}" \
+              "${IMAGE}:${tag}-amd64" \
+              "${IMAGE}:${tag}-arm64"
+            docker manifest push "${IMAGE}:${tag}"
+            echo "::endgroup::"
+          done <<< "$TAGS"
+
+      - name: 📊 Manifest summary
+        if: always()
+        env:
+          TAGS: ${{ steps.tags.outputs.list }}
+        run: |
+          {
+            echo "### 🔗 Multi-arch Manifests (${ROS_DISTRO})"
+            echo ""
+            echo "| Image | Platforms |"
+            echo "|-------|-----------|"
+            while IFS= read -r tag; do
+              [ -z "$tag" ] && continue
+              echo "| \`${IMAGE}:${tag}\` | amd64, arm64 |"
+            done <<< "$TAGS"
+          } >> "$GITHUB_STEP_SUMMARY"

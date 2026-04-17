@@ -1,3 +1,25 @@
+# Reusable workflow that builds and pushes one docker-new bake group via
+# `docker buildx bake`, for one ROS distro, on ONE platform. Callers run
+# this twice (amd64 + arm64) to produce per-arch tags, then stitch them
+# with the separate `docker-manifest-new.yaml` workflow.
+#
+# Two independent caches cooperate:
+#
+#   - GHA mount cache (actions/cache). Caches the BuildKit RUN mounts
+#     (apt, ccache, pip, pipx) as a tarball keyed per
+#     bake-group/distro/platform/sha. Only main pushes write; other refs
+#     are read-only. An inline prune step runs at the end of the build
+#     job: it deletes every entry in the lineage except the current SHA
+#     key (which post-save is about to write) and also deletes anything
+#     above `max-cache-size-gb`. Net effect: the lineage stays at most
+#     one tarball, and an oversized save gets evicted on the next run.
+#
+#   - GHCR registry layer cache (`cache-to=type=registry`). Caches the
+#     BuildKit image layers on ghcr.io, one tag per bake-group. Every ref
+#     writes; reads fall back branch → main. `mode=max` means each tag's
+#     manifest is a superset of its stages, so a group only needs to read
+#     its own tag.
+
 name: docker-build-new-reusable
 
 on:
@@ -5,6 +27,10 @@ on:
     inputs:
       bake-group:
         description: HCL group to build (e.g. ci-base, ci-core)
+        type: string
+        required: true
+      platform:
+        description: Target platform (amd64 or arm64)
         type: string
         required: true
       runner-amd64:
@@ -19,10 +45,6 @@ on:
         description: ROS distribution
         type: string
         default: jazzy
-      cache-key-prefix:
-        description: Extra prefix for cache key separation
-        type: string
-        default: ""
       target-image:
         description: Registry image name
         type: string
@@ -35,20 +57,21 @@ on:
         description: Whether to free disk space before building
         type: boolean
         default: true
+      max-cache-size-gb:
+        description: Max allowed size (GB) for restored BuildKit cache mounts; cache is dropped and purged if exceeded
+        type: number
+        default: 6
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [amd64, arm64]
-        include:
-          - platform: amd64
-            arch-platform: linux/amd64
-          - platform: arm64
-            arch-platform: linux/arm64
-    runs-on: ${{ matrix.platform == 'amd64' && inputs.runner-amd64 || inputs.runner-arm64 }}
-    outputs:
-      target-tags: ${{ steps.compute-tags.outputs.tags }}
+    name: ${{ inputs.bake-group }}
+    runs-on: ${{ inputs.platform == 'amd64' && inputs.runner-amd64 || inputs.runner-arm64 }}
+    permissions:
+      contents: read
+      packages: write
+      actions: write
+    env:
+      CACHE_KEY_PREFIX: buildkit-mounts-${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-
+      IS_MAIN_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     steps:
       - name: 💻 Runner specs
         run: |
@@ -68,18 +91,6 @@ jobs:
       - name: 📥 Check out repository
         uses: actions/checkout@v6
 
-      - name: 🏷️ Compute manifest tags from HCL
-        id: compute-tags
-        run: |
-          targets=$(docker buildx bake -f docker-new/docker-bake.hcl --print ${{ inputs.bake-group }} 2>/dev/null \
-            | jq -r '.group."${{ inputs.bake-group }}".targets[]')
-          tags=""
-          for t in $targets; do
-            tags="${tags:+$tags }${t}-${{ inputs.ros-distro }}"
-          done
-          echo "tags=${tags}" >> "$GITHUB_OUTPUT"
-          echo "::notice::Manifest tags: ${tags}"
-
       - name: 🧹 Free disk space
         if: inputs.free-disk-space && runner.environment == 'github-hosted'
         uses: ./.github/actions/free-disk-space
@@ -98,6 +109,84 @@ jobs:
             [worker.oci]
               max-parallelism = 2
 
+      - name: 🏷️ Compute target tags from HCL
+        id: compute-tags
+        run: |
+          targets=$(docker buildx bake -f docker-new/docker-bake.hcl --print ${{ inputs.bake-group }} 2>/dev/null \
+            | jq -r '.group."${{ inputs.bake-group }}".targets[]')
+          tags=""
+          for t in $targets; do
+            tags="${tags:+$tags }${t}-${{ inputs.ros-distro }}"
+          done
+          echo "tags=${tags}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Target tags: ${tags}"
+
+      # cache-restore always runs so cache-matched-key is exposed for the
+      # summary (the combined actions/cache@v5 action only outputs cache-hit).
+      # cache-save is gated on main-push and uses lookup-only: true — it
+      # downloads nothing, it exists only so its post-step can save the
+      # tarball after buildkit-cache-dance's post-extract. Non-main runs
+      # skip it entirely, so cancelled PR runs can't write half-populated
+      # tarballs under a key that future main runs would restore from.
+      - name: 💾 Restore BuildKit cache mounts
+        id: cache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: cache-mounts
+          key: ${{ env.CACHE_KEY_PREFIX }}${{ github.sha }}
+          restore-keys: |
+            ${{ env.CACHE_KEY_PREFIX }}
+
+      - name: 💾 Arm post-step save of BuildKit cache mounts (main)
+        if: env.IS_MAIN_PUSH == 'true'
+        id: cache-save
+        uses: actions/cache@v5
+        with:
+          path: cache-mounts
+          key: ${{ env.CACHE_KEY_PREFIX }}${{ github.sha }}
+          lookup-only: true
+
+      - name: 💉 Inject BuildKit cache mounts
+        uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          # apt-cache (/var/cache/apt = downloaded .debs) is cached for
+          # every group except ci-base-cuda*. CUDA/cuDNN/TensorRT .debs
+          # alone exceed a reasonable tarball size; rebuilding those
+          # layers is rare enough that redownloading from the NVIDIA CDN
+          # beats paying the cache quota. For non-CUDA groups the
+          # post-build purge evicts any lineage that still outgrows the
+          # size guard.
+          cache-map: |
+            {
+              ${{ !startsWith(inputs.bake-group, 'ci-base-cuda') && format('"cache-mounts/apt-cache": {{
+                "id": "apt-cache-{0}",
+                "target": "/var/cache/apt"
+              }},', inputs.ros-distro) || '' }}
+              "cache-mounts/apt-lists": {
+                "id": "apt-lists-${{ inputs.ros-distro }}",
+                "target": "/var/lib/apt/lists"
+              },
+              "cache-mounts/ccache": {
+                "id": "ccache-${{ inputs.ros-distro }}",
+                "target": "/home/aw/.ccache",
+                "uid": "1000",
+                "gid": "1000"
+              },
+              "cache-mounts/pip": {
+                "id": "pip-cache",
+                "target": "/home/aw/.cache/pip",
+                "uid": "1000",
+                "gid": "1000"
+              },
+              "cache-mounts/pipx": {
+                "id": "pipx-cache",
+                "target": "/home/aw/.cache/pipx",
+                "uid": "1000",
+                "gid": "1000"
+              }
+            }
+          skip-extraction: ${{ steps.cache-restore.outputs.cache-hit }}
+
       - name: 🔑 Login to GitHub Container Registry
         uses: docker/login-action@v4
         with:
@@ -111,6 +200,8 @@ jobs:
           ref_name="${GITHUB_REF_NAME//\//-}"
           echo "ref_name=${ref_name}" >> "$GITHUB_OUTPUT"
           echo "date=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+          echo "build_start=$(date +%s)" >> "$GITHUB_OUTPUT"
+          echo "disk_before_kb=$(df --output=avail / | tail -1 | tr -d ' ')" >> "$GITHUB_OUTPUT"
 
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
             echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
@@ -123,17 +214,18 @@ jobs:
           echo "::group::Build info"
           echo "  Group:    ${{ inputs.bake-group }}"
           echo "  Distro:   ${{ inputs.ros-distro }}"
-          echo "  Platform: ${{ matrix.platform }}"
+          echo "  Platform: ${{ inputs.platform }}"
           echo "  Ref:      ${GITHUB_REF_NAME}"
           echo "  Event:    ${{ github.event_name }}"
           echo "::endgroup::"
 
-      - name: 🔨 Build and push [${{ inputs.bake-group }}] (${{ matrix.platform }})
+      - name: 🔨 Build and push [${{ inputs.bake-group }}] (${{ inputs.platform }})
+        id: bake
         uses: docker/bake-action@v7
         env:
           ROS_DISTRO: ${{ inputs.ros-distro }}
           REGISTRY: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
-          PLATFORM: ${{ matrix.platform }}
+          PLATFORM: ${{ inputs.platform }}
           TAG_DATE: ${{ steps.meta.outputs.date }}
           TAG_VERSION: ${{ steps.meta.outputs.version }}
           TAG_REF: ${{ steps.meta.outputs.ref }}
@@ -145,76 +237,112 @@ jobs:
           files: docker-new/docker-bake.hcl
           provenance: false
           set: |
-            *.platform=${{ matrix.arch-platform }}
+            *.platform=linux/${{ inputs.platform }}
             *.args.ROS_DISTRO=${{ inputs.ros-distro }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ inputs.ros-distro }}-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.ros-distro }}-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ inputs.ros-distro }}-${{ matrix.platform }}-main
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.ros-distro }}-${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.cache-key-prefix }}${{ inputs.ros-distro }}-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-${{ steps.meta.outputs.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: 📊 Build summary
         if: always()
         env:
           IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
+          BUILDCACHE_REF: ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-${{ steps.meta.outputs.ref_name }}
+          BAKE_METADATA: ${{ steps.bake.outputs.metadata }}
+          CACHE_MATCHED_KEY: ${{ steps.cache-restore.outputs.cache-matched-key }}
+          CACHE_EXACT_HIT: ${{ steps.cache-restore.outputs.cache-hit }}
+          BUILD_START: ${{ steps.meta.outputs.build_start }}
+          DISK_BEFORE_KB: ${{ steps.meta.outputs.disk_before_kb }}
         run: |
+          duration="n/a"
+          if [ -n "${BUILD_START}" ]; then
+            duration="$(( $(date +%s) - BUILD_START )) s"
+          fi
+
+          disk_after_kb=$(df --output=avail / | tail -1 | tr -d ' ')
+          kb_to_gb() { awk "BEGIN { printf \"%.1f\", $1/1024/1024 }"; }
+          disk_before_gb=$(kb_to_gb "${DISK_BEFORE_KB:-0}")
+          disk_after_gb=$(kb_to_gb "${disk_after_kb}")
+          disk_delta_gb=$(awk "BEGIN { printf \"%+.1f\", (${disk_after_kb} - ${DISK_BEFORE_KB:-0})/1024/1024 }")
+
+          if [ -z "${CACHE_MATCHED_KEY}" ]; then
+            cache_status="miss"
+          elif [ "${CACHE_EXACT_HIT}" = "true" ]; then
+            cache_status="exact hit \`${CACHE_MATCHED_KEY}\`"
+          else
+            cache_status="partial hit \`${CACHE_MATCHED_KEY}\`"
+          fi
+
+          image_rows=""
+          if [ -n "${BAKE_METADATA}" ] && [ "${BAKE_METADATA}" != "null" ]; then
+            while IFS=$'\t' read -r target digest; do
+              [ -z "$digest" ] && continue
+              size_bytes=$(docker buildx imagetools inspect --raw "${IMAGE}@${digest}" 2>/dev/null \
+                | jq '(.config.size // 0) + ([.layers[]?.size] | add // 0)' 2>/dev/null)
+              if [ -n "$size_bytes" ] && [ "$size_bytes" != "null" ] && [ "$size_bytes" -gt 0 ] 2>/dev/null; then
+                size_col="$(( size_bytes / 1000000 )) MB"
+              else
+                size_col="?"
+              fi
+              image_rows+="| \`${target}\` | \`${digest:0:19}…\` | ${size_col} |"$'\n'
+            done < <(
+              echo "${BAKE_METADATA}" | jq -r '
+                to_entries
+                | map(select(.value."containerimage.digest"?))
+                | .[]
+                | [.key, .value."containerimage.digest"]
+                | @tsv
+              ' 2>/dev/null
+            )
+          fi
+
           {
-            echo "### 🐳 Docker Build: \`${{ inputs.bake-group }}\` (${{ matrix.platform }})"
+            echo "### 🐳 Docker Build: \`${{ inputs.bake-group }}\` (${{ inputs.platform }})"
             echo ""
             echo "| Key | Value |"
             echo "|-----|-------|"
-            echo "| **ROS Distro** | \`${{ inputs.ros-distro }}\` |"
-            echo "| **Platform** | \`${{ matrix.arch-platform }}\` |"
-            echo "| **Registry** | \`${IMAGE}\` |"
-            echo "| **Tags** | \`${{ steps.compute-tags.outputs.tags }}\` |"
+            echo "| 🤖 **ROS Distro** | \`${{ inputs.ros-distro }}\` |"
+            echo "| 🧱 **Platform** | \`linux/${{ inputs.platform }}\` |"
+            echo "| 🏃 **Runner** | \`${RUNNER_NAME}\` (${RUNNER_OS}/${RUNNER_ARCH}, ${RUNNER_ENVIRONMENT}) |"
+            echo "| ⏱️ **Duration** | ${duration} |"
+            echo "| 🌐 **Registry** | [\`${IMAGE}\`](https://github.com/${{ github.repository }}/pkgs/container/${{ inputs.target-image }}) |"
+            echo "| 🏷️ **Tags** | \`${{ steps.compute-tags.outputs.tags }}\` |"
+            echo "| 💾 **GHA cache** | ${cache_status} |"
+            echo "| 📥 **Registry cache (from)** | \`${BUILDCACHE_REF}\` + main fallback |"
             echo ""
-            echo "#### 💾 Disk space"
-            echo "\`\`\`"
-            df -h / | head -2
-            echo "\`\`\`"
+
+            if [ -n "${image_rows}" ]; then
+              echo "#### 📦 Pushed images"
+              echo ""
+              echo "| Target | Digest | Size |"
+              echo "|--------|--------|------|"
+              echo "${image_rows}"
+              echo ""
+            fi
+
+            echo "#### 💾 Disk"
+            echo ""
+            echo "| | Free |"
+            echo "|-|------|"
+            echo "| 🟢 Pre-build (after cleanup) | ${disk_before_gb} GB |"
+            echo "| 🔴 Post-build | ${disk_after_gb} GB |"
+            echo "| 📊 Δ | ${disk_delta_gb} GB |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-  manifest:
-    needs: build
-    if: needs.build.result == 'success'
-    runs-on: ubuntu-24.04
-    steps:
-      - name: 🔑 Login to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ github.token }}
-
-      - name: 🔗 Create multi-arch manifests
+      - name: 🧹 Prune cache lineage
+        if: env.IS_MAIN_PUSH == 'true' && steps.bake.outcome == 'success'
         env:
-          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
-          REF_SUFFIX: ${{ github.event_name == 'workflow_dispatch' && github.ref_name != 'main' && format('-{0}', github.ref_name) || '' }}
+          GH_TOKEN: ${{ github.token }}
+          KEEP_KEY: ${{ env.CACHE_KEY_PREFIX }}${{ github.sha }}
+          MAX_GB: ${{ inputs.max-cache-size-gb }}
         run: |
-          ref_suffix="${REF_SUFFIX//\//-}"
-          for tag in ${{ needs.build.outputs.target-tags }}; do
-            manifest_tag="${tag}${ref_suffix}"
-            echo "::group::📦 ${manifest_tag}"
-            docker manifest create "${IMAGE}:${manifest_tag}" \
-              "${IMAGE}:${manifest_tag}-amd64" \
-              "${IMAGE}:${manifest_tag}-arm64"
-            docker manifest push "${IMAGE}:${manifest_tag}"
-            echo "::endgroup::"
-          done
-
-      - name: 📊 Manifest summary
-        env:
-          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
-          REF_SUFFIX: ${{ github.event_name == 'workflow_dispatch' && github.ref_name != 'main' && format('-{0}', github.ref_name) || '' }}
-        run: |
-          ref_suffix="${REF_SUFFIX//\//-}"
-          {
-            echo "### 🔗 Multi-arch Manifests"
-            echo ""
-            echo "| Image | Platforms |"
-            echo "|-------|-----------|"
-            for tag in ${{ needs.build.outputs.target-tags }}; do
-              manifest_tag="${tag}${ref_suffix}"
-              echo "| \`${IMAGE}:${manifest_tag}\` | amd64, arm64 |"
-            done
-          } >> "$GITHUB_STEP_SUMMARY"
+          set -euo pipefail
+          max_bytes=$((MAX_GB * 1000 * 1000 * 1000))
+          echo "keep: ${KEEP_KEY} (written in post phase)"
+          gh cache list --repo "$GITHUB_REPOSITORY" --key "$CACHE_KEY_PREFIX" --json key,sizeInBytes \
+            | jq -r --arg keep "$KEEP_KEY" --argjson max "$max_bytes" \
+                '.[] | select(.key != $keep or .sizeInBytes > $max) | .key' \
+            | while read -r key; do
+                echo "delete: $key"
+                gh cache delete "$key" --repo "$GITHUB_REPOSITORY" || true
+              done

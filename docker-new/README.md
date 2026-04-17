@@ -3,46 +3,45 @@
 ## Image Graph
 
 ```mermaid
-graph TD
-    base(["base"])
-    base --> core-dependencies(["core-dependencies"])
+graph TB
+    base(["base"]) --> core-dependencies(["core-dependencies"]) & core(["core"]) & base-cuda-runtime(["base-cuda-runtime"])
     core-dependencies --> core-devel(["core-devel"])
     core-devel --> universe-dependencies(["universe-dependencies"])
-    universe-dependencies --> universe-dependencies-cuda(["universe-dependencies-cuda"])
     universe-dependencies --> universe-devel(["universe-devel"])
-    universe-dependencies-cuda --> universe-devel-cuda(["universe-devel-cuda"])
-    base --> core(["core"])
+    universe-dependencies-cuda(["universe-dependencies-cuda"]) --> universe-devel-cuda(["universe-devel-cuda"])
     core-devel -- " COPY /opt/autoware " --> core
-    core --> universe-runtime-dependencies(["universe-runtime-dependencies"])
-    universe-runtime-dependencies --> universe(["universe"])
-    universe-runtime-dependencies --> universe-cuda(["universe-cuda"])
+    core --> universe(["universe"])
     universe-devel -- " COPY /opt/autoware " --> universe
-    universe-devel-cuda -- " COPY /opt/autoware " --> universe-cuda
+    universe-devel-cuda -- " COPY /opt/autoware " --> universe-cuda(["universe-cuda"])
+    core-devel -- " COPY /opt/autoware " --> universe-dependencies-cuda
+    base-cuda-devel(["base-cuda-devel"]) --> universe-dependencies-cuda
+    base-cuda-runtime --> universe-cuda & base-cuda-devel
     classDef base fill: #e8e8e8, color: #333
     classDef devel fill: #bbdefb, color: #333
     classDef runtime fill: #c8e6c9, color: #333
     classDef cuda fill: #e1bee7, color: #333
-    class base base
+    class base,base-cuda-runtime,base-cuda-devel base
     class core-dependencies,core-devel,universe-dependencies,universe-devel devel
-    class core,universe-runtime-dependencies,universe runtime
+    class core,universe runtime
     class universe-dependencies-cuda,universe-devel-cuda,universe-cuda cuda
 ```
 
 ## Images
 
-| Image                           | Description                                                                          | Use case                                                   |
-| ------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| `base`                          | ROS base, sudo, pipx, ansible, RMW, user `aw`                                        | Foundation for all other images                            |
-| `core-dependencies`             | Build deps + compiled core packages (except autoware_core and autoware_rviz_plugins) | CI for autoware_core                                       |
-| `core-devel`                    | Adds autoware_core build on top of core-dependencies                                 | Development and CI for packages depending on autoware_core |
-| `core`                          | Runtime-only: rosdep exec deps + compiled core from core-devel                       | Lightweight core runtime                                   |
-| `universe-dependencies`         | Ansible universe roles + rosdep build deps for all of autoware                       | CI for autoware_universe                                   |
-| `universe-dependencies-cuda`    | Adds CUDA, TensorRT, spconv dev libs                                                 | CI for CUDA-dependent packages                             |
-| `universe-devel`                | Builds all universe sources (no CUDA)                                                | Development without GPU                                    |
-| `universe-devel-cuda`           | Builds all universe sources with CUDA                                                | Development with GPU                                       |
-| `universe-runtime-dependencies` | Runtime ansible roles + rosdep exec deps                                             | Foundation for final runtime images                        |
-| `universe`                      | Runtime image with compiled autoware (no CUDA)                                       | Deployment without GPU                                     |
-| `universe-cuda`                 | Runtime image with compiled autoware + CUDA runtime libs                             | Deployment with GPU                                        |
+| Image                        | Description                                                                           | Use case                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `base`                       | ROS base, sudo, pipx, ansible, RMW, user `aw`                                         | Foundation for all other images                            |
+| `core-dependencies`          | Build deps + compiled core packages (except autoware_core and autoware_rviz_plugins)  | CI for autoware_core                                       |
+| `core-devel`                 | Adds autoware_core build on top of core-dependencies                                  | Development and CI for packages depending on autoware_core |
+| `core`                       | Runtime-only: rosdep exec deps + compiled core from core-devel                        | Lightweight core runtime                                   |
+| `base-cuda-runtime`          | `base` + CUDA/cuDNN/TensorRT runtime libs (no `-dev` packages)                        | Runtime foundation for `universe-cuda`                     |
+| `base-cuda-devel`            | `base-cuda-runtime` + CUDA/cuDNN/TensorRT dev headers                                 | Build foundation for CUDA universe packages                |
+| `universe-dependencies`      | Acados + rosdep build deps for all of autoware (non-CUDA path)                        | CI for autoware_universe                                   |
+| `universe-dependencies-cuda` | Core ansible roles + acados + rosdep build deps, inherits CUDA from `base-cuda-devel` | CI for CUDA-dependent packages                             |
+| `universe-devel`             | Builds all universe sources (no CUDA)                                                 | Development without GPU                                    |
+| `universe-devel-cuda`        | Builds all universe sources with CUDA                                                 | Development with GPU                                       |
+| `universe`                   | Runtime image with compiled autoware (no CUDA)                                        | Deployment without GPU                                     |
+| `universe-cuda`              | Runtime image with compiled autoware, inherits CUDA runtime from `base-cuda-runtime`  | Deployment with GPU                                        |
 
 ## Pull from GHCR
 
@@ -64,19 +63,20 @@ Tag pattern: `<stage>-<ros_distro>[-<date>|-<version>]`
 
 Available images (replace `jazzy` with `humble` for other distros):
 
-| Tag                                   | Description                                       |
-| ------------------------------------- | ------------------------------------------------- |
-| `base-jazzy`                          | ROS base + ansible + user aw                      |
-| `core-dependencies-jazzy`             | Build deps + core packages (except autoware_core) |
-| `core-devel-jazzy`                    | Full core development image                       |
-| `core-jazzy`                          | Lightweight core runtime                          |
-| `universe-dependencies-jazzy`         | Universe build dependencies                       |
-| `universe-dependencies-cuda-jazzy`    | Universe + CUDA dev libs                          |
-| `universe-devel-jazzy`                | Full universe development (no CUDA)               |
-| `universe-devel-cuda-jazzy`           | Full universe development with CUDA               |
-| `universe-runtime-dependencies-jazzy` | Universe runtime dependencies                     |
-| `universe-jazzy`                      | Runtime without GPU                               |
-| `universe-cuda-jazzy`                 | Runtime with GPU                                  |
+| Tag                                | Description                                       |
+| ---------------------------------- | ------------------------------------------------- |
+| `base-jazzy`                       | ROS base + ansible + user aw                      |
+| `core-dependencies-jazzy`          | Build deps + core packages (except autoware_core) |
+| `core-devel-jazzy`                 | Full core development image                       |
+| `core-jazzy`                       | Lightweight core runtime                          |
+| `base-cuda-runtime-jazzy`          | base + CUDA/cuDNN/TensorRT runtime                |
+| `base-cuda-devel-jazzy`            | base-cuda-runtime + CUDA/cuDNN/TensorRT dev       |
+| `universe-dependencies-jazzy`      | Universe build dependencies (no CUDA)             |
+| `universe-dependencies-cuda-jazzy` | Universe build deps on base-cuda-devel            |
+| `universe-devel-jazzy`             | Full universe development (no CUDA)               |
+| `universe-devel-cuda-jazzy`        | Full universe development with CUDA               |
+| `universe-jazzy`                   | Runtime without GPU                               |
+| `universe-cuda-jazzy`              | Runtime with GPU                                  |
 
 ## Build locally
 

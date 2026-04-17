@@ -49,9 +49,10 @@ runs:
         vcs import --shallow --force src < ${{ inputs.additional-repos }}
       shell: bash
 
+    # TODO: temporarily disabled via `&& false`. Re-enable once cache saving is needed again.
     - name: Cache ccache
       uses: actions/cache@v4
-      if: ${{ github.ref == 'refs/heads/main'}}
+      if: ${{ github.ref == 'refs/heads/main' && false }}
       id: cache-ccache
       with:
         path: |
@@ -61,9 +62,10 @@ runs:
           ccache-${{ inputs.platform }}-${{ inputs.cache-tag-suffix }}-
           ccache-${{ inputs.platform }}-
 
+    # TODO: temporarily disabled via `&& false`. Re-enable once cache saving is needed again.
     - name: Cache apt-get
       uses: actions/cache@v4
-      if: ${{ github.ref == 'refs/heads/main'}}
+      if: ${{ github.ref == 'refs/heads/main' && false }}
       id: cache-apt-get
       with:
         path: |

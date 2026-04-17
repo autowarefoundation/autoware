@@ -51,17 +51,48 @@ jobs:
             .github/workflows/docker-build-new.yaml
             .github/workflows/docker-build-pipeline-new.yaml
             .github/workflows/docker-build-and-push-new.yaml
+            .github/workflows/docker-manifest-new.yaml
 
-  humble:
+  humble-amd64:
     needs: changed-files
     if: needs.changed-files.outputs.should-build == 'true'
     uses: ./.github/workflows/docker-build-pipeline-new.yaml
     with:
       ros-distro: humble
+      platform: amd64
 
-  jazzy:
+  humble-arm64:
     needs: changed-files
     if: needs.changed-files.outputs.should-build == 'true'
     uses: ./.github/workflows/docker-build-pipeline-new.yaml
+    with:
+      ros-distro: humble
+      platform: arm64
+
+  humble-manifest:
+    needs: [humble-amd64, humble-arm64]
+    uses: ./.github/workflows/docker-manifest-new.yaml
+    with:
+      ros-distro: humble
+
+  jazzy-amd64:
+    needs: changed-files
+    if: needs.changed-files.outputs.should-build == 'true'
+    uses: ./.github/workflows/docker-build-pipeline-new.yaml
+    with:
+      ros-distro: jazzy
+      platform: amd64
+
+  jazzy-arm64:
+    needs: changed-files
+    if: needs.changed-files.outputs.should-build == 'true'
+    uses: ./.github/workflows/docker-build-pipeline-new.yaml
+    with:
+      ros-distro: jazzy
+      platform: arm64
+
+  jazzy-manifest:
+    needs: [jazzy-amd64, jazzy-arm64]
+    uses: ./.github/workflows/docker-manifest-new.yaml
     with:
       ros-distro: jazzy

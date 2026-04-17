@@ -49,8 +49,8 @@ function "ctx" {
 group "default" {
   targets = ["base",
              "core-dependencies", "core-devel", "core",
-             "universe-dependencies", "universe-devel",
-             "universe-runtime-dependencies", "universe",
+             "base-cuda-runtime", "base-cuda-devel",
+             "universe-dependencies", "universe-devel", "universe",
              "universe-dependencies-cuda", "universe-devel-cuda", "universe-cuda"]
 }
 
@@ -62,9 +62,12 @@ group "ci-core" {
   targets = ["core-dependencies", "core-devel", "core"]
 }
 
+group "ci-base-cuda" {
+  targets = ["base-cuda-runtime", "base-cuda-devel"]
+}
+
 group "ci-universe" {
-  targets = ["universe-dependencies", "universe-devel",
-             "universe-runtime-dependencies", "universe"]
+  targets = ["universe-dependencies", "universe-devel", "universe"]
 }
 
 group "ci-universe-cuda" {
@@ -89,6 +92,7 @@ target "core-dependencies" {
   }
   args = {
     BASE_IMAGE = "autoware-base"
+    ROS_DISTRO = ROS_DISTRO
   }
 }
 
@@ -101,6 +105,7 @@ target "core-devel" {
   }
   args = {
     BASE_IMAGE = "autoware-base"
+    ROS_DISTRO = ROS_DISTRO
   }
 }
 
@@ -113,6 +118,33 @@ target "core" {
   }
   args = {
     BASE_IMAGE = "autoware-base"
+    ROS_DISTRO = ROS_DISTRO
+  }
+}
+
+target "base-cuda-runtime" {
+  dockerfile = "docker-new/base-cuda.Dockerfile"
+  target     = "base-cuda-runtime"
+  tags       = tags("base-cuda-runtime")
+  contexts = {
+    autoware-base = ctx("base")
+  }
+  args = {
+    BASE_IMAGE = "autoware-base"
+    ROS_DISTRO = ROS_DISTRO
+  }
+}
+
+target "base-cuda-devel" {
+  dockerfile = "docker-new/base-cuda.Dockerfile"
+  target     = "base-cuda-devel"
+  tags       = tags("base-cuda-devel")
+  contexts = {
+    autoware-base = ctx("base")
+  }
+  args = {
+    BASE_IMAGE = "autoware-base"
+    ROS_DISTRO = ROS_DISTRO
   }
 }
 
@@ -125,6 +157,7 @@ target "_universe-base" {
   args = {
     CORE_DEVEL_IMAGE = "autoware-core-devel"
     CORE_IMAGE       = "autoware-core"
+    ROS_DISTRO       = ROS_DISTRO
   }
 }
 
@@ -134,28 +167,10 @@ target "universe-dependencies" {
   tags     = tags("universe-dependencies")
 }
 
-target "universe-dependencies-cuda" {
-  inherits = ["_universe-base"]
-  target   = "universe-dependencies-cuda"
-  tags     = tags("universe-dependencies-cuda")
-}
-
-target "universe-devel-cuda" {
-  inherits = ["_universe-base"]
-  target   = "universe-devel-cuda"
-  tags     = tags("universe-devel-cuda")
-}
-
 target "universe-devel" {
   inherits = ["_universe-base"]
   target   = "universe-devel"
   tags     = tags("universe-devel")
-}
-
-target "universe-runtime-dependencies" {
-  inherits = ["_universe-base"]
-  target   = "universe-runtime-dependencies"
-  tags     = tags("universe-runtime-dependencies")
 }
 
 target "universe" {
@@ -164,8 +179,34 @@ target "universe" {
   tags     = tags("universe")
 }
 
+target "_universe-cuda-base" {
+  dockerfile = "docker-new/universe-cuda.Dockerfile"
+  contexts = {
+    autoware-base-cuda-runtime = ctx("base-cuda-runtime")
+    autoware-base-cuda-devel   = ctx("base-cuda-devel")
+    autoware-core-devel        = ctx("core-devel")
+  }
+  args = {
+    BASE_CUDA_RUNTIME_IMAGE = "autoware-base-cuda-runtime"
+    BASE_CUDA_DEVEL_IMAGE   = "autoware-base-cuda-devel"
+    ROS_DISTRO              = ROS_DISTRO
+  }
+}
+
+target "universe-dependencies-cuda" {
+  inherits = ["_universe-cuda-base"]
+  target   = "universe-dependencies-cuda"
+  tags     = tags("universe-dependencies-cuda")
+}
+
+target "universe-devel-cuda" {
+  inherits = ["_universe-cuda-base"]
+  target   = "universe-devel-cuda"
+  tags     = tags("universe-devel-cuda")
+}
+
 target "universe-cuda" {
-  inherits = ["_universe-base"]
+  inherits = ["_universe-cuda-base"]
   target   = "universe-cuda"
   tags     = tags("universe-cuda")
 }

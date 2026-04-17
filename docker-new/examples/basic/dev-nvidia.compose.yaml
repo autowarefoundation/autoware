@@ -1,0 +1,26 @@
+services:
+  autoware:
+    image: ghcr.io/autowarefoundation/autoware-new:universe-devel-cuda-jazzy
+    privileged: true
+    runtime: nvidia
+    stdin_open: true
+    tty: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+      - HOST_UID=${HOST_UID:-1000}
+      - HOST_GID=${HOST_GID:-1000}
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${HOME}/autoware_map:/home/aw/autoware_map
+      - ${HOME}/autoware_data:/home/aw/autoware_data
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: bash
