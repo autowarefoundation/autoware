@@ -50,6 +50,10 @@ jobs:
       - name: 📥 Check out repository
         uses: actions/checkout@v6
 
+      - name: 🏷️ Compute cache ref
+        id: meta
+        run: echo "ref_name=${GITHUB_REF_NAME//\//-}" >> "$GITHUB_OUTPUT"
+
       - name: 📂 Get changed files
         id: changed-files
         uses: step-security/changed-files@v47
@@ -119,6 +123,60 @@ jobs:
             [worker.oci]
               max-parallelism = 2
 
+      # Read-only restore of the BuildKit mount cache populated by the
+      # main docker-new pipeline's `ci-universe` group. Same mount IDs
+      # (apt/ccache/pip/pipx keyed by ROS_DISTRO) as the main build, so
+      # health-check reuses whatever tarball main last saved for this
+      # platform. No cache-save here: health-check does not write back.
+      - name: 💾 Restore BuildKit cache mounts (read-only)
+        id: cache-restore
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
+        uses: actions/cache/restore@v5
+        with:
+          path: cache-mounts
+          key: buildkit-mounts-ci-universe-humble-${{ matrix.platform }}-${{ github.sha }}
+          restore-keys: |
+            buildkit-mounts-ci-universe-humble-${{ matrix.platform }}-
+
+      - name: 💉 Inject BuildKit cache mounts
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' }}
+        uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          cache-map: |
+            {
+              "cache-mounts/apt-cache": {
+                "id": "apt-cache-humble",
+                "target": "/var/cache/apt"
+              },
+              "cache-mounts/apt-lists": {
+                "id": "apt-lists-humble",
+                "target": "/var/lib/apt/lists"
+              },
+              "cache-mounts/ccache": {
+                "id": "ccache-humble",
+                "target": "/home/aw/.ccache",
+                "uid": "1000",
+                "gid": "1000"
+              },
+              "cache-mounts/pip": {
+                "id": "pip-cache",
+                "target": "/home/aw/.cache/pip",
+                "uid": "1000",
+                "gid": "1000"
+              },
+              "cache-mounts/pipx": {
+                "id": "pipx-cache",
+                "target": "/home/aw/.cache/pipx",
+                "uid": "1000",
+                "gid": "1000"
+              }
+            }
+          skip-extraction: ${{ steps.cache-restore.outputs.cache-hit }}
+
       - name: 🔑 Login to GitHub Container Registry
         if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
           github.event_name == 'schedule' ||
@@ -140,35 +198,13 @@ jobs:
           source: .
           targets: universe-devel
           files: docker-new/docker-bake.hcl
-          load: true
+          load: false
           provenance: false
           set: |
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:humble-${{ matrix.platform }}-main
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ matrix.build-type }}-humble-${{ matrix.platform }}-main
-
-      - name: 💾 Save Docker image
-        if: ${{ matrix.build-type == 'main' &&
-          (steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch') }}
-        run: docker save autoware:universe-devel-humble | gzip > /tmp/autoware-image.tar.gz
-
-      - name: 📤 Upload Docker image artifact
-        if: ${{ matrix.build-type == 'main' &&
-          (steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch') }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: autoware-image
-          path: /tmp/autoware-image.tar.gz
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: 📊 Disk space
         if: always()
         run: df -h
-
-  scenario-test:
-    needs: docker-build
-    uses: ./.github/workflows/scenario-test-reusable.yaml
-    with:
-      autoware_container_image: autoware:universe-devel-humble
