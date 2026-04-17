@@ -76,11 +76,7 @@ jobs:
             [worker.oci]
               max-parallelism = 2
 
-      # Read-only restore of the BuildKit mount cache populated by the
-      # main docker-new pipeline's `ci-universe` group. Same mount IDs
-      # (apt/ccache/pip/pipx keyed by ROS_DISTRO) as the main build, so
-      # health-check reuses whatever tarball main last saved for this
-      # platform. No cache-save here: health-check does not write back.
+      # Read-only: reuses the mount cache saved by docker-new's `ci-universe` group.
       - name: 💾 Restore BuildKit cache mounts (read-only)
         id: cache-restore
         uses: actions/cache/restore@v5
