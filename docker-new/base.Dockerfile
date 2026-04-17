@@ -10,7 +10,11 @@ ARG USERNAME=aw
 RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
     echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache && \
     echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/99-no-recommends && \
-    echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/99-no-recommends
+    echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/99-no-recommends && \
+    echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/99-retries && \
+    echo 'Acquire::http::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries && \
+    echo 'Acquire::https::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries
+
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
     apt-get update && \
