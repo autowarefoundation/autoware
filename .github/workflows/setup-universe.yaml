@@ -41,6 +41,18 @@ jobs:
         run: |
           df -h
 
+      - name: Configure apt retries and mirror fallback
+        run: |
+          echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/99-retries
+          echo 'Acquire::http::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries
+          echo 'Acquire::https::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries
+          if [ -f /etc/apt/sources.list ]; then
+            sed -i '/^deb http:\/\/archive\.ubuntu\.com\/ubuntu/{h;s|archive\.ubuntu\.com|azure.archive.ubuntu.com|;G}' /etc/apt/sources.list
+          fi
+          if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+            sed -i 's|^URIs: http://archive\.ubuntu\.com/ubuntu|URIs: http://azure.archive.ubuntu.com/ubuntu http://archive.ubuntu.com/ubuntu|' /etc/apt/sources.list.d/ubuntu.sources
+          fi
+
       - name: Install dependencies
         run: |
           apt-get update
