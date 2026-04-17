@@ -14,12 +14,12 @@ RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
     echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/99-retries && \
     echo 'Acquire::http::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries && \
     echo 'Acquire::https::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries && \
-    if [ -f /etc/apt/sources.list ]; then \
-      sed -i '/^deb http:\/\/archive\.ubuntu\.com\/ubuntu/{h;s|archive\.ubuntu\.com|azure.archive.ubuntu.com|;G}' /etc/apt/sources.list; \
-    fi && \
-    if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then \
-      sed -i 's|^URIs: http://archive\.ubuntu\.com/ubuntu|URIs: http://azure.archive.ubuntu.com/ubuntu http://archive.ubuntu.com/ubuntu|' /etc/apt/sources.list.d/ubuntu.sources; \
-    fi
+    printf 'http://azure.archive.ubuntu.com/ubuntu\nhttp://archive.ubuntu.com/ubuntu\n' > /etc/apt/ubuntu-mirrors.list && \
+    for f in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do \
+      if [ -f "$f" ]; then \
+        sed -E -i 's|http://archive\.ubuntu\.com/ubuntu/?|mirror+file:///etc/apt/ubuntu-mirrors.list|g' "$f"; \
+      fi; \
+    done
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
