@@ -1,0 +1,95 @@
+name: cleanup-actions-caches
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily at 05:30 UTC
+    - cron: 30 5 * * *
+
+permissions:
+  actions: write
+  pull-requests: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧹 Delete pre-commit caches of closed PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          echo "::group::🔎 Scanning pre-commit caches"
+          gh cache list --limit 1000 --key pre-commit \
+            --json id,key,ref,sizeInBytes,createdAt > caches.json
+          scanned=$(jq 'length' caches.json)
+          scanned_mb=$(jq '([.[].sizeInBytes] | add // 0) / 1048576 | floor' caches.json)
+          echo "Found ${scanned} pre-commit cache(s), ${scanned_mb} MiB total."
+          echo "::endgroup::"
+
+          : > rows.tsv
+          deleted=0
+          freed=0
+
+          echo "::group::🗂️  Inspecting per-PR state"
+          while IFS=$'\t' read -r id ref size; do
+            pr="${ref#refs/pull/}"
+            pr="${pr%/merge}"
+            if ! [[ "$pr" =~ ^[0-9]+$ ]]; then
+              echo "⏭️  skip ${id} (non-PR ref ${ref})"
+              continue
+            fi
+            state=$(gh pr view "$pr" --json state --jq '.state' 2>/dev/null || echo MISSING)
+            size_mb=$(awk -v b="$size" 'BEGIN { printf "%.1f", b/1048576 }')
+            case "$state" in
+              OPEN)
+                echo "⏭️  keep   ${id}  PR #${pr}  ${size_mb} MiB  (OPEN)"
+                ;;
+              MERGED|CLOSED|MISSING)
+                emoji="🗑️"
+                [[ "$state" == "MERGED" ]] && emoji="✅"
+                [[ "$state" == "MISSING" ]] && emoji="❓"
+                echo "${emoji} delete ${id}  PR #${pr}  ${size_mb} MiB  (${state})"
+                printf '%s\t%s\t%s\t%s\t%s\n' "$id" "$pr" "$ref" "$size" "$state" >> rows.tsv
+                ;;
+            esac
+          done < <(jq -r '.[] | select(.ref | startswith("refs/pull/")) | [.id, .ref, .sizeInBytes] | @tsv' caches.json)
+          echo "::endgroup::"
+
+          echo "::group::🚮 Deleting"
+          if [[ -s rows.tsv ]]; then
+            while IFS=$'\t' read -r id pr ref size state; do
+              gh cache delete "$id" >/dev/null
+              deleted=$((deleted + 1))
+              freed=$((freed + size))
+              echo "✔ deleted ${id} (PR #${pr}, ${state})"
+            done < rows.tsv
+          else
+            echo "Nothing to delete."
+          fi
+          echo "::endgroup::"
+
+          freed_mb=$(awk -v b="$freed" 'BEGIN { printf "%.1f", b/1048576 }')
+          remaining=$((scanned - deleted))
+
+          {
+            echo "## 🧹 Pre-commit cache cleanup"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|---|---:|"
+            echo "| 🔎 Scanned | ${scanned} caches (${scanned_mb} MiB) |"
+            echo "| 🗑️ Deleted | ${deleted} caches (${freed_mb} MiB) |"
+            echo "| 📦 Remaining | ${remaining} caches |"
+            echo ""
+            if [[ -s rows.tsv ]]; then
+              echo "### Deletions"
+              echo ""
+              echo "| Cache ID | PR | Size (MiB) | PR state |"
+              echo "|---:|---:|---:|---|"
+              awk -F'\t' '{ printf "| `%s` | [#%s](../../pull/%s) | %.1f | %s |\n", $1, $2, $2, $4/1048576, $5 }' rows.tsv
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "::notice title=Cache cleanup::Deleted ${deleted}/${scanned} pre-commit cache(s), freed ${freed_mb} MiB."
