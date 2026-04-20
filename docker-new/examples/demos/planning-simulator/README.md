@@ -10,7 +10,7 @@ Planning sim itself doesn't need a GPU — perception is dummy. The only reason 
 - Perception model data under `~/autoware_data` (mounted but not used by this demo)
 - Docker Compose v2
 
-[Download the sample map](https://github.com/autowarefoundation/autoware_launch/blob/main/autoware_launch/README.md) and unpack it to `~/autoware_map/sample-map-planning` before running.
+[Download the sample map](https://autowarefoundation.github.io/autoware-documentation/main/demos/planning-sim/#download-the-sample-map) and unpack it to `~/autoware_map/sample-map-planning` before running.
 
 ## Run (no GPU, software rendering)
 
