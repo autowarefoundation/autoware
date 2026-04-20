@@ -7,11 +7,11 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete all autoware-buildcache-new package versions
+      - name: Delete all autoware-buildcache package versions
         env:
           GITHUB_TOKEN: ${{ github.token }}
           OWNER: ${{ github.repository_owner }}
-          PACKAGE: autoware-buildcache-new
+          PACKAGE: autoware-buildcache
         run: |
           for page in $(seq 1 20); do
             versions=$(curl -fsSL \

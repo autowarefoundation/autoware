@@ -1,6 +1,6 @@
 # Examples
 
-Docker Compose examples for running Autoware with the `docker-new` images.
+Docker Compose examples for running Autoware with the `docker` images.
 
 ## Basic
 

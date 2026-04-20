@@ -49,14 +49,14 @@ Pre-built multi-arch images (amd64 + arm64) are available on GHCR:
 
 ```bash
 # Pull a specific image
-docker pull ghcr.io/autowarefoundation/autoware-new:base-jazzy
-docker pull ghcr.io/autowarefoundation/autoware-new:base-humble
+docker pull ghcr.io/autowarefoundation/autoware:base-jazzy
+docker pull ghcr.io/autowarefoundation/autoware:base-humble
 
 # Pull a dated version (for pinning)
-docker pull ghcr.io/autowarefoundation/autoware-new:base-jazzy-20260407
+docker pull ghcr.io/autowarefoundation/autoware:base-jazzy-20260407
 
 # Pull a release version
-docker pull ghcr.io/autowarefoundation/autoware-new:base-jazzy-1.2.3
+docker pull ghcr.io/autowarefoundation/autoware:base-jazzy-1.2.3
 ```
 
 Tag pattern: `<stage>-<ros_distro>[-<date>|-<version>]`
@@ -87,16 +87,16 @@ From the repository root. Targets beyond `base` require source repositories unde
 vcs import src < repositories/autoware.repos
 
 # Build all default targets (universe + universe-cuda)
-docker buildx bake -f docker-new/docker-bake.hcl
+docker buildx bake -f docker/docker-bake.hcl
 
 # Build a specific target (dependencies are resolved automatically)
-docker buildx bake -f docker-new/docker-bake.hcl base
-docker buildx bake -f docker-new/docker-bake.hcl core-devel
-docker buildx bake -f docker-new/docker-bake.hcl universe
-docker buildx bake -f docker-new/docker-bake.hcl universe-cuda
+docker buildx bake -f docker/docker-bake.hcl base
+docker buildx bake -f docker/docker-bake.hcl core-devel
+docker buildx bake -f docker/docker-bake.hcl universe
+docker buildx bake -f docker/docker-bake.hcl universe-cuda
 
 # Build for humble
-ROS_DISTRO=humble docker buildx bake -f docker-new/docker-bake.hcl base
+ROS_DISTRO=humble docker buildx bake -f docker/docker-bake.hcl base
 ```
 
 ## Usage

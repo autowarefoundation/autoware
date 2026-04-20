@@ -19,7 +19,7 @@ Works on any host. rviz will use Mesa's `llvmpipe` software rasterizer — fine 
 ```bash
 xhost +local:docker
 
-cd docker-new/examples/demos/planning-simulator
+cd docker/examples/demos/planning-simulator
 HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose run --rm planning-simulator
 ```
 
@@ -30,7 +30,7 @@ Merge the `docker-compose.dri.yaml` overlay to pass `/dev/dri` into the containe
 ```bash
 xhost +local:docker
 
-cd docker-new/examples/demos/planning-simulator
+cd docker/examples/demos/planning-simulator
 HOST_UID=$(id -u) HOST_GID=$(id -g) \
   docker compose -f docker-compose.yaml -f docker-compose.dri.yaml \
   run --rm planning-simulator
@@ -43,7 +43,7 @@ Merge the `docker-compose.nvidia.yaml` overlay to add `runtime: nvidia`, NVIDIA 
 ```bash
 xhost +local:docker
 
-cd docker-new/examples/demos/planning-simulator
+cd docker/examples/demos/planning-simulator
 HOST_UID=$(id -u) HOST_GID=$(id -g) \
   docker compose -f docker-compose.yaml -f docker-compose.nvidia.yaml \
   run --rm planning-simulator

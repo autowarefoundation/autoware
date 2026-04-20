@@ -1,6 +1,6 @@
 services:
   awsim:
-    image: ghcr.io/autowarefoundation/autoware-new:universe-cuda-jazzy
+    image: ghcr.io/autowarefoundation/autoware:universe-cuda-jazzy
     privileged: true
     runtime: nvidia
     network_mode: host

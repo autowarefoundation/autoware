@@ -1,6 +1,6 @@
 services:
   autoware:
-    image: ghcr.io/autowarefoundation/autoware-new:universe-devel-jazzy
+    image: ghcr.io/autowarefoundation/autoware:universe-devel-jazzy
     privileged: true
     stdin_open: true
     tty: true

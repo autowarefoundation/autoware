@@ -1,4 +1,4 @@
-name: docker-build-pipeline-new
+name: docker-build-pipeline
 
 on:
   workflow_call:
@@ -14,11 +14,11 @@ on:
       target-image:
         description: Registry image name
         type: string
-        default: autoware-new
+        default: autoware
 
 jobs:
   build-base:
-    uses: ./.github/workflows/docker-build-new.yaml
+    uses: ./.github/workflows/docker-build.yaml
     with:
       bake-group: ci-base
       platform: ${{ inputs.platform }}
@@ -28,7 +28,7 @@ jobs:
 
   build-core:
     needs: build-base
-    uses: ./.github/workflows/docker-build-new.yaml
+    uses: ./.github/workflows/docker-build.yaml
     with:
       bake-group: ci-core
       platform: ${{ inputs.platform }}
@@ -39,7 +39,7 @@ jobs:
 
   build-universe:
     needs: build-core
-    uses: ./.github/workflows/docker-build-new.yaml
+    uses: ./.github/workflows/docker-build.yaml
     with:
       bake-group: ci-universe
       platform: ${{ inputs.platform }}
@@ -49,7 +49,7 @@ jobs:
 
   build-base-cuda:
     needs: build-base
-    uses: ./.github/workflows/docker-build-new.yaml
+    uses: ./.github/workflows/docker-build.yaml
     with:
       bake-group: ci-base-cuda
       platform: ${{ inputs.platform }}
@@ -59,7 +59,7 @@ jobs:
 
   build-universe-cuda:
     needs: [build-core, build-base-cuda]
-    uses: ./.github/workflows/docker-build-new.yaml
+    uses: ./.github/workflows/docker-build.yaml
     with:
       bake-group: ci-universe-cuda
       platform: ${{ inputs.platform }}

@@ -1,7 +1,7 @@
-# Reusable workflow that builds and pushes one docker-new bake group via
+# Reusable workflow that builds and pushes one docker bake group via
 # `docker buildx bake`, for one ROS distro, on ONE platform. Callers run
 # this twice (amd64 + arm64) to produce per-arch tags, then stitch them
-# with the separate `docker-manifest-new.yaml` workflow.
+# with the separate `docker-manifest.yaml` workflow.
 #
 # Two independent caches cooperate:
 #
@@ -20,7 +20,7 @@
 #     manifest is a superset of its stages, so a group only needs to read
 #     its own tag.
 
-name: docker-build-new-reusable
+name: docker-build-reusable
 
 on:
   workflow_call:
@@ -112,7 +112,7 @@ jobs:
       - name: 🏷️ Compute target tags from HCL
         id: compute-tags
         run: |
-          targets=$(docker buildx bake -f docker-new/docker-bake.hcl --print ${{ inputs.bake-group }} 2>/dev/null \
+          targets=$(docker buildx bake -f docker/docker-bake.hcl --print ${{ inputs.bake-group }} 2>/dev/null \
             | jq -r '.group."${{ inputs.bake-group }}".targets[]')
           tags=""
           for t in $targets; do
@@ -234,20 +234,20 @@ jobs:
           source: .
           push: true
           targets: ${{ inputs.bake-group }}
-          files: docker-new/docker-bake.hcl
+          files: docker/docker-bake.hcl
           provenance: false
           set: |
             *.platform=linux/${{ inputs.platform }}
             *.args.ROS_DISTRO=${{ inputs.ros-distro }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-${{ steps.meta.outputs.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-${{ steps.meta.outputs.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: 📊 Build summary
         if: always()
         env:
           IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
-          BUILDCACHE_REF: ghcr.io/${{ github.repository }}-buildcache-new:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-${{ steps.meta.outputs.ref_name }}
+          BUILDCACHE_REF: ghcr.io/${{ github.repository }}-buildcache:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-${{ steps.meta.outputs.ref_name }}
           BAKE_METADATA: ${{ steps.bake.outputs.metadata }}
           CACHE_MATCHED_KEY: ${{ steps.cache-restore.outputs.cache-matched-key }}
           CACHE_EXACT_HIT: ${{ steps.cache-restore.outputs.cache-hit }}

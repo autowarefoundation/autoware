@@ -32,7 +32,7 @@ jobs:
             .github/workflows/health-check-reusable.yaml
             ansible-galaxy-requirements.yaml
             ansible/**
-            docker-new/**
+            docker/**
 
   require-label:
     needs: changed-files

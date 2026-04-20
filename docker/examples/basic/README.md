@@ -28,9 +28,9 @@ You want to see your GPU (`NVIDIA Corporation` / `AMD Radeon...` / `Mesa Intel..
 xhost +local:docker
 
 # Pick one
-COMPOSE=docker-new/examples/basic/dev-cpu.compose.yaml
-COMPOSE=docker-new/examples/basic/dev-dri.compose.yaml
-COMPOSE=docker-new/examples/basic/dev-nvidia.compose.yaml
+COMPOSE=docker/examples/basic/dev-cpu.compose.yaml
+COMPOSE=docker/examples/basic/dev-dri.compose.yaml
+COMPOSE=docker/examples/basic/dev-nvidia.compose.yaml
 
 HOST_UID=$(id -u) HOST_GID=$(id -g) \
   docker compose -f "$COMPOSE" run --rm autoware

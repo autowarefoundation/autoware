@@ -1,6 +1,6 @@
 services:
   planning-simulator:
-    image: ghcr.io/autowarefoundation/autoware-new:universe-jazzy
+    image: ghcr.io/autowarefoundation/autoware:universe-jazzy
     privileged: true
     stdin_open: true
     tty: true

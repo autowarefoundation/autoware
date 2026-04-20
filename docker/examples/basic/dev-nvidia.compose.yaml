@@ -1,6 +1,6 @@
 services:
   autoware:
-    image: ghcr.io/autowarefoundation/autoware-new:universe-devel-cuda-jazzy
+    image: ghcr.io/autowarefoundation/autoware:universe-devel-cuda-jazzy
     privileged: true
     runtime: nvidia
     stdin_open: true

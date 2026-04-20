@@ -60,13 +60,13 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
       -e rosdistro=${ROS_DISTRO} && \
     pipx uninstall ansible
 
-COPY docker-new/files/cyclonedds.xml /home/${USERNAME}/cyclonedds.xml
+COPY docker/files/cyclonedds.xml /home/${USERNAME}/cyclonedds.xml
 ENV CYCLONEDDS_URI=file:///home/${USERNAME}/cyclonedds.xml
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # Entrypoint runs as root so it can adjust UID/GID, then drops to user
 USER root
-COPY --chmod=755 docker-new/docker-entrypoint.sh /docker-entrypoint.sh
+COPY --chmod=755 docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 ENV ROS_DISTRO=${ROS_DISTRO}
 ENV USERNAME=${USERNAME}

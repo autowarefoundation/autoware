@@ -15,7 +15,7 @@ Bridges autoware to the [AWSIM](https://tier4.github.io/AWSIM/) Unity simulator 
 ```bash
 xhost +local:docker
 
-cd docker-new/examples/demos/awsim
+cd docker/examples/demos/awsim
 HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose run --rm awsim
 ```
 

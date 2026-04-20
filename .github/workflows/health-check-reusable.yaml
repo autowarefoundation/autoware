@@ -76,7 +76,7 @@ jobs:
             [worker.oci]
               max-parallelism = 2
 
-      # Read-only: reuses the mount cache saved by docker-new's `ci-universe` group.
+      # Read-only: reuses the mount cache saved by docker's `ci-universe` group.
       - name: 💾 Restore BuildKit cache mounts (read-only)
         id: cache-restore
         uses: actions/cache/restore@v5
@@ -127,19 +127,19 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
 
-      - name: 🔨 Build Autoware (docker-new)
+      - name: 🔨 Build Autoware
         uses: docker/bake-action@v7
         env:
           ROS_DISTRO: humble
         with:
           source: .
           targets: universe-devel
-          files: docker-new/docker-bake.hcl
+          files: docker/docker-bake.hcl
           provenance: false
           set: |
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache-new:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
+            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-main
+            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: 📊 Disk space
         if: always()

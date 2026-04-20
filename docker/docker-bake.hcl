@@ -75,7 +75,7 @@ group "ci-universe-cuda" {
 }
 
 target "base" {
-  dockerfile = "docker-new/base.Dockerfile"
+  dockerfile = "docker/base.Dockerfile"
   target     = "base"
   tags       = tags("base")
   args = {
@@ -84,7 +84,7 @@ target "base" {
 }
 
 target "core-dependencies" {
-  dockerfile = "docker-new/core.Dockerfile"
+  dockerfile = "docker/core.Dockerfile"
   target     = "core-dependencies"
   tags       = tags("core-dependencies")
   contexts = {
@@ -97,7 +97,7 @@ target "core-dependencies" {
 }
 
 target "core-devel" {
-  dockerfile = "docker-new/core.Dockerfile"
+  dockerfile = "docker/core.Dockerfile"
   target     = "core-devel"
   tags       = tags("core-devel")
   contexts = {
@@ -110,7 +110,7 @@ target "core-devel" {
 }
 
 target "core" {
-  dockerfile = "docker-new/core.Dockerfile"
+  dockerfile = "docker/core.Dockerfile"
   target     = "core"
   tags       = tags("core")
   contexts = {
@@ -123,7 +123,7 @@ target "core" {
 }
 
 target "base-cuda-runtime" {
-  dockerfile = "docker-new/base-cuda.Dockerfile"
+  dockerfile = "docker/base-cuda.Dockerfile"
   target     = "base-cuda-runtime"
   tags       = tags("base-cuda-runtime")
   contexts = {
@@ -136,7 +136,7 @@ target "base-cuda-runtime" {
 }
 
 target "base-cuda-devel" {
-  dockerfile = "docker-new/base-cuda.Dockerfile"
+  dockerfile = "docker/base-cuda.Dockerfile"
   target     = "base-cuda-devel"
   tags       = tags("base-cuda-devel")
   contexts = {
@@ -149,7 +149,7 @@ target "base-cuda-devel" {
 }
 
 target "_universe-base" {
-  dockerfile = "docker-new/universe.Dockerfile"
+  dockerfile = "docker/universe.Dockerfile"
   contexts = {
     autoware-core-devel = ctx("core-devel")
     autoware-core       = ctx("core")
@@ -180,7 +180,7 @@ target "universe" {
 }
 
 target "_universe-cuda-base" {
-  dockerfile = "docker-new/universe-cuda.Dockerfile"
+  dockerfile = "docker/universe-cuda.Dockerfile"
   contexts = {
     autoware-base-cuda-runtime = ctx("base-cuda-runtime")
     autoware-base-cuda-devel   = ctx("base-cuda-devel")

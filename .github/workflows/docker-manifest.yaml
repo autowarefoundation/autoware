@@ -1,11 +1,11 @@
-# Stitches the per-arch tags pushed by docker-build-new.yaml into
+# Stitches the per-arch tags pushed by docker-build.yaml into
 # multi-arch manifests. Runs once per ROS distro after both the amd64
 # and arm64 pipelines have finished. The set of targets is derived from
-# the `default` group in docker-new/docker-bake.hcl, and the suffix set
+# the `default` group in docker/docker-bake.hcl, and the suffix set
 # mirrors the `tags()` function there so every per-arch variant the
 # build side pushed (plain, dated, versioned, ref-named) gets stitched.
 
-name: docker-manifest-new
+name: docker-manifest
 
 on:
   workflow_call:
@@ -17,7 +17,7 @@ on:
       target-image:
         description: Registry image name
         type: string
-        default: autoware-new
+        default: autoware
 
 jobs:
   manifest:
@@ -47,10 +47,10 @@ jobs:
         id: targets
         run: |
           set -euo pipefail
-          targets=$(docker buildx bake -f docker-new/docker-bake.hcl --print default \
+          targets=$(docker buildx bake -f docker/docker-bake.hcl --print default \
             | jq -r '.group.default.targets[]')
           if [ -z "$targets" ]; then
-            echo "::error::No targets found in default group of docker-new/docker-bake.hcl"
+            echo "::error::No targets found in default group of docker/docker-bake.hcl"
             exit 1
           fi
           echo "Found $(echo "$targets" | wc -l) target(s)"
@@ -73,7 +73,7 @@ jobs:
             ref="${GITHUB_REF_NAME//\//-}"
           fi
 
-          # Mirror tags() in docker-new/docker-bake.hcl so every per-arch
+          # Mirror tags() in docker/docker-bake.hcl so every per-arch
           # variant the build pushed gets a multi-arch counterpart:
           #   - TAG_REF empty → plain + (dated if TAG_DATE)
           #   - TAG_REF set   → only the ref variant (plain is not pushed)
