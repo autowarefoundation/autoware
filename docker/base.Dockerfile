@@ -28,6 +28,7 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
     sudo \
     pipx \
     bash-completion \
+    iproute2 \
     gosu
 
 # Remove default ubuntu user (present since 24.04, occupies UID 1000)
