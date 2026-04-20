@@ -7,21 +7,36 @@ on:
       - synchronize
       - reopened
       - labeled
-    paths:
-      - repositories/*.repos
-      - .github/workflows/health-check.yaml
-      - .github/workflows/health-check-pr.yaml
-      - .github/workflows/health-check-reusable.yaml
-      - ansible-galaxy-requirements.yaml
-      - ansible/**
-      - docker-new/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  changed-files:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.any_changed }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - id: check
+        uses: step-security/changed-files@v47
+        with:
+          files: |
+            repositories/*.repos
+            .github/workflows/health-check.yaml
+            .github/workflows/health-check-pr.yaml
+            .github/workflows/health-check-reusable.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker-new/**
+
   require-label:
+    needs: changed-files
+    if: needs.changed-files.outputs.should-run == 'true'
     uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
     with:
       label: run:health-check
