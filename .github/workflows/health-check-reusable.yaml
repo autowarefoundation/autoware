@@ -1,7 +1,37 @@
+# Builds `universe-devel` on three independent matrix routes:
+# `main/amd64`, `nightly/amd64`, `main-arm64/arm64`. Each route owns
+# a self-contained cache lineage keyed on
+# `{build-type}-{ros-distro}-{platform}`; there is no cross-route
+# fallback. Within a lineage, registry tags are per-ref so consecutive
+# PR runs reuse their own layers.
+#
+#   - GHA mount cache (actions/cache). Caches BuildKit RUN mounts (apt,
+#     ccache, pip, pipx) as a tarball keyed per route+sha. Only main
+#     pushes write; other refs are read-only. An inline prune step at
+#     the end of the job deletes every entry in the route's lineage
+#     except the current SHA key and anything above `max-cache-size-gb`.
+#     Net effect: the lineage stays at most one tarball, and a cancelled
+#     or oversized save gets evicted on the next main run.
+#
+#   - GHCR registry layer cache (`cache-to=type=registry`). One tag per
+#     route+ref. `cache-from` reads the ref's own tag then the lineage's
+#     `-main` tag (within the same route, never across routes).
+#     `cache-to` always writes to the ref's own tag, so consecutive PR
+#     runs reuse their own layers and first-build PRs bootstrap from
+#     main within the same lineage.
 name: health-check-reusable
 
 on:
   workflow_call:
+    inputs:
+      ros-distro:
+        description: ROS distribution
+        type: string
+        default: humble
+      max-cache-size-gb:
+        description: Max allowed size (GB) for restored BuildKit cache mounts; cache is dropped and purged if exceeded
+        type: number
+        default: 6
 
 jobs:
   docker-build:
@@ -20,6 +50,14 @@ jobs:
             platform: arm64
             runner: "['ubuntu-24.04-arm']"
     runs-on: ${{ fromJson(matrix.runner) }}
+    permissions:
+      contents: read
+      packages: write
+      actions: write
+    env:
+      CACHE_KEY_PREFIX: buildkit-mounts-health-check-${{ matrix.build-type }}-${{ inputs.ros-distro }}-${{ matrix.platform }}-
+      CACHE_REF_PREFIX: ghcr.io/${{ github.repository }}-buildcache:health-check-${{ matrix.build-type }}-${{ inputs.ros-distro }}-${{ matrix.platform }}
+      IS_MAIN_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     steps:
       - name: 🔧 Change permission of workspace
         run: |
@@ -29,7 +67,7 @@ jobs:
       - name: 📥 Check out repository
         uses: actions/checkout@v6
 
-      - name: 🏷️ Compute cache ref
+      - name: 🏷️ Compute sanitized ref name
         id: meta
         run: echo "ref_name=${GITHUB_REF_NAME//\//-}" >> "$GITHUB_OUTPUT"
 
@@ -76,15 +114,23 @@ jobs:
             [worker.oci]
               max-parallelism = 2
 
-      # Read-only: reuses the mount cache saved by docker's `ci-universe` group.
-      - name: 💾 Restore BuildKit cache mounts (read-only)
+      - name: 💾 Restore BuildKit cache mounts
         id: cache-restore
         uses: actions/cache/restore@v5
         with:
           path: cache-mounts
-          key: buildkit-mounts-ci-universe-humble-${{ matrix.platform }}-${{ github.sha }}
+          key: ${{ env.CACHE_KEY_PREFIX }}${{ github.sha }}
           restore-keys: |
-            buildkit-mounts-ci-universe-humble-${{ matrix.platform }}-
+            ${{ env.CACHE_KEY_PREFIX }}
+
+      - name: 💾 Arm post-step save of BuildKit cache mounts (main)
+        if: env.IS_MAIN_PUSH == 'true'
+        id: cache-save
+        uses: actions/cache@v5
+        with:
+          path: cache-mounts
+          key: ${{ env.CACHE_KEY_PREFIX }}${{ github.sha }}
+          lookup-only: true
 
       - name: 💉 Inject BuildKit cache mounts
         uses: reproducible-containers/buildkit-cache-dance@v3
@@ -92,15 +138,15 @@ jobs:
           cache-map: |
             {
               "cache-mounts/apt-cache": {
-                "id": "apt-cache-humble",
+                "id": "apt-cache-${{ inputs.ros-distro }}",
                 "target": "/var/cache/apt"
               },
               "cache-mounts/apt-lists": {
-                "id": "apt-lists-humble",
+                "id": "apt-lists-${{ inputs.ros-distro }}",
                 "target": "/var/lib/apt/lists"
               },
               "cache-mounts/ccache": {
-                "id": "ccache-humble",
+                "id": "ccache-${{ inputs.ros-distro }}",
                 "target": "/home/aw/.ccache",
                 "uid": "1000",
                 "gid": "1000"
@@ -128,19 +174,38 @@ jobs:
           password: ${{ github.token }}
 
       - name: 🔨 Build Autoware
+        id: bake
         uses: docker/bake-action@v7
         env:
-          ROS_DISTRO: humble
+          ROS_DISTRO: ${{ inputs.ros-distro }}
         with:
           source: .
           targets: universe-devel
           files: docker/docker-bake.hcl
           provenance: false
           set: |
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }}
-            *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-main
-            *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:health-check-${{ matrix.build-type }}-humble-${{ matrix.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
+            *.cache-from=type=registry,ref=${{ env.CACHE_REF_PREFIX }}-${{ steps.meta.outputs.ref_name }}
+            *.cache-from=type=registry,ref=${{ env.CACHE_REF_PREFIX }}-main
+            *.cache-to=type=registry,ref=${{ env.CACHE_REF_PREFIX }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
 
       - name: 📊 Disk space
         if: always()
         run: df -h
+
+      - name: 🧹 Prune cache lineage
+        if: env.IS_MAIN_PUSH == 'true' && steps.bake.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEEP_KEY: ${{ env.CACHE_KEY_PREFIX }}${{ github.sha }}
+          MAX_GB: ${{ inputs.max-cache-size-gb }}
+        run: |
+          set -euo pipefail
+          max_bytes=$((MAX_GB * 1000 * 1000 * 1000))
+          echo "keep: ${KEEP_KEY} (written in post phase)"
+          gh cache list --repo "$GITHUB_REPOSITORY" --key "$CACHE_KEY_PREFIX" --limit 100 --json key,sizeInBytes \
+            | jq -r --arg keep "$KEEP_KEY" --argjson max "$max_bytes" \
+                '.[] | select(.key != $keep or .sizeInBytes > $max) | .key' \
+            | while read -r key; do
+                echo "delete: $key"
+                gh cache delete "$key" --repo "$GITHUB_REPOSITORY" || true
+              done
