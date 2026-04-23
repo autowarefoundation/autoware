@@ -30,7 +30,7 @@
     - role: autoware.dev_env.rmw_implementation
       vars:
         rmw_implementation__rosdistro: "{{ rosdistro }}"
-      tags: [base, core, universe, rmw]
+      tags: [core, universe, rmw]
 
     - role: autoware.dev_env.gdown
       tags: [core, universe, gdown]
@@ -41,12 +41,20 @@
     - role: autoware.dev_env.agnocast
       tags: [core, universe, agnocast]
 
+    # Recommended development tooling
+    - role: autoware.dev_env.dev_tools
+      tags: [core, universe, dev_tools]
+
+    # Qt5ct setup (RViz theme)
+    - role: autoware.dev_env.qt5ct_setup
+      tags: [core, universe, qt5ct_setup]
+
     # Autoware runtime dependencies
     - role: autoware.dev_env.acados
       tags: [universe, acados]
 
     - role: autoware.dev_env.geographiclib
-      tags: [core, universe, geographiclib]
+      tags: [universe, geographiclib]
 
     - role: autoware.dev_env.cuda
       tags: [universe, nvidia, cuda]
@@ -57,14 +65,6 @@
     - role: autoware.dev_env.spconv
       tags: [universe, nvidia, spconv]
 
-    # Recommended development tooling
-    - role: autoware.dev_env.dev_tools
-      tags: [core, universe, dev_tools]
-
     # ONNX models and other artifacts
     - role: autoware.dev_env.artifacts
       tags: [universe, artifacts]
-
-    # Qt5ct setup (RViz theme)
-    - role: autoware.dev_env.qt5ct_setup
-      tags: [core, universe, qt5ct_setup]

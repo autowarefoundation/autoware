@@ -1,0 +1,1 @@
+data_dir: "{{ ansible_env.HOME }}/autoware_data" # noqa: var-naming[no-role-prefix]
