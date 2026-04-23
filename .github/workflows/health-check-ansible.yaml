@@ -13,7 +13,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changed-files:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.any_changed }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - id: check
+        uses: step-security/changed-files@v47
+        with:
+          files: |
+            ansible/**
+            ansible-galaxy-requirements.yaml
+            .github/workflows/health-check-ansible.yaml
+
   require-label:
+    needs: changed-files
+    if: needs.changed-files.outputs.should-run == 'true'
     uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
     with:
       label: run:health-check
