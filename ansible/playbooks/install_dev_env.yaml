@@ -15,7 +15,7 @@
 
     - name: Print configuration
       ansible.builtin.debug:
-        msg: "Ubuntu {{ ansible_distribution_version }} -> ROS {{ rosdistro }}"
+        msg: Ubuntu {{ ansible_distribution_version }} -> ROS {{ rosdistro }}
       tags: [always]
 
   roles:
