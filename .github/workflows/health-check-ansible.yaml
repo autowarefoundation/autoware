@@ -90,3 +90,17 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml
           ansible-playbook autoware.dev_env.install_dev_env -v
+
+  install-dev-env-required:
+    needs: install-dev-env
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify install-dev-env outcome
+        run: |
+          result="${{ needs.install-dev-env.result }}"
+          echo "install-dev-env: $result"
+          case "$result" in
+            success|skipped) exit 0 ;;
+            *) exit 1 ;;
+          esac
