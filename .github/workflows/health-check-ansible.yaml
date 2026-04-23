@@ -1,4 +1,4 @@
-name: setup-universe
+name: health-check-ansible
 
 on:
   pull_request:
@@ -18,18 +18,16 @@ jobs:
     with:
       label: run:health-check
 
-  setup-universe:
+  install-dev-env:
     needs: require-label
     if: ${{ needs.require-label.outputs.result == 'true' }}
     runs-on: [self-hosted, Linux, X64]
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - image: ubuntu:22.04
-            ros_distro: humble
-          - image: ubuntu:24.04
-            ros_distro: jazzy
+        image:
+          - ubuntu:22.04
+          - ubuntu:24.04
     container:
       image: ${{ matrix.image }}
     steps:
@@ -67,6 +65,9 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run setup script
+      - name: Install dev environment via ansible
         run: |
-          ./setup-dev-env.sh --ros-distro ${{ matrix.ros_distro }} -y -v universe
+          bash ansible/scripts/install-ansible.sh
+          export PATH="$HOME/.local/bin:$PATH"
+          ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml
+          ansible-playbook autoware.dev_env.install_dev_env -v
