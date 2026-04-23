@@ -24,6 +24,18 @@ name: health-check-reusable
 on:
   workflow_call:
     inputs:
+      build-type:
+        description: Build-type label (e.g. main, nightly, main-arm64); drives caching lineage and conditional steps
+        type: string
+        required: true
+      platform:
+        description: Target platform (amd64 or arm64)
+        type: string
+        required: true
+      runner:
+        description: JSON array string for runs-on, e.g. "['ubuntu-24.04']"
+        type: string
+        required: true
       ros-distro:
         description: ROS distribution
         type: string
@@ -32,31 +44,22 @@ on:
         description: Max allowed size (GB) for restored BuildKit cache mounts; cache is dropped and purged if exceeded
         type: number
         default: 6
+      run-condition:
+        description: When false the job is skipped; callers always fire the matrix so required status checks report
+        type: boolean
+        default: true
 
 jobs:
   docker-build:
-    strategy:
-      fail-fast: false
-      matrix:
-        build-type: [main, nightly, main-arm64]
-        include:
-          - build-type: main
-            platform: amd64
-            runner: "['ubuntu-24.04']"
-          - build-type: nightly
-            platform: amd64
-            runner: "['ubuntu-24.04']"
-          - build-type: main-arm64
-            platform: arm64
-            runner: "['ubuntu-24.04-arm']"
-    runs-on: ${{ fromJson(matrix.runner) }}
+    if: ${{ inputs.run-condition }}
+    runs-on: ${{ fromJson(inputs.runner) }}
     permissions:
       contents: read
       packages: write
       actions: write
     env:
-      CACHE_KEY_PREFIX: buildkit-mounts-health-check-${{ matrix.build-type }}-${{ inputs.ros-distro }}-${{ matrix.platform }}-
-      CACHE_REF_PREFIX: ghcr.io/${{ github.repository }}-buildcache:health-check-${{ matrix.build-type }}-${{ inputs.ros-distro }}-${{ matrix.platform }}
+      CACHE_KEY_PREFIX: buildkit-mounts-health-check-${{ inputs.build-type }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-
+      CACHE_REF_PREFIX: ghcr.io/${{ github.repository }}-buildcache:health-check-${{ inputs.build-type }}-${{ inputs.ros-distro }}-${{ inputs.platform }}
       IS_MAIN_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     steps:
       - name: 🔧 Change permission of workspace
@@ -84,11 +87,11 @@ jobs:
           echo "::endgroup::"
 
       - name: 🧹 Free disk space
-        if: matrix.build-type != 'main'
+        if: inputs.build-type != 'main'
         uses: ./.github/actions/free-disk-space
 
       - name: 💾 Create additional swap
-        if: matrix.platform == 'arm64'
+        if: inputs.platform == 'arm64'
         run: |
           sudo fallocate -l 8G /mnt/swapfile
           sudo chmod 600 /mnt/swapfile
@@ -103,7 +106,7 @@ jobs:
           vcs import --shallow src < repositories/autoware.repos
 
       - name: 📦 Overlay nightly repos
-        if: matrix.build-type == 'nightly'
+        if: inputs.build-type == 'nightly'
         run: |
           vcs import --shallow --force src < repositories/autoware-nightly.repos
 

@@ -14,5 +14,23 @@ concurrency:
 
 jobs:
   health-check:
+    strategy:
+      fail-fast: false
+      matrix:
+        build-type: [main, nightly, main-arm64]
+        include:
+          - build-type: main
+            platform: amd64
+            runner: "['ubuntu-24.04']"
+          - build-type: nightly
+            platform: amd64
+            runner: "['ubuntu-24.04']"
+          - build-type: main-arm64
+            platform: arm64
+            runner: "['ubuntu-24.04-arm']"
     uses: ./.github/workflows/health-check-reusable.yaml
+    with:
+      build-type: ${{ matrix.build-type }}
+      platform: ${{ matrix.platform }}
+      runner: ${{ matrix.runner }}
     secrets: inherit
