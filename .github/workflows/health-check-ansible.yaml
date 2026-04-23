@@ -70,6 +70,21 @@ jobs:
             fi
           done
 
+      - name: Keep downloaded apt packages for cache
+        run: |
+          rm -f /etc/apt/apt.conf.d/docker-clean
+          echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
+
+      - name: Restore apt cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            /var/cache/apt/archives
+            /var/lib/apt/lists
+          key: apt-${{ matrix.image }}-${{ hashFiles('ansible/**', 'ansible-galaxy-requirements.yaml') }}
+          restore-keys: |
+            apt-${{ matrix.image }}-
+
       - name: Install dependencies
         run: |
           apt-get update
