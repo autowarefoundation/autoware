@@ -3,6 +3,7 @@
   connection: local
   vars:
     rosdistro: "{{ {'22.04': 'humble', '24.04': 'jazzy'}[ansible_distribution_version] }}"
+    install_devel: "y" # yamllint disable-line rule:quoted-strings
   module_defaults:
     ansible.builtin.get_url:
       timeout: 300
