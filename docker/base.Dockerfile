@@ -50,14 +50,14 @@ ENV ANSIBLE_COLLECTIONS_PATH="/home/${USERNAME}/.ansible/collections"
 RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansible/ansible-galaxy-requirements.yaml \
     --mount=type=bind,source=ansible/galaxy.yml,target=/tmp/ansible/ansible/galaxy.yml \
     --mount=type=bind,source=ansible/roles/rmw_implementation,target=/tmp/ansible/ansible/roles/rmw_implementation \
-    --mount=type=bind,source=ansible/playbooks/rmw.yaml,target=/tmp/ansible/ansible/playbooks/rmw.yaml \
+    --mount=type=bind,source=ansible/playbooks/install_rmw.yaml,target=/tmp/ansible/ansible/playbooks/install_rmw.yaml \
     --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
     --mount=type=cache,id=pipx-cache,target=/home/aw/.cache/pipx,uid=1000,gid=1000 \
     pipx install --include-deps "ansible==10.*" && \
     cd /tmp/ansible && \
     ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
-    ansible-playbook autoware.dev_env.rmw \
+    ansible-playbook autoware.dev_env.install_rmw \
       -e rosdistro=${ROS_DISTRO} && \
     pipx uninstall ansible
 

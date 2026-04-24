@@ -17,7 +17,7 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     pipx install --include-deps "ansible==10.*" && \
     cd /tmp/ansible && \
     ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
-    ansible-playbook autoware.dev_env.autoware_requirements \
+    ansible-playbook autoware.dev_env.install_image_deps \
       --tags core \
       --skip-tags base \
       -e "rosdistro=${ROS_DISTRO}" && \
@@ -105,7 +105,7 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     pipx install --include-deps "ansible==10.*" && \
     cd /tmp/ansible && \
     ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
-    ansible-playbook autoware.dev_env.autoware_requirements \
+    ansible-playbook autoware.dev_env.install_image_deps \
       --tags geographiclib,qt5ct_setup \
       -e "rosdistro=${ROS_DISTRO}" && \
     pipx uninstall ansible
