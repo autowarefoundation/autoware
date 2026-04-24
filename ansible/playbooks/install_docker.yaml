@@ -1,0 +1,15 @@
+- name: Install Docker engine and NVIDIA container toolkit for Autoware
+  hosts: localhost
+  connection: local
+  pre_tasks:
+    - name: Print configuration
+      ansible.builtin.debug:
+        msg: Installing Docker engine. Use --skip-tags nvidia to skip the NVIDIA container toolkit.
+      tags: [always]
+
+  roles:
+    - role: autoware.dev_env.docker_engine
+      tags: [docker, docker_engine]
+
+    - role: autoware.dev_env.nvidia_container_toolkit
+      tags: [nvidia, nvidia_container_toolkit]
