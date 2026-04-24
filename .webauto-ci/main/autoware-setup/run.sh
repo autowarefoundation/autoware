@@ -11,4 +11,4 @@ ansible-galaxy collection install -f -r "ansible-galaxy-requirements.yaml"
 ansible-playbook autoware.dev_env.install_dev_env \
     "${ansible_args[@]}" \
     -e WORKSPACE_ROOT="$(pwd)" \
-    --skip-tags vcs,dev_tools
+    --skip-tags dev_tools
