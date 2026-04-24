@@ -65,7 +65,7 @@ This step should be repeated when a new playbook is added.
 #### Run the playbook
 
 ```bash
-ansible-playbook autoware.dev_env.download_artifacts -e "data_dir=$HOME/autoware_data" --ask-become-pass
+ansible-playbook autoware.dev_env.install_dev_env --tags artifacts -e "data_dir=$HOME/autoware_data" --ask-become-pass
 ```
 
 This will download and extract the artifacts to the specified directory and validate the checksums.

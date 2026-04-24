@@ -24,7 +24,7 @@ ansible-galaxy collection install -f -r "ansible-galaxy-requirements.yaml"
 This step should be repeated when the ansible directory is updated.
 
 ```bash
-ansible-playbook autoware.dev_env.setup_acados --ask-become-pass
+ansible-playbook autoware.dev_env.install_dev_env --tags acados --ask-become-pass
 ```
 
 ## Directory layout

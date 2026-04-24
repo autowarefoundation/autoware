@@ -14,7 +14,7 @@ Follow the instructions below to **install** or **update** the custom theme for 
 ```bash
 cd ~/autoware # The root directory of the cloned repository
 ansible-galaxy collection install -f -r "ansible-galaxy-requirements.yaml"
-ansible-playbook autoware.dev_env.install_rviz_theme  --ask-become-pass
+ansible-playbook autoware.dev_env.install_dev_env --tags qt5ct_setup --ask-become-pass
 ```
 
 ## How to use the custom theme in RViz2
