@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
+# DEPRECATED: superseded by ansible/scripts/install-ansible.sh +
+# `ansible-playbook autoware.dev_env.install_dev_env`. Scheduled for removal
+# on 2026-05-24. See https://github.com/autowarefoundation/autoware/issues/7052.
+#
 # Set up development environment for Autoware Core/Universe.
 # Usage: setup-dev-env.sh <ros2_installation_type('core' or 'universe')> [-y] [-v] [--no-nvidia]
 # Note: -y option is only for CI.
 
 set -e
+
+echo -e "\e[33m[DEPRECATED] setup-dev-env.sh will be removed on 2026-05-24.\e[m" >&2
+echo -e "\e[33mMigrate to: bash ansible/scripts/install-ansible.sh && ansible-playbook autoware.dev_env.install_dev_env [--tags ...]\e[m" >&2
+echo -e "\e[33mSee https://github.com/autowarefoundation/autoware/issues/7052\e[m" >&2
 
 # Function to print help message
 print_help() {

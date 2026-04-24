@@ -1,3 +1,6 @@
+# DEPRECATED: replace with `ansible-playbook autoware.dev_env.install_dev_env --tags artifacts`.
+# Scheduled for removal on 2026-05-24. See https://github.com/autowarefoundation/autoware/issues/7052.
+
 - name: Download Autoware artifacts
   hosts: localhost
   module_defaults:
