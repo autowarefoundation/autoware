@@ -1,8 +1,6 @@
 #!/bin/bash -e
 
 ansible_args=()
-ansible_args+=("--extra-vars" "prompt_install_nvidia=y")
-ansible_args+=("--extra-vars" "prompt_download_artifacts=y")
 ansible_args+=("--extra-vars" "data_dir=$HOME/autoware_data")
 ansible_args+=("--extra-vars" "ros2_installation_type=ros-base")
 ansible_args+=("--extra-vars" "install_devel=false")
@@ -10,7 +8,7 @@ ansible_args+=("--extra-vars" "install_devel=false")
 ansible_args+=("--extra-vars" "rosdistro=humble")
 
 ansible-galaxy collection install -f -r "ansible-galaxy-requirements.yaml"
-ansible-playbook "ansible/playbooks/universe.yaml" \
+ansible-playbook autoware.dev_env.install_dev_env \
     "${ansible_args[@]}" \
     -e WORKSPACE_ROOT="$(pwd)" \
-    --skip-tags vcs
+    --skip-tags vcs,dev_tools
