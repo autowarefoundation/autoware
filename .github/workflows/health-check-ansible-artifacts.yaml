@@ -1,0 +1,72 @@
+name: health-check-ansible-artifacts
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changed-files:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.any_changed }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - id: check
+        uses: step-security/changed-files@v47
+        with:
+          files: |
+            ansible/roles/artifacts/**
+            ansible/playbooks/install_dev_env.yaml
+            ansible/scripts/install-ansible.sh
+            ansible-galaxy-requirements.yaml
+            .github/workflows/health-check-ansible-artifacts.yaml
+
+  require-label:
+    needs: changed-files
+    if: needs.changed-files.outputs.should-run == 'true'
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
+    with:
+      label: run:health-check
+
+  install-artifacts:
+    needs: require-label
+    if: needs.require-label.outputs.result == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛒 Check out repository
+        uses: actions/checkout@v6
+
+      - name: 💾 Show disk space (before install)
+        run: df -h
+
+      - name: 🔧 Install ansible
+        run: bash ansible/scripts/install-ansible.sh
+
+      - name: 📦 Download artifacts via ansible
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml
+          ansible-playbook autoware.dev_env.install_dev_env --tags artifacts -v
+
+      - name: 📊 Report artifacts size and disk space
+        run: |
+          df -h
+          size_bytes=$(du -sb "$HOME/autoware_data" 2>/dev/null | awk '{print $1+0}')
+          size_gb=$(awk -v b="${size_bytes:-0}" 'BEGIN { printf "%.2f", b/1e9 }')
+          echo "📦 Artifacts directory size: ${size_gb} GB"
+          {
+            echo "## 📦 Artifacts download"
+            echo ""
+            echo "Total size of \`$HOME/autoware_data\`: **${size_gb} GB**"
+          } >> "$GITHUB_STEP_SUMMARY"

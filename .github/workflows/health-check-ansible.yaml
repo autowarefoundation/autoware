@@ -9,7 +9,7 @@ on:
       - labeled
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -29,6 +29,8 @@ jobs:
             ansible/**
             ansible-galaxy-requirements.yaml
             .github/workflows/health-check-ansible.yaml
+          files_ignore: |
+            ansible/roles/artifacts/**
 
   require-label:
     needs: changed-files
@@ -39,8 +41,8 @@ jobs:
 
   install-dev-env:
     needs: require-label
-    if: ${{ needs.require-label.outputs.result == 'true' }}
-    runs-on: [self-hosted, Linux, X64]
+    if: needs.require-label.outputs.result == 'true'
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -50,15 +52,16 @@ jobs:
     container:
       image: ${{ matrix.image }}
     steps:
-      - name: Check out repository
+      - name: 🛒 Check out repository
         uses: actions/checkout@v6
 
-      - name: Show disk space
-        if: always()
+      - name: 💾 Show disk space (before install)
+        id: disk-before
         run: |
           df -h
+          echo "used_bytes=$(df -B1 --output=used / | tail -1 | tr -d ' ')" >> "$GITHUB_OUTPUT"
 
-      - name: Configure apt retries and mirror fallback
+      - name: 🌐 Configure apt and debconf
         run: |
           echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/99-retries
           echo 'Acquire::http::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries
@@ -69,27 +72,27 @@ jobs:
               sed -E -i 's|http://archive\.ubuntu\.com/ubuntu/?|mirror+file:///etc/apt/ubuntu-mirrors.list|g' "$f"
             fi
           done
+          echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
-      - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y git sudo curl ca-certificates apt-utils
-
-      - name: Install tzdata non-interactively
-        run: |
-          DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
-
-      - name: Set git config
-        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install dev environment via ansible
+      - name: 🔧 Install dev environment via ansible
         run: |
           bash ansible/scripts/install-ansible.sh
           export PATH="$HOME/.local/bin:$PATH"
           ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml
-          ansible-playbook autoware.dev_env.install_dev_env -v
+          ansible-playbook autoware.dev_env.install_dev_env --skip-tags artifacts -v
+
+      - name: 📊 Report installation disk footprint
+        run: |
+          df -h
+          used_bytes_after=$(df -B1 --output=used / | tail -1 | tr -d ' ')
+          delta=$(( used_bytes_after - ${{ steps.disk-before.outputs.used_bytes }} ))
+          delta_gb=$(awk -v b="${delta}" 'BEGIN { printf "%.2f", b/1e9 }')
+          echo "📦 Installation disk usage: ${delta_gb} GB"
+          {
+            echo "## 📦 Installation disk usage (\`${{ matrix.image }}\`)"
+            echo ""
+            echo "Root filesystem grew by **${delta_gb} GB** during the install."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   install-dev-env-required:
     needs: install-dev-env
