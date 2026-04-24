@@ -29,7 +29,7 @@ The `ros2_installation_type` variable can also be found in:
 [./defaults/main.yaml](./defaults/main.yaml)
 
 For Universe, the `rosdistro` variable can also be found in:
-[../../playbooks/universe.yaml](../../playbooks/universe.yaml)
+[../../playbooks/install_dev_env.yaml](../../playbooks/install_dev_env.yaml)
 
 ```bash
 # Choose your ROS distribution
