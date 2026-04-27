@@ -1,0 +1,1 @@
+demo_artifacts__autoware_data_dir: "{{ ansible_env.HOME }}/autoware_data"

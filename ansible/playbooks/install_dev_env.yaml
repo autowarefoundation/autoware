@@ -68,3 +68,7 @@
     # ONNX models and other artifacts
     - role: autoware.dev_env.artifacts
       tags: [universe, artifacts]
+
+    # Sample maps and rosbag recordings for demos (opt-in)
+    - role: autoware.dev_env.demo_artifacts
+      tags: [never, demo_artifacts]
