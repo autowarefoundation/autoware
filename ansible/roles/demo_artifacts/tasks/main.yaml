@@ -4,6 +4,7 @@
     name: unzip
     state: present
     update_cache: true
+    cache_valid_time: 3600
 
 # sample-map-planning (planning-sim demo)
 - name: Create maps/demos directory inside {{ demo_artifacts__autoware_data_dir }}
