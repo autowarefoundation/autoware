@@ -58,7 +58,7 @@ Each `command:` block ends with `exec bash`, so when `ros2 launch` exits the con
 
 ## Customizing
 
-Edit the `command:` block in `docker-compose.yaml` to change launch arguments — for example, point `scenario:=` at a different YAML under `~/sample_scenario/`, or flip `launch_rviz:=true` on the scenario-simulator side to watch the run.
+Edit the `command:` block in `docker-compose.yaml` to change launch arguments — for example, point `scenario:=` at a different YAML under `~/autoware_data/scenarios`, or flip `launch_rviz:=true` on the scenario-simulator side to watch the run.
 
 ## Launch command reference
 
@@ -86,5 +86,4 @@ ros2 launch scenario_test_runner scenario_test_runner.launch.py \
 
 Paths above are container paths. They map back to the host via the `volumes:` block:
 
-- `~/sample_scenario` → `/sample_scenario` (autoware) and `/home/aw/sample_scenario` (scenario-simulator)
 - The shared `cyclonedds-config` volume is populated by the `autoware` service on startup and mounted read-only into the scenario-simulator at `/home/aw/cyclonedds.xml`, which is what `CYCLONEDDS_URI` points at.
