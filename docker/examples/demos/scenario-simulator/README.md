@@ -11,14 +11,16 @@ Both services use `network_mode: host` and share a generated `cyclonedds.xml` (v
 
 - Docker Compose v2
 - Sample map extracted to `~/autoware_map/sample-map-planning`
-- Sample scenarios cloned to `~/autoware_scenario/`
+- Sample scenarios cloned to `~/autoware_data/scenarios`
 
 [Download the sample map](https://autowarefoundation.github.io/autoware-documentation/main/demos/planning-sim/#download-the-sample-map) and unpack it to `~/autoware_map/sample-map-planning`.
 
 Clone the sample scenarios repository to `~/autoware_scenario/`:
 
 ```bash
-git clone https://github.com/autowarefoundation/autoware_sample_scenarios.git ~/autoware_scenario
+mkdir -p ~/autoware_data/scenarios/
+cd ~/autoware_data/scenarios/
+git clone https://github.com/autowarefoundation/autoware_sample_scenarios.git
 ```
 
 ## Run
