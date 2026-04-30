@@ -15,7 +15,7 @@ Both services use `network_mode: host` and share a generated `cyclonedds.xml` (v
 
 [Download the sample map](https://autowarefoundation.github.io/autoware-documentation/main/demos/planning-sim/#download-the-sample-map) and unpack it to `~/autoware_map/sample-map-planning`.
 
-Clone the sample scenarios repository to `~/autoware_scenario/`:
+Clone the sample scenarios repository:
 
 ```bash
 mkdir -p ~/autoware_data/scenarios/
