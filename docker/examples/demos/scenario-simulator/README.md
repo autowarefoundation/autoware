@@ -84,6 +84,4 @@ ros2 launch scenario_test_runner scenario_test_runner.launch.py \
   launch_autoware:=false
 ```
 
-Paths above are container paths. They map back to the host via the `volumes:` block:
-
-- The shared `cyclonedds-config` volume is populated by the `autoware` service on startup and mounted read-only into the scenario-simulator at `/home/aw/cyclonedds.xml`, which is what `CYCLONEDDS_URI` points at.
+The `cyclonedds-config` named volume is populated by the `autoware` service on startup (a copy of `/home/aw/cyclonedds.xml`) and mounted into the scenario-simulator at `/shared-config`, which `CYCLONEDDS_URI` points at.
