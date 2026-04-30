@@ -12,3 +12,4 @@ Pre-configured scenarios that launch autoware on container start.
 
 - [planning-simulator/README.md](demos/planning-simulator/README.md)
 - [awsim/README.md](demos/awsim/README.md)
+- [scenario-simulator/README.md](demos/scenario-simulator/README.md)
