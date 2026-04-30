@@ -33,6 +33,9 @@ jobs:
             ansible-galaxy-requirements.yaml
             ansible/**
             docker/**
+          files_ignore: |
+            docker/examples/**
+            **/*.md
 
   require-label:
     needs: changed-files
