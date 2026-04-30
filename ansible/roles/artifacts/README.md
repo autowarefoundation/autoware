@@ -4,7 +4,7 @@ The Autoware perception stack uses models for inference. These models are downlo
 
 The models are hosted by Web.Auto.
 
-Default `data_dir` location is `~/autoware_data`.
+Default `data_dir` location is `~/autoware_data/ml_models` (part of the asset-typed `~/autoware_data/` layout: `assets/`, `maps/`, `ml_models/`, `recordings/`, `scenarios/`).
 
 ## Download instructions
 
@@ -65,7 +65,25 @@ This step should be repeated when a new playbook is added.
 #### Run the playbook
 
 ```bash
-ansible-playbook autoware.dev_env.install_dev_env --tags artifacts -e "data_dir=$HOME/autoware_data" --ask-become-pass
+ansible-playbook autoware.dev_env.install_dev_env --tags artifacts -e "data_dir=$HOME/autoware_data/ml_models" --ask-become-pass
 ```
 
 This will download and extract the artifacts to the specified directory and validate the checksums.
+
+### Migrating from the legacy layout
+
+Earlier versions of this role downloaded directly into `~/autoware_data/`. To match the new
+layout, move the existing model directories under `~/autoware_data/ml_models/` (and, if you
+were using `~/autoware_map/`, into `~/autoware_data/maps/`):
+
+```bash
+mkdir -p ~/autoware_data/ml_models
+shopt -s extglob
+mv ~/autoware_data/!(ml_models|maps|recordings|scenarios|assets) ~/autoware_data/ml_models/
+
+# only if you also have ~/autoware_map/
+[ -d ~/autoware_map ] && mv ~/autoware_map ~/autoware_data/maps
+```
+
+Re-running the playbook is also safe: it will populate the new `ml_models/` directory and you
+can delete the old top-level model folders afterwards.

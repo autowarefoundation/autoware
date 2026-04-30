@@ -15,8 +15,8 @@ services:
       - QT_X11_NO_MITSHM=1
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - ${HOME}/autoware_map:/home/aw/autoware_map
-      - ${HOME}/autoware_data:/home/aw/autoware_data
+      - ${HOME}/autoware_data/maps:/home/aw/autoware_data/maps
+      - ${HOME}/autoware_data/ml_models:/home/aw/autoware_data/ml_models
     deploy:
       resources:
         reservations:
@@ -31,5 +31,5 @@ services:
         ros2 launch autoware_launch e2e_simulator.launch.xml \
           vehicle_model:=sample_vehicle \
           sensor_model:=awsim_sensor_kit \
-          map_path:=/home/aw/autoware_map/Shinjuku-Map/map
+          map_path:=/home/aw/autoware_data/maps/Shinjuku-Map/map
         exec bash

@@ -6,11 +6,11 @@ Planning sim itself doesn't need a GPU — perception is dummy. The only reason 
 
 ## Prerequisites
 
-- Sample map extracted to `~/autoware_map/sample-map-planning`
-- Perception model data under `~/autoware_data` (mounted but not used by this demo)
+- Sample map extracted to `~/autoware_data/maps/sample-map-planning` (the layout produced by the `demo_artifacts` ansible role)
+- Perception model data under `~/autoware_data/ml_models` (mounted but not used by this demo)
 - Docker Compose v2
 
-[Download the sample map](https://autowarefoundation.github.io/autoware-documentation/main/demos/planning-sim/#download-the-sample-map) and unpack it to `~/autoware_map/sample-map-planning` before running.
+[Download the sample map](https://autowarefoundation.github.io/autoware-documentation/main/demos/planning-sim/#download-the-sample-map) and unpack it to `~/autoware_data/maps/sample-map-planning` before running, or run the `demo_artifacts` ansible role which places it there automatically.
 
 ## Run (no GPU, software rendering)
 
@@ -65,9 +65,9 @@ To enable ROS 2 discovery with other hosts on the network, add `network_mode: ho
 
 ```bash
 ros2 launch autoware_launch planning_simulator.launch.xml \
-  map_path:=/home/aw/autoware_map/sample-map-planning \
+  map_path:=/home/aw/autoware_data/maps/sample-map-planning \
   vehicle_model:=sample_vehicle \
   sensor_model:=sample_sensor_kit
 ```
 
-`map_path` points inside the container; it maps to `~/autoware_map/sample-map-planning` on the host via the `volumes:` mount.
+`map_path` points inside the container; it maps to `~/autoware_data/maps/sample-map-planning` on the host via the `volumes:` mount.

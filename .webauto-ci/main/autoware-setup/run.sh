@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 ansible_args=()
-ansible_args+=("--extra-vars" "data_dir=$HOME/autoware_data")
+ansible_args+=("--extra-vars" "data_dir=$HOME/autoware_data/ml_models")
 ansible_args+=("--extra-vars" "ros2_installation_type=ros-base")
 ansible_args+=("--extra-vars" "install_devel=false")
 

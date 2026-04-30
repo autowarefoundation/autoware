@@ -1,6 +1,6 @@
 # basic
 
-Three flavors of "drop me into a shell" container. All three use the `universe-devel-*` images (build tooling plus `/opt/autoware` built from source), mount `~/autoware_map` and `~/autoware_data`, forward `$DISPLAY`, and differ only in how the GPU is exposed.
+Three flavors of "drop me into a shell" container. All three use the `universe-devel-*` images (build tooling plus `/opt/autoware` built from source), mount `~/autoware_data/maps` and `~/autoware_data/ml_models`, forward `$DISPLAY`, and differ only in how the GPU is exposed.
 
 | Host GPU / driver            | Use          | How                                              |
 | ---------------------------- | ------------ | ------------------------------------------------ |

@@ -115,8 +115,8 @@ docker run --rm -it \
   -e HOST_GID=$(id -g) \
   -e QT_X11_NO_MITSHM=1 \
   -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-  -v $HOME/autoware_map:/home/aw/autoware_map \
-  -v $HOME/autoware_data:/home/aw/autoware_data \
+  -v $HOME/autoware_data/maps:/home/aw/autoware_data/maps \
+  -v $HOME/autoware_data/ml_models:/home/aw/autoware_data/ml_models \
   -v $HOME/autoware:/home/aw/autoware \
   -w /home/aw/autoware \
   --runtime=nvidia \
@@ -137,8 +137,8 @@ docker run --rm -it \
 | `-e HOST_UID/HOST_GID`              | Entrypoint remaps the `aw` user to match host UID/GID, avoiding permission issues on mounted volumes |
 | `-e QT_X11_NO_MITSHM`               | Disable MIT-SHM for Qt apps (shared memory doesn't work across container boundary)                   |
 | `-v /tmp/.X11-unix`                 | Mount X11 socket for GUI forwarding                                                                  |
-| `-v autoware_map`                   | Mount map data from host                                                                             |
-| `-v autoware_data`                  | Mount perception model data from host                                                                |
+| `-v autoware_data/maps`             | Mount maps from host (lanelet2 + pointcloud)                                                         |
+| `-v autoware_data/ml_models`        | Mount ML model artifacts from host                                                                   |
 | `-v autoware`                       | Mount source code for development                                                                    |
 | `-w /home/aw/autoware`              | Set working directory to the mounted source                                                          |
 | `--runtime=nvidia`                  | Use NVIDIA container runtime for GPU support                                                         |

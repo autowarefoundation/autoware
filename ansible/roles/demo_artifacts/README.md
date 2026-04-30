@@ -14,16 +14,14 @@ After running the role, the following layout is created under `demo_artifacts__a
 ```console
 ~/autoware_data
 ├── maps
-│   └── demos
-│       ├── sample-map-planning/
-│       ├── sample-map-planning.zip
-│       ├── sample-map-rosbag/
-│       └── sample-map-rosbag.zip
+│   ├── sample-map-planning/
+│   ├── sample-map-planning.zip
+│   ├── sample-map-rosbag/
+│   └── sample-map-rosbag.zip
 └── recordings
     └── bags
-        └── demos
-            ├── sample-rosbag/
-            └── sample-rosbag.zip
+        ├── sample-rosbag/
+        └── sample-rosbag.zip
 ```
 
 ## Run

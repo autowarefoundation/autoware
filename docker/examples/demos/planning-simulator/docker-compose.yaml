@@ -11,14 +11,14 @@ services:
       - QT_X11_NO_MITSHM=1
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - ${HOME}/autoware_map:/home/aw/autoware_map
-      - ${HOME}/autoware_data:/home/aw/autoware_data
+      - ${HOME}/autoware_data/maps:/home/aw/autoware_data/maps
+      - ${HOME}/autoware_data/ml_models:/home/aw/autoware_data/ml_models
     command:
       - bash
       - -c
       - |
         ros2 launch autoware_launch planning_simulator.launch.xml \
-          map_path:=/home/aw/autoware_map/sample-map-planning \
+          map_path:=/home/aw/autoware_data/maps/sample-map-planning \
           vehicle_model:=sample_vehicle \
           sensor_model:=sample_sensor_kit
         exec bash

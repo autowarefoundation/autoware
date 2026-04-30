@@ -24,7 +24,7 @@ print_help() {
     echo "  --no-nvidia     Disable installation of the NVIDIA-related roles ('cuda' and 'tensorrt')"
     echo "  --no-cuda-drivers Disable installation of 'cuda-drivers' in the role 'cuda'"
     echo "  --runtime       Disable installation dev package of role 'cuda' and 'tensorrt'"
-    echo "  --data-dir      Set data directory (default: $HOME/autoware_data)"
+    echo "  --data-dir      Set data directory (default: $HOME/autoware_data/ml_models)"
     echo "  --download-artifacts"
     echo "                  Download artifacts"
     echo "  --module        Specify the module (default: all)"
@@ -36,7 +36,7 @@ SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
 
 # Parse arguments
 args=()
-option_data_dir="$HOME/autoware_data"
+option_data_dir="$HOME/autoware_data/ml_models"
 
 while [ "$1" != "" ]; do
     case "$1" in

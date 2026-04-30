@@ -62,11 +62,11 @@ jobs:
       - name: 📊 Report artifacts size and disk space
         run: |
           df -h
-          size_bytes=$(du -sb "$HOME/autoware_data" 2>/dev/null | awk '{print $1+0}')
+          size_bytes=$(du -sb "$HOME/autoware_data/ml_models" 2>/dev/null | awk '{print $1+0}')
           size_gb=$(awk -v b="${size_bytes:-0}" 'BEGIN { printf "%.2f", b/1e9 }')
           echo "📦 Artifacts directory size: ${size_gb} GB"
           {
             echo "## 📦 Artifacts download"
             echo ""
-            echo "Total size of \`$HOME/autoware_data\`: **${size_gb} GB**"
+            echo "Total size of \`$HOME/autoware_data/ml_models\`: **${size_gb} GB**"
           } >> "$GITHUB_STEP_SUMMARY"

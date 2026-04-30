@@ -10,10 +10,10 @@ Both services use `network_mode: host` and share a generated `cyclonedds.xml` (v
 ## Prerequisites
 
 - Docker Compose v2
-- Sample map extracted to `~/autoware_map/sample-map-planning`
+- Sample map extracted to `~/autoware_data/maps/sample-map-planning` (the layout produced by the `demo_artifacts` ansible role)
 - Sample scenarios cloned to `~/autoware_data/scenarios`
 
-[Download the sample map](https://autowarefoundation.github.io/autoware-documentation/main/demos/planning-sim/#download-the-sample-map) and unpack it to `~/autoware_map/sample-map-planning`.
+[Download the sample map](https://autowarefoundation.github.io/autoware-documentation/main/demos/planning-sim/#download-the-sample-map) and unpack it to `~/autoware_data/maps/sample-map-planning`, or run the `demo_artifacts` ansible role which places it there automatically.
 
 Clone the sample scenarios repository:
 
@@ -66,7 +66,7 @@ Edit the `command:` block in `docker-compose.yaml` to change launch arguments â€
 
 ```bash
 ros2 launch autoware_launch planning_simulator.launch.xml \
-  map_path:=/home/aw/autoware_map/sample-map-planning \
+  map_path:=/home/aw/autoware_data/maps/sample-map-planning \
   vehicle_model:=sample_vehicle \
   sensor_model:=sample_sensor_kit \
   scenario_simulation:=true

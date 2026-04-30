@@ -7,55 +7,55 @@
     cache_valid_time: 3600
 
 # sample-map-planning (planning-sim demo)
-- name: Create maps/demos directory inside {{ demo_artifacts__autoware_data_dir }}
+- name: Create maps directory inside {{ demo_artifacts__autoware_data_dir }}
   ansible.builtin.file:
-    path: "{{ demo_artifacts__autoware_data_dir }}/maps/demos"
+    path: "{{ demo_artifacts__autoware_data_dir }}/maps"
     mode: "755"
     state: directory
 
-- name: Download maps/demos/sample-map-planning.zip
+- name: Download maps/sample-map-planning.zip
   become: true
   ansible.builtin.get_url:
     url: https://autoware-files.s3.us-west-2.amazonaws.com/maps/demos/sample-map-planning.zip
-    dest: "{{ demo_artifacts__autoware_data_dir }}/maps/demos/sample-map-planning.zip"
+    dest: "{{ demo_artifacts__autoware_data_dir }}/maps/sample-map-planning.zip"
     mode: "644"
     checksum: sha256:5536fce7bb8db7688fdf94ec004118b898637ad0d5b6175108b10989dd6e93b9
 
-- name: Extract maps/demos/sample-map-planning.zip
+- name: Extract maps/sample-map-planning.zip
   ansible.builtin.unarchive:
-    src: "{{ demo_artifacts__autoware_data_dir }}/maps/demos/sample-map-planning.zip"
-    dest: "{{ demo_artifacts__autoware_data_dir }}/maps/demos/"
+    src: "{{ demo_artifacts__autoware_data_dir }}/maps/sample-map-planning.zip"
+    dest: "{{ demo_artifacts__autoware_data_dir }}/maps/"
 
 # sample-map-rosbag (rosbag-replay-simulation demo)
-- name: Download maps/demos/sample-map-rosbag.zip
+- name: Download maps/sample-map-rosbag.zip
   become: true
   ansible.builtin.get_url:
     url: https://autoware-files.s3.us-west-2.amazonaws.com/maps/demos/sample-map-rosbag.zip
-    dest: "{{ demo_artifacts__autoware_data_dir }}/maps/demos/sample-map-rosbag.zip"
+    dest: "{{ demo_artifacts__autoware_data_dir }}/maps/sample-map-rosbag.zip"
     mode: "644"
     checksum: sha256:07e2da0b0bf12e2324f7083c2ce5556fb8044c50cef1da6428ab9084c3903bc8
 
-- name: Extract maps/demos/sample-map-rosbag.zip
+- name: Extract maps/sample-map-rosbag.zip
   ansible.builtin.unarchive:
-    src: "{{ demo_artifacts__autoware_data_dir }}/maps/demos/sample-map-rosbag.zip"
-    dest: "{{ demo_artifacts__autoware_data_dir }}/maps/demos/"
+    src: "{{ demo_artifacts__autoware_data_dir }}/maps/sample-map-rosbag.zip"
+    dest: "{{ demo_artifacts__autoware_data_dir }}/maps/"
 
 # sample-rosbag (rosbag-replay-simulation demo)
-- name: Create recordings/bags/demos directory inside {{ demo_artifacts__autoware_data_dir }}
+- name: Create recordings/bags directory inside {{ demo_artifacts__autoware_data_dir }}
   ansible.builtin.file:
-    path: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/demos"
+    path: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags"
     mode: "755"
     state: directory
 
-- name: Download recordings/bags/demos/sample-rosbag.zip
+- name: Download recordings/bags/sample-rosbag.zip
   become: true
   ansible.builtin.get_url:
     url: https://autoware-files.s3.us-west-2.amazonaws.com/recordings/bags/demos/sample-rosbag.zip
-    dest: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/demos/sample-rosbag.zip"
+    dest: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/sample-rosbag.zip"
     mode: "644"
     checksum: sha256:5f9d36353393b3d249212153c19049822b1298db56512aa045b4f7f6fc37cf88
 
-- name: Extract recordings/bags/demos/sample-rosbag.zip
+- name: Extract recordings/bags/sample-rosbag.zip
   ansible.builtin.unarchive:
-    src: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/demos/sample-rosbag.zip"
-    dest: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/demos/"
+    src: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/sample-rosbag.zip"
+    dest: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/"

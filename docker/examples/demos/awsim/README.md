@@ -5,8 +5,8 @@ Bridges autoware to the [AWSIM](https://tier4.github.io/AWSIM/) Unity simulator 
 ## Prerequisites
 
 - NVIDIA GPU with the NVIDIA Container Toolkit installed
-- Shinjuku map extracted to `~/autoware_map/Shinjuku-Map/map`
-- Perception model data under `~/autoware_data`
+- Shinjuku map extracted to `~/autoware_data/maps/Shinjuku-Map/map`
+- Perception model data under `~/autoware_data/ml_models`
 - AWSIM running on the host and reachable on the ROS 2 graph
 - Docker Compose v2
 
@@ -37,7 +37,7 @@ The image's entrypoint sources `/opt/autoware/setup.bash` (via `AUTOWARE_RUNTIME
 ros2 launch autoware_launch e2e_simulator.launch.xml \
   vehicle_model:=sample_vehicle \
   sensor_model:=awsim_sensor_kit \
-  map_path:=/home/aw/autoware_map/Shinjuku-Map/map
+  map_path:=/home/aw/autoware_data/maps/Shinjuku-Map/map
 ```
 
-`map_path` points inside the container; it maps to `~/autoware_map/Shinjuku-Map/map` on the host via the `volumes:` mount.
+`map_path` points inside the container; it maps to `~/autoware_data/maps/Shinjuku-Map/map` on the host via the `volumes:` mount.
