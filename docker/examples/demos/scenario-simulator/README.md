@@ -78,7 +78,7 @@ ros2 launch autoware_launch planning_simulator.launch.xml \
 ros2 launch scenario_test_runner scenario_test_runner.launch.py \
   architecture_type:=awf/universe/20250130 \
   record:=false \
-  scenario:=/home/aw/sample_scenario/sample-scenario.yaml \
+  scenario:=/home/aw/autoware_data/scenarios/autoware_sample_scenarios/sample-scenario.yaml \
   use_custom_centerline:=true \
   launch_rviz:=false \
   launch_autoware:=false
