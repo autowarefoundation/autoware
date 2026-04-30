@@ -66,7 +66,7 @@ Edit the `command:` block in `docker-compose.yaml` to change launch arguments â€
 
 ```bash
 ros2 launch autoware_launch planning_simulator.launch.xml \
-  map_path:=/sample_scenario/sample-map-planning \
+  map_path:=/home/aw/autoware_map/sample-map-planning \
   vehicle_model:=sample_vehicle \
   sensor_model:=sample_sensor_kit \
   scenario_simulation:=true
