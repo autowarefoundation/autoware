@@ -39,7 +39,7 @@ repositories:
   core/autoware_rviz_plugins:
     type: git
     url: https://github.com/autowarefoundation/autoware_rviz_plugins.git
-    version: 0.4.0
+    version: 0.5.0
   core/autoware_system_designer:
     type: git
     url: https://github.com/autowarefoundation/autoware_system_designer.git
