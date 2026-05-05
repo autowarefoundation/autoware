@@ -34,10 +34,11 @@ jobs:
 
   require-label:
     needs: changed-files
-    if: needs.changed-files.outputs.should-run == 'true'
+    if: ${{ always() }}
     uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
     with:
       label: run:health-check
+      run-condition: ${{ needs.changed-files.outputs.should-run == 'true' }}
 
   install-dev-env:
     needs: require-label
