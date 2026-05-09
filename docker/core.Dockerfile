@@ -89,6 +89,16 @@ RUN --mount=type=bind,source=src/core/autoware_core,target=/tmp/autoware/src/cor
       --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     rm -rf build log
 
+RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && \
+    . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
+    . /opt/autoware/setup.sh && \
+    rosdep install -y --from-paths /tmp/autoware/src/core \
+      --ignore-src \
+      --rosdistro "${ROS_DISTRO}" \
+      --dependency-types=exec
+
 FROM ${BASE_IMAGE} AS core
 ARG ROS_DISTRO
 ENV AUTOWARE_RUNTIME=1
