@@ -17,20 +17,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build-type: [main, nightly, main-arm64]
+        build-type: [main, nightly, main-arm64, main-jazzy]
         include:
           - build-type: main
             platform: amd64
             runner: "['ubuntu-24.04']"
+            ros-distro: humble
           - build-type: nightly
             platform: amd64
             runner: "['ubuntu-24.04']"
+            ros-distro: humble
           - build-type: main-arm64
             platform: arm64
             runner: "['ubuntu-24.04-arm']"
+            ros-distro: humble
+          - build-type: main-jazzy
+            platform: amd64
+            runner: "['ubuntu-24.04']"
+            ros-distro: jazzy
     uses: ./.github/workflows/health-check-reusable.yaml
     with:
       build-type: ${{ matrix.build-type }}
       platform: ${{ matrix.platform }}
       runner: ${{ matrix.runner }}
+      ros-distro: ${{ matrix.ros-distro }}
     secrets: inherit
