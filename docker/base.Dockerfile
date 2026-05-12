@@ -27,9 +27,17 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
     apt-get install -y --no-install-recommends \
     sudo \
     pipx \
+    python3-pip \
     bash-completion \
     iproute2 \
-    gosu
+    gosu && \
+    rm -f /usr/lib/python3.*/EXTERNALLY-MANAGED
+
+# Allow rosdep's pip installer to install Python packages system-wide on
+# Ubuntu 24.04 (PEP 668). rosdep itself checks this env var before calling
+# pip; the EXTERNALLY-MANAGED rm above is a belt-and-suspenders for direct
+# `pip install` use inside the container. No-op on Ubuntu 22.04 / Python <3.11.
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # Remove default ubuntu user (present since 24.04, occupies UID 1000)
 RUN userdel -r ubuntu 2>/dev/null || true && \
