@@ -17,6 +17,9 @@
     "--gpus",
     "all"
   ],
+  "containerEnv": {
+    "CMAKE_CUDA_ARCHITECTURES": "86;87;89;90;110"
+  },
   "customizations": {
     "vscode": {
       "settings.json": {
