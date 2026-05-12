@@ -9,10 +9,6 @@
   register: cuda_architecture
   changed_when: false
 
-- name: Determine CUDA repo distro
-  ansible.builtin.set_fact:
-    cuda_repo_distro: "{{ 'ubuntu2404' if ansible_distribution_version == '24.04' else 'ubuntu2204' }}"
-
 - name: Remove old /etc/apt/sources.list.d/cuda.list
   become: true
   ansible.builtin.file:

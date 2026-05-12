@@ -18,7 +18,9 @@
     "all"
   ],
   "containerEnv": {
-    "CMAKE_CUDA_ARCHITECTURES": "86;87;89;90;110"
+    "CMAKE_CUDA_ARCHITECTURES": "86;87;89;90;110",
+    "NVIDIA_VISIBLE_DEVICES": "all",
+    "NVIDIA_DRIVER_CAPABILITIES": "all"
   },
   "customizations": {
     "vscode": {

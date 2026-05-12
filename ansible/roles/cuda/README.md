@@ -6,10 +6,11 @@ This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
 ## Inputs
 
-| Name                 | Required | Description                      |
-| -------------------- | -------- | -------------------------------- |
-| cuda_version         | true     | The version of CUDA Toolkit.     |
-| cuda_install_drivers | false    | Whether to install cuda-drivers. |
+| Name                 | Required | Description                                                      |
+| -------------------- | -------- | ---------------------------------------------------------------- |
+| cuda_version         | true     | The version of CUDA Toolkit.                                     |
+| cuda_repo_distro     | false    | NVIDIA apt repo distro suffix (e.g. `ubuntu2204`, `ubuntu2404`). |
+| cuda_install_drivers | false    | Whether to install cuda-drivers.                                 |
 
 ## Version selection
 
@@ -20,7 +21,7 @@ The role auto-selects CUDA version and apt repo distro based on the host's Ubunt
 | 22.04 (humble) | 12.8         | `ubuntu2204`    | `nvidia-open` (when `cuda_install_drivers=true`) |
 | 24.04 (jazzy)  | 13.0         | `ubuntu2404`    | `nvidia-open` (when `cuda_install_drivers=true`) |
 
-Override `cuda_version` explicitly via `-e cuda_version=…` if you need a non-default toolkit release for a specific package set.
+Both `cuda_version` and `cuda_repo_distro` are overridable via `-e cuda_version=…` and `-e cuda_repo_distro=…`. Override them together when installing a non-default toolkit release that NVIDIA only publishes under a different `ubuntuXXXX` repo than the host's Ubuntu version (e.g. CUDA 12.x on a 24.04 host).
 
 ## Manual Installation
 
