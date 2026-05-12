@@ -181,6 +181,8 @@ Launching the image:
 docker run --rm -it \
   --net host \
   --runtime nvidia \
+  -e NVIDIA_VISIBLE_DEVICES=all \
+  -e NVIDIA_DRIVER_CAPABILITIES=all \
   -e HOST_UID=$(id -u) -e HOST_GID=$(id -g) \
   -v $HOME/autoware_data/maps:/home/aw/autoware_data/maps \
   -v $HOME/autoware_data/ml_models:/home/aw/autoware_data/ml_models \
@@ -190,16 +192,24 @@ docker run --rm -it \
 
 Notes:
 
-- `--gpus all` is **not** used on Tegra; `--runtime nvidia` is sufficient and triggers the L4T CSV-mount path that exposes the iGPU and Tegra shared libraries.
+- `--gpus all` is **not** used on Tegra; `--runtime nvidia` plus the two `NVIDIA_*` env vars is the supported path. The env vars are what trigger the L4T container toolkit to mount `libcuda.so.1` and `/dev/nvidia-*` into the container — without them `libcuda.so` is absent and CUDA calls fail with `cudaErrorInsufficientDriver` (35).
 - `--privileged` is omitted relative to the generic Usage example above; the Thor inference workload here does not touch sensors or CAN bus. Re-add it if you wire in external hardware that needs host device access.
-- Inside the container, verify acceleration with `nvidia-smi` (shows iGPU + CUDA 13.0 driver). Then load a compiled TensorRT engine and check the active SM:
+- Inside the container, verify the GPU is reachable:
 
   ```bash
-  trtexec --loadEngine=<path-to-engine> --verbose 2>&1 | grep -iE 'compute|arch'
+  python3 -c '
+  import ctypes
+  rt = ctypes.CDLL("libcudart.so")
+  cnt = ctypes.c_int(); rt.cudaGetDeviceCount(ctypes.byref(cnt))
+  maj = ctypes.c_int(); minor = ctypes.c_int()
+  rt.cudaDeviceGetAttribute(ctypes.byref(maj), 75, 0)
+  rt.cudaDeviceGetAttribute(ctypes.byref(minor), 76, 0)
+  print(f"devices={cnt.value}, sm_{maj.value}{minor.value}")
+  '
   ```
 
-  The Thor Blackwell compute capability `sm_110` should appear; a PTX JIT fallback would indicate the engine was not built for Thor.
+  On Thor this prints `devices=1, sm_110` (rather than a PTX JIT fallback or an `Insufficient driver` error).
 
-- On the host, `sudo tegrastats` while inference runs shows iGPU utilization climbing above idle.
+- On the host, `sudo tegrastats` while inference runs shows iGPU utilization (`GR3D_FREQ`) climbing above idle.
 
 DLA, VPI, NVDEC/NVENC, and Argus camera support are intentionally out of scope for this image; they require a separate L4T-derived variant.
