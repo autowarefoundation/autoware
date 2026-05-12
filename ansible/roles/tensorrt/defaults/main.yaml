@@ -1,5 +1,6 @@
 # TensorRT version map:
-# - Ubuntu 24.04 (jazzy / Jetson Thor SBSA): TRT 10.x aligned with CUDA 13.0.
+# - Ubuntu 24.04 (jazzy / NVIDIA Thor SBSA — Jetson Thor + DRIVE Thor):
+#     TRT 10.x aligned with CUDA 13.0.
 # - Ubuntu 22.04 + aarch64 (humble / Jetson Orin SBSA): TRT 10.3 aligned with CUDA 12.5.
 # - Ubuntu 22.04 + x86_64 (humble / workstation): TRT 10.8 aligned with CUDA 12.8.
 tensorrt_version: >-

@@ -160,14 +160,16 @@ docker run --rm -it \
   autoware:universe-cuda-jazzy
 ```
 
-### Running on Jetson Thor (JetPack 7)
+### Running on NVIDIA Thor (Jetson Thor / DRIVE Thor)
 
-JetPack 7 unified CUDA 13.0 across all Arm targets, so the `universe-cuda-jazzy` image built for `linux/arm64` (SBSA flavor) is the supported runtime on Jetson Thor.
+Under JetPack 7's "unified CUDA 13.0 across all Arm targets" the `universe-cuda-jazzy` image built for `linux/arm64` (SBSA flavor) is the supported runtime on **both Thor variants** — Jetson Thor running JetPack 7 and DRIVE Thor running DRIVE OS share the same Blackwell SoC (`sm_110`) and the same SBSA-compatible CUDA / TensorRT package set.
+
+> The fixes and runtime steps below have been verified end-to-end on a local Jetson Thor (L4T R38.4.0 / CUDA 13.0). DRIVE Thor is expected to work by design — the in-container CUDA stack is identical — but its host-side container-toolkit packaging comes via DRIVE OS rather than the JetPack BSP, so the prereq command names below may differ on a DRIVE host.
 
 Prerequisites on the Thor host:
 
-- JetPack 7 (Ubuntu 24.04 + Linux 6.8).
-- `nvidia-container-toolkit` from the JetPack BSP:
+- An Arm host with Ubuntu 24.04 + Linux 6.8 (Jetson Thor on JetPack 7, or a DRIVE Thor target running DRIVE OS).
+- `nvidia-container-toolkit` from the JetPack BSP (or the DRIVE OS equivalent):
 
   ```bash
   sudo apt-get install -y nvidia-container-toolkit
