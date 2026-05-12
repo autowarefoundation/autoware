@@ -1,2 +1,4 @@
 cuda_install_drivers: true
-cuda_version: "12.8"
+# CUDA 13.0 on Ubuntu 24.04 (jazzy / Jetson Thor SBSA via JetPack 7).
+# CUDA 12.8 on Ubuntu 22.04 (humble / Jetson Orin via JetPack 6).
+cuda_version: "{{ '13.0' if ansible_distribution_version == '24.04' else '12.8' }}"
