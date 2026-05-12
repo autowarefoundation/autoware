@@ -51,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build-type: [main, nightly, main-arm64, main-jazzy]
+        build-type: [main, nightly, main-arm64, main-jazzy-arm64]
         include:
           - build-type: main
             platform: amd64
@@ -65,9 +65,9 @@ jobs:
             platform: arm64
             runner: "['ubuntu-24.04-arm']"
             ros-distro: humble
-          - build-type: main-jazzy
-            platform: amd64
-            runner: "['ubuntu-24.04']"
+          - build-type: main-jazzy-arm64
+            platform: arm64
+            runner: "['ubuntu-24.04-arm']"
             ros-distro: jazzy
     uses: ./.github/workflows/health-check-reusable.yaml
     with:
