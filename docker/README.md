@@ -159,3 +159,47 @@ docker run --rm -it \
   -v /path/to/your/cyclonedds.xml:/home/aw/cyclonedds.xml \
   autoware:universe-cuda-jazzy
 ```
+
+### Running on Jetson Thor (JetPack 7)
+
+JetPack 7 unified CUDA 13.0 across all Arm targets, so the `universe-cuda-jazzy` image built for `linux/arm64` (SBSA flavor) is the supported runtime on Jetson Thor.
+
+Prerequisites on the Thor host:
+
+- JetPack 7 (Ubuntu 24.04 + Linux 6.8).
+- `nvidia-container-toolkit` from the JetPack BSP:
+
+  ```bash
+  sudo apt-get install -y nvidia-container-toolkit
+  sudo nvidia-ctk runtime configure --runtime=docker
+  sudo systemctl restart docker
+  ```
+
+Launching the image:
+
+```bash
+docker run --rm -it \
+  --net host \
+  --runtime nvidia \
+  -e HOST_UID=$(id -u) -e HOST_GID=$(id -g) \
+  -v $HOME/autoware_data/maps:/home/aw/autoware_data/maps \
+  -v $HOME/autoware_data/ml_models:/home/aw/autoware_data/ml_models \
+  autoware:universe-cuda-jazzy \
+  bash -c "source /opt/autoware/setup.bash && exec bash"
+```
+
+Notes:
+
+- `--gpus all` is **not** used on Tegra; `--runtime nvidia` is sufficient and triggers the L4T CSV-mount path that exposes the iGPU and Tegra shared libraries.
+- `--privileged` is omitted relative to the generic Usage example above; the Thor inference workload here does not touch sensors or CAN bus. Re-add it if you wire in external hardware that needs host device access.
+- Inside the container, verify acceleration with `nvidia-smi` (shows iGPU + CUDA 13.0 driver). Then load a compiled TensorRT engine and check the active SM:
+
+  ```bash
+  trtexec --loadEngine=<path-to-engine> --verbose 2>&1 | grep -iE 'compute|arch'
+  ```
+
+  The Thor Blackwell compute capability `sm_110` should appear; a PTX JIT fallback would indicate the engine was not built for Thor.
+
+- On the host, `sudo tegrastats` while inference runs shows iGPU utilization climbing above idle.
+
+DLA, VPI, NVDEC/NVENC, and Argus camera support are intentionally out of scope for this image; they require a separate L4T-derived variant.

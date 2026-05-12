@@ -11,6 +11,17 @@ This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 | cuda_version         | true     | The version of CUDA Toolkit.     |
 | cuda_install_drivers | false    | Whether to install cuda-drivers. |
 
+## Version selection
+
+The role auto-selects CUDA version and apt repo distro based on the host's Ubuntu version:
+
+| Ubuntu         | CUDA version | Apt repo distro | Driver package                                   |
+| -------------- | ------------ | --------------- | ------------------------------------------------ |
+| 22.04 (humble) | 12.8         | `ubuntu2204`    | `nvidia-open` (when `cuda_install_drivers=true`) |
+| 24.04 (jazzy)  | 13.0         | `ubuntu2404`    | `nvidia-open` (when `cuda_install_drivers=true`) |
+
+Override `cuda_version` explicitly via `-e cuda_version=…` if you need a non-default toolkit release for a specific package set.
+
 ## Manual Installation
 
 ### Version compatibility
