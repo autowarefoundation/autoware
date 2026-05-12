@@ -1,4 +1,5 @@
 # check=skip=InvalidDefaultArgInFrom
+# cspell:ignore libcudacxx cccl CPATH
 ARG BASE_IMAGE
 
 FROM ${BASE_IMAGE} AS base-cuda-runtime

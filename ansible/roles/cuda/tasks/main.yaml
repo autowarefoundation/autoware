@@ -59,13 +59,13 @@
     update_cache: true
   when: install_devel == 'N'
 
-- name: Install extra CUDA libraries for x86_64
+- name: Install extra CUDA libraries for x86_64 (CUDA 12 only — nvprof removed in CUDA 13)
   become: true
   ansible.builtin.apt:
     name:
       - cuda-nvprof-{{ cuda__dash_case_cuda_version.stdout }}
     update_cache: true
-  when: cuda_architecture.stdout == "x86_64"
+  when: cuda_architecture.stdout == "x86_64" and ansible_distribution_version == '22.04'
 
 - name: Install cuda-drivers
   become: true
