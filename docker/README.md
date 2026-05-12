@@ -1,6 +1,6 @@
 # Run Autoware in Docker
 
-<!-- cspell:ignore libcudart ctypes byref tegrastats NVDEC NVENC -->
+<!-- cspell:ignore libcuda libcudart ctypes CDLL byref prereq tegrastats NVDEC NVENC -->
 
 ## Image Graph
 
