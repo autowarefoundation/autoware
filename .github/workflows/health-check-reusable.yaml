@@ -1,6 +1,7 @@
-# Builds `universe-devel` on three independent matrix routes:
-# `main/amd64`, `nightly/amd64`, `main-arm64/arm64`. Each route owns
-# a self-contained cache lineage keyed on
+# Builds `universe-devel` on independent matrix routes:
+# `main/amd64`, `nightly/amd64`, `main-arm64/arm64`,
+# `main-jazzy-amd64/amd64`, `main-jazzy-arm64/arm64`.
+# Each route owns a self-contained cache lineage keyed on
 # `{build-type}-{ros-distro}-{platform}`; there is no cross-route
 # fallback. Within a lineage, registry tags are per-ref so consecutive
 # PR runs reuse their own layers.
