@@ -230,7 +230,7 @@ jobs:
           TAG_VERSION: ${{ steps.meta.outputs.version }}
           TAG_REF: ${{ steps.meta.outputs.ref }}
           USE_REGISTRY_CONTEXTS: ${{ inputs.bake-group != 'ci-base' }}
-          # Drop SLSA provenance from the bake --metadata-file output. buildx
+          # Drop provenance from the bake --metadata-file output. buildx
           # embeds it by default, and it is almost entirely a ~38 KB
           # github_event_payload dump per target. For multi-target groups
           # (ci-core, ci-universe) the metadata then exceeds Linux's 128 KiB
