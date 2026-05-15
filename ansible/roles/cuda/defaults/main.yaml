@@ -1,2 +1,10 @@
 cuda_install_drivers: true
-cuda_version: "12.8"
+# CUDA 13.0 on Ubuntu 24.04 (jazzy / NVIDIA Thor SBSA — Jetson Thor on
+#   JetPack 7 and DRIVE Thor on DRIVE OS share the same Blackwell sm_110 silicon).
+# CUDA 12.8 on Ubuntu 22.04 (humble / Jetson Orin via JetPack 6).
+cuda_version: "{{ '13.0' if ansible_distribution_version == '24.04' else '12.8' }}"
+# NVIDIA apt repo distro suffix. Defaults to match the host's Ubuntu version,
+# but is overridable so it can be kept in lockstep with a `-e cuda_version=…`
+# override (e.g. installing CUDA 12.x on a 24.04 host that still ships the
+# `ubuntu2204` repo entry for the toolkit you want).
+cuda_repo_distro: "{{ 'ubuntu2404' if ansible_distribution_version == '24.04' else 'ubuntu2204' }}"

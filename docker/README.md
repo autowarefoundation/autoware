@@ -1,5 +1,7 @@
 # Run Autoware in Docker
 
+<!-- cspell:ignore libcuda libcudart ctypes CDLL byref prereq tegrastats NVDEC NVENC -->
+
 ## Image Graph
 
 ```mermaid
@@ -159,3 +161,59 @@ docker run --rm -it \
   -v /path/to/your/cyclonedds.xml:/home/aw/cyclonedds.xml \
   autoware:universe-cuda-jazzy
 ```
+
+### Running on NVIDIA Thor (Jetson Thor / DRIVE Thor)
+
+Under JetPack 7's "unified CUDA 13.0 across all Arm targets" the `universe-cuda-jazzy` image built for `linux/arm64` (SBSA flavor) is the supported runtime on **both Thor variants** — Jetson Thor running JetPack 7 and DRIVE Thor running DRIVE OS share the same Blackwell SoC (`sm_110`) and the same SBSA-compatible CUDA / TensorRT package set.
+
+> The fixes and runtime steps below have been verified end-to-end on a local Jetson Thor (L4T R38.4.0 / CUDA 13.0). DRIVE Thor is expected to work by design — the in-container CUDA stack is identical — but its host-side container-toolkit packaging comes via DRIVE OS rather than the JetPack BSP, so the prereq command names below may differ on a DRIVE host.
+
+Prerequisites on the Thor host:
+
+- An Arm host with Ubuntu 24.04 + Linux 6.8 (Jetson Thor on JetPack 7, or a DRIVE Thor target running DRIVE OS).
+- `nvidia-container-toolkit` from the JetPack BSP (or the DRIVE OS equivalent):
+
+  ```bash
+  sudo apt-get install -y nvidia-container-toolkit
+  sudo nvidia-ctk runtime configure --runtime=docker
+  sudo systemctl restart docker
+  ```
+
+Launching the image:
+
+```bash
+docker run --rm -it \
+  --net host \
+  --runtime nvidia \
+  -e NVIDIA_VISIBLE_DEVICES=all \
+  -e NVIDIA_DRIVER_CAPABILITIES=all \
+  -e HOST_UID=$(id -u) -e HOST_GID=$(id -g) \
+  -v $HOME/autoware_data/maps:/home/aw/autoware_data/maps \
+  -v $HOME/autoware_data/ml_models:/home/aw/autoware_data/ml_models \
+  autoware:universe-cuda-jazzy \
+  bash -c "source /opt/autoware/setup.bash && exec bash"
+```
+
+Notes:
+
+- `--gpus all` is **not** used on Tegra; `--runtime nvidia` plus the two `NVIDIA_*` env vars is the supported path. The env vars are what trigger the L4T container toolkit to mount `libcuda.so.1` and `/dev/nvidia-*` into the container — without them `libcuda.so` is absent and CUDA calls fail with `cudaErrorInsufficientDriver` (35).
+- `--privileged` is omitted relative to the generic Usage example above; the Thor inference workload here does not touch sensors or CAN bus. Re-add it if you wire in external hardware that needs host device access.
+- Inside the container, verify the GPU is reachable:
+
+  ```bash
+  python3 -c '
+  import ctypes
+  rt = ctypes.CDLL("libcudart.so")
+  cnt = ctypes.c_int(); rt.cudaGetDeviceCount(ctypes.byref(cnt))
+  maj = ctypes.c_int(); minor = ctypes.c_int()
+  rt.cudaDeviceGetAttribute(ctypes.byref(maj), 75, 0)
+  rt.cudaDeviceGetAttribute(ctypes.byref(minor), 76, 0)
+  print(f"devices={cnt.value}, sm_{maj.value}{minor.value}")
+  '
+  ```
+
+  On Thor this prints `devices=1, sm_110` (rather than a PTX JIT fallback or an `Insufficient driver` error).
+
+- On the host, `sudo tegrastats` while inference runs shows iGPU utilization (`GR3D_FREQ`) climbing above idle.
+
+DLA, VPI, NVDEC/NVENC, and Argus camera support are intentionally out of scope for this image; they require a separate L4T-derived variant.

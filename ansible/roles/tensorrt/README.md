@@ -8,6 +8,16 @@ This role installs TensorRT following [the official NVIDIA TensorRT Installation
 | ---------------- | -------- | ------------------------ |
 | tensorrt_version | true     | The version of TensorRT. |
 
+## Version selection
+
+| Ubuntu         | Architecture                                            | TensorRT version     |
+| -------------- | ------------------------------------------------------- | -------------------- |
+| 22.04 (humble) | x86_64                                                  | 10.8.0.43-1+cuda12.8 |
+| 22.04 (humble) | aarch64 (SBSA)                                          | 10.3.0.26-1+cuda12.5 |
+| 24.04 (jazzy)  | x86_64 / aarch64 (SBSA, incl. Jetson Thor + DRIVE Thor) | 10.13.3.9-1+cuda13.0 |
+
+Override `tensorrt_version` explicitly via `-e tensorrt_version=…` to pin a different release.
+
 ## Manual Installation
 
 ### Set up the environment variables
