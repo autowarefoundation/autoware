@@ -230,14 +230,8 @@ jobs:
           TAG_VERSION: ${{ steps.meta.outputs.version }}
           TAG_REF: ${{ steps.meta.outputs.ref }}
           USE_REGISTRY_CONTEXTS: ${{ inputs.bake-group != 'ci-base' }}
-          # Drop provenance from the bake --metadata-file output. buildx
-          # embeds it by default, and it is almost entirely a ~38 KB
-          # github_event_payload dump per target. For multi-target groups
-          # (ci-core, ci-universe) the metadata then exceeds Linux's 128 KiB
-          # single-env-var limit, so the downstream `Build summary` step that
-          # passes it via BAKE_METADATA fails to start bash with "Argument
-          # list too long". The summary only reads containerimage.digest;
-          # image attestations are already off via `provenance: false` below.
+          # Without this, BAKE_METADATA exceeds 128 KiB on multi-target
+          # groups and the summary step fails to start bash (E2BIG).
           BUILDX_METADATA_PROVENANCE: disabled
         with:
           source: .
