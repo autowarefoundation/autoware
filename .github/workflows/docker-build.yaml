@@ -230,6 +230,9 @@ jobs:
           TAG_VERSION: ${{ steps.meta.outputs.version }}
           TAG_REF: ${{ steps.meta.outputs.ref }}
           USE_REGISTRY_CONTEXTS: ${{ inputs.bake-group != 'ci-base' }}
+          # Without this, BAKE_METADATA exceeds 128 KiB on multi-target
+          # groups and the summary step fails to start bash (E2BIG).
+          BUILDX_METADATA_PROVENANCE: disabled
         with:
           source: .
           push: true
