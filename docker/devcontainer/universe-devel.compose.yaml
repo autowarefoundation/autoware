@@ -1,0 +1,20 @@
+services:
+  autoware-devel:
+    image: ghcr.io/autowarefoundation/autoware:universe-devel-jazzy
+    privileged: true
+    network_mode: host
+    stdin_open: true
+    tty: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - HOST_UID=${HOST_UID:-1000}
+      - HOST_GID=${HOST_GID:-1000}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - QT_X11_NO_MITSHM=1
+      - NO_AT_BRIDGE=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ../..:/home/aw/autoware
+      - ${HOME}/autoware_data:/home/aw/autoware_data
+    working_dir: /home/aw/autoware
+    command: bash
