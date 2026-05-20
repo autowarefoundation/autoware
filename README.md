@@ -52,43 +52,33 @@
             alt="Autoware Linkedin"></a>
 </p>
 
-Autoware is an open-source software stack for self-driving vehicles, built on the [Robot Operating System (ROS)](https://www.ros.org/). It includes all of the necessary functions to drive an autonomous vehicles from localization and object detection to route planning and control, and was created with the aim of enabling as many individuals and organizations as possible to contribute to open innovations in autonomous driving technology.
+Autoware is the world's leading open-source autonomous driving framework. Autoware provides a comprehensive, production-ready software stack designed to accelerate the commercial deployment of autonomous vehicles across diverse platforms and use cases.
 
-![Autoware architecture](https://static.wixstatic.com/media/984e93_552e338be28543c7949717053cc3f11f~mv2.png/v1/crop/x_0,y_1,w_1500,h_879/fill/w_863,h_506,al_c,usm_0.66_1.00_0.01,enc_auto/Autoware-GFX_edited.png)
+## 🚀 Get Started
+
+<p align="center">
+    <a href="https://autowarefoundation.github.io/autoware-documentation/main/installation">
+        <img src="https://img.shields.io/badge/📥_Installation-Get_Autoware_Running-2ea44f?style=for-the-badge"
+            alt="Installation" /></a>
+    &nbsp;&nbsp;
+    <a href="https://autowarefoundation.github.io/autoware-documentation/main/demos/">
+        <img src="https://img.shields.io/badge/⚡_Quick_Start-Try_the_Demo-1f6feb?style=for-the-badge"
+            alt="Quick Start" /></a>
+</p>
+
+> **New to Autoware?**
+>
+> 1. **[Install Autoware →](https://autowarefoundation.github.io/autoware-documentation/main/installation)** — Set up your environment and build the stack from source.
+> 2. **[Run the Quick Start demo →](https://autowarefoundation.github.io/autoware-documentation/main/demos/)** — Drive a simulated vehicle in just a few minutes.
 
 ## Documentation
 
 To learn more about using or developing Autoware, refer to the [Autoware documentation site](https://autowarefoundation.github.io/autoware-documentation/main/). You can find the source for the documentation in [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation).
 
-## Repository overview
-
-- [autowarefoundation/autoware](https://github.com/autowarefoundation/autoware)
-  - Meta-repository containing `.repos` files to construct an Autoware workspace.
-  - It is anticipated that this repository will be frequently forked by users, and so it contains minimal information to avoid unnecessary differences.
-- [autowarefoundation/autoware_core](https://github.com/autowarefoundation/autoware_core)
-  - Main repository for high-quality, stable ROS packages for Autonomous Driving.
-  - Based on [Autoware.Auto](https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto) and [Autoware.Universe](https://github.com/autowarefoundation/autoware_universe).
-- [autowarefoundation/autoware_universe](https://github.com/autowarefoundation/autoware_universe)
-  - Repository for experimental, cutting-edge ROS packages for Autonomous Driving.
-  - Autoware Universe was created to make it easier for researchers and developers to extend the functionality of Autoware Core
-- [autowarefoundation/autoware_launch](https://github.com/autowarefoundation/autoware_launch)
-  - Launch configuration repository containing node configurations and their parameters.
-- [autowarefoundation/autoware-github-actions](https://github.com/autowarefoundation/autoware-github-actions)
-  - Contains [reusable GitHub Actions workflows](https://docs.github.com/ja/actions/learn-github-actions/reusing-workflows) used by multiple repositories for CI.
-  - Utilizes the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) concept.
-- [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation)
-  - Documentation repository for Autoware users and developers.
-  - Since Autoware Core/Universe has multiple repositories, a central documentation repository is important to make information accessible from a single place.
-
-## Using Autoware.AI
-
-If you wish to use Autoware.AI, the previous version of Autoware based on ROS 1, switch to [autoware-ai](https://github.com/autowarefoundation/autoware_ai) repository. However, be aware that Autoware.AI has reached the end-of-life as of 2022, and we strongly recommend transitioning to Autoware Core/Universe for future use.
-
 ## Contributing
 
-- [There is no formal process to become a contributor](https://github.com/autowarefoundation/autoware-projects/wiki#contributors) - you can comment on any [existing issues](https://github.com/autowarefoundation/autoware_universe/issues) or make a pull request on any Autoware repository!
-  - Make sure to follow the [Contribution Guidelines](https://autowarefoundation.github.io/autoware-documentation/main/contributing/).
-  - Take a look at Autoware's [various working groups](https://github.com/autowarefoundation/autoware-projects/wiki#working-group-list) to gain an understanding of any work in progress and to see how projects are managed.
+ - Make sure to follow the [Contribution Guidelines](https://autowarefoundation.github.io/autoware-documentation/main/contributing/).
+ - Take a look at Autoware's [various working groups](https://github.com/autowarefoundation/autoware-projects/wiki#working-group-list) to gain an understanding of any work in progress and to see how projects are managed.
 - If you have any technical questions, you can start a discussion in the [Q&A category](https://github.com/autowarefoundation/autoware/discussions/categories/q-a) to request help and confirm if a potential issue is a bug or not.
 
 ## Useful resources
