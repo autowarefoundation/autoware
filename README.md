@@ -84,5 +84,5 @@ To learn more about using or developing Autoware, refer to the [Autoware documen
 ## Useful resources
 
 - [Autoware Foundation homepage](https://www.autoware.org/)
-- [Support guidelines](https://autowarefoundation.github.io/autoware-documentation/main/support/support-guidelines/)
+- [Support guidelines](https://autowarefoundation.github.io/autoware-documentation/main/community/support/)
 - [CI metrics](https://autowarefoundation.github.io/autoware-ci-metrics/)
