@@ -5,7 +5,6 @@
         alt="Autoware_RViz" width="75%" />
 </p>
 
-
 <!--- License -->
 <p align="center">
     <a href="https://github.com/autowarefoundation/autoware/blob/main/LICENSE">
@@ -50,6 +49,7 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 To learn more about using or developing Autoware, refer to the [Autoware documentation site](https://autowarefoundation.github.io/autoware-documentation/main/). You can find the source for the documentation in [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation).
 
 ## Contributing
+
 <p align="left">
     <a href="https://github.com/autowarefoundation/autoware_universe/graphs/contributors">
         <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Contributors"
@@ -74,6 +74,7 @@ To learn more about using or developing Autoware, refer to the [Autoware documen
 - If you have any technical questions, you can start a discussion in the [Q&A category](https://github.com/autowarefoundation/autoware/discussions/categories/q-a) to request help and confirm if a potential issue is a bug or not.
 
 ## Useful resources
+
 <!--- CI Reports -->
 <p align="left">
     <a href="https://github.com/autowarefoundation/autoware/actions/workflows/health-check.yaml?query=branch%3Amain">
