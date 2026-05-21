@@ -39,15 +39,14 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 
 > **New to Autoware?**
 >
-> 1. **[Install Autoware →](https://autowarefoundation.github.io/autoware-documentation/main/installation)** — Set up your environment and build the stack from source.
-> 2. **[Run the Quick Start demo →](https://autowarefoundation.github.io/autoware-documentation/main/demos/)** — Drive a simulated vehicle in just a few minutes.
+> 1. **[Install Autoware](https://autowarefoundation.github.io/autoware-documentation/main/installation)** → Set up your environment and build the stack from source.
+> 2. **[Run the Quick Start demo](https://autowarefoundation.github.io/autoware-documentation/main/demos/)** → Drive a simulated vehicle in just a few minutes.
 
 ## Documentation
 
 To learn more about using or developing Autoware, refer to the [Autoware documentation site](https://autowarefoundation.github.io/autoware-documentation/main/). You can find the source for the documentation in [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation).
 
 ## Contributing
-<!--- Contributors -->
 <p align="left">
     <a href="https://github.com/autowarefoundation/autoware_universe/graphs/contributors">
         <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Contributors"
