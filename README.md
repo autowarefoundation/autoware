@@ -2,41 +2,12 @@
 
 ![Autoware_RViz](https://user-images.githubusercontent.com/63835446/158918717-58d6deaf-93fb-47f9-891d-e242b02cba7b.png)
 
-<!--- Contributors -->
-<p align="center">
-    <a href="https://github.com/autowarefoundation/autoware_universe/graphs/contributors">
-        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Contributors"
-            alt="Autoware Universe Contributors" /></a>
-    <a href="https://github.com/autowarefoundation/autoware/graphs/contributors">
-        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware?style=flat&label=Autoware%20Contributors"
-            alt="Autoware Contributors" /></a>
-</p>
-
-<!--- Commit Activity -->
-<p align="center">
-    <a href="https://github.com/autowarefoundation/autoware_universe/pulse">
-        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Commit%20Activity"
-            alt="Autoware Universe Activity" /></a>
-    <a href="https://github.com/autowarefoundation/autoware/pulse">
-        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware?style=flat&label=Autoware%20Commit%20Activity"
-            alt="Autoware Activity" /></a>
-</p>
 
 <!--- License -->
 <p align="center">
     <a href="https://github.com/autowarefoundation/autoware/blob/main/LICENSE">
         <img src="https://img.shields.io/github/license/autowarefoundation/autoware?style=flat&label=License"
             alt="License" /></a>
-</p>
-
-<!--- CI Reports -->
-<p align="center">
-    <a href="https://github.com/autowarefoundation/autoware/actions/workflows/health-check.yaml?query=branch%3Amain">
-        <img src="https://img.shields.io/github/actions/workflow/status/autowarefoundation/autoware/health-check.yaml?style=flat&label=health-check"
-            alt="health-check CI" /></a>
-    <a href="https://app.codecov.io/gh/autowarefoundation/autoware_universe">
-        <img src="https://img.shields.io/codecov/c/gh/autowarefoundation/autoware_universe?style=flat&label=Coverage&logo=codecov&logoColor=white"
-            alt="Code Coverage" /></a>
 </p>
 
 <!--- Social Media -->
@@ -76,12 +47,40 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 To learn more about using or developing Autoware, refer to the [Autoware documentation site](https://autowarefoundation.github.io/autoware-documentation/main/). You can find the source for the documentation in [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation).
 
 ## Contributing
+<!--- Contributors -->
+<p align="left">
+    <a href="https://github.com/autowarefoundation/autoware_universe/graphs/contributors">
+        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Contributors"
+            alt="Autoware Universe Contributors" /></a>
+    <a href="https://github.com/autowarefoundation/autoware/graphs/contributors">
+        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware?style=flat&label=Autoware%20Contributors"
+            alt="Autoware Contributors" /></a>
+</p>
+
+<!--- Commit Activity -->
+<p align="left">
+    <a href="https://github.com/autowarefoundation/autoware_universe/pulse">
+        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Commit%20Activity"
+            alt="Autoware Universe Activity" /></a>
+    <a href="https://github.com/autowarefoundation/autoware/pulse">
+        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware?style=flat&label=Autoware%20Commit%20Activity"
+            alt="Autoware Activity" /></a>
+</p>
 
 - Make sure to follow the [Contribution Guidelines](https://autowarefoundation.github.io/autoware-documentation/main/contributing/).
 - Take a look at Autoware's [various working groups](https://github.com/autowarefoundation/autoware-projects/wiki#working-group-list) to gain an understanding of any work in progress and to see how projects are managed.
 - If you have any technical questions, you can start a discussion in the [Q&A category](https://github.com/autowarefoundation/autoware/discussions/categories/q-a) to request help and confirm if a potential issue is a bug or not.
 
 ## Useful resources
+<!--- CI Reports -->
+<p align="left">
+    <a href="https://github.com/autowarefoundation/autoware/actions/workflows/health-check.yaml?query=branch%3Amain">
+        <img src="https://img.shields.io/github/actions/workflow/status/autowarefoundation/autoware/health-check.yaml?style=flat&label=health-check"
+            alt="health-check CI" /></a>
+    <a href="https://app.codecov.io/gh/autowarefoundation/autoware_universe">
+        <img src="https://img.shields.io/codecov/c/gh/autowarefoundation/autoware_universe?style=flat&label=Coverage&logo=codecov&logoColor=white"
+            alt="Code Coverage" /></a>
+</p>
 
 - [Autoware Foundation homepage](https://www.autoware.org/)
 - [Support guidelines](https://autowarefoundation.github.io/autoware-documentation/main/community/support/)
