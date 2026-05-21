@@ -32,8 +32,8 @@ ENV CCACHE_DIR="/home/aw/.ccache"
 ENV CMAKE_PREFIX_PATH="/opt/acados${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
 ENV ACADOS_SOURCE_DIR="/opt/acados"
 ENV LD_LIBRARY_PATH="/opt/acados/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-# Compute capabilities: 86=Ampere consumer, 87=Orin, 89=Ada, 90=Hopper, 110=Thor Blackwell (Jetson Thor + DRIVE Thor).
-ENV CMAKE_CUDA_ARCHITECTURES="86;87;89;90;110"
+ARG CUDA_ARCHITECTURES
+ENV CMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}
 
 # hadolint ignore=DL3022
 COPY --from=autoware-core-devel /opt/autoware /opt/autoware
@@ -83,6 +83,7 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
 
 FROM ${BASE_CUDA_RUNTIME_IMAGE} AS universe-cuda
 ARG ROS_DISTRO
+ARG CUDA_ARCHITECTURES
 ENV AUTOWARE_RUNTIME=1
 
 USER ${USERNAME}
@@ -123,4 +124,4 @@ RUN find /opt/autoware -name '*.so' -exec strip --strip-unneeded {} +
 ENV CMAKE_PREFIX_PATH="/opt/acados${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
 ENV ACADOS_SOURCE_DIR="/opt/acados"
 ENV LD_LIBRARY_PATH="/opt/acados/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-ENV CMAKE_CUDA_ARCHITECTURES="86;87;89;90;110"
+ENV CMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}
