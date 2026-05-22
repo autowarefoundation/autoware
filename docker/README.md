@@ -1,6 +1,6 @@
 # Run Autoware in Docker
 
-<!-- cspell:ignore libcuda libcudart ctypes CDLL byref prereq tegrastats NVDEC NVENC -->
+<!-- cspell:ignore libcuda libcudart ctypes CDLL byref prereq tegrastats NVDEC NVENC Altra -->
 
 ## Image Graph
 
@@ -47,9 +47,11 @@ graph TB
 
 ## CUDA architecture support
 
-CUDA-bearing images (`base-cuda-*`, `universe-*-cuda`) are built for both `linux/amd64` and `linux/arm64`. The arm64 variant follows the SBSA flavor of CUDA:
+All CUDA-bearing images (`base-cuda-*`, `universe-*-cuda`) are built for both `linux/amd64` and `linux/arm64`, with the arm64 variant following the SBSA flavor of CUDA.
 
-| ROS distro | Ubuntu | CUDA | `CMAKE_CUDA_ARCHITECTURES`                          |
+The `universe-*-cuda` stages compile Autoware's CUDA code, so they bake a `CMAKE_CUDA_ARCHITECTURES` value selected per ROS distro. The `base-cuda-*` images only carry the CUDA runtime/dev libraries and do not set this variable.
+
+| ROS distro | Ubuntu | CUDA | `CMAKE_CUDA_ARCHITECTURES` (`universe-*-cuda`)      |
 | ---------- | ------ | ---- | --------------------------------------------------- |
 | jazzy      | 24.04  | 13.0 | `86;87;89;90;110` (includes Thor sm_110)            |
 | humble     | 22.04  | 12.8 | `86;89;90` (sm_110 omitted — Thor needs CUDA 13.0+) |

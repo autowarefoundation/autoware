@@ -57,9 +57,14 @@ function "ctx" {
 //
 // Compute capabilities: 86=Ampere consumer, 87=Orin, 89=Ada, 90=Hopper,
 //                       110=Thor Blackwell (Jetson Thor + DRIVE Thor).
-function "cuda_archs" {
+//
+// Unknown distros resolve to "" on purpose: an empty CMAKE_CUDA_ARCHITECTURES
+// fails the CUDA build loudly rather than silently picking one distro's list.
+function "cuda_architectures" {
   params = [distro]
-  result = distro == "jazzy" ? "86;87;89;90;110" : "86;89;90"
+  result = distro == "jazzy" ? "86;87;89;90;110" : (
+    distro == "humble" ? "86;89;90" : ""
+  )
 }
 
 group "default" {
@@ -206,7 +211,7 @@ target "_universe-cuda-base" {
     BASE_CUDA_RUNTIME_IMAGE = "autoware-base-cuda-runtime"
     BASE_CUDA_DEVEL_IMAGE   = "autoware-base-cuda-devel"
     ROS_DISTRO              = ROS_DISTRO
-    CUDA_ARCHITECTURES      = cuda_archs(ROS_DISTRO)
+    CUDA_ARCHITECTURES      = cuda_architectures(ROS_DISTRO)
   }
 }
 
