@@ -91,7 +91,7 @@
     content: |
       Types: deb
       URIs: http://ppa.launchpad.net/t4-system-software/agnocast/ubuntu
-      Suites: jammy
+      Suites: {{ ansible_distribution_release }}
       Components: main
       Signed-By: /etc/apt/keyrings/agnocast-ppa.gpg
     mode: "0644"
