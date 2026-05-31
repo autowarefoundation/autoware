@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   github-release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Set tag name
         id: set-tag-name
@@ -35,7 +35,7 @@ jobs:
           echo "tag-name=$REF_NAME" >> $GITHUB_OUTPUT
 
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ steps.set-tag-name.outputs.tag-name }}
