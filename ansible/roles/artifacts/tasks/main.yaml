@@ -621,21 +621,21 @@
     mode: "644"
     checksum: sha256:eb30c0c0c8e80b8460d293d600c7b8c9e21f615ff6ce8de5ed01670c3d1057ca
 
-- name: Download diffusion_planner/v5.0/diffusion_planner_turn_singal.onnx
+- name: Download diffusion_planner/v5.0/diffusion_planner_turn_indicator.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v5.0/diffusion_planner_turn_singal.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v5.0/diffusion_planner_turn_singal.onnx"
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v5.0/diffusion_planner_turn_indicator.onnx
+    dest: "{{ data_dir }}/diffusion_planner/v5.0/diffusion_planner_turn_indicator.onnx"
     mode: "644"
-    checksum: sha256:REPLACE_WITH_ACTUAL_CHECKSUM
+    checksum: sha256:07acfb58a5de1f25587fa86deb39a6de5605f8d93518e97f960ee27145f4a732
 
-- name: Download diffusion_planner/v5.0/diffusion_planner.param.yaml
+- name: Download diffusion_planner/v5.0/diffusion_planner.param.json
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v5.0/diffusion_planner.param.yaml
-    dest: "{{ data_dir }}/diffusion_planner/v5.0/diffusion_planner.param.yaml"
+    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v5.0/diffusion_planner.param.json
+    dest: "{{ data_dir }}/diffusion_planner/v5.0/diffusion_planner.param.json"
     mode: "644"
-    checksum: sha256:REPLACE_WITH_ACTUAL_CHECKSUM
+    checksum: sha256:ee3145b68fd1e1e44e532933dfe66cfee4384fbd637382c87ab5190c66a8e268
 
 # tensorrt_vad
 - name: Create tensorrt_vad directory inside {{ data_dir }}
