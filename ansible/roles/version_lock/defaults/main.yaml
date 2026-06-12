@@ -1,0 +1,5 @@
+version_lock_arch_map:
+  x86_64: amd64
+  aarch64: arm64
+# lockfile_path is the published interface-contract variable; renaming would break consumers.
+lockfile_path: "{{ role_path }}/../../vars/locked-versions-{{ rosdistro }}-{{ version_lock_arch_map[ansible_architecture] | default(ansible_architecture) }}.yaml" # noqa: var-naming[no-role-prefix]
