@@ -1,0 +1,49 @@
+associations:
+  - id: assoc-blk-fleet-management-system-to-uc-drive-to-goal
+    type: uml:Association
+    source:
+      id: blk-fleet-management-system
+    target:
+      id: uc-drive-to-goal
+  - id: assoc-blk-fleet-management-system-to-uc-monitor-vehicle
+    type: uml:Association
+    source:
+      id: blk-fleet-management-system
+    target:
+      id: uc-monitor-vehicle
+  - id: assoc-actor-safety-operator-to-uc-drive-to-goal
+    type: uml:Association
+    source:
+      id: actor-safety-operator
+    target:
+      id: uc-drive-to-goal
+  - id: assoc-actor-safety-operator-to-uc-manual-remote-drive
+    type: uml:Association
+    source:
+      id: actor-safety-operator
+    target:
+      id: uc-manual-remote-drive
+  - id: assoc-actor-remote-operator-to-uc-manual-remote-drive
+    type: uml:Association
+    source:
+      id: actor-remote-operator
+    target:
+      id: uc-manual-remote-drive
+  - id: assoc-actor-passenger-to-uc-manage-passengers
+    type: uml:Association
+    source:
+      id: actor-passenger
+    target:
+      id: uc-manage-passengers
+  - id: assoc-blk-vehicle-drive-by-wire-system-to-uc-drive-to-goal
+    type: uml:Association
+    source:
+      id: blk-vehicle-drive-by-wire-system
+    target:
+      id: uc-drive-to-goal
+  - id: assoc-blk-vehicle-drive-by-wire-system-to-uc-monitor-vehicle
+    type: uml:Association
+    source:
+      id: blk-vehicle-drive-by-wire-system
+    target:
+      id: uc-monitor-vehicle

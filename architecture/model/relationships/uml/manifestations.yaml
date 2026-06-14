@@ -1,0 +1,4 @@
+# Klaiv relationship file — manifestations
+# Add entries below. Each entry must have: id, type, source, target.
+
+manifestations: []

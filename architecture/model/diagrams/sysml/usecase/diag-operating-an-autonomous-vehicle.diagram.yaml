@@ -1,0 +1,33 @@
+# Operating an Autonomous Vehicle
+diagram:
+  id: diag-operating-an-autonomous-vehicle
+  name: Operating an Autonomous Vehicle
+  type: sysml:UseCaseDiagram
+  package: pkg-context
+  elements:
+    - elementId: blk-fleet-management-system
+    - elementId: actor-safety-operator
+    - elementId: actor-remote-operator
+    - elementId: actor-passenger
+    - elementId: actor-vehicle-drive-by-wire-system
+    - elementId: blk-vehicle-drive-by-wire-system
+  relationships:
+    - assoc-blk-fleet-management-system-to-uc-drive-to-goal
+    - assoc-blk-fleet-management-system-to-uc-monitor-vehicle
+    - assoc-actor-safety-operator-to-uc-drive-to-goal
+    - assoc-actor-safety-operator-to-uc-manual-remote-drive
+    - assoc-actor-remote-operator-to-uc-manual-remote-drive
+    - assoc-actor-passenger-to-uc-manage-passengers
+    - assoc-blk-vehicle-drive-by-wire-system-to-uc-drive-to-goal
+    - assoc-blk-vehicle-drive-by-wire-system-to-uc-monitor-vehicle
+  subject:
+    elementId: blk-autoware
+    contains:
+      - uc-drive-to-goal
+      - uc-set-route
+      - uc-initialize-pose
+      - uc-engage-autonomous-mode
+      - uc-execute-mrm
+      - uc-monitor-vehicle
+      - uc-manual-remote-drive
+      - uc-manage-passengers

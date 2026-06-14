@@ -1,0 +1,7 @@
+# Tree ordering for Model Explorer
+# Each entry maps an element/package/diagram ID to its sort position among siblings
+# Items without an entry are sorted alphabetically after ordered items
+pkg-context: 1
+blk-autoware: 1
+diag-operating-an-autonomous-vehicle: 2
+blk-fleet-management-system: 3

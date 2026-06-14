@@ -1,0 +1,5 @@
+# Klaiv element file — interfaces
+# Add entries below. Each entry must have: id, name, type.
+# See the bundled UML profile for allowed types and required fields.
+
+interfaces: []

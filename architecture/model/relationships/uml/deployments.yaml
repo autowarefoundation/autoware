@@ -1,0 +1,4 @@
+# Klaiv relationship file — deployments
+# Add entries below. Each entry must have: id, type, source, target.
+
+deployments: []

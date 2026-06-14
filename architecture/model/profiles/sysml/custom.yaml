@@ -1,0 +1,31 @@
+# Klaiv sysml custom profile — project-specific extensions
+# This file extends the built-in sysml profile bundled with Klaiv.
+#
+# ── Add a custom element type ────────────────────────────────────────────────
+# elementTypes:
+#   - id: custom:MicroService
+#     displayName: "Micro Service"
+#     extends: sysml:Component   # inherits fileName from base type
+#     idPrefix: msvc                   # prefix for generated IDs
+#     icon: microservice
+#     color: "#FF6B35"
+#     allowedStereotypes: [stateless, stateful]
+#
+# ── Override built-in type metadata ──────────────────────────────────────────
+# typeOverrides:
+#   - elementTypeId: sysml:Component
+#     idPrefix: component              # override default prefix
+#     displayName: "Service"           # rename in UI
+#     color: "#FF6B35"                 # override default colour
+#
+# ── Add stereotypes to built-in types ────────────────────────────────────────
+# stereotypeExtensions:
+#   - elementTypeId: sysml:Component
+#     stereotypes: [microservice, lambda, container]
+
+version: "1.0"
+name: custom
+
+elementTypes: []
+relationshipTypes: []
+stereotypeExtensions: []

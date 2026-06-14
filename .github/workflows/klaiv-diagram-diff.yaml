@@ -1,0 +1,15 @@
+name: Klaiv Diagram Diff
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths: ['architecture/**.yaml']
+permissions:
+  contents: write        # push rendered SVGs to the previews branch
+  pull-requests: write   # post the diff comment
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: klaiv-dev/diagram-diff-action@v1
+        with:
+          token: ${{ github.token }}

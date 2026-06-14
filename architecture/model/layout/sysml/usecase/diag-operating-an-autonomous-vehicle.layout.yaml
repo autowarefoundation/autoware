@@ -1,0 +1,17 @@
+diagramId: diag-operating-an-autonomous-vehicle
+viewport: {zoom: 0.8160846174888307, panX: 176.67073949120072, panY: 39.180935550542245}
+elements:
+  uc-drive-to-goal: {x: 284, y: 95, width: 119.84581005586591, height: 57.720670391061454}
+  uc-set-route: {x: 145, y: 282, width: 125.82830000000003, height: 58.03850000000001}
+  uc-initialize-pose: {x: 462, y: 452, width: 137.66927374301676, height: 65.51843575418994}
+  uc-engage-autonomous-mode: {x: 339, y: 273, width: 171.0882681564246, height: 92.2536312849162}
+  uc-execute-mrm: {x: 387, y: 522, width: 134.32737430167597, height: 68.86033519553072}
+  uc-monitor-vehicle: {x: 186, y: 198, width: 146.58100558659217, height: 65.51843575418995}
+  uc-manual-remote-drive: {x: 284, y: 381, width: 180, height: 80}
+  uc-manage-passengers: {x: 175, y: 492, width: 180, height: 80}
+  blk-fleet-management-system: {x: -157, y: 107, width: 210, height: 92}
+  actor-safety-operator: {x: 654, y: 344, width: 180, height: 88}
+  actor-remote-operator: {x: -169, y: 359, width: 180, height: 88}
+  actor-passenger: {x: -151, y: 567, width: 180, height: 88}
+  blk-vehicle-drive-by-wire-system: {x: 767, y: 87, width: 180, height: 80}
+  blk-autoware: {x: 100, y: 50, width: 528.1833519553072, height: 629.1429050279328}

@@ -1,0 +1,4 @@
+blocks:
+  - {id: blk-autoware, name: Autoware, type: "sysml:Block", package: pkg-context}
+  - {id: blk-fleet-management-system, name: Fleet Management System, type: "sysml:Block", package: pkg-context, stereotype: externalSystem}
+  - {id: blk-vehicle-drive-by-wire-system, name: Vehicle Drive-by-Wire System, type: "sysml:Block", package: pkg-context, stereotype: system}

@@ -1,0 +1,9 @@
+usecases:
+  - {id: uc-drive-to-goal, name: Drive to goal, type: "uml:UseCase", package: pkg-context}
+  - {id: uc-set-route, name: Set route, type: "uml:UseCase", package: pkg-context}
+  - {id: uc-initialize-pose, name: Initialize pose, type: "uml:UseCase", package: pkg-context}
+  - {id: uc-engage-autonomous-mode, name: Engage Autonomous Mode, type: "uml:UseCase", package: pkg-context}
+  - {id: uc-execute-mrm, name: Execute MRM, type: "uml:UseCase", package: pkg-context, description: MRM = Minimal Risk Maneuver}
+  - {id: uc-monitor-vehicle, name: Monitor vehicle, type: "uml:UseCase", package: pkg-context}
+  - {id: uc-manual-remote-drive, name: Manual/Remote drive, type: "uml:UseCase", package: pkg-context}
+  - {id: uc-manage-passengers, name: Manage passengers, type: "uml:UseCase", package: pkg-context}
