@@ -743,21 +743,53 @@
     mode: "755"
     state: directory
 
-- name: Download ptv3/ptv3.onnx
+- name: Download ptv3/ptv3_backbone.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v2/ptv3.onnx
-    dest: "{{ data_dir }}/ptv3/ptv3.onnx"
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v3/ptv3_backbone.onnx
+    dest: "{{ data_dir }}/ptv3/ptv3_backbone.onnx"
     mode: "644"
-    checksum: sha256:a2c28b9bc4d52ab4847757f69e4ab716128aeafc0024c221eb106dccf2f2495a
+    checksum: sha256:ed780f9be9c499a43c107a77f1e17f4243f0fc350d34a0ffa20940d70b6d987e
 
-- name: Download ptv3/ml_package_ptv3.param.yaml
+- name: Download ptv3/ptv3_det3d_head.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v2/ml_package_ptv3.param.yaml
-    dest: "{{ data_dir }}/ptv3/ml_package_ptv3.param.yaml"
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v3/ptv3_det3d_head.onnx
+    dest: "{{ data_dir }}/ptv3/ptv3_det3d_head.onnx"
     mode: "644"
-    checksum: sha256:ccb620aa8a11528b5b9a9b42c496fd6fe4438fceb8a9fc09c151feedc7bc4fdd
+    checksum: sha256:d3e4fdac1f331ac6d4020d081c1b252262871dd85405ebb211f13e2383f1f2b9
+
+- name: Download ptv3/ptv3_seg3d_head.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v3/ptv3_seg3d_head.onnx
+    dest: "{{ data_dir }}/ptv3/ptv3_seg3d_head.onnx"
+    mode: "644"
+    checksum: sha256:d63f3abf21e7af3fab6e9ed05e850f155b9e896ba47f1cf205a1bdefbe37df03
+
+- name: Download ptv3/ml_package_ptv3_backbone.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v3/ml_package_ptv3_backbone.param.yaml
+    dest: "{{ data_dir }}/ptv3/ml_package_ptv3_backbone.param.yaml"
+    mode: "644"
+    checksum: sha256:60e6bab755461c2bb08a74633e7620593203e108b851b094d0d12649a6affb99
+
+- name: Download ptv3/ml_package_ptv3_det3d_head.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v3/ml_package_ptv3_det3d_head.param.yaml
+    dest: "{{ data_dir }}/ptv3/ml_package_ptv3_det3d_head.param.yaml"
+    mode: "644"
+    checksum: sha256:e358c31b6c64116801585490da94167dfeb95d9068fc5a38a3fc5a920a59d940
+
+- name: Download ptv3/ml_package_ptv3_seg3d_head.param.yaml
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v3/ml_package_ptv3_seg3d_head.param.yaml
+    dest: "{{ data_dir }}/ptv3/ml_package_ptv3_seg3d_head.param.yaml"
+    mode: "644"
+    checksum: sha256:1af41163eb10f9104e693012156b725f34ab0027da9933d4c7b7b35caa163d78
 
 # frnet
 - name: Create lidar_frnet directory inside {{ data_dir }}
