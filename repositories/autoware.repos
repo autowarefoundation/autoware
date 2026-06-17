@@ -121,7 +121,7 @@ repositories:
     version: 03ba094851ec90febfcfc0adb20b64b0e19df7a8
   sensor_component/external/nebula:
     type: git
-    url: https://github.com/tier4/nebula.git
+    url: https://github.com/ub-cavas/nebula.git
     version: v1.1.0
   sensor_component/external/sync_tooling_msgs:
     type: git
