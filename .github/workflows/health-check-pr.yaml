@@ -16,7 +16,7 @@ jobs:
   changed-files:
     runs-on: ubuntu-latest
     outputs:
-      should-run: ${{ steps.check.outputs.any_changed }}
+      should-run: ${{ steps.check.outputs.any_modified }}
     steps:
       - uses: actions/checkout@v6
         with:
