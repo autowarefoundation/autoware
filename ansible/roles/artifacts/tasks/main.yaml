@@ -454,13 +454,13 @@
     mode: "644"
     checksum: sha256:41bb79a23a4ac57956adb8e9cb3904420db1b0cd032e97b670cc4f8b174ae3fe
 
-- name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx
+- name: Download traffic_light_classifier/yaquod end2end traffic_light_classifier_mobilenetv2_batch_6.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_6.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx"
+    url: https://github.com/Yaquod/autoware-yaquod/releases/download/yaquod/end2end.2.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier/end2end (2).onnx"
     mode: "644"
-    checksum: sha256:e4792eed6a46fdbd02be2f3a4f1ce91f36fa77698493caf3102e445178c0f058
+    checksum: sha256:a82ff5f7776dfac973414596a80816272aa928d3e354898fbea39e37d9b6a6c4
 
 - name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_1.onnx
   become: true
@@ -510,13 +510,13 @@
     mode: "644"
     checksum: sha256:b56700551254afa985916d03b74372ebc675f2d9b76ee0e39c46e88c37744a4f
 
-- name: Download traffic_light_classifier/lamp_labels.txt
+- name: Download traffic_light_classifier/yaquod end2end traffic_light_classifier_labels.txt
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/lamp_labels.txt
-    dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels.txt"
+    url: https://github.com/Yaquod/autoware-yaquod/releases/download/yaquod/end2end.2.txt
+    dest: "{{ data_dir }}/traffic_light_classifier/end2end(2).txt"
     mode: "644"
-    checksum: sha256:1a5a49eeec5593963eab8d70f48b8a01bfb07e753e9688eb1510ad26e803579d
+    checksum: sha256:788876b41416eb3035c6968cd4937e3cab1281a2c2ba2d66fba240f919d0b779
 
 - name: Download traffic_light_classifier/lamp_labels_ped.txt
   become: true
