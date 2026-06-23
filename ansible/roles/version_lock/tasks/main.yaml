@@ -4,6 +4,16 @@
     name: locked_packages
   when: use_locked_versions | default(false) | bool
 
+- name: Assert lockfile provides a snapshot date in locked mode
+  ansible.builtin.assert:
+    that:
+      - locked_packages.ros_snapshot_date is defined
+      - locked_packages.ros_snapshot_date | string | length > 0
+    fail_msg: >-
+      Locked mode requires 'ros_snapshot_date' in {{ lockfile_path }}.
+      The lockfile may be an unfilled arm64 template.
+  when: use_locked_versions | default(false) | bool
+
 - name: Create APT version pins
   become: true
   ansible.builtin.template:
