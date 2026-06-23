@@ -3,76 +3,71 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ANSIBLE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 if [[ -z ${ROS_DISTRO:-} ]]; then
     echo "Error: ROS_DISTRO is not set." >&2
     exit 1
 fi
+if [[ -z ${ROS_SNAPSHOT_DATE:-} ]]; then
+    echo "Error: ROS_SNAPSHOT_DATE is not set (e.g. 2026-04-13)." >&2
+    exit 1
+fi
 ARCH=$(dpkg --print-architecture)
-
 OUTPUT_FILE="${ANSIBLE_DIR}/vars/locked-versions-${ROS_DISTRO}-${ARCH}.yaml"
 
 main() {
     echo "Generating Ansible lockfile: $OUTPUT_FILE"
-
     if [[ ! -f $OUTPUT_FILE ]]; then
         echo "Error: Lockfile not found: $OUTPUT_FILE" >&2
-        echo "Create the lockfile with package names first, then run this script to fill in versions." >&2
+        echo "Create it with apt_pins package names first, then run this script." >&2
         exit 1
     fi
 
-    # Read package names from existing lockfile
+    # apt_pins package names come from the existing lockfile (no hardcoded list).
+    # cspell:ignore isinstance safeload
     local packages
-    # cspell:ignore isinstance
-    if ! packages=$(python3 -c "
+    packages=$(python3 -c "
 import yaml, sys
-with open('$OUTPUT_FILE') as f:
-    data = yaml.safe_load(f)
-if not isinstance(data, dict):
-    sys.stderr.write('Error: Lockfile content must be a YAML mapping (dict).\n')
-    sys.exit(1)
-for pkg in sorted(data):
+data = yaml.safe_load(open('$OUTPUT_FILE')) or {}
+pins = data.get('apt_pins') or {}
+if not isinstance(pins, dict):
+    sys.exit('Error: apt_pins must be a mapping')
+for pkg in sorted(pins):
     print(pkg)
-"); then
-        echo "Error: Failed to read package list from lockfile: $OUTPUT_FILE" >&2
-        exit 1
-    fi
+")
 
-    # Resolve all versions first, fail if any package is missing
+    # pip/pipx-managed packages (resolved separately below)
+    local pip_pkgs=("gdown")
+
     declare -A versions
     local has_error=false
 
-    # pip/pipx-managed packages (included in the same lockfile)
-    local pip_pkgs=("gdown")
-
-    # APT packages (pip/pipx-managed packages are resolved separately below)
     for pkg in $packages; do
         local is_pip=false
         for pip_pkg in "${pip_pkgs[@]}"; do
-            if [[ $pkg == "$pip_pkg" ]]; then
-                is_pip=true
-                break
-            fi
+            [[ $pkg == "$pip_pkg" ]] && is_pip=true && break
         done
-        if [[ $is_pip == "true" ]]; then
-            continue
-        fi
+        $is_pip && continue
+
         local ver
         ver=$(dpkg-query -W -f='${Version}' "$pkg" 2>/dev/null) || true
         if [[ -z $ver ]]; then
             echo "Error: APT package '$pkg' is not installed." >&2
             has_error=true
-        else
-            versions[$pkg]=$ver
+            continue
+        fi
+        versions[$pkg]=$ver
+
+        # Origin check: an apt_pins package served by ros.org should be snapshot-covered, not pinned.
+        if apt-cache policy "$pkg" 2>/dev/null | grep -q 'ros.org'; then
+            echo "Warning: '$pkg' resolves from a ros.org source; consider removing it from apt_pins (snapshot covers it)." >&2
         fi
     done
 
     for pkg in "${pip_pkgs[@]}"; do
         local ver
-        ver=$(pip3 show "$pkg" 2>/dev/null | grep '^Version:' | awk '{print $2}' || true)
-        if [[ -z $ver ]]; then
-            # Fall back to pipx-managed installations (e.g. the gdown role installs via pipx).
-            ver=$(pipx runpip "$pkg" show "$pkg" 2>/dev/null | grep '^Version:' | awk '{print $2}' || true)
-        fi
+        ver=$(pip3 show "$pkg" 2>/dev/null | awk '/^Version:/{print $2}' || true)
+        [[ -z $ver ]] && ver=$(pipx runpip "$pkg" show "$pkg" 2>/dev/null | awk '/^Version:/{print $2}' || true)
         if [[ -z $ver ]]; then
             echo "Error: pip package '$pkg' is not installed (checked pip3 and pipx)." >&2
             has_error=true
@@ -81,28 +76,39 @@ for pkg in sorted(data):
         fi
     done
 
-    if [[ $has_error == "true" ]]; then
-        exit 1
-    fi
+    $has_error && exit 1
 
-    # Write lockfile only after all versions are resolved
+    # Preserve any existing ros_overrides block verbatim.
+    local overrides
+    overrides=$(python3 -c "
+import yaml
+data = yaml.safe_load(open('$OUTPUT_FILE')) or {}
+ov = data.get('ros_overrides') or {}
+if ov:
+    print(yaml.safe_dump({'ros_overrides': ov}, default_flow_style=False).rstrip())
+else:
+    print('ros_overrides: {}')
+")
+
     {
         cat <<HEADER
 # Dependency Version Lockfile
-# cspell:ignore Iseconds
-# Generated: $(date -Iseconds)
 # ROS Distro: ${ROS_DISTRO}
 # Platform: ${ARCH}
 # Ubuntu: $(lsb_release -rs) ($(lsb_release -cs))
-
+#
+# ros_snapshot_date freezes the entire ROS closure via snapshots.ros.org.
+ros_snapshot_date: "${ROS_SNAPSHOT_DATE}"
+apt_pins:
 HEADER
-
         for pkg in $packages; do
-            echo "${pkg}: ${versions[$pkg]}"
+            echo "  ${pkg}: ${versions[$pkg]}"
         done
+        echo "$overrides"
     } >"$OUTPUT_FILE"
 
     echo "Generated: $OUTPUT_FILE"
+    "${SCRIPT_DIR}/validate_lockfiles.sh" "$OUTPUT_FILE"
 }
 
 main "$@"

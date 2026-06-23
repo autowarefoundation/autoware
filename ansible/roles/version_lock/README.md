@@ -27,8 +27,10 @@ ansible-playbook autoware.dev_env.install_dev_env --extra-vars "use_locked_versi
 On a machine already provisioned by `install_dev_env`, run:
 
 ```bash
-ROS_DISTRO=<distro> ./ansible/scripts/generate_ansible_lockfile.sh
+ROS_DISTRO=<distro> ROS_SNAPSHOT_DATE=<YYYY-MM-DD> ./ansible/scripts/generate_ansible_lockfile.sh
 ```
+
+`ROS_SNAPSHOT_DATE` must match the snapshot the machine was provisioned from.
 
 The script reads the package names from the existing lockfile for the current distro/architecture and fills in the versions currently installed on the machine.
 
