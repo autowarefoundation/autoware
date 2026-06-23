@@ -12,19 +12,25 @@ validate_lockfile() {
         return 1
     fi
 
-    # YAML syntax check and ensure it's a flat dict
-    # cspell:ignore isinstance
+    # cspell:ignore isinstance fullmatch
     if ! python3 -c "
-import yaml, sys
+import re, sys, yaml
 with open('$lockfile') as f:
     data = yaml.safe_load(f)
 if not isinstance(data, dict):
-    print('Error: Lockfile must be a YAML dict', file=sys.stderr)
-    sys.exit(1)
-for key, val in data.items():
-    if isinstance(val, dict):
-        print(f'Error: Nested dict found at key \"{key}\"', file=sys.stderr)
-        sys.exit(1)
+    sys.exit('Error: Lockfile must be a YAML mapping (dict)')
+date = data.get('ros_snapshot_date')
+if not isinstance(date, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}', date):
+    sys.exit('Error: ros_snapshot_date must be a YYYY-MM-DD string')
+for key in ('apt_pins', 'ros_overrides'):
+    section = data.get(key, {})
+    if section is None:
+        section = {}
+    if not isinstance(section, dict):
+        sys.exit(f'Error: {key} must be a mapping')
+    for pkg, ver in section.items():
+        if ver is not None and not isinstance(ver, (str, int, float)):
+            sys.exit(f'Error: {key}[{pkg}] must be a scalar version')
 "; then
         echo "Error: Invalid lockfile format in $lockfile" >&2
         return 1
@@ -37,8 +43,13 @@ for key, val in data.items():
 main() {
     local exit_code=0
     local found=false
+    local files=("$@")
 
-    for lockfile in "${ANSIBLE_DIR}"/vars/locked-versions-*.yaml; do
+    if [[ ${#files[@]} -eq 0 ]]; then
+        files=("${ANSIBLE_DIR}"/vars/locked-versions-*.yaml)
+    fi
+
+    for lockfile in "${files[@]}"; do
         if [[ -f $lockfile ]]; then
             found=true
             if ! validate_lockfile "$lockfile"; then
@@ -48,7 +59,7 @@ main() {
     done
 
     if [[ $found == "false" ]]; then
-        echo "Error: No lock files found in ${ANSIBLE_DIR}/vars/" >&2
+        echo "Error: No lock files found" >&2
         exit 1
     fi
 

@@ -1,8 +1,12 @@
-{% for pkg, ver in locked_packages.items() %}
-{% if ver is not none and ver|string %}
+{# Rendered to /etc/apt/preferences.d/autoware-lock in locked mode. #}
+{# ROS packages are frozen by the dated snapshot (see the ros2 role), not pinned here. #}
+{% for section in [locked_packages.apt_pins, locked_packages.ros_overrides] %}
+{% for pkg, ver in (section | default({})).items() %}
+{% if ver is not none and ver | string %}
 Package: {{ pkg }}
 Pin: version {{ ver }}
 Pin-Priority: 1001
 
 {% endif %}
+{% endfor %}
 {% endfor %}

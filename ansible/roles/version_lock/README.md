@@ -38,13 +38,25 @@ The script reads the package names from the existing lockfile for the current di
 ./ansible/scripts/validate_lockfiles.sh
 ```
 
-This checks that every `ansible/vars/locked-versions-*.yaml` file is valid YAML and a flat dictionary.
+This checks that every `ansible/vars/locked-versions-*.yaml` file is valid YAML with a `ros_snapshot_date` and `apt_pins`/`ros_overrides` mappings.
 
 ## Lockfile format
 
-A flat YAML dictionary mapping `package: version`, sorted alphabetically by package name:
+A YAML mapping with three keys, one file per distro/arch
+(`ansible/vars/locked-versions-<rosdistro>-<arch>.yaml`):
 
 ```yaml
-ccache: 4.5.1-1
-python3-pip: 22.0.2+dfsg-1ubuntu0.4
+ros_snapshot_date: "2026-04-13" # a real published date under snapshots.ros.org/<distro>/
+apt_pins: # Ubuntu-archive + pip/pipx origin only, sorted by name
+  ccache: 4.9.1-1
+  git-lfs: 3.4.1-1ubuntu0.4
+ros_overrides: {} # exception pins for individual ROS packages; normally empty
 ```
+
+- `ros_snapshot_date` drives the dated `snapshots.ros.org` source configured by the `ros2` role
+  in locked mode, which freezes the **entire** ROS dependency closure to that date.
+- `apt_pins` and `ros_overrides` are rendered into `/etc/apt/preferences.d/autoware-lock`
+  with `Pin-Priority: 1001`.
+- ROS-repo packages (`ros-*`, `python3-colcon-*`, `python3-rosdep`, `python3-vcs2l`,
+  `python3-bloom`) are **not** listed: the snapshot date freezes them. To move a single ROS
+  package ahead of the snapshot, add a one-line entry under `ros_overrides`.
