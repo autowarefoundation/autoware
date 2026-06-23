@@ -67,3 +67,34 @@ ros_overrides: {} # exception pins for individual ROS packages; normally empty
 - ROS-repo packages (`ros-*`, `python3-colcon-*`, `python3-rosdep`, `python3-vcs2l`,
   `python3-bloom`) are **not** listed in `apt_pins`: the snapshot date freezes them. To move a
   single ROS package ahead of the snapshot, add a one-line entry under `ros_overrides`.
+
+### Overriding a single ROS package
+
+`ros_overrides` is normally `{}` — the `ros_snapshot_date` freezes the whole ROS closure, so no
+per-package ROS pins are needed. Use it only to move **one** ROS package ahead of the snapshot
+(for example, to pick up a security or bug fix) without advancing `ros_snapshot_date` for everything
+else. Each entry is `package: version`, where `version` is the exact APT version string:
+
+```yaml
+ros_snapshot_date: "2026-04-13"
+apt_pins:
+  ccache: 4.9.1-1
+pip_pins:
+  gdown: 6.1.0
+ros_overrides:
+  ros-jazzy-rmw-cyclonedds-cpp: 2.2.4-1noble.20260520.083000
+```
+
+The override above is rendered into `/etc/apt/preferences.d/autoware-lock` exactly like an `apt_pins`
+entry:
+
+```text
+Package: ros-jazzy-rmw-cyclonedds-cpp
+Pin: version 2.2.4-1noble.20260520.083000
+Pin-Priority: 1001
+```
+
+The pinned version must be reachable from a configured APT source. The frozen snapshot only serves
+its own date's builds, so an override to a **newer** build usually means pointing `ros_snapshot_date`
+at a later snapshot that contains it (or adding a secondary source for that one package). Keep the
+override list as small as possible and drop entries once the snapshot date catches up.
