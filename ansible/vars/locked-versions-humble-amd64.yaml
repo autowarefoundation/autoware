@@ -1,35 +1,29 @@
 # Dependency Version Lockfile
-# cspell:ignore Iseconds
-# Generated: 2026-06-13T01:33:32+00:00
 # ROS Distro: humble
 # Platform: amd64
 # Ubuntu: 22.04 (jammy)
-
-ccache: 4.5.1-1
-gdown: 6.1.0
-geographiclib-tools: 1.52-1
-git-lfs: 3.0.2-1ubuntu0.3
-golang: 2:1.18~0ubuntu2
-pipx: 1.0.0-1
-python3-bloom: 0.14.3+upstream-1
-python3-colcon-common-extensions: 0.3.0-100
-python3-colcon-mixin: 0.2.3-100
-python3-flake8-blind-except: 0.2.0-2
-python3-flake8-builtins: 1.5.3-3
-python3-flake8-class-newline: 1.6.0-2
-python3-flake8-comprehensions: 3.8.0-1
-python3-flake8-deprecated: 1.3-3
-python3-flake8-docstrings: 1.6.0-1
-python3-flake8-import-order: 0.18.1-2
-python3-flake8-quotes: 3.3.1-2
-python3-pip: 22.0.2+dfsg-1ubuntu0.7
-python3-pytest-cov: 3.0.0-1
-python3-pytest-repeat: 0.9.1-2
-python3-pytest-rerunfailures: 10.2-1
-python3-rosdep: 0.26.0-1
-python3-vcs2l: 1.1.7-1
-ros-build-essential: 1.0.1
-ros-humble-desktop: 0.10.0-1jammy.20260423.142311
-ros-humble-plotjuggler: 3.15.0-1jammy.20260421.073046
-ros-humble-rmw-cyclonedds-cpp: 1.3.4-1jammy.20260414.141106
-wget: 1.21.2-2ubuntu1.1
+#
+# ros_snapshot_date freezes the entire ROS closure via snapshots.ros.org.
+# apt_pins are finalized by ansible/scripts/generate_ansible_lockfile.sh.
+ros_snapshot_date: "2026-05-14"
+apt_pins:
+  ccache: 4.5.1-1
+  gdown: 6.1.0
+  geographiclib-tools: 1.52-1
+  git-lfs: 3.0.2-1ubuntu0.3
+  golang: 2:1.18~0ubuntu2
+  pipx: 1.0.0-1
+  python3-flake8-blind-except: 0.2.0-2
+  python3-flake8-builtins: 1.5.3-3
+  python3-flake8-class-newline: 1.6.0-2
+  python3-flake8-comprehensions: 3.8.0-1
+  python3-flake8-deprecated: 1.3-3
+  python3-flake8-docstrings: 1.6.0-1
+  python3-flake8-import-order: 0.18.1-2
+  python3-flake8-quotes: 3.3.1-2
+  python3-pip: 22.0.2+dfsg-1ubuntu0.7
+  python3-pytest-cov: 3.0.0-1
+  python3-pytest-repeat: 0.9.1-2
+  python3-pytest-rerunfailures: 10.2-1
+  wget: 1.21.2-2ubuntu1.1
+ros_overrides: {}
