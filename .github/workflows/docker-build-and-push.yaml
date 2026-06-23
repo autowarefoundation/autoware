@@ -16,7 +16,7 @@ jobs:
   changed-files:
     runs-on: ubuntu-24.04
     outputs:
-      should-build: ${{ steps.check.outputs.any_changed == 'true' || steps.last-success.outputs.sha == '' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_type == 'tag') }}
+      should-build: ${{ steps.check.outputs.any_modified == 'true' || steps.last-success.outputs.sha == '' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_type == 'tag') }}
     steps:
       - uses: actions/checkout@v6
         with:
