@@ -25,8 +25,7 @@ main() {
 
     # apt_pins package names come from the existing lockfile (no hardcoded list).
     # cspell:ignore isinstance safeload
-    local packages
-    packages=$(python3 -c "
+    mapfile -t apt_packages < <(python3 -c "
 import yaml, sys
 data = yaml.safe_load(open('$OUTPUT_FILE')) or {}
 pins = data.get('apt_pins') or {}
@@ -36,19 +35,22 @@ for pkg in sorted(pins):
     print(pkg)
 ")
 
-    # pip/pipx-managed packages (resolved separately below)
-    local pip_pkgs=("gdown")
+    # pip_pins package names come from the existing lockfile (no hardcoded list).
+    mapfile -t pip_packages < <(python3 -c "
+import yaml, sys
+data = yaml.safe_load(open('$OUTPUT_FILE')) or {}
+pins = data.get('pip_pins') or {}
+if not isinstance(pins, dict):
+    sys.exit('Error: pip_pins must be a mapping')
+for pkg in sorted(pins):
+    print(pkg)
+")
 
-    declare -A versions
+    declare -A apt_versions
+    declare -A pip_versions
     local has_error=false
 
-    for pkg in $packages; do
-        local is_pip=false
-        for pip_pkg in "${pip_pkgs[@]}"; do
-            [[ $pkg == "$pip_pkg" ]] && is_pip=true && break
-        done
-        $is_pip && continue
-
+    for pkg in "${apt_packages[@]}"; do
         local ver
         ver=$(dpkg-query -W -f='${Version}' "$pkg" 2>/dev/null) || true
         if [[ -z $ver ]]; then
@@ -56,7 +58,7 @@ for pkg in sorted(pins):
             has_error=true
             continue
         fi
-        versions[$pkg]=$ver
+        apt_versions[$pkg]=$ver
 
         # Origin check: an apt_pins package served by ros.org should be snapshot-covered, not pinned.
         if apt-cache policy "$pkg" 2>/dev/null | grep -q 'ros.org'; then
@@ -64,7 +66,7 @@ for pkg in sorted(pins):
         fi
     done
 
-    for pkg in "${pip_pkgs[@]}"; do
+    for pkg in "${pip_packages[@]}"; do
         local ver
         ver=$(pip3 show "$pkg" 2>/dev/null | awk '/^Version:/{print $2}' || true)
         [[ -z $ver ]] && ver=$(pipx runpip "$pkg" show "$pkg" 2>/dev/null | awk '/^Version:/{print $2}' || true)
@@ -72,7 +74,7 @@ for pkg in sorted(pins):
             echo "Error: pip package '$pkg' is not installed (checked pip3 and pipx)." >&2
             has_error=true
         else
-            versions[$pkg]=$ver
+            pip_versions[$pkg]=$ver
         fi
     done
 
@@ -101,9 +103,17 @@ else:
 ros_snapshot_date: "${ROS_SNAPSHOT_DATE}"
 apt_pins:
 HEADER
-        for pkg in $packages; do
-            echo "  ${pkg}: ${versions[$pkg]}"
+        for pkg in "${apt_packages[@]}"; do
+            echo "  ${pkg}: ${apt_versions[$pkg]}"
         done
+        if [[ ${#pip_packages[@]} -eq 0 ]]; then
+            echo "pip_pins: {}"
+        else
+            echo "pip_pins:"
+            for pkg in "${pip_packages[@]}"; do
+                echo "  ${pkg}: ${pip_versions[$pkg]}"
+            done
+        fi
         echo "$overrides"
     } >"$OUTPUT_FILE"
 

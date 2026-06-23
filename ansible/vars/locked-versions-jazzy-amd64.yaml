@@ -8,7 +8,6 @@
 ros_snapshot_date: "2026-04-13"
 apt_pins:
   ccache: 4.9.1-1
-  gdown: 6.1.0
   geographiclib-tools: 2.3-1build1
   git-lfs: 3.4.1-1ubuntu0.4
   golang: 2:1.22~2build1
@@ -26,4 +25,6 @@ apt_pins:
   python3-pytest-repeat: 0.9.3-1
   python3-pytest-rerunfailures: 12.0-1
   wget: 1.21.4-1ubuntu4.1
+pip_pins:
+  gdown: 6.1.0
 ros_overrides: {}

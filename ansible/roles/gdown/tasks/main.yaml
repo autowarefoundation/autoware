@@ -8,5 +8,5 @@
 
 - name: Install gdown to download files from CMakeLists.txt
   community.general.pipx:
-    name: "{{ 'gdown==' ~ locked_packages['gdown'] if use_locked_versions | default(false) | bool else 'gdown' }}"
+    name: "{{ 'gdown==' ~ locked_packages.pip_pins.gdown if use_locked_versions | default(false) | bool else 'gdown' }}"
     executable: /usr/bin/pipx

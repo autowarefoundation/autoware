@@ -40,25 +40,30 @@ The script reads the package names from the existing lockfile for the current di
 ./ansible/scripts/validate_lockfiles.sh
 ```
 
-This checks that every `ansible/vars/locked-versions-*.yaml` file is valid YAML with a `ros_snapshot_date` and `apt_pins`/`ros_overrides` mappings.
+This checks that every `ansible/vars/locked-versions-*.yaml` file is valid YAML with a `ros_snapshot_date` and `apt_pins`/`pip_pins`/`ros_overrides` mappings.
 
 ## Lockfile format
 
-A YAML mapping with three keys, one file per distro/arch
+A YAML mapping with four keys, one file per distro/arch
 (`ansible/vars/locked-versions-<rosdistro>-<arch>.yaml`):
 
 ```yaml
 ros_snapshot_date: "2026-04-13" # a real published date under snapshots.ros.org/<distro>/
-apt_pins: # Ubuntu-archive + pip/pipx origin only, sorted by name
+apt_pins: # Ubuntu-archive origin only, sorted by name; rendered as APT pins
   ccache: 4.9.1-1
   git-lfs: 3.4.1-1ubuntu0.4
+pip_pins: # pip/pipx origin; consumed by roles (e.g. gdown), NOT rendered as APT pins
+  gdown: 6.1.0
 ros_overrides: {} # exception pins for individual ROS packages; normally empty
 ```
 
 - `ros_snapshot_date` drives the dated `snapshots.ros.org` source configured by the `ros2` role
   in locked mode, which freezes the **entire** ROS dependency closure to that date.
-- `apt_pins` and `ros_overrides` are rendered into `/etc/apt/preferences.d/autoware-lock`
+- `apt_pins` covers Ubuntu-archive packages. It is rendered into `/etc/apt/preferences.d/autoware-lock`
   with `Pin-Priority: 1001`.
+- `pip_pins` covers pip/pipx-managed packages (e.g. `gdown`). It is consumed directly by the
+  relevant roles and is **not** rendered as APT pins.
+- `ros_overrides` is rendered into `/etc/apt/preferences.d/autoware-lock` with `Pin-Priority: 1001`.
 - ROS-repo packages (`ros-*`, `python3-colcon-*`, `python3-rosdep`, `python3-vcs2l`,
-  `python3-bloom`) are **not** listed: the snapshot date freezes them. To move a single ROS
-  package ahead of the snapshot, add a one-line entry under `ros_overrides`.
+  `python3-bloom`) are **not** listed in `apt_pins`: the snapshot date freezes them. To move a
+  single ROS package ahead of the snapshot, add a one-line entry under `ros_overrides`.

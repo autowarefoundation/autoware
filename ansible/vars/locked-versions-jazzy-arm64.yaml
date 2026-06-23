@@ -7,7 +7,6 @@
 ros_snapshot_date: ""
 apt_pins:
   ccache:
-  gdown:
   geographiclib-tools:
   git-lfs:
   golang:
@@ -25,4 +24,6 @@ apt_pins:
   python3-pytest-repeat:
   python3-pytest-rerunfailures:
   wget:
+pip_pins:
+  gdown:
 ros_overrides: {}

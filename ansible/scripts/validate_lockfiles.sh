@@ -22,7 +22,7 @@ if not isinstance(data, dict):
 date = data.get('ros_snapshot_date')
 if not isinstance(date, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}', date):
     sys.exit('Error: ros_snapshot_date must be a YYYY-MM-DD string')
-for key in ('apt_pins', 'ros_overrides'):
+for key in ('apt_pins', 'pip_pins', 'ros_overrides'):
     section = data.get(key, {})
     if section is None:
         section = {}
@@ -59,7 +59,7 @@ main() {
     done
 
     if [[ $found == "false" ]]; then
-        echo "Error: No lock files found" >&2
+        echo "Error: No lock files found in ${ANSIBLE_DIR}/vars/" >&2
         exit 1
     fi
 
