@@ -1,0 +1,34 @@
+name: cleanup-autoware-buildcache
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete all autoware-buildcache package versions
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OWNER: ${{ github.repository_owner }}
+          PACKAGE: autoware-buildcache
+        run: |
+          for page in $(seq 1 20); do
+            versions=$(curl -fsSL \
+              "https://api.github.com/users/${OWNER}/packages/container/${PACKAGE}/versions?per_page=100&page=${page}" \
+              -H "Authorization: token ${GITHUB_TOKEN}" \
+              | jq -r '.[].id')
+
+            if [ -z "$versions" ]; then
+              echo "No more versions found."
+              break
+            fi
+
+            for id in $versions; do
+              echo "Deleting version ${id}"
+              curl -X DELETE \
+                -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/users/${OWNER}/packages/container/${PACKAGE}/versions/${id}" || true
+            done
+          done

@@ -1,3 +1,6 @@
+# DEPRECATED: no known callers; scheduled for removal.
+# Scheduled for removal on 2026-05-24. See https://github.com/autowarefoundation/autoware/issues/7052.
+
 - name: Set up Telegraf and InfluxDB v2
   hosts: localhost
   roles:

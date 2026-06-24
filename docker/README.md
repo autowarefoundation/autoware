@@ -1,236 +1,219 @@
-# Open AD Kit: containerized workloads for Autoware
+# Run Autoware in Docker
 
-[Open AD Kit](https://autoware.org/open-ad-kit/) offers containers for Autoware to simplify the development and deployment of Autoware and its dependencies. This directory contains scripts to build and run the containers.
+<!-- cspell:ignore libcuda libcudart ctypes CDLL byref prereq tegrastats NVDEC NVENC -->
 
-Detailed instructions on how to use the containers can be found in the [Open AD Kit documentation](https://autowarefoundation.github.io/autoware-documentation/main/installation/autoware/docker-installation/).
+## Image Graph
 
-## Development containers
-
-When using Open AD Kit as a development container, it is easy to use Autoware's all-in-one development container image, `ghcr.io/autowarefoundation/autoware:universe-devel-cuda`.
-If you do not need the CUDA drivers, you can also use the smaller image `ghcr.io/autowarefoundation/autoware:universe-devel`.
-
-```shell
-$ git clone git@github.com:autowarefoundation/autoware.git
-$ cd autoware
-$ vcs import src < repositories/autoware.repos
-$ docker run -it --rm \
-  –v $PWD/src/universe/autoware_universe/XXX/autoware_YYY:/autoware/src/autoware_YYY \
-  ghcr.io/autowarefoundation/autoware:universe-devel-cuda
-$ colcon build --mixin debug compile-commands
-$ source install/setup.bash
-$ ros2 run --prefix "gdb -ex run --args" autoware_YYY ZZZ
+```mermaid
+graph TB
+    base(["base"]) --> core-dependencies(["core-dependencies"]) & core(["core"]) & base-cuda-runtime(["base-cuda-runtime"])
+    core-dependencies --> core-devel(["core-devel"])
+    core-devel --> universe-dependencies(["universe-dependencies"])
+    universe-dependencies --> universe-devel(["universe-devel"])
+    universe-dependencies-cuda(["universe-dependencies-cuda"]) --> universe-devel-cuda(["universe-devel-cuda"])
+    core-devel -- " COPY /opt/autoware " --> core
+    core --> universe(["universe"])
+    universe-devel -- " COPY /opt/autoware " --> universe
+    universe-devel-cuda -- " COPY /opt/autoware " --> universe-cuda(["universe-cuda"])
+    core-devel -- " COPY /opt/autoware " --> universe-dependencies-cuda
+    base-cuda-devel(["base-cuda-devel"]) --> universe-dependencies-cuda
+    base-cuda-runtime --> universe-cuda & base-cuda-devel
+    classDef base fill: #e8e8e8, color: #333
+    classDef devel fill: #bbdefb, color: #333
+    classDef runtime fill: #c8e6c9, color: #333
+    classDef cuda fill: #e1bee7, color: #333
+    class base,base-cuda-runtime,base-cuda-devel base
+    class core-dependencies,core-devel,universe-dependencies,universe-devel devel
+    class core,universe runtime
+    class universe-dependencies-cuda,universe-devel-cuda,universe-cuda cuda
 ```
 
-For example, if you want to make modifications to [`autoware_universe/perception/autoware_bytetrack`](https://github.com/autowarefoundation/autoware_universe/tree/main/perception/autoware_bytetrack), you can execute the following commands to perform the volume mount and debug build and execution of only the `autoware_bytetrack`.
+## Images
 
-Note that `gdb` is not currently installed in the development containers, but it would be installed in the near future.
+| Image                        | Description                                                                           | Use case                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `base`                       | ROS base, sudo, pipx, ansible, RMW, user `aw`                                         | Foundation for all other images                            |
+| `core-dependencies`          | Build deps + compiled core packages (except autoware_core and autoware_rviz_plugins)  | CI for autoware_core                                       |
+| `core-devel`                 | Adds autoware_core build on top of core-dependencies                                  | Development and CI for packages depending on autoware_core |
+| `core`                       | Runtime-only: rosdep exec deps + compiled core from core-devel                        | Lightweight core runtime                                   |
+| `base-cuda-runtime`          | `base` + CUDA/cuDNN/TensorRT runtime libs (no `-dev` packages)                        | Runtime foundation for `universe-cuda`                     |
+| `base-cuda-devel`            | `base-cuda-runtime` + CUDA/cuDNN/TensorRT dev headers                                 | Build foundation for CUDA universe packages                |
+| `universe-dependencies`      | Acados + rosdep build deps for all of autoware (non-CUDA path)                        | CI for autoware_universe                                   |
+| `universe-dependencies-cuda` | Core ansible roles + acados + rosdep build deps, inherits CUDA from `base-cuda-devel` | CI for CUDA-dependent packages                             |
+| `universe-devel`             | Builds all universe sources (no CUDA)                                                 | Development without GPU                                    |
+| `universe-devel-cuda`        | Builds all universe sources with CUDA                                                 | Development with GPU                                       |
+| `universe`                   | Runtime image with compiled autoware (no CUDA)                                        | Deployment without GPU                                     |
+| `universe-cuda`              | Runtime image with compiled autoware, inherits CUDA runtime from `base-cuda-runtime`  | Deployment with GPU                                        |
 
-```shell
-$ docker run -it --rm \
-  -v $PWD/src/universe/autoware_universe/perception/autoware_bytetrack:/autoware/src/autoware_bytetrack \
-  ghcr.io/autowarefoundation/autoware:universe-devel-cuda
-$ root@a566e785c4d2:/autoware# colcon build --mixin debug compile-commands
-Starting >>> autoware_bytetrack
-[Processing: autoware_bytetrack]
-Finished <<< autoware_bytetrack [37.9s]
+## Pull from GHCR
 
-Summary: 1 package finished [38.1s]
-$ root@a566e785c4d2:/autoware# source install/setup.bash
-$ root@a566e785c4d2:/autoware# apt update && apt install gdb
-$ root@a566e785c4d2:/autoware# ros2 run --prefix "gdb -ex run --args" autoware_bytetrack bytetrack_node_exe
-GNU gdb (Ubuntu 12.1-0ubuntu1~22.04.2) 12.1
-...
-[Thread debugging using libthread_db enabled]
-...
-[New Thread 0x7ff6f3fff640 (LWP 1205)]
-Init ByteTrack!
+Pre-built multi-arch images (amd64 + arm64) are available on GHCR:
+
+```bash
+# Pull a specific image
+docker pull ghcr.io/autowarefoundation/autoware:base-jazzy
+docker pull ghcr.io/autowarefoundation/autoware:base-humble
+
+# Pull a dated version (for pinning)
+docker pull ghcr.io/autowarefoundation/autoware:base-jazzy-20260407
+
+# Pull a release version
+docker pull ghcr.io/autowarefoundation/autoware:base-jazzy-1.2.3
 ```
 
-## Runtime containers
+Tag pattern: `<stage>-<ros_distro>[-<date>|-<version>]`
 
-In the execution container, there is the all-in-one runtime container for Autoware, `ghcr.io/autowarefoundation/autoware:universe-cuda`, and the multi-containerized `ghcr.io/autowarefoundation/autoware:universe-***-cuda` for each component of Autoware Universe.
+Available images (replace `jazzy` with `humble` for other distros):
 
-The all-in-one execution container also has the autoware_launch package installed, allowing it to be started in the same way as a locally built Autoware.
+| Tag                                | Description                                       |
+| ---------------------------------- | ------------------------------------------------- |
+| `base-jazzy`                       | ROS base + ansible + user aw                      |
+| `core-dependencies-jazzy`          | Build deps + core packages (except autoware_core) |
+| `core-devel-jazzy`                 | Full core development image                       |
+| `core-jazzy`                       | Lightweight core runtime                          |
+| `base-cuda-runtime-jazzy`          | base + CUDA/cuDNN/TensorRT runtime                |
+| `base-cuda-devel-jazzy`            | base-cuda-runtime + CUDA/cuDNN/TensorRT dev       |
+| `universe-dependencies-jazzy`      | Universe build dependencies (no CUDA)             |
+| `universe-dependencies-cuda-jazzy` | Universe build deps on base-cuda-devel            |
+| `universe-devel-jazzy`             | Full universe development (no CUDA)               |
+| `universe-devel-cuda-jazzy`        | Full universe development with CUDA               |
+| `universe-jazzy`                   | Runtime without GPU                               |
+| `universe-cuda-jazzy`              | Runtime with GPU                                  |
 
-```shell
-git clone git@github.com:autowarefoundation/autoware.git
-cd autoware
-docker run -it --rm ghcr.io/autowarefoundation/autoware:universe-cuda
-ros2 launch autoware_launch planning_simulator.launch.xml map_path:=...
+## Build locally
+
+From the repository root. Targets beyond `base` require source repositories under `src/`:
+
+```bash
+# Clone source repositories (needed for core and universe targets)
+vcs import src < repositories/autoware.repos
+
+# Build all default targets (universe + universe-cuda)
+docker buildx bake -f docker/docker-bake.hcl
+
+# Build a specific target (dependencies are resolved automatically)
+docker buildx bake -f docker/docker-bake.hcl base
+docker buildx bake -f docker/docker-bake.hcl core-devel
+docker buildx bake -f docker/docker-bake.hcl universe
+docker buildx bake -f docker/docker-bake.hcl universe-cuda
+
+# Build for humble
+ROS_DISTRO=humble docker buildx bake -f docker/docker-bake.hcl base
 ```
 
-For example, if you want to run the runtime container that only includes the `sensing/perception` components, you can execute it as follows.
+## Usage
 
-```shell
-docker run -it --rm ghcr.io/autowarefoundation/autoware:universe-sensing-perception-cuda
-ros2 launch autoware_pointcloud_preprocessor preprocessor.launch.xml
+```bash
+xhost +local:docker
+
+docker run --rm -it \
+  --net host \
+  --privileged \
+  --gpus all \
+  -e DISPLAY=$DISPLAY \
+  -e NVIDIA_DRIVER_CAPABILITIES=all \
+  -e NVIDIA_VISIBLE_DEVICES=all \
+  -e HOST_UID=$(id -u) \
+  -e HOST_GID=$(id -g) \
+  -e QT_X11_NO_MITSHM=1 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+  -v $HOME/autoware_data/maps:/home/aw/autoware_data/maps \
+  -v $HOME/autoware_data/ml_models:/home/aw/autoware_data/ml_models \
+  -v $HOME/autoware:/home/aw/autoware \
+  -w /home/aw/autoware \
+  --runtime=nvidia \
+  autoware:universe-cuda-jazzy \
+  bash -c "source /opt/autoware/setup.bash && exec bash"
 ```
 
-## Multi-stage Dockerfile structure
-
-<!-- cspell:disable-next-line -->
-<!-- dockerfilegraph -f docker/Dockerfile -o svg --legend --concentrate --nodesep 0.3 --unflatten 4 -m 50 -e solid -->
-
-![](./Dockerfile.svg)
-
-The suffix `-devel` (e.g. `universe-devel`) is intended for use as a [development container](https://containers.dev). On the other hand, those without the `-devel` suffix (e.g. `universe`) are intended to be used as a runtime container.
-
-### `$BASE_IMAGE`
-
-This is a base image of this Dockerfile. [`ros:humble-ros-base-jammy`](https://hub.docker.com/_/ros/tags?page=&page_size=&ordering=&name=humble-ros-base-jammy) will be given.
-
-### `$AUTOWARE_BASE_IMAGE` (from Dockerfile.base)
-
-This stage performs only the basic setup required for all Autoware images.
-
-### `$AUTOWARE_BASE_CUDA_IMAGE` (from Dockerfile.base)
-
-This stage is built on top of `$AUTOWARE_BASE_IMAGE` and adds the CUDA runtime environment and artifacts.
-
-### `rosdep-depend`
-
-The ROS dependency package list files will be generated.
-These files will be used in the subsequent stages:
-
-- `core-common-devel`
-- `core-devel`
-- `core`
-- `universe-common`
-- `universe-COMPONENT-devel` (e.g. `universe-sensing-perception-devel`)
-- `universe-COMPONENT` (e.g. `universe-sensing-perception`)
-- `universe-devel`
-- `universe`
-
-By generating only the package list files and copying them to the subsequent stages, the dependency packages will not be reinstalled during the container build process unless the dependency packages change.
-
-### `core-common-devel`
-
-This stage installs the dependency packages based on `/rosdep-core-common-depend-packages.txt` and builds the packages under the `core` directory of `autoware.repos` except for `autoware_core`.
-
-### `core-devel`
-
-This stage installs the dependency packages based on `/rosdep-core-depend-packages.txt` and builds the `autoware_core` packages.
-
-### `core`
-
-This stage is an Autoware Core runtime container. It only includes the dependencies given by `/rosdep-core-exec-depend-packages.txt` and the binaries built in the `core-devel` stage.
-
-### `universe-common-devel`
-
-This stage installs the dependency packages based on `/rosdep-universe-common-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
-
-- `universe/external`
-- `universe/autoware_universe/common`
-- `middleware/external`
-
-### `universe-common-devel-cuda`
-
-This stage is built on top of `universe-common-devel` and installs the CUDA development environment.
-
-### `universe-sensing-perception-devel`
-
-This stage installs the dependency packages based on `/rosdep-universe-sensing-perception-depend-packages.txt` and builds the non-CUDA related packages under the following directories of `autoware.repos`:
-
-- `universe/autoware_universe/perception`
-- `universe/autoware_universe/sensing`
-
-### `universe-sensing-perception-devel-cuda`
-
-This stage copies the non-CUDA related binaries built in the `universe-sensing-perception-devel` stage and builds the CUDA related packages under the following directories of `autoware.repos`:
-
-- `universe/autoware_universe/perception`
-- `universe/autoware_universe/sensing`
-
-### `universe-sensing-perception`
-
-This stage is an Autoware Universe Sensing/Perception runtime container. It only includes the dependencies given by `/rosdep-universe-sensing-perception-exec-depend-packages.txt` and the binaries built in the `universe-sensing-perception-devel` stage.
-
-### `universe-sensing-perception-cuda`
-
-This stage installs the CUDA runtime environment and copies the binaries built in the `universe-sensing-perception-devel-cuda` stage.
-
-### `universe-visualization-devel`
-
-This stage installs the dependency packages based on `/rosdep-universe-visualization-depend-packages.txt` and builds the visualization packages.
-
-### `universe-visualization`
-
-This stage is a Autoware Universe Visualization runtime container. It only includes the dependencies given by `/rosdep-universe-visualization-exec-depend-packages.txt` and the binaries built in the `universe-visualization-devel` stage.
-
-### `universe-localization-mapping-devel`
-
-This stage installs the dependency packages based on `/rosdep-universe-localization-mapping-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
-
-- `universe/autoware_universe/localization`
-- `universe/autoware_universe/map`
-
-### `universe-localization-mapping`
-
-This stage is an Autoware Universe Localization/Mapping runtime container. It only includes the dependencies given by `/rosdep-universe-localization-mapping-exec-depend-packages.txt` and the binaries built in the `universe-localization-mapping-devel` stage.
-
-### `universe-planning-control-devel`
-
-This stage installs the dependency packages based on `/rosdep-universe-planning-control-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
-
-- `universe/autoware_universe/control`
-- `universe/autoware_universe/planning`
-
-### `universe-planning-control`
-
-This stage is an Autoware Universe Planning/Control runtime container. It only includes the dependencies given by `/rosdep-universe-planning-control-exec-depend-packages.txt` and the binaries built in the `universe-planning-control-devel` stage.
-
-### `universe-vehicle-system-devel`
-
-This stage installs the dependency packages based on `/rosdep-universe-vehicle-system-depend-packages.txt` and builds the packages under the following directories of `autoware.repos`:
-
-- `universe/autoware_universe/vehicle`
-- `universe/autoware_universe/system`
-
-### `universe-vehicle-system`
-
-This stage is an Autoware Universe Vehicle/System runtime container. It only includes the dependencies given by `/rosdep-universe-vehicle-system-exec-depend-packages.txt` and the binaries built in the `universe-vehicle-system-devel` stage.
-
-### `universe-api-devel`
-
-This stage installs the dependency packages based on `/rosdep-universe-api-depend-packages.txt` and builds the API packages.
-
-### `universe-api`
-
-This stage is a Autoware Universe API runtime container. It only includes the dependencies given by `/rosdep-universe-api-exec-depend-packages.txt` and the binaries built in the `universe-api-devel` stage.
-
-### `universe-devel`
-
-This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and copies the binaries built in the following stages:
-
-- `universe-sensing-perception-devel`
-- `universe-localization-mapping-devel`
-- `universe-planning-control-devel`
-- `universe-vehicle-system-devel`
-- `universe-visualization-devel`
-- `universe-api-devel`
-
-Then it builds the remaining packages of `autoware.repos`:
-
-- `launcher`
-- `param`
-- `sensor_component`
-- `sensor_kit`
-- `universe/autoware_universe/evaluator`
-- `universe/autoware_universe/launch`
-- `universe/autoware_universe/simulator`
-- `universe/autoware_universe/tools`
-- `vehicle`
-
-This stage provides an all-in-one development container to Autoware developers. By running the host's source code with volume mounting, it allows for easy building and debugging of Autoware.
-
-### `universe-devel-cuda`
-
-This stage installs the CUDA development environment and copies the binaries built in the `universe-sensing-perception-devel-cuda` stage to the `universe-devel` stage.
-
-### `universe`
-
-This stage is an Autoware Universe runtime container. It only includes the dependencies given by `/rosdep-exec-depend-packages.txt` and the binaries built in the `universe-devel` stage.
-
-### `universe-cuda`
-
-This stage installs the CUDA runtime environment and copies the binaries built in the `universe-devel-cuda` stage.
+| Flag                                | Why                                                                                                  |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `--rm`                              | Remove container on exit to avoid accumulating stopped containers                                    |
+| `-it`                               | Interactive terminal (stdin + TTY)                                                                   |
+| `--net host`                        | Share host network stack so ROS 2 nodes can discover each other                                      |
+| `--privileged`                      | Access to host devices (sensors, CAN bus, etc.)                                                      |
+| `--gpus all`                        | Expose all GPUs to the container                                                                     |
+| `-e DISPLAY`                        | Forward X11 display for GUI applications (rviz2, rqt)                                                |
+| `-e NVIDIA_DRIVER_CAPABILITIES=all` | Enable all NVIDIA driver features (compute, graphics, video)                                         |
+| `-e NVIDIA_VISIBLE_DEVICES=all`     | Make all GPUs visible inside the container                                                           |
+| `-e HOST_UID/HOST_GID`              | Entrypoint remaps the `aw` user to match host UID/GID, avoiding permission issues on mounted volumes |
+| `-e QT_X11_NO_MITSHM`               | Disable MIT-SHM for Qt apps (shared memory doesn't work across container boundary)                   |
+| `-v /tmp/.X11-unix`                 | Mount X11 socket for GUI forwarding                                                                  |
+| `-v autoware_data/maps`             | Mount maps from host (lanelet2 + pointcloud)                                                         |
+| `-v autoware_data/ml_models`        | Mount ML model artifacts from host                                                                   |
+| `-v autoware`                       | Mount source code for development                                                                    |
+| `-w /home/aw/autoware`              | Set working directory to the mounted source                                                          |
+| `--runtime=nvidia`                  | Use NVIDIA container runtime for GPU support                                                         |
+
+Or run without volume mounting:
+
+```bash
+docker run --rm -it \
+  --net host \
+  autoware:core-jazzy
+```
+
+The default CycloneDDS config uses the `lo` interface (localhost only). To override it, mount your own config:
+
+```bash
+docker run --rm -it \
+  --net host \
+  -v /path/to/your/cyclonedds.xml:/home/aw/cyclonedds.xml \
+  autoware:universe-cuda-jazzy
+```
+
+### Running on NVIDIA Thor (Jetson Thor / DRIVE Thor)
+
+Under JetPack 7's "unified CUDA 13.0 across all Arm targets" the `universe-cuda-jazzy` image built for `linux/arm64` (SBSA flavor) is the supported runtime on **both Thor variants** — Jetson Thor running JetPack 7 and DRIVE Thor running DRIVE OS share the same Blackwell SoC (`sm_110`) and the same SBSA-compatible CUDA / TensorRT package set.
+
+> The fixes and runtime steps below have been verified end-to-end on a local Jetson Thor (L4T R38.4.0 / CUDA 13.0). DRIVE Thor is expected to work by design — the in-container CUDA stack is identical — but its host-side container-toolkit packaging comes via DRIVE OS rather than the JetPack BSP, so the prereq command names below may differ on a DRIVE host.
+
+Prerequisites on the Thor host:
+
+- An Arm host with Ubuntu 24.04 + Linux 6.8 (Jetson Thor on JetPack 7, or a DRIVE Thor target running DRIVE OS).
+- `nvidia-container-toolkit` from the JetPack BSP (or the DRIVE OS equivalent):
+
+  ```bash
+  sudo apt-get install -y nvidia-container-toolkit
+  sudo nvidia-ctk runtime configure --runtime=docker
+  sudo systemctl restart docker
+  ```
+
+Launching the image:
+
+```bash
+docker run --rm -it \
+  --net host \
+  --runtime nvidia \
+  -e NVIDIA_VISIBLE_DEVICES=all \
+  -e NVIDIA_DRIVER_CAPABILITIES=all \
+  -e HOST_UID=$(id -u) -e HOST_GID=$(id -g) \
+  -v $HOME/autoware_data/maps:/home/aw/autoware_data/maps \
+  -v $HOME/autoware_data/ml_models:/home/aw/autoware_data/ml_models \
+  autoware:universe-cuda-jazzy \
+  bash -c "source /opt/autoware/setup.bash && exec bash"
+```
+
+Notes:
+
+- `--gpus all` is **not** used on Tegra; `--runtime nvidia` plus the two `NVIDIA_*` env vars is the supported path. The env vars are what trigger the L4T container toolkit to mount `libcuda.so.1` and `/dev/nvidia-*` into the container — without them `libcuda.so` is absent and CUDA calls fail with `cudaErrorInsufficientDriver` (35).
+- `--privileged` is omitted relative to the generic Usage example above; the Thor inference workload here does not touch sensors or CAN bus. Re-add it if you wire in external hardware that needs host device access.
+- Inside the container, verify the GPU is reachable:
+
+  ```bash
+  python3 -c '
+  import ctypes
+  rt = ctypes.CDLL("libcudart.so")
+  cnt = ctypes.c_int(); rt.cudaGetDeviceCount(ctypes.byref(cnt))
+  maj = ctypes.c_int(); minor = ctypes.c_int()
+  rt.cudaDeviceGetAttribute(ctypes.byref(maj), 75, 0)
+  rt.cudaDeviceGetAttribute(ctypes.byref(minor), 76, 0)
+  print(f"devices={cnt.value}, sm_{maj.value}{minor.value}")
+  '
+  ```
+
+  On Thor this prints `devices=1, sm_110` (rather than a PTX JIT fallback or an `Insufficient driver` error).
+
+- On the host, `sudo tegrastats` while inference runs shows iGPU utilization (`GR3D_FREQ`) climbing above idle.
+
+DLA, VPI, NVDEC/NVENC, and Argus camera support are intentionally out of scope for this image; they require a separate L4T-derived variant.

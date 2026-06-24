@@ -1,108 +1,48 @@
 name: health-check
 
 on:
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
-      - labeled
+  push:
+    branches:
+      - main
   schedule:
     - cron: 0 12 * * *
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  label-check:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/make-sure-label-is-present.yaml@v1
-    with:
-      label: run:health-check
-
-  load-env:
-    needs: label-check
-    if: ${{ needs.label-check.outputs.result == 'true' ||
-      github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' }}
-    uses: ./.github/workflows/load-env.yaml
-
-  docker-build:
-    needs: load-env
+  health-check:
     strategy:
       fail-fast: false
       matrix:
-        build-type: [main, nightly, main-arm64]
+        build-type: [main, nightly, main-arm64, main-jazzy-amd64, main-jazzy-arm64]
         include:
           - build-type: main
             platform: amd64
-            runner: "['self-hosted','Linux','X64']"
-            lib-dir: x86_64
-            container: ubuntu:22.04
+            runner: "['ubuntu-24.04']"
+            ros-distro: humble
           - build-type: nightly
             platform: amd64
             runner: "['ubuntu-24.04']"
-            lib-dir: x86_64
+            ros-distro: humble
           - build-type: main-arm64
             platform: arm64
             runner: "['ubuntu-24.04-arm']"
-            lib-dir: aarch64
-    runs-on: ${{ fromJson(matrix.runner) }}
-    steps:
-      # https://github.com/actions/checkout/issues/211
-      - name: Change permission of workspace
-        run: |
-          sudo chown -R $USER:$USER ${{ github.workspace }}
-
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set git config
-        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get changed files
-        id: changed-files
-        uses: step-security/changed-files@v46
-        with:
-          files: |
-            *.env
-            repositories/*.repos
-            .github/actions/docker-build/action.yaml
-            .github/workflows/health-check.yaml
-            ansible-galaxy-requirements.yaml
-            ansible/**
-            docker/**
-            setup-dev-env.sh
-
-      - name: Show disk space
-        if: always()
-        run: |
-          df -h
-
-      - name: Free disk space
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' &&
-          matrix.build-type != 'main' }}
-        uses: ./.github/actions/free-disk-space
-
-      - name: Build 'Autoware'
-        if: ${{ steps.changed-files.outputs.any_changed == 'true' ||
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch' }}
-        uses: ./.github/actions/docker-build
-        with:
-          platform: ${{ matrix.platform }}
-          cache-tag-suffix: ${{ matrix.build-type }}
-          additional-repos: ${{ matrix.build-type == 'nightly' && 'repositories/autoware-nightly.repos' || '' }}
-          build-args: |
-            ROS_DISTRO=${{ needs.load-env.outputs.rosdistro }}
-            AUTOWARE_BASE_IMAGE=${{ needs.load-env.outputs.autoware_base_image }}
-            AUTOWARE_BASE_CUDA_IMAGE=${{ needs.load-env.outputs.autoware_base_cuda_image }}
-            LIB_DIR=${{ matrix.lib-dir }}
-
-      - name: Show disk space
-        if: always()
-        run: |
-          df -h
+            ros-distro: humble
+          - build-type: main-jazzy-amd64
+            platform: amd64
+            runner: "['ubuntu-24.04']"
+            ros-distro: jazzy
+          - build-type: main-jazzy-arm64
+            platform: arm64
+            runner: "['ubuntu-24.04-arm']"
+            ros-distro: jazzy
+    uses: ./.github/workflows/health-check-reusable.yaml
+    with:
+      build-type: ${{ matrix.build-type }}
+      platform: ${{ matrix.platform }}
+      runner: ${{ matrix.runner }}
+      ros-distro: ${{ matrix.ros-distro }}
+    secrets: inherit

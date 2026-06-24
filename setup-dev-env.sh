@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
+# DEPRECATED: superseded by ansible/scripts/install-ansible.sh +
+# `ansible-playbook autoware.dev_env.install_dev_env`. Scheduled for removal
+# on 2026-05-24. See https://github.com/autowarefoundation/autoware/issues/7052.
+#
 # Set up development environment for Autoware Core/Universe.
 # Usage: setup-dev-env.sh <ros2_installation_type('core' or 'universe')> [-y] [-v] [--no-nvidia]
 # Note: -y option is only for CI.
 
 set -e
+
+echo -e "\e[33m[DEPRECATED] setup-dev-env.sh will be removed on 2026-05-24.\e[m" >&2
+echo -e "\e[33mMigrate to: bash ansible/scripts/install-ansible.sh && ansible-playbook autoware.dev_env.install_dev_env [--tags ...]\e[m" >&2
+echo -e "\e[33mSee https://github.com/autowarefoundation/autoware/issues/7052\e[m" >&2
 
 # Function to print help message
 print_help() {
@@ -16,7 +24,7 @@ print_help() {
     echo "  --no-nvidia     Disable installation of the NVIDIA-related roles ('cuda' and 'tensorrt')"
     echo "  --no-cuda-drivers Disable installation of 'cuda-drivers' in the role 'cuda'"
     echo "  --runtime       Disable installation dev package of role 'cuda' and 'tensorrt'"
-    echo "  --data-dir      Set data directory (default: $HOME/autoware_data)"
+    echo "  --data-dir      Set data directory (default: $HOME/autoware_data/ml_models)"
     echo "  --download-artifacts"
     echo "                  Download artifacts"
     echo "  --module        Specify the module (default: all)"
@@ -28,7 +36,7 @@ SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
 
 # Parse arguments
 args=()
-option_data_dir="$HOME/autoware_data"
+option_data_dir="$HOME/autoware_data/ml_models"
 
 while [ "$1" != "" ]; do
     case "$1" in
@@ -151,29 +159,10 @@ if [ "$option_module" != "" ]; then
     ansible_args+=("--extra-vars" "module=$option_module")
 fi
 
-# Check ros-distro option
-if [ "$option_ros_distro" != "" ]; then
-    export ROS_DISTRO="$option_ros_distro"
-    ansible_args+=("--extra-vars" "rosdistro=$option_ros_distro")
-fi
-
-# Load env
-source "$SCRIPT_DIR/amd64.env"
-env_file="$SCRIPT_DIR/amd64.env"
-if [ "$option_ros_distro" = "jazzy" ]; then
-    source "$SCRIPT_DIR/amd64_jazzy.env"
-    env_file="$SCRIPT_DIR/amd64_jazzy.env"
-fi
-
-if [ "$(uname -m)" = "aarch64" ]; then
-    source "$SCRIPT_DIR/arm64.env"
-fi
-
-# Add env args
-# shellcheck disable=SC2013
-for env_name in $(sed -e "s/^\s*//" -e "/^#/d" -e "s/=.*//" <"$env_file"); do
-    ansible_args+=("--extra-vars" "${env_name}=${!env_name}")
-done
+# Set ros-distro (default: humble)
+option_ros_distro="${option_ros_distro:-humble}"
+export ROS_DISTRO="$option_ros_distro"
+ansible_args+=("--extra-vars" "rosdistro=$option_ros_distro")
 
 # Install sudo
 if ! (command -v sudo >/dev/null 2>&1); then

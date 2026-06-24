@@ -1,0 +1,68 @@
+name: docker-build-pipeline
+
+on:
+  workflow_call:
+    inputs:
+      ros-distro:
+        description: ROS distribution
+        type: string
+        required: true
+      platform:
+        description: Target platform (amd64 or arm64)
+        type: string
+        required: true
+      target-image:
+        description: Registry image name
+        type: string
+        default: autoware
+
+jobs:
+  build-base:
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      bake-group: ci-base
+      platform: ${{ inputs.platform }}
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      free-disk-space: false
+
+  build-core:
+    needs: build-base
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      bake-group: ci-core
+      platform: ${{ inputs.platform }}
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      needs-source: true
+      free-disk-space: false
+
+  build-universe:
+    needs: build-core
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      bake-group: ci-universe
+      platform: ${{ inputs.platform }}
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      needs-source: true
+
+  build-base-cuda:
+    needs: build-base
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      bake-group: ci-base-cuda
+      platform: ${{ inputs.platform }}
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      free-disk-space: true
+
+  build-universe-cuda:
+    needs: [build-core, build-base-cuda]
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      bake-group: ci-universe-cuda
+      platform: ${{ inputs.platform }}
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      needs-source: true

@@ -1,0 +1,11 @@
+# TensorRT version map:
+# - Ubuntu 24.04 (jazzy / NVIDIA Thor SBSA — Jetson Thor + DRIVE Thor):
+#     TRT 10.x aligned with CUDA 13.0.
+# - Ubuntu 22.04 + aarch64 (humble / Jetson Orin SBSA): TRT 10.3 aligned with CUDA 12.5.
+# - Ubuntu 22.04 + x86_64 (humble / workstation): TRT 10.8 aligned with CUDA 12.8.
+tensorrt_version: >-
+  {{
+    '10.13.3.9-1+cuda13.0' if ansible_distribution_version == '24.04'
+    else '10.3.0.26-1+cuda12.5' if ansible_architecture == 'aarch64'
+    else '10.8.0.43-1+cuda12.8'
+  }}

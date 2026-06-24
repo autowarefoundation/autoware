@@ -1,26 +1,20 @@
 {
   "name": "autoware:universe-devel-cuda",
-  "build": {
-    "dockerfile": "../Dockerfile",
-    "args": { "BASE_IMAGE": "ghcr.io/autowarefoundation/autoware:universe-devel-cuda" }
-  },
-  "remoteUser": "autoware",
+  "dockerComposeFile": "../../docker/devcontainer/universe-devel-cuda.compose.yaml",
+  "service": "autoware-devel",
+  "workspaceFolder": "/home/aw/autoware",
+  "containerUser": "root",
+  "remoteUser": "aw",
+  "overrideCommand": false,
   "hostRequirements": {
     "gpu": true
   },
-  "runArgs": [
-    "--cap-add=SYS_PTRACE",
-    "--security-opt",
-    "seccomp=unconfined",
-    "--net=host",
-    "--volume=/etc/localtime:/etc/localtime:ro",
-    "--gpus",
-    "all"
-  ],
+  "initializeCommand": "mkdir -p ${localEnv:HOME}/autoware_data && xhost +local:docker",
+  "postCreateCommand": "echo 'source /opt/ros/$ROS_DISTRO/setup.bash' >> ~/.bashrc",
   "customizations": {
     "vscode": {
-      "settings.json": {
-        "terminal.integrated.profiles.linux": { "bash": { "path": "/bin/bash" } }
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
   }

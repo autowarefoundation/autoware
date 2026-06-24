@@ -1,7 +1,9 @@
+# DEPRECATED: duplicate of install_rmw.yaml (was rmw.yaml).
+# Scheduled for removal on 2026-05-24. See https://github.com/autowarefoundation/autoware/issues/7052.
+
 - name: Install RMW implementation
   hosts: localhost
   roles:
     - role: autoware.dev_env.rmw_implementation
       vars:
         rmw_implementation__rosdistro: "{{ rosdistro }}"
-        rmw_implementation__name: "{{ rmw_implementation }}"

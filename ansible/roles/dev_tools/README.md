@@ -21,20 +21,9 @@ This role installs optional development tools for Autoware.
 
 ## Set up the environment variables
 
-Choose **one** ROS distribution and run the corresponding command.
-
-### ROS 2 Humble
-
 ```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && \
-source /tmp/amd64.env
-```
-
-### ROS 2 Jazzy
-
-```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64_jazzy.env && \
-source /tmp/amd64.env
+# Choose your ROS distribution
+rosdistro=humble  # or jazzy
 ```
 
 ## Install the tools

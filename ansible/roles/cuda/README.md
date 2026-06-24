@@ -6,10 +6,22 @@ This role also registers Vulkan, OpenGL, and OpenCL GPU vendors for future use.
 
 ## Inputs
 
-| Name                 | Required | Description                      |
-| -------------------- | -------- | -------------------------------- |
-| cuda_version         | true     | The version of CUDA Toolkit.     |
-| cuda_install_drivers | false    | Whether to install cuda-drivers. |
+| Name                 | Required | Description                                                      |
+| -------------------- | -------- | ---------------------------------------------------------------- |
+| cuda_version         | true     | The version of CUDA Toolkit.                                     |
+| cuda_repo_distro     | false    | NVIDIA apt repo distro suffix (e.g. `ubuntu2204`, `ubuntu2404`). |
+| cuda_install_drivers | false    | Whether to install cuda-drivers.                                 |
+
+## Version selection
+
+The role auto-selects CUDA version and apt repo distro based on the host's Ubuntu version:
+
+| Ubuntu         | CUDA version | Apt repo distro | Driver package                                   |
+| -------------- | ------------ | --------------- | ------------------------------------------------ |
+| 22.04 (humble) | 12.8         | `ubuntu2204`    | `nvidia-open` (when `cuda_install_drivers=true`) |
+| 24.04 (jazzy)  | 13.0         | `ubuntu2404`    | `nvidia-open` (when `cuda_install_drivers=true`) |
+
+Both `cuda_version` and `cuda_repo_distro` are overridable via `-e cuda_version=…` and `-e cuda_repo_distro=…`. Override them together when installing a non-default toolkit release that NVIDIA only publishes under a different `ubuntuXXXX` repo than the host's Ubuntu version (e.g. CUDA 12.x on a 24.04 host).
 
 ## Manual Installation
 
@@ -35,7 +47,8 @@ Follow these instructions to download and install the CUDA Toolkit.
 From: <https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#network-repo-installation-for-ubuntu>
 
 ```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
+# From the Autoware repository root:
+cuda_version=$(sed -n 's/^cuda_version: *"\(.*\)"/\1/p' ansible/roles/cuda/defaults/main.yaml)
 
 os=ubuntu2204
 arch_dir=$(

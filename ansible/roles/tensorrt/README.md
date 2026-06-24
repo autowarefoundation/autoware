@@ -8,24 +8,29 @@ This role installs TensorRT following [the official NVIDIA TensorRT Installation
 | ---------------- | -------- | ------------------------ |
 | tensorrt_version | true     | The version of TensorRT. |
 
+## Version selection
+
+| Ubuntu         | Architecture                                            | TensorRT version     |
+| -------------- | ------------------------------------------------------- | -------------------- |
+| 22.04 (humble) | x86_64                                                  | 10.8.0.43-1+cuda12.8 |
+| 22.04 (humble) | aarch64 (SBSA)                                          | 10.3.0.26-1+cuda12.5 |
+| 24.04 (jazzy)  | x86_64 / aarch64 (SBSA, incl. Jetson Thor + DRIVE Thor) | 10.13.3.9-1+cuda13.0 |
+
+Override `tensorrt_version` explicitly via `-e tensorrt_version=…` to pin a different release.
+
 ## Manual Installation
 
 ### Set up the environment variables
 
-Choose **one** ROS distribution and run the corresponding command.
-
-#### ROS 2 Humble
-
 ```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && \
-source /tmp/amd64.env
-```
-
-#### ROS 2 Jazzy
-
-```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64_jazzy.env && \
-source /tmp/amd64.env
+# From the Autoware repository root:
+# defaults/main.yaml contains an architecture-dependent Jinja2 expression;
+# extract the matching version for this machine.
+if [ "$(uname -m)" = "aarch64" ]; then
+  tensorrt_version=$(grep -oP "'\K[^']+(?=' if)" ansible/roles/tensorrt/defaults/main.yaml)
+else
+  tensorrt_version=$(grep -oP "else '\K[^']+" ansible/roles/tensorrt/defaults/main.yaml)
+fi
 ```
 
 ### Install TensorRT

@@ -48,7 +48,6 @@ artifacts:
               - .webauto-ci/main/autoware-setup/**/*
               - ansible/**/*
               - ansible-galaxy-requirements.yaml
-              - amd64.env
           incremental_build:
             enabled: true
         - name: autoware-build

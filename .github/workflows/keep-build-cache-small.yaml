@@ -15,10 +15,31 @@ jobs:
     strategy:
       matrix:
         include:
-          - image_tag: amd64-main
-            cache_threshold_gb: 7.0
-          - image_tag: arm64-main
-            cache_threshold_gb: 9.0
+          # ci-base
+          - { image_tag: ci-base-humble-amd64-main, cache_threshold_gb: 7.0 }
+          - { image_tag: ci-base-humble-arm64-main, cache_threshold_gb: 9.0 }
+          - { image_tag: ci-base-jazzy-amd64-main, cache_threshold_gb: 7.0 }
+          - { image_tag: ci-base-jazzy-arm64-main, cache_threshold_gb: 9.0 }
+          # ci-core
+          - { image_tag: ci-core-humble-amd64-main, cache_threshold_gb: 7.0 }
+          - { image_tag: ci-core-humble-arm64-main, cache_threshold_gb: 9.0 }
+          - { image_tag: ci-core-jazzy-amd64-main, cache_threshold_gb: 7.0 }
+          - { image_tag: ci-core-jazzy-arm64-main, cache_threshold_gb: 9.0 }
+          # ci-base-cuda
+          - { image_tag: ci-base-cuda-humble-amd64-main, cache_threshold_gb: 9.0 }
+          - { image_tag: ci-base-cuda-humble-arm64-main, cache_threshold_gb: 11.0 }
+          - { image_tag: ci-base-cuda-jazzy-amd64-main, cache_threshold_gb: 9.0 }
+          - { image_tag: ci-base-cuda-jazzy-arm64-main, cache_threshold_gb: 11.0 }
+          # ci-universe
+          - { image_tag: ci-universe-humble-amd64-main, cache_threshold_gb: 7.0 }
+          - { image_tag: ci-universe-humble-arm64-main, cache_threshold_gb: 9.0 }
+          - { image_tag: ci-universe-jazzy-amd64-main, cache_threshold_gb: 7.0 }
+          - { image_tag: ci-universe-jazzy-arm64-main, cache_threshold_gb: 9.0 }
+          # ci-universe-cuda
+          - { image_tag: ci-universe-cuda-humble-amd64-main, cache_threshold_gb: 9.0 }
+          - { image_tag: ci-universe-cuda-humble-arm64-main, cache_threshold_gb: 11.0 }
+          - { image_tag: ci-universe-cuda-jazzy-amd64-main, cache_threshold_gb: 9.0 }
+          - { image_tag: ci-universe-cuda-jazzy-arm64-main, cache_threshold_gb: 11.0 }
 
     env:
       IMAGE_NAME: autoware-buildcache

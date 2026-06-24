@@ -1,0 +1,73 @@
+services:
+  autoware:
+    image: ghcr.io/autowarefoundation/autoware:universe-humble
+    network_mode: host
+    privileged: true
+    stdin_open: true
+    tty: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - HOST_UID=${HOST_UID:-1000}
+      - HOST_GID=${HOST_GID:-1000}
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${HOME}/autoware_data/maps:/home/aw/autoware_data/maps
+      - ${HOME}/autoware_data/ml_models:/home/aw/autoware_data/ml_models
+      - cyclonedds-config:/shared-config:rw
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >
+          bash -c 'source /opt/ros/humble/setup.bash &&
+          source /opt/autoware/setup.bash &&
+          ros2 topic list 2>/dev/null | grep -q /api/operation_mode/state'
+      interval: 10s
+      timeout: 10s
+      retries: 60
+      start_period: 30s
+    command:
+      - bash
+      - -c
+      - |
+        sudo chown $(id -u):$(id -g) /shared-config
+        cp /home/aw/cyclonedds.xml /shared-config/cyclonedds.xml
+        chmod 644 /shared-config/cyclonedds.xml
+        ros2 launch autoware_launch planning_simulator.launch.xml \
+          map_path:=/home/aw/autoware_data/maps/sample-map-planning \
+          vehicle_model:=sample_vehicle \
+          sensor_model:=sample_sensor_kit \
+          scenario_simulation:=true
+        exec bash
+
+  # TODO: use jazzy image when it becomes available
+  scenario-simulator:
+    image: ghcr.io/tier4/scenario_simulator_v2:humble-25.0.17-runtime
+    network_mode: host
+    stdin_open: true
+    tty: true
+    depends_on:
+      autoware:
+        condition: service_healthy
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=file:///shared-config/cyclonedds.xml
+    volumes:
+      - ${HOME}/autoware_data/maps:/home/aw/autoware_data/maps:ro
+      - ${HOME}/autoware_data/scenarios:/home/aw/autoware_data/scenarios:ro
+      - cyclonedds-config:/shared-config:ro
+    command:
+      - bash
+      - -c
+      - |
+        ros2 launch scenario_test_runner scenario_test_runner.launch.py \
+          architecture_type:=awf/universe/20250130 \
+          record:=false \
+          scenario:=/home/aw/autoware_data/scenarios/autoware_sample_scenarios/sample-scenario.yaml \
+          use_custom_centerline:=true \
+          launch_rviz:=false \
+          launch_autoware:=false
+        exec bash
+
+volumes:
+  cyclonedds-config:

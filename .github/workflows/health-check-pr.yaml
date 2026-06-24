@@ -1,0 +1,83 @@
+name: health-check-pr
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changed-files:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.any_modified }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - id: check
+        uses: step-security/changed-files@v47
+        with:
+          files: |
+            repositories/*.repos
+            .github/workflows/health-check.yaml
+            .github/workflows/health-check-pr.yaml
+            .github/workflows/health-check-reusable.yaml
+            ansible-galaxy-requirements.yaml
+            ansible/**
+            docker/**
+          files_ignore: |
+            docker/examples/**
+            **/*.md
+
+  require-label:
+    needs: changed-files
+    if: ${{ always() }}
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
+    with:
+      label: run:health-check
+      run-condition: ${{ needs.changed-files.outputs.should-run == 'true' }}
+
+  health-check:
+    if: ${{ always() }}
+    needs: [changed-files, require-label]
+    strategy:
+      fail-fast: false
+      matrix:
+        build-type: [main, nightly, main-arm64, main-jazzy-amd64, main-jazzy-arm64]
+        include:
+          - build-type: main
+            platform: amd64
+            runner: "['ubuntu-24.04']"
+            ros-distro: humble
+          - build-type: nightly
+            platform: amd64
+            runner: "['ubuntu-24.04']"
+            ros-distro: humble
+          - build-type: main-arm64
+            platform: arm64
+            runner: "['ubuntu-24.04-arm']"
+            ros-distro: humble
+          - build-type: main-jazzy-amd64
+            platform: amd64
+            runner: "['ubuntu-24.04']"
+            ros-distro: jazzy
+          - build-type: main-jazzy-arm64
+            platform: arm64
+            runner: "['ubuntu-24.04-arm']"
+            ros-distro: jazzy
+    uses: ./.github/workflows/health-check-reusable.yaml
+    with:
+      build-type: ${{ matrix.build-type }}
+      platform: ${{ matrix.platform }}
+      runner: ${{ matrix.runner }}
+      ros-distro: ${{ matrix.ros-distro }}
+      run-condition: ${{ needs.changed-files.outputs.should-run == 'true' && needs.require-label.outputs.result == 'true' }}
+    secrets: inherit
