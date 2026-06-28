@@ -200,78 +200,15 @@
     checksum: sha256:95ef950bb694bd6de91b7e47f5d191d557e92a7f5e2a6bdf655a8b5eed4075cc
 
 # lidar_centerpoint
-- name: Create lidar_centerpoint directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/lidar_centerpoint"
-    mode: "755"
-    state: directory
-
-- name: Download lidar_centerpoint/pts_voxel_encoder_centerpoint.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/pts_voxel_encoder_centerpoint.onnx
-    dest: "{{ data_dir }}/lidar_centerpoint/pts_voxel_encoder_centerpoint.onnx"
-    mode: "644"
-    checksum: sha256:dc1a876580d86ee7a341d543f8ade2ede7f43bd032dc5b44155b1f0175405764
-
-- name: Download lidar_centerpoint/pts_backbone_neck_head_centerpoint.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/pts_backbone_neck_head_centerpoint.onnx
-    dest: "{{ data_dir }}/lidar_centerpoint/pts_backbone_neck_head_centerpoint.onnx"
-    mode: "644"
-    checksum: sha256:3fe7e128955646740c41a25be0c8f141d5a94594fe79d7405fe2a859e391542e
-
-- name: Download lidar_centerpoint/pts_voxel_encoder_centerpoint_tiny.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/pts_voxel_encoder_centerpoint_tiny.onnx
-    dest: "{{ data_dir }}/lidar_centerpoint/pts_voxel_encoder_centerpoint_tiny.onnx"
-    mode: "644"
-    checksum: sha256:2c53465715c1fd2e9dc5727ef3fca74f4cdf0538f74286b0946e219d0ca5693b
-
-- name: Download lidar_centerpoint/pts_backbone_neck_head_centerpoint_tiny.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/pts_backbone_neck_head_centerpoint_tiny.onnx
-    dest: "{{ data_dir }}/lidar_centerpoint/pts_backbone_neck_head_centerpoint_tiny.onnx"
-    mode: "644"
-    checksum: sha256:9bb0b634f3664bd098ce7d6a3d8a9fb7cc8d9b8252b27f302c71e43316bab551
-- name: Download lidar_centerpoint/centerpoint_ml_package.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/centerpoint_ml_package.param.yaml
-    dest: "{{ data_dir }}/lidar_centerpoint/centerpoint_ml_package.param.yaml"
-    mode: "644"
-    checksum: sha256:9bbc16e521dd87c91cbadf1cb89c8b81393d1f8e1069af385aaba677576f0e27
-- name: Download lidar_centerpoint/centerpoint_tiny_ml_package.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/centerpoint_tiny_ml_package.param.yaml
-    dest: "{{ data_dir }}/lidar_centerpoint/centerpoint_tiny_ml_package.param.yaml"
-    mode: "644"
-    checksum: sha256:e0846b08fbd023d6a7c085f5389d0ccaef8ad9cd2c5e1eb7dbc6583618e38424
-- name: Download lidar_centerpoint/centerpoint_sigma_ml_package.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/centerpoint_sigma_ml_package.param.yaml
-    dest: "{{ data_dir }}/lidar_centerpoint/centerpoint_sigma_ml_package.param.yaml"
-    mode: "644"
-    checksum: sha256:9bbc16e521dd87c91cbadf1cb89c8b81393d1f8e1069af385aaba677576f0e27
-- name: Download lidar_centerpoint/detection_class_remapper.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/detection_class_remapper.param.yaml
-    dest: "{{ data_dir }}/lidar_centerpoint/detection_class_remapper.param.yaml"
-    mode: "644"
-    checksum: sha256:c711f8875ece9b527dfe31ffc75f8c0de2e77945ef67860a959a4e04c36772d5
-- name: Download lidar_centerpoint/deploy_metadata.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v3/deploy_metadata.yaml
-    dest: "{{ data_dir }}/lidar_centerpoint/deploy_metadata.yaml"
-    mode: "644"
-    checksum: sha256:152536f053c3750b60d349800e1b983b418029d6dadf087614a00c661942a178
+- name: Download lidar_centerpoint model bundle (v3.0)
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/lidar_centerpoint
+      --revision v3.0
+      --local-dir {{ data_dir }}/lidar_centerpoint
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+  changed_when: false
 
 # lidar_transfusion
 - name: Create lidar_transfusion directory inside {{ data_dir }}
