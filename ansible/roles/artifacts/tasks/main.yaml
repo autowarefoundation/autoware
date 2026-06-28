@@ -208,6 +208,7 @@
       --local-dir {{ data_dir }}/lidar_centerpoint
   environment:
     PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
   changed_when: false
 
 # lidar_transfusion
