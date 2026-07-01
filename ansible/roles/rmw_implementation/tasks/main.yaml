@@ -14,11 +14,12 @@
   register: rmw_implementation__held_pkgs
   changed_when: false
 
-- name: Install latest (skip if held) {{ rmw_implementation__pkg }}
+- name: Install {{ rmw_implementation__pkg }}
   become: true
   ansible.builtin.apt:
     name: "{{ rmw_implementation__pkg }}"
     state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
     cache_valid_time: 3600
   when: rmw_implementation__pkg not in rmw_implementation__held_pkgs.stdout_lines

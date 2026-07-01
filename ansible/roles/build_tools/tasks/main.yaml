@@ -3,6 +3,7 @@
   ansible.builtin.apt:
     name: ccache
     state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
 
 - name: Add CCACHE_DIR to .bashrc

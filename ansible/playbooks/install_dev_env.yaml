@@ -20,6 +20,10 @@
       tags: [always]
 
   roles:
+    # APT version pinning for reproducible builds (no-op pin file cleanup unless use_locked_versions=true)
+    - role: autoware.dev_env.version_lock
+      tags: [core, universe, version_lock]
+
     # Base ROS 2 environment
     - role: autoware.dev_env.ros2
       tags: [core, universe, ros2]
