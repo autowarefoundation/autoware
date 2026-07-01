@@ -1,0 +1,2 @@
+dependencies:
+  - role: autoware.dev_env.huggingface_cli

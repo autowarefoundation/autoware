@@ -1,0 +1,17 @@
+- name: Check whether pipx is installed
+  ansible.builtin.stat:
+    path: /usr/bin/pipx
+  register: huggingface_cli__pipx
+
+- name: Install pipx
+  become: true
+  ansible.builtin.apt:
+    name: pipx
+    state: present
+    update_cache: true
+  when: not huggingface_cli__pipx.stat.exists
+
+- name: Install huggingface_hub for the hf CLI
+  community.general.pipx:
+    name: huggingface_hub
+    executable: /usr/bin/pipx

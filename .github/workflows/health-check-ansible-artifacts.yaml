@@ -55,6 +55,8 @@ jobs:
         run: bash ansible/scripts/install-ansible.sh
 
       - name: 📦 Download artifacts via ansible
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml
