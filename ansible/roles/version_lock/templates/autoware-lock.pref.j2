@@ -1,7 +1,13 @@
 {# Rendered to /etc/apt/preferences.d/autoware-lock in locked mode. #}
-{# ROS packages are frozen by the dated snapshot (see the ros2 role), not pinned here. #}
-{% for section in [locked_packages.apt_pins, locked_packages.ros_overrides] %}
-{% for pkg, ver in (section | default({})).items() %}
+{# Outrank the rolling packages.ros.org repo (priority 500) so the dated snapshot #}
+{# configured by the ros2 role wins the whole ROS closure, even on a machine that #}
+{# already had the rolling source. Self-cleaning: the file is removed in default mode. #}
+Package: *
+Pin: origin snapshots.ros.org
+Pin-Priority: 1001
+
+{# Ubuntu-archive packages: exact-version pins. #}
+{% for pkg, ver in (locked_packages.apt_pins | default({})).items() %}
 {% if ver is not none and ver | string %}
 Package: {{ pkg }}
 Pin: version {{ ver }}
@@ -9,4 +15,13 @@ Pin-Priority: 1001
 
 {% endif %}
 {% endfor %}
+{# Per-package ROS overrides: priority 1002 so an override beats the snapshot-origin #}
+{# pin above (at equal priority apt would keep the snapshot's own, higher-numbered build). #}
+{% for pkg, ver in (locked_packages.ros_overrides | default({})).items() %}
+{% if ver is not none and ver | string %}
+Package: {{ pkg }}
+Pin: version {{ ver }}
+Pin-Priority: 1002
+
+{% endif %}
 {% endfor %}

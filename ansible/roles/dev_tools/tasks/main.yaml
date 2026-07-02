@@ -3,7 +3,9 @@
   become: true
   ansible.builtin.apt:
     name: git-lfs
-    state: present
+    # 'latest' (not 'present') so an already-installed git-lfs converges to the
+    # locked pin; 'present' never changes an installed version, ignoring the pin.
+    state: latest
     allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
 

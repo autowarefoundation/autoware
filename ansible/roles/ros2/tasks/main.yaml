@@ -37,6 +37,14 @@
 - name: Configure dated ROS snapshot source (locked mode)
   when: use_locked_versions | default(false) | bool
   block:
+    - name: Assert lockfile is loaded in locked mode
+      ansible.builtin.assert:
+        that: locked_packages is defined
+        fail_msg: >-
+          use_locked_versions=true but locked_packages is undefined. Run the version_lock
+          role first (it is tagged 'always' in the install_dev_env playbook).
+        quiet: true
+
     - name: Install snapshot archive keyring
       become: true
       ansible.builtin.copy:

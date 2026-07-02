@@ -20,9 +20,11 @@
       tags: [always]
 
   roles:
-    # APT version pinning for reproducible builds (no-op pin file cleanup unless use_locked_versions=true)
+    # APT version pinning for reproducible builds (no-op pin file cleanup unless use_locked_versions=true).
+    # 'always' so locked_packages is loaded before any consumer role (ros2, gdown, ...) dereferences it,
+    # even for partial runs like --tags ros2; every task in the role is gated on use_locked_versions.
     - role: autoware.dev_env.version_lock
-      tags: [core, universe, version_lock]
+      tags: [always]
 
     # Base ROS 2 environment
     - role: autoware.dev_env.ros2
@@ -76,3 +78,12 @@
     # Sample maps and rosbag recordings for demos (opt-in)
     - role: autoware.dev_env.demo_artifacts
       tags: [never, demo_artifacts]
+
+  post_tasks:
+    # Runs after every role installs, so it sees the versions apt actually resolved.
+    - name: Verify installed versions match the lockfile (locked mode)
+      ansible.builtin.import_role:
+        name: autoware.dev_env.version_lock
+        tasks_from: verify
+      when: use_locked_versions | default(false) | bool
+      tags: [always]
