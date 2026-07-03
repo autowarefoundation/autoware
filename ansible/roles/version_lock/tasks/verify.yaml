@@ -1,0 +1,53 @@
+# Post-install check: an APT pin to a version that exists in no configured source
+# matches nothing, so apt silently installs another candidate and the play stays green.
+# Compare what actually got installed against the lockfile and fail loudly on any drift.
+- name: Verify pinned packages resolved to their locked versions
+  when: use_locked_versions | default(false) | bool
+  vars:
+    version_lock_expected: "{{ (locked_packages.apt_pins | default({})) | combine(locked_packages.ros_overrides | default({})) }}"
+  block:
+    - name: Load lockfile for verification
+      ansible.builtin.include_vars:
+        file: "{{ lockfile_path }}"
+        name: locked_packages
+      when: locked_packages is not defined
+
+    - name: Query installed versions of pinned packages
+      ansible.builtin.command:
+        argv:
+          - dpkg-query
+          - -W
+          - -f
+          - ${Version}
+          - "{{ item }}"
+      register: version_lock_query
+      changed_when: false
+      failed_when: false
+      loop: "{{ version_lock_expected.keys() | list }}"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Collect any drift between installed and locked versions
+      ansible.builtin.set_fact:
+        version_lock_drift: >-
+          {{ version_lock_drift | default([])
+             + [item.item ~ ': locked ' ~ version_lock_expected[item.item] ~ ', installed ' ~ item.stdout] }}
+      # Only an installed-but-mismatched version is drift. A package absent from
+      # this (possibly partial, e.g. --tags) run is skipped: dpkg-query returns a
+      # non-zero rc for an unknown package and rc 0 with an empty version for one
+      # that is merely known (removed / config-files), and neither is installed.
+      when: item.rc == 0 and item.stdout | length > 0 and item.stdout != version_lock_expected[item.item]
+      loop: "{{ version_lock_query.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Fail if any installed package drifted from the lockfile
+      ansible.builtin.assert:
+        that: version_lock_drift | default([]) | length == 0
+        fail_msg: |-
+          Locked mode installed versions that differ from the lockfile. The pinned
+          version was unreachable in the configured sources, so apt fell back to
+          another candidate. Refresh the lockfile or ros_snapshot_date:
+          {{ version_lock_drift | default([]) | join('\n') }}
+        success_msg: All {{ version_lock_expected | length }} pinned packages match the lockfile.
+        quiet: true

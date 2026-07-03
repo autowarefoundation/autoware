@@ -1,0 +1,4 @@
+{
+  "ignorePaths": ["ansible/vars/"],
+  "words": ["lockfiles", "runpip"]
+}

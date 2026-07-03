@@ -3,6 +3,7 @@
   ansible.builtin.apt:
     name: geographiclib-tools
     state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
 
 - name: Install egm2008-1

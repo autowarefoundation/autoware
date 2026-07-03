@@ -4,3 +4,6 @@ skip_list:
   - complexity # Large task files are acceptable for our setup roles.
 
 warn_list: []
+
+exclude_paths:
+  - ansible/vars/ # Lock files use package names as keys, not Ansible variables.

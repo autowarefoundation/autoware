@@ -67,6 +67,7 @@
       - docker-ce-cli
       - containerd.io
       - docker-compose-plugin
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
 
 # sudo groupadd docker
