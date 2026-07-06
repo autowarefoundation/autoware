@@ -5,6 +5,7 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE} AS core-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
+ARG USE_LOCKFILE=false
 
 USER ${USERNAME}
 # hadolint ignore=DL3003
@@ -17,10 +18,11 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     pipx install --include-deps "ansible==10.*" && \
     cd /tmp/ansible && \
     ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
+    LOCK_ARGS=$([ "${USE_LOCKFILE}" = "true" ] && echo "-e use_locked_versions=true" || echo "") && \
     ansible-playbook autoware.dev_env.install_image_deps \
       --tags core \
       --skip-tags base \
-      -e "rosdistro=${ROS_DISTRO}" && \
+      -e "rosdistro=${ROS_DISTRO}" ${LOCK_ARGS} && \
     pipx uninstall ansible
 USER root
 
@@ -101,6 +103,7 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
 
 FROM ${BASE_IMAGE} AS core
 ARG ROS_DISTRO
+ARG USE_LOCKFILE=false
 ENV AUTOWARE_RUNTIME=1
 
 USER ${USERNAME}
@@ -115,9 +118,10 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     pipx install --include-deps "ansible==10.*" && \
     cd /tmp/ansible && \
     ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
+    LOCK_ARGS=$([ "${USE_LOCKFILE}" = "true" ] && echo "-e use_locked_versions=true" || echo "") && \
     ansible-playbook autoware.dev_env.install_image_deps \
       --tags geographiclib,qt5ct_setup \
-      -e "rosdistro=${ROS_DISTRO}" && \
+      -e "rosdistro=${ROS_DISTRO}" ${LOCK_ARGS} && \
     pipx uninstall ansible
 USER root
 
