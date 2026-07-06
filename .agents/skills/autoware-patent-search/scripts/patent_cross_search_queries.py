@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
+import re
 from urllib.parse import quote_plus
 
 
@@ -16,6 +17,32 @@ DEFAULT_CONTEXT = [
 ]
 
 JPLATPAT_URL = "https://www.j-platpat.inpit.go.jp/"
+
+CPC_BROAD_RE = re.compile(r"^[A-HY][0-9]{2}[A-Z]$", re.IGNORECASE)
+
+
+def google_cpc_filter(code: str) -> str:
+    """Return Google Patents CPC filter syntax for a classification hint.
+
+    Broad subclasses (for example B60W) use Google Patents metadata-style
+    ``cpc:`` syntax, which includes child classifications. More specific CPC
+    groups use field syntax with ``/low`` so children remain included instead of
+    matching only the exact classification.
+    """
+    normalized = code.strip().upper()
+    if CPC_BROAD_RE.fullmatch(normalized):
+        return f"cpc:{normalized}"
+    return f"CPC={normalized}/low"
+
+
+def google_assignee_filter(name: str) -> str:
+    """Return Google Patents assignee metadata filter syntax."""
+    cleaned = name.strip()
+    if not cleaned:
+        return ""
+    if re.search(r"\s", cleaned):
+        return f'assignee:"{cleaned}"'
+    return f"assignee:{cleaned}"
 
 
 @dataclass(frozen=True)
@@ -37,11 +64,15 @@ def build_google_queries(feature: str, jp: str | None, cpc: list[str], assignee:
     if jp:
         queries.extend([jp, f"{jp} 自動運転"])
     for code in cpc:
-        queries.append(f"{feature} CPC={code}")
+        cpc_filter = google_cpc_filter(code)
+        queries.append(f"{feature} {cpc_filter}")
     for name in assignee:
-        queries.append(f'{feature} assignee="{name}"')
+        assignee_filter = google_assignee_filter(name)
+        if not assignee_filter:
+            continue
+        queries.append(f"{feature} {assignee_filter}")
         if jp:
-            queries.append(f'{jp} assignee="{name}"')
+            queries.append(f"{jp} {assignee_filter}")
     return [QueryPlan("Google Patents", query, google_url_for(query)) for query in queries]
 
 
