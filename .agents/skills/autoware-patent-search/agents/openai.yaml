@@ -1,0 +1,4 @@
+interface:
+  display_name: "Autoware Patent Search"
+  short_description: "Search patent DBs and scaffold Autoware IP review charts/alerts."
+  default_prompt: "Review this Autoware change for patent-sensitive technical features, search only Google Patents and J-PlatPat when available, and generate non-legal candidate matching, claim-comparison, and monitoring notes for IP review."
