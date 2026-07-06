@@ -1,11 +1,13 @@
 # check=skip=InvalidDefaultArgInFrom
 ARG ROS_DISTRO
+ARG BASE_IMAGE_DIGEST=""
 
-FROM ros:${ROS_DISTRO}-ros-base AS base
+FROM ros:${ROS_DISTRO}-ros-base${BASE_IMAGE_DIGEST} AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG ROS_DISTRO
 ARG USERNAME=aw
+ARG USE_LOCKFILE=false
 
 RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
     echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache && \
@@ -48,17 +50,16 @@ ENV ANSIBLE_COLLECTIONS_PATH="/home/${USERNAME}/.ansible/collections"
 
 # hadolint ignore=DL3003
 RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansible/ansible-galaxy-requirements.yaml \
-    --mount=type=bind,source=ansible/galaxy.yml,target=/tmp/ansible/ansible/galaxy.yml \
-    --mount=type=bind,source=ansible/roles/rmw_implementation,target=/tmp/ansible/ansible/roles/rmw_implementation \
-    --mount=type=bind,source=ansible/playbooks/install_rmw.yaml,target=/tmp/ansible/ansible/playbooks/install_rmw.yaml \
+    --mount=type=bind,source=ansible,target=/tmp/ansible/ansible \
     --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
     --mount=type=cache,id=pipx-cache,target=/home/aw/.cache/pipx,uid=1000,gid=1000 \
     pipx install --include-deps "ansible==10.*" && \
     cd /tmp/ansible && \
     ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
+    LOCK_ARGS=$([ "${USE_LOCKFILE}" = "true" ] && echo "-e use_locked_versions=true" || echo "") && \
     ansible-playbook autoware.dev_env.install_rmw \
-      -e rosdistro=${ROS_DISTRO} && \
+      -e rosdistro=${ROS_DISTRO} ${LOCK_ARGS} && \
     pipx uninstall ansible
 
 COPY docker/files/cyclonedds.xml /home/${USERNAME}/cyclonedds.xml
