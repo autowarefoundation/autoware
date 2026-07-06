@@ -1,12 +1,14 @@
 You are performing a patent-risk screening for an autonomous driving software repository.
 
 Scope:
+
 - Focus only on planning, behavior planning, trajectory planning, control, fallback, and MRM-related changes.
 - Do not make a legal conclusion.
 - Do not say that the code infringes a patent.
 - Identify technical features that should be reviewed by IP counsel.
 
 Task:
+
 1. Inspect the repository changes.
 2. Identify patent-sensitive technical features.
 3. Extract technical elements.
