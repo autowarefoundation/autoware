@@ -1,0 +1,10 @@
+# Test-only Autoware planning sample for validating the autoware-patent-search workflow.
+# This file is intentionally placed in this fork and must not be proposed upstream.
+# It represents a conceptual lane-change behavior-planning threshold change.
+
+/**:
+  ros__parameters:
+    # Sample collision-check margin for lane-change path generation.
+    # Raising this value makes the validation scenario conceptually more conservative
+    # around predicted objects during lane-change safety evaluation.
+    lane_change_predicted_object_collision_margin_m: 1.8
