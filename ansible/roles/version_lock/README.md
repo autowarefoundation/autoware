@@ -42,6 +42,14 @@ The script reads the package names from the existing lockfile for the current di
 
 This checks that every `ansible/vars/locked-versions-*.yaml` file is valid YAML with a `ros_snapshot_date` and `apt_pins`/`pip_pins`/`ros_overrides` mappings.
 
+Run with no arguments, it additionally cross-checks that the set of ROS distros
+in `docker/docker-bake.hcl`'s `BASE_IMAGE_DIGESTS` map exactly matches the distros
+that have lockfiles here, and fails if they drift. A locked Docker build needs
+both halves — the lockfile freezes the apt/ROS closure, the digest pins the base
+image — so a distro present in only one silently defeats reproducibility. When
+you add a lockfile for a new distro, add its base-image digest to the map (and
+vice-versa); regenerate both together so the digest matches `ros_snapshot_date`.
+
 ## Lockfile format
 
 A YAML mapping with four keys, one file per distro/arch

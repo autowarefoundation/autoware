@@ -18,10 +18,15 @@ variable "BASE_IMAGE_DIGESTS" {
   }
 }
 
-// "@sha256:…" when locked and a digest is known for this distro, else "".
+// "@sha256:…" when locked, else "". Direct map indexing (not lookup(), which
+// requires a fallback default) fails the build loudly if a locked build is
+// requested for a ROS_DISTRO with no pinned digest, instead of silently falling
+// back to an unpinned floating-tag base and reporting the build as reproducible.
+// Keep BASE_IMAGE_DIGESTS in sync with the per-distro lockfiles
+// (ansible/scripts/validate_lockfiles.sh enforces this).
 function "base_image_digest" {
   params = []
-  result = USE_LOCKFILE ? lookup(BASE_IMAGE_DIGESTS, ROS_DISTRO, "") : ""
+  result = USE_LOCKFILE ? BASE_IMAGE_DIGESTS[ROS_DISTRO] : ""
 }
 
 // CI variables: set via environment in GitHub Actions, empty for local builds
@@ -156,10 +161,15 @@ target "base-cuda-runtime" {
   contexts = {
     autoware-base = ctx("base")
   }
+  // No USE_LOCKFILE: these images inherit the frozen apt pins + dated snapshot
+  // source (and the digest-pinned OS closure) from the base target they build
+  // FROM, so their Ubuntu-archive packages are already locked. The CUDA /
+  // TensorRT / spconv packages come from NVIDIA's own apt repos, which the
+  // lockfile does not yet cover, so install_nvidia is not run in locked mode.
+  // Threading USE_LOCKFILE here would imply a freeze it cannot deliver.
   args = {
-    BASE_IMAGE   = "autoware-base"
-    ROS_DISTRO   = ROS_DISTRO
-    USE_LOCKFILE = USE_LOCKFILE
+    BASE_IMAGE = "autoware-base"
+    ROS_DISTRO = ROS_DISTRO
   }
 }
 
@@ -170,10 +180,10 @@ target "base-cuda-devel" {
   contexts = {
     autoware-base = ctx("base")
   }
+  // See base-cuda-runtime: USE_LOCKFILE is intentionally not threaded here.
   args = {
-    BASE_IMAGE   = "autoware-base"
-    ROS_DISTRO   = ROS_DISTRO
-    USE_LOCKFILE = USE_LOCKFILE
+    BASE_IMAGE = "autoware-base"
+    ROS_DISTRO = ROS_DISTRO
   }
 }
 
