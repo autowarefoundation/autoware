@@ -14,10 +14,10 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
     --mount=type=cache,id=pip-cache,target=/home/aw/.cache/pip,uid=1000,gid=1000 \
     --mount=type=cache,id=pipx-cache,target=/home/aw/.cache/pipx,uid=1000,gid=1000 \
     pipx install --include-deps "ansible==10.*" && \
-    LOCK_ARGS=$([ "${USE_LOCKFILE}" = "true" ] && echo "-e use_locked_versions=true" || echo "") && \
     ansible-playbook autoware.dev_env.install_image_deps \
       --tags acados \
-      -e "rosdistro=${ROS_DISTRO}" ${LOCK_ARGS} && \
+      -e "rosdistro=${ROS_DISTRO}" \
+      -e "use_locked_versions=${USE_LOCKFILE}" && \
     sudo rm -rf /opt/acados/.git /opt/acados/examples /opt/acados/docs /opt/acados/test && \
     pipx uninstall ansible
 USER root

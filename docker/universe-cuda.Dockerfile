@@ -19,11 +19,11 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     pipx install --include-deps "ansible==10.*" && \
     cd /tmp/ansible && \
     ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
-    LOCK_ARGS=$([ "${USE_LOCKFILE}" = "true" ] && echo "-e use_locked_versions=true" || echo "") && \
     ansible-playbook autoware.dev_env.install_image_deps \
       --tags core,acados \
       --skip-tags base,nvidia \
-      -e "rosdistro=${ROS_DISTRO}" ${LOCK_ARGS} && \
+      -e "rosdistro=${ROS_DISTRO}" \
+      -e "use_locked_versions=${USE_LOCKFILE}" && \
     sudo rm -rf /opt/acados/.git /opt/acados/examples /opt/acados/docs /opt/acados/test && \
     pipx uninstall ansible
 USER root
@@ -100,10 +100,10 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     pipx install --include-deps "ansible==10.*" && \
     cd /tmp/ansible && \
     ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
-    LOCK_ARGS=$([ "${USE_LOCKFILE}" = "true" ] && echo "-e use_locked_versions=true" || echo "") && \
     ansible-playbook autoware.dev_env.install_image_deps \
       --tags geographiclib,qt5ct_setup \
-      -e "rosdistro=${ROS_DISTRO}" ${LOCK_ARGS} && \
+      -e "rosdistro=${ROS_DISTRO}" \
+      -e "use_locked_versions=${USE_LOCKFILE}" && \
     pipx uninstall ansible
 USER root
 
