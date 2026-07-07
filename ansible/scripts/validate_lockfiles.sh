@@ -54,7 +54,7 @@ validate_digest_coverage() {
         return 0
     fi
 
-    # cspell:ignore splitlines
+    # cspell:ignore findall
     python3 - "$BAKE_FILE" "$ANSIBLE_DIR" <<'PY'
 import glob, os, re, sys
 
@@ -81,7 +81,7 @@ if missing_digest:
     errors.append("lockfile(s) with no BASE_IMAGE_DIGESTS entry (locked build would use an "
                   f"unpinned base): {', '.join(sorted(missing_digest))}")
 if missing_lock:
-    errors.append("BASE_IMAGE_DIGESTS entr(y/ies) with no lockfile (stale digest): "
+    errors.append("BASE_IMAGE_DIGESTS entries with no lockfile (stale digest): "
                   f"{', '.join(sorted(missing_lock))}")
 if errors:
     sys.exit("Error: docker-bake.hcl digests and ansible lockfiles are out of sync:\n  - "
