@@ -40,6 +40,7 @@
       - libnpp-dev-{{ cuda__dash_case_cuda_version.stdout }}
       - libnvjpeg-dev-{{ cuda__dash_case_cuda_version.stdout }}
     update_cache: true
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
   when: install_devel == 'y'
 
 - name: Install CUDA libraries except for cuda-drivers
@@ -53,6 +54,7 @@
       - libnpp-{{ cuda__dash_case_cuda_version.stdout }}
       - libnvjpeg-{{ cuda__dash_case_cuda_version.stdout }}
     update_cache: true
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
   when: install_devel == 'N'
 
 - name: Install extra CUDA libraries for x86_64 (CUDA 12 only — nvprof removed in CUDA 13)
@@ -61,6 +63,7 @@
     name:
       - cuda-nvprof-{{ cuda__dash_case_cuda_version.stdout }}
     update_cache: true
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
   when: cuda_architecture.stdout == "x86_64" and ansible_distribution_version == '22.04'
 
 - name: Install cuda-drivers
