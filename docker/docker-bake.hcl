@@ -161,15 +161,13 @@ target "base-cuda-runtime" {
   contexts = {
     autoware-base = ctx("base")
   }
-  // No USE_LOCKFILE: these images inherit the frozen apt pins + dated snapshot
-  // source (and the digest-pinned OS closure) from the base target they build
-  // FROM, so their Ubuntu-archive packages are already locked. The CUDA /
-  // TensorRT / spconv packages come from NVIDIA's own apt repos, which the
-  // lockfile does not yet cover, so install_nvidia is not run in locked mode.
-  // Threading USE_LOCKFILE here would imply a freeze it cannot deliver.
+  // Locked mode freezes the NVIDIA apt closure (CUDA / TensorRT) via the
+  // lockfile's nvidia_pins section, inherited as APT preferences from the base
+  // image and enforced by install_nvidia running under use_locked_versions.
   args = {
-    BASE_IMAGE = "autoware-base"
-    ROS_DISTRO = ROS_DISTRO
+    BASE_IMAGE   = "autoware-base"
+    ROS_DISTRO   = ROS_DISTRO
+    USE_LOCKFILE = USE_LOCKFILE
   }
 }
 
@@ -180,10 +178,11 @@ target "base-cuda-devel" {
   contexts = {
     autoware-base = ctx("base")
   }
-  // See base-cuda-runtime: USE_LOCKFILE is intentionally not threaded here.
+  // See base-cuda-runtime.
   args = {
-    BASE_IMAGE = "autoware-base"
-    ROS_DISTRO = ROS_DISTRO
+    BASE_IMAGE   = "autoware-base"
+    ROS_DISTRO   = ROS_DISTRO
+    USE_LOCKFILE = USE_LOCKFILE
   }
 }
 
