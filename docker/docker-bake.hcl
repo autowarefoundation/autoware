@@ -180,8 +180,8 @@ target "base-cuda-devel" {
   }
   // See base-cuda-runtime.
   args = {
-    BASE_IMAGE   = "autoware-base"
-    ROS_DISTRO   = ROS_DISTRO
+    BASE_IMAGE = "autoware-base"
+    ROS_DISTRO = ROS_DISTRO
     USE_LOCKFILE = USE_LOCKFILE
   }
 }
