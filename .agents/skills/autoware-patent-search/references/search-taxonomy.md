@@ -1,13 +1,21 @@
 # Autoware patent-search taxonomy
 
-Use these terms to build cross-database patent queries. Mix broad domain terms with the changed algorithm's specific terms.
+Use these terms to build module-based Google Patents Public Data BigQuery queries. Mix broad domain terms with the existing module's specific functions, topics, parameters, and behavior logic.
 
-## Target databases
+## Primary patent data source
 
-Only use these patent databases unless the user explicitly changes scope later:
+Use **Google Patents Public Data via BigQuery** as the primary retrieval mechanism. Generate reproducible Standard SQL against `patents-public-data.patents.publications`. Optional Google Patents search URLs may be produced only as supporting human-review links.
 
-- **Google Patents**: useful for international full-text searching, English/Japanese terms, CPC hints, and assignee filters.
-- **J-PlatPat**: useful for Japan-focused searches, FI/F-term exploration, Japanese terminology, and Japanese assignee names. Prefer recording the keywords and filters used because stable deep links may not always be available.
+Do not use non-Google patent databases for this MVP unless the user explicitly changes scope later.
+
+## Suggested MVP module targets
+
+- planning, behavior planning, trajectory planning, route planning
+- obstacle avoidance, lane change, stop decision, drivable area generation
+- vehicle control, lateral control, longitudinal control, trajectory tracking
+- fallback, MRM, safety monitor, fail operational, emergency stop, degradation
+- perception-to-planning interfaces, object prediction, predicted paths, occupancy grids
+- traffic signals, intersections, stop lines, maps, lanelets, infrastructure, V2X
 
 ## English terms
 
@@ -45,9 +53,9 @@ Use these only when the user asks to review a particular company's portfolio or 
 - English examples: Toyota, Honda, Nissan, Denso, Aisin, Hitachi Astemo, Bosch, Continental, Mobileye, Waymo, Aptiv, ZF
 - Japanese examples: トヨタ, 本田技研, ホンダ, 日産, デンソー, アイシン, 日立Astemo, ボッシュ, コンチネンタル
 
-## CPC/IPC and Japan classification hints
+## CPC/IPC classification hints
 
-Use these only as search hints:
+Use these only as search hints, not legal conclusions:
 
 - B60W: vehicle control systems for different vehicle sub-units, ADAS, automated driving control
 - G05D1/00: control of position, course, altitude, or attitude of vehicles
@@ -57,4 +65,3 @@ Use these only as search hints:
 - G06V20/56: image/video understanding for autonomous driving scenes
 - G01C21/00: navigation and route guidance
 - H04W4/40: vehicle communication services, V2X-related communication
-- J-PlatPat FI/F-term exploration is useful after a relevant Japanese document is found; record FI/F-term values if they appear in candidate results.

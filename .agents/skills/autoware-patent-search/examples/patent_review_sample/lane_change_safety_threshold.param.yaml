@@ -1,0 +1,10 @@
+# Test-only patent-review workflow sample data.
+# This file is not an Autoware runtime module, launch input, or upstream proposal.
+# It represents a conceptual lane-change behavior-planning threshold for examples.
+
+/**:
+  ros__parameters:
+    # Sample collision-check margin for lane-change path generation.
+    # Raising this value makes the validation scenario conceptually more conservative
+    # around predicted objects during lane-change safety evaluation.
+    lane_change_predicted_object_collision_margin_m: 1.8

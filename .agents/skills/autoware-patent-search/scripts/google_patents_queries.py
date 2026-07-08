@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility wrapper that emits Google Patents search URLs for Autoware IP triage."""
+"""Compatibility wrapper that emits optional Google Patents review URLs."""
 
 from __future__ import annotations
 
