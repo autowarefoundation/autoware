@@ -165,8 +165,8 @@ target "base-cuda-runtime" {
   // lockfile's nvidia_pins section, inherited as APT preferences from the base
   // image and enforced by install_nvidia running under use_locked_versions.
   args = {
-    BASE_IMAGE   = "autoware-base"
-    ROS_DISTRO   = ROS_DISTRO
+    BASE_IMAGE = "autoware-base"
+    ROS_DISTRO = ROS_DISTRO
     USE_LOCKFILE = USE_LOCKFILE
   }
 }
