@@ -80,6 +80,22 @@ for pkg in sorted(pins):
 
     $has_error && exit 1
 
+    # Preserve any existing nvidia_pins block verbatim. It is populated separately by
+    # emit_nvidia_pins.py (this generator has no way to freshly measure the NVIDIA
+    # closure), so a rerun here must not silently drop it.
+    local nvidia_block
+    nvidia_block=$(python3 -c "
+import yaml
+data = yaml.safe_load(open('$OUTPUT_FILE')) or {}
+pins = data.get('nvidia_pins') or {}
+if pins:
+    print('nvidia_pins:')
+    for pkg in sorted(pins):
+        print(f'  {pkg}: {pins[pkg]}')
+else:
+    print('nvidia_pins: {}')
+")
+
     # Preserve any existing ros_overrides block verbatim.
     local overrides
     overrides=$(python3 -c "
@@ -114,6 +130,7 @@ HEADER
                 echo "  ${pkg}: ${pip_versions[$pkg]}"
             done
         fi
+        echo "$nvidia_block"
         echo "$overrides"
     } >"$OUTPUT_FILE"
 
