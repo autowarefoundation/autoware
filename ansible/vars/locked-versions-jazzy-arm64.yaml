@@ -26,4 +26,52 @@ apt_pins:
   wget: 1.21.4-1ubuntu4.1
 pip_pins:
   gdown: 6.1.0
+nvidia_pins:
+  cuda-cccl-13-0: 13.0.85-1
+  cuda-command-line-tools-13-0: 13.0.3-1
+  cuda-compiler-13-0: 13.0.3-1
+  cuda-crt-13-0: 13.0.88-1
+  cuda-cudart-13-0: 13.0.96-1
+  cuda-cudart-dev-13-0: 13.0.96-1
+  cuda-culibos-dev-13-0: 13.0.85-1
+  cuda-cuobjdump-13-0: 13.0.85-1
+  cuda-cupti-13-0: 13.0.85-1
+  cuda-cupti-dev-13-0: 13.0.85-1
+  cuda-cuxxfilt-13-0: 13.0.85-1
+  cuda-driver-dev-13-0: 13.0.96-1
+  cuda-gdb-13-0: 13.0.85-1
+  cuda-keyring: 1.1-1
+  cuda-minimal-build-13-0: 13.0.3-1
+  cuda-nvcc-13-0: 13.0.88-1
+  cuda-nvdisasm-13-0: 13.0.85-1
+  cuda-nvml-dev-13-0: 13.0.87-1
+  cuda-nvprune-13-0: 13.0.85-1
+  cuda-nvrtc-13-0: 13.0.88-1
+  cuda-nvrtc-dev-13-0: 13.0.88-1
+  cuda-nvtx-13-0: 13.0.85-1
+  cuda-profiler-api-13-0: 13.0.85-1
+  cuda-sanitizer-13-0: 13.0.85-1
+  cuda-toolkit-13-0-config-common: 13.0.96-1
+  cuda-toolkit-13-config-common: 13.3.29-1
+  cuda-toolkit-config-common: 13.3.29-1
+  libcublas-13-0: 13.1.1.3-1
+  libcublas-dev-13-0: 13.1.1.3-1
+  libcurand-13-0: 10.4.0.35-1
+  libcurand-dev-13-0: 10.4.0.35-1
+  libcusparse-13-0: 12.6.3.3-1
+  libcusparse-dev-13-0: 12.6.3.3-1
+  libnpp-13-0: 13.0.1.2-1
+  libnpp-dev-13-0: 13.0.1.2-1
+  libnvinfer-dev: 10.13.3.9-1+cuda13.0
+  libnvinfer-headers-dev: 10.13.3.9-1+cuda13.0
+  libnvinfer-headers-plugin-dev: 10.13.3.9-1+cuda13.0
+  libnvinfer-plugin-dev: 10.13.3.9-1+cuda13.0
+  libnvinfer-plugin10: 10.13.3.9-1+cuda13.0
+  libnvinfer10: 10.13.3.9-1+cuda13.0
+  libnvjpeg-13-0: 13.0.1.86-1
+  libnvjpeg-dev-13-0: 13.0.1.86-1
+  libnvonnxparsers-dev: 10.13.3.9-1+cuda13.0
+  libnvonnxparsers10: 10.13.3.9-1+cuda13.0
+  libnvptxcompiler-13-0: 13.0.88-1
+  libnvvm-13-0: 13.0.88-1
 ros_overrides: {}
