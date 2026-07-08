@@ -8,6 +8,7 @@ over its accretive repo. Run this on a machine that has just completed an
 versions and rewrites only nvidia_pins.
 """
 
+# cspell:ignore indextargets
 import glob
 import os
 import subprocess
