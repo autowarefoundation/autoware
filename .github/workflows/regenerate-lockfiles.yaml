@@ -1,0 +1,210 @@
+name: regenerate-lockfiles
+
+# Event-driven regeneration of the dependency lockfiles and base-image digests.
+# NO schedule: calendar-cron auto-bumps were rejected in review (uncontrolled
+# churn). Trigger manually (workflow_dispatch) or from a dependency/CVE advisory
+# (repository_dispatch, type "regenerate-lockfiles"). A regenerate installs the
+# UNLOCKED (latest) dependency set and freezes it against the supplied snapshot
+# date; the previous lockfiles stay valid if a matrix cell fails, so urgency is
+# low (R-VP-03).
+on:
+  workflow_dispatch:
+    inputs:
+      humble_snapshot_date:
+        description: snapshots.ros.org date to freeze humble against (YYYY-MM-DD)
+        required: true
+        type: string
+      jazzy_snapshot_date:
+        description: snapshots.ros.org date to freeze jazzy against (YYYY-MM-DD)
+        required: true
+        type: string
+      reason:
+        description: Why the lockfiles are being regenerated (shown in the PR body)
+        required: false
+        type: string
+        default: manual dispatch
+  repository_dispatch:
+    types:
+      - regenerate-lockfiles
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { distro: humble, arch: amd64, image: ubuntu:22.04, runner: ubuntu-24.04 }
+          - { distro: jazzy, arch: amd64, image: ubuntu:24.04, runner: ubuntu-24.04 }
+          - { distro: humble, arch: arm64, image: ubuntu:22.04, runner: ubuntu-24.04-arm }
+          - { distro: jazzy, arch: arm64, image: ubuntu:24.04, runner: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      - name: 🗓️ Resolve snapshot date for ${{ matrix.distro }}
+        id: date
+        env:
+          DISPATCH_DATE: ${{ github.event.inputs[format('{0}_snapshot_date', matrix.distro)] || github.event.client_payload[format('{0}_snapshot_date', matrix.distro)] }}
+        run: |
+          set -eu
+          if [ -z "${DISPATCH_DATE:-}" ]; then
+            echo "::error::no snapshot date supplied for ${{ matrix.distro }}"
+            exit 1
+          fi
+          case "$DISPATCH_DATE" in
+            [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;;
+            *) echo "::error::snapshot date '$DISPATCH_DATE' is not YYYY-MM-DD"; exit 1 ;;
+          esac
+          echo "value=$DISPATCH_DATE" >> "$GITHUB_OUTPUT"
+
+      - name: 🛒 Check out repository
+        uses: actions/checkout@v6
+
+      - name: 🌐 Configure apt and debconf
+        run: |
+          echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/99-retries
+          echo 'Acquire::http::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries
+          echo 'Acquire::https::Timeout "30";' >> /etc/apt/apt.conf.d/99-retries
+          echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+
+      - name: 🔧 Install ansible
+        run: bash ansible/scripts/install-ansible.sh
+
+      - name: 📚 Install Galaxy collections
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml
+
+      - name: 🚀 Install dev environment (unlocked, latest versions)
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          ansible-playbook autoware.dev_env.install_dev_env \
+            -e prompt_install_nvidia=n --skip-tags artifacts -v
+
+      - name: 🔁 Regenerate ${{ matrix.distro }}-${{ matrix.arch }} lockfile
+        env:
+          ROS_DISTRO: ${{ matrix.distro }}
+          ROS_SNAPSHOT_DATE: ${{ steps.date.outputs.value }}
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          ./ansible/scripts/generate_ansible_lockfile.sh
+          echo "::group::locked-versions-${{ matrix.distro }}-${{ matrix.arch }}.yaml"
+          cat "ansible/vars/locked-versions-${{ matrix.distro }}-${{ matrix.arch }}.yaml"
+          echo "::endgroup::"
+
+      - name: ⬆️ Upload regenerated lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: locked-versions-${{ matrix.distro }}-${{ matrix.arch }}
+          path: ansible/vars/locked-versions-${{ matrix.distro }}-${{ matrix.arch }}.yaml
+          if-no-files-found: error
+
+  open-pr:
+    needs: regenerate
+    # Proceed even if some matrix cells failed (R-VP-03): apply whatever lockfiles
+    # were regenerated; cells that failed keep their previous, still-valid lockfile.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: 🛒 Check out repository
+        uses: actions/checkout@v6
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: 📦 Install PyYAML
+        run: pip install pyyaml
+
+      - name: ⬇️ Download regenerated lockfiles
+        uses: actions/download-artifact@v4
+        with:
+          pattern: locked-versions-*
+          path: /tmp/lockfiles
+
+      - name: 📝 Apply regenerated lockfiles
+        run: |
+          set -eu
+          shopt -s nullglob
+          applied=false
+          for f in /tmp/lockfiles/locked-versions-*/locked-versions-*.yaml; do
+            cp -v "$f" ansible/vars/
+            applied=true
+          done
+          if [ "$applied" = false ]; then
+            echo "::warning::no regenerated lockfiles were produced; nothing to update"
+          fi
+
+      - name: 🔐 Resolve base image digests and update docker-bake.hcl
+        run: |
+          set -eu
+          for distro in humble jazzy; do
+            # Only refresh a distro's digest if that distro was actually
+            # regenerated this run, so the digest and ros_snapshot_date for a
+            # distro never drift apart.
+            if ! ls /tmp/lockfiles/locked-versions-"${distro}"-*/locked-versions-"${distro}"-*.yaml >/dev/null 2>&1; then
+              echo "Skipping ${distro} digest (no regenerated lockfile this run)."
+              continue
+            fi
+            digest=$(docker buildx imagetools inspect "ros:${distro}-ros-base" \
+              --format '{{.Manifest.Digest}}')
+            echo "ros:${distro}-ros-base -> ${digest}"
+            python3 ansible/scripts/update_base_image_digest.py \
+              docker/docker-bake.hcl --distro "$distro" --digest "$digest"
+          done
+
+      - name: ✅ Validate lockfiles (format + digest/lockfile coverage)
+        run: ./ansible/scripts/validate_lockfiles.sh
+
+      - name: 🔎 Detect changes
+        id: diff
+        run: |
+          if git diff --quiet -- ansible/vars/ docker/docker-bake.hcl; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No lockfile or digest changes; nothing to open a PR for."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git --no-pager diff --stat -- ansible/vars/ docker/docker-bake.hcl
+          fi
+
+      - name: 🎫 Generate GitHub App token
+        id: app-token
+        if: ${{ steps.diff.outputs.changed == 'true' }}
+        uses: tibdex/github-app-token@v2
+        continue-on-error: true
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: 🚀 Open or update the regenerate PR
+        if: ${{ steps.diff.outputs.changed == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
+          REASON: ${{ github.event.inputs.reason || github.event.client_payload.reason || 'dependency advisory / manual dispatch' }}
+          BRANCH: ci/regenerate-lockfiles
+        run: |
+          set -eu
+          gh auth setup-git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$BRANCH"
+          git add ansible/vars/locked-versions-*.yaml docker/docker-bake.hcl
+          git commit -s \
+            -m "chore(ansible): regenerate dependency lockfiles and base image digests" \
+            -m "Regenerated by the regenerate-lockfiles workflow. Reason: ${REASON}."
+          git push -f origin "$BRANCH"
+          gh pr create \
+            --base "${{ github.event.repository.default_branch }}" \
+            --head "$BRANCH" \
+            --title "chore(ansible): regenerate dependency lockfiles and base image digests" \
+            --body "Automated regeneration of the per-distro/arch lockfiles (\`ansible/vars/locked-versions-*.yaml\`) and the base image digests (\`docker/docker-bake.hcl\` \`BASE_IMAGE_DIGESTS\`), refreshed together so the reproducible-build closure stays consistent. Reason: ${REASON}." \
+            || echo "PR for ${BRANCH} already exists; the force-push above updated it."
+          gh pr edit "$BRANCH" --add-label "run:health-check" 2>/dev/null || true
