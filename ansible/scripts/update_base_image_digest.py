@@ -24,6 +24,9 @@ def update_digest(text: str, distro: str, digest: str) -> str:
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
         raise ValueError(f"digest must be 'sha256:<64 hex chars>', got: {digest!r}")
 
+    # Relies on the canonical HCL formatting where the inner `default = { ... }`
+    # closing brace is indented relative to the outer block's column-0 `}`, the
+    # same assumption ansible/scripts/validate_lockfiles.sh already makes.
     block = re.search(r'variable\s+"BASE_IMAGE_DIGESTS"\s*\{.*?\n\}', text, re.S)
     if not block:
         raise ValueError("BASE_IMAGE_DIGESTS block not found in bake file")
@@ -48,12 +51,11 @@ def main(argv=None) -> int:
     parser.add_argument("--digest", required=True, help="sha256:<hex> (no leading '@')")
     args = parser.parse_args(argv)
 
-    with open(args.bake_file, encoding="utf-8") as handle:
-        text = handle.read()
-
     try:
+        with open(args.bake_file, encoding="utf-8") as handle:
+            text = handle.read()
         updated = update_digest(text, args.distro, args.digest)
-    except ValueError as exc:
+    except (OSError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 

@@ -130,30 +130,42 @@ jobs:
           pattern: locked-versions-*
           path: /tmp/lockfiles
 
-      - name: 📝 Apply regenerated lockfiles
+      - name: 📝 Apply regenerated lockfiles (per distro, atomically)
         run: |
           set -eu
-          shopt -s nullglob
           applied=false
-          for f in /tmp/lockfiles/locked-versions-*/locked-versions-*.yaml; do
-            cp -v "$f" ansible/vars/
-            applied=true
+          for distro in humble jazzy; do
+            amd64="/tmp/lockfiles/locked-versions-${distro}-amd64/locked-versions-${distro}-amd64.yaml"
+            arm64="/tmp/lockfiles/locked-versions-${distro}-arm64/locked-versions-${distro}-arm64.yaml"
+            # A distro's shared multi-arch digest and both arch lockfiles must move
+            # together, so update a distro only when BOTH arches regenerated this run.
+            # A partial run keeps the whole distro's previous, still-valid closure (R-VP-03).
+            if [ -f "$amd64" ] && [ -f "$arm64" ]; then
+              cp -v "$amd64" "$arm64" ansible/vars/
+              applied=true
+            else
+              echo "::warning::skipping ${distro}: incomplete regeneration (need both amd64 and arm64); keeping its previous lockfiles and digest"
+            fi
           done
           if [ "$applied" = false ]; then
-            echo "::warning::no regenerated lockfiles were produced; nothing to update"
+            echo "::warning::no distro was fully regenerated; nothing to update"
           fi
 
       - name: 🔐 Resolve base image digests and update docker-bake.hcl
         run: |
           set -eu
           for distro in humble jazzy; do
-            # Only refresh a distro's digest if that distro was actually
-            # regenerated this run, so the digest and ros_snapshot_date for a
-            # distro never drift apart.
-            if ! ls /tmp/lockfiles/locked-versions-"${distro}"-*/locked-versions-"${distro}"-*.yaml >/dev/null 2>&1; then
-              echo "Skipping ${distro} digest (no regenerated lockfile this run)."
+            amd64="/tmp/lockfiles/locked-versions-${distro}-amd64/locked-versions-${distro}-amd64.yaml"
+            arm64="/tmp/lockfiles/locked-versions-${distro}-arm64/locked-versions-${distro}-arm64.yaml"
+            # Refresh a distro's shared multi-arch digest only when BOTH arches were
+            # regenerated this run (matches the atomic apply above), so the digest and
+            # every arch's ros_snapshot_date for the distro always move together.
+            if [ ! -f "$amd64" ] || [ ! -f "$arm64" ]; then
+              echo "Skipping ${distro} digest (incomplete regeneration this run)."
               continue
             fi
+            # The tag is resolved here, minutes after the matrix cells pulled it; if the
+            # base tag is republished mid-run, re-run so the digest matches the closure.
             digest=$(docker buildx imagetools inspect "ros:${distro}-ros-base" \
               --format '{{.Manifest.Digest}}')
             echo "ros:${distro}-ros-base -> ${digest}"
