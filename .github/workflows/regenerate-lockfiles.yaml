@@ -119,7 +119,7 @@ jobs:
       - name: 🐍 Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.14"
+          python-version: "3.12"
 
       - name: 📦 Install PyYAML
         run: pip install pyyaml
@@ -164,10 +164,25 @@ jobs:
               echo "Skipping ${distro} digest (incomplete regeneration this run)."
               continue
             fi
-            # The tag is resolved here, minutes after the matrix cells pulled it; if the
-            # base tag is republished mid-run, re-run so the digest matches the closure.
-            digest=$(docker buildx imagetools inspect "ros:${distro}-ros-base" \
-              --format '{{.Manifest.Digest}}')
+            # ros:<distro>-ros-base is a floating tag with no date-pinned variant, so
+            # the digest is whatever the tag resolves to at regeneration time (here,
+            # after the matrix cells ran) rather than at the snapshot date. Retry to
+            # ride out transient registry errors / Docker Hub rate limits; if the tag
+            # is republished mid-run, re-run so the committed digest matches the
+            # closure that is validated below.
+            digest=""
+            for attempt in 1 2 3; do
+              if digest=$(docker buildx imagetools inspect "ros:${distro}-ros-base" \
+                   --format '{{.Manifest.Digest}}'); then
+                break
+              fi
+              echo "::warning::imagetools inspect for ros:${distro}-ros-base failed (attempt ${attempt}/3); retrying"
+              sleep 10
+            done
+            if [ -z "$digest" ]; then
+              echo "::error::could not resolve digest for ros:${distro}-ros-base after 3 attempts"
+              exit 1
+            fi
             echo "ros:${distro}-ros-base -> ${digest}"
             python3 ansible/scripts/update_base_image_digest.py \
               docker/docker-bake.hcl --distro "$distro" --digest "$digest"
@@ -199,11 +214,19 @@ jobs:
       - name: 🚀 Open or update the regenerate PR
         if: ${{ steps.diff.outputs.changed == 'true' }}
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           REASON: ${{ github.event.inputs.reason || github.event.client_payload.reason || 'dependency advisory / manual dispatch' }}
           BRANCH: ci/regenerate-lockfiles
         run: |
           set -eu
+          # Do NOT fall back to GITHUB_TOKEN: a PR opened with it does not trigger the
+          # validate-lockfiles gate (GitHub suppresses workflow events on token-created
+          # PRs), so the regenerated closure would be mergeable unvalidated. Fail loudly
+          # instead and let a human configure the App or open the PR from $BRANCH.
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::GitHub App token unavailable (APP_ID/PRIVATE_KEY unset or the token step failed); refusing to open the PR. The branch ${BRANCH} was not pushed; configure the App or open the PR manually."
+            exit 1
+          fi
           gh auth setup-git
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
