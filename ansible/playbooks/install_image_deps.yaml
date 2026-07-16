@@ -10,6 +10,20 @@
           - rosdistro: "{{ rosdistro }}"
       tags: [always]
 
+    # Loads locked_packages and writes /etc/apt/preferences.d/autoware-lock
+    # before the apt roles run. 'always' so it runs under any --tags selection.
+    - name: Apply APT version pins
+      ansible.builtin.import_role:
+        name: autoware.dev_env.version_lock
+      tags: [always]
+
+    - name: Configure dated ROS snapshot source (locked mode)
+      ansible.builtin.import_role:
+        name: autoware.dev_env.ros2
+        tasks_from: snapshot_source
+      when: use_locked_versions | default(false) | bool
+      tags: [always]
+
   roles:
     - role: autoware.dev_env.rmw_implementation
       tags: [base, core, universe, rmw]
@@ -43,3 +57,11 @@
 
     - role: autoware.dev_env.artifacts
       tags: [universe, artifacts]
+
+  post_tasks:
+    - name: Verify installed versions match the lockfile (locked mode)
+      ansible.builtin.import_role:
+        name: autoware.dev_env.version_lock
+        tasks_from: verify
+      when: use_locked_versions | default(false) | bool
+      tags: [always]

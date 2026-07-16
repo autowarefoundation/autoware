@@ -101,6 +101,28 @@ docker buildx bake -f docker/docker-bake.hcl universe-cuda
 ROS_DISTRO=humble docker buildx bake -f docker/docker-bake.hcl base
 ```
 
+## Reproducible builds (`USE_LOCKFILE`)
+
+By default a target builds against the floating `ros:<distro>-ros-base` tag and the latest packages from `packages.ros.org` and the Ubuntu archive, so the same target built on different days can differ. Set `USE_LOCKFILE=true` to make the build reproducible:
+
+```bash
+# Reproducible base image for the default distro (jazzy)
+USE_LOCKFILE=true docker buildx bake -f docker/docker-bake.hcl base
+
+# Reproducible build for humble
+USE_LOCKFILE=true ROS_DISTRO=humble docker buildx bake -f docker/docker-bake.hcl base
+```
+
+When enabled, the build:
+
+- pins the base image to the per-distro digest in `BASE_IMAGE_DIGESTS` (`docker/docker-bake.hcl`) instead of the floating `ros:<distro>-ros-base` tag, freezing the OS-level closure;
+- passes `use_locked_versions=true` to ansible, which pins Ubuntu-archive packages to the versions in `ansible/vars/locked-versions-<distro>-<arch>.yaml` and points ROS at the dated `snapshots.ros.org` source recorded in that lockfile, freezing the entire ROS dependency closure; and
+- verifies after install that every locked package landed at its pinned version, failing the build on any drift.
+
+Only distros that have **both** a lockfile and a `BASE_IMAGE_DIGESTS` entry can be built in locked mode (currently `humble` and `jazzy`); requesting `USE_LOCKFILE=true` for any other `ROS_DISTRO` fails the build rather than silently falling back to a floating base. The CUDA targets (`base-cuda-*`, `universe-cuda`) are intentionally not locked: they inherit the frozen apt pins and dated snapshot from the `base` image they build on, but the CUDA / cuDNN / TensorRT packages from NVIDIA's apt repositories are not yet covered by the lockfile.
+
+See [`ansible/roles/version_lock/README.md`](../ansible/roles/version_lock/README.md) for the lockfile format and how to generate or update lockfiles.
+
 ## Usage
 
 ```bash

@@ -6,6 +6,7 @@ ARG CORE_IMAGE
 FROM ${CORE_DEVEL_IMAGE} AS universe-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
+ARG USE_LOCKFILE=false
 
 USER ${USERNAME}
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
@@ -15,7 +16,8 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
     pipx install --include-deps "ansible==10.*" && \
     ansible-playbook autoware.dev_env.install_image_deps \
       --tags acados \
-      -e "rosdistro=${ROS_DISTRO}" && \
+      -e "rosdistro=${ROS_DISTRO}" \
+      -e "use_locked_versions=${USE_LOCKFILE}" && \
     sudo rm -rf /opt/acados/.git /opt/acados/examples /opt/acados/docs /opt/acados/test && \
     pipx uninstall ansible
 USER root

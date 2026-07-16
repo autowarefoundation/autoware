@@ -6,6 +6,7 @@ ARG BASE_CUDA_DEVEL_IMAGE
 FROM ${BASE_CUDA_DEVEL_IMAGE} AS universe-dependencies-cuda
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
+ARG USE_LOCKFILE=false
 
 USER ${USERNAME}
 # hadolint ignore=DL3003
@@ -21,7 +22,8 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     ansible-playbook autoware.dev_env.install_image_deps \
       --tags core,acados \
       --skip-tags base,nvidia \
-      -e "rosdistro=${ROS_DISTRO}" && \
+      -e "rosdistro=${ROS_DISTRO}" \
+      -e "use_locked_versions=${USE_LOCKFILE}" && \
     sudo rm -rf /opt/acados/.git /opt/acados/examples /opt/acados/docs /opt/acados/test && \
     pipx uninstall ansible
 USER root
@@ -83,6 +85,7 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
 
 FROM ${BASE_CUDA_RUNTIME_IMAGE} AS universe-cuda
 ARG ROS_DISTRO
+ARG USE_LOCKFILE=false
 ENV AUTOWARE_RUNTIME=1
 
 USER ${USERNAME}
@@ -99,7 +102,8 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
     ansible-playbook autoware.dev_env.install_image_deps \
       --tags geographiclib,qt5ct_setup \
-      -e "rosdistro=${ROS_DISTRO}" && \
+      -e "rosdistro=${ROS_DISTRO}" \
+      -e "use_locked_versions=${USE_LOCKFILE}" && \
     pipx uninstall ansible
 USER root
 

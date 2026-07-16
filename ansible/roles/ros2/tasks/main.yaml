@@ -35,38 +35,8 @@
         state: absent
 
 - name: Configure dated ROS snapshot source (locked mode)
+  ansible.builtin.import_tasks: snapshot_source.yaml
   when: use_locked_versions | default(false) | bool
-  block:
-    - name: Assert lockfile is loaded in locked mode
-      ansible.builtin.assert:
-        that: locked_packages is defined
-        fail_msg: >-
-          use_locked_versions=true but locked_packages is undefined. Run the version_lock
-          role first (it is tagged 'always' in the install_dev_env playbook).
-        quiet: true
-
-    - name: Install snapshot archive keyring
-      become: true
-      ansible.builtin.copy:
-        src: ros-snapshot-archive-keyring.gpg
-        dest: /usr/share/keyrings/ros-snapshot-archive-keyring.gpg
-        owner: root
-        group: root
-        mode: "0644"
-
-    - name: Write dated snapshot apt source
-      become: true
-      ansible.builtin.copy:
-        dest: /etc/apt/sources.list.d/ros2-snapshot.sources
-        owner: root
-        group: root
-        mode: "0644"
-        content: |
-          Types: deb
-          URIs: http://snapshots.ros.org/{{ rosdistro }}/{{ locked_packages.ros_snapshot_date }}/ubuntu
-          Suites: {{ ansible_distribution_release }}
-          Components: main
-          Signed-By: /usr/share/keyrings/ros-snapshot-archive-keyring.gpg
 
 - name: Hold check of ros-{{ rosdistro + '-' + ros2_installation_type }}
   ansible.builtin.command: apt-mark showhold

@@ -3,5 +3,20 @@
   connection: local
   vars:
     rosdistro:
+  pre_tasks:
+    # Loads locked_packages and writes /etc/apt/preferences.d/autoware-lock.
+    # 'always' so it runs regardless of --tags; internally gated on use_locked_versions.
+    - name: Apply APT version pins
+      ansible.builtin.import_role:
+        name: autoware.dev_env.version_lock
+      tags: [always]
+
+    # Point ROS at the dated snapshot so the base rmw install is frozen too.
+    - name: Configure dated ROS snapshot source (locked mode)
+      ansible.builtin.import_role:
+        name: autoware.dev_env.ros2
+        tasks_from: snapshot_source
+      when: use_locked_versions | default(false) | bool
+      tags: [always]
   roles:
     - role: autoware.dev_env.rmw_implementation
