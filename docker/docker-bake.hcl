@@ -46,6 +46,27 @@ function "ctx" {
   result = USE_REGISTRY_CONTEXTS ? "docker-image://${tags(name)[0]}" : "target:${name}"
 }
 
+// CUDA architectures by ROS_DISTRO. The same value drives both
+// CMAKE_CUDA_ARCHITECTURES env vars in docker/universe-cuda.Dockerfile.
+//
+//   jazzy  (Ubuntu 24.04 / CUDA 13.0): include sm_110 (Thor Blackwell)
+//   humble (Ubuntu 22.04 / CUDA 12.8): omit sm_110 — Thor's compute
+//                                       capability was introduced in
+//                                       CUDA 13.0 and is not a valid
+//                                       target for the 12.8 toolchain.
+//
+// Compute capabilities: 86=Ampere consumer, 87=Orin, 89=Ada, 90=Hopper,
+//                       110=Thor Blackwell (Jetson Thor + DRIVE Thor).
+//
+// Unknown distros resolve to "" on purpose: an empty CMAKE_CUDA_ARCHITECTURES
+// fails the CUDA build loudly rather than silently picking one distro's list.
+function "cuda_architectures" {
+  params = [distro]
+  result = distro == "jazzy" ? "86;87;89;90;110" : (
+    distro == "humble" ? "86;89;90" : ""
+  )
+}
+
 group "default" {
   targets = ["base",
              "core-dependencies", "core-devel", "core",
@@ -190,6 +211,7 @@ target "_universe-cuda-base" {
     BASE_CUDA_RUNTIME_IMAGE = "autoware-base-cuda-runtime"
     BASE_CUDA_DEVEL_IMAGE   = "autoware-base-cuda-devel"
     ROS_DISTRO              = ROS_DISTRO
+    CUDA_ARCHITECTURES      = cuda_architectures(ROS_DISTRO)
   }
 }
 

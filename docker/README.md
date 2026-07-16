@@ -1,6 +1,6 @@
 # Run Autoware in Docker
 
-<!-- cspell:ignore libcuda libcudart ctypes CDLL byref prereq tegrastats NVDEC NVENC -->
+<!-- cspell:ignore libcuda libcudart ctypes CDLL byref prereq tegrastats NVDEC NVENC Altra -->
 
 ## Image Graph
 
@@ -44,6 +44,19 @@ graph TB
 | `universe-devel-cuda`        | Builds all universe sources with CUDA                                                 | Development with GPU                                       |
 | `universe`                   | Runtime image with compiled autoware (no CUDA)                                        | Deployment without GPU                                     |
 | `universe-cuda`              | Runtime image with compiled autoware, inherits CUDA runtime from `base-cuda-runtime`  | Deployment with GPU                                        |
+
+## CUDA architecture support
+
+All CUDA-bearing images (`base-cuda-*`, `universe-*-cuda`) are built for both `linux/amd64` and `linux/arm64`, with the arm64 variant following the SBSA flavor of CUDA.
+
+The `universe-*-cuda` stages compile Autoware's CUDA code, so they bake a `CMAKE_CUDA_ARCHITECTURES` value selected per ROS distro. The `base-cuda-*` images only carry the CUDA runtime/dev libraries and do not set this variable.
+
+| ROS distro | Ubuntu | CUDA | `CMAKE_CUDA_ARCHITECTURES` (`universe-*-cuda`)      |
+| ---------- | ------ | ---- | --------------------------------------------------- |
+| jazzy      | 24.04  | 13.0 | `86;87;89;90;110` (includes Thor sm_110)            |
+| humble     | 22.04  | 12.8 | `86;89;90` (sm_110 omitted — Thor needs CUDA 13.0+) |
+
+The arm64 SBSA variant has been runtime-verified on NVIDIA Thor (Jetson Thor on JetPack 7) for `jazzy`. The image is expected to also work on other Arm + NVIDIA-dGPU combinations that follow the standard SBSA stack — Ampere Altra + dGPU, Grace+Hopper / GH200, System76 ARM workstations, AWS Graviton + GPU — but these have not been individually verified. **NVIDIA Jetson Orin** (JetPack 6 / L4T Tegra CUDA 12.x) is **not** supported by the SBSA stack and remains out of scope; an L4T-derived image variant would be needed.
 
 ## Pull from GHCR
 
@@ -99,6 +112,9 @@ docker buildx bake -f docker/docker-bake.hcl universe-cuda
 
 # Build for humble
 ROS_DISTRO=humble docker buildx bake -f docker/docker-bake.hcl base
+
+# Cross-build arm64 CUDA image on an amd64 host (slow; CI is recommended)
+docker buildx bake -f docker/docker-bake.hcl universe-cuda --set "*.platform=linux/arm64"
 ```
 
 ## Usage
