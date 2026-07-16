@@ -25,3 +25,6 @@ capture/
 
 # Node.js
 node_modules/
+
+# Autoware Index
+repositories/autoware-index.repos

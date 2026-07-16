@@ -22,7 +22,7 @@ repositories:
   core/autoware_simple_planning_simulator:
     type: git
     url: https://github.com/autowarefoundation/autoware_simple_planning_simulator.git
-    version: main    # Should be updated to a specific version after the first release of autoware_simple_planning_simulator
+    version: main
   core/autoware_system_designer:
     type: git
     url: https://github.com/autowarefoundation/autoware_system_designer.git
