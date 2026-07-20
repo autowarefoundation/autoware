@@ -25,6 +25,5 @@ apt_pins:
   python3-pytest-repeat: 0.9.1-2
   python3-pytest-rerunfailures: 10.2-1
   wget: 1.21.2-2ubuntu1.1
-pip_pins:
-  gdown: 6.1.0
+pip_pins: {}
 ros_overrides: {}

@@ -21,7 +21,7 @@
 
   roles:
     # APT version pinning for reproducible builds (no-op pin file cleanup unless use_locked_versions=true).
-    # 'always' so locked_packages is loaded before any consumer role (ros2, gdown, ...) dereferences it,
+    # 'always' so locked_packages is loaded before any consumer role (ros2, ...) dereferences it,
     # even for partial runs like --tags ros2; every task in the role is gated on use_locked_versions.
     - role: autoware.dev_env.version_lock
       tags: [always]
@@ -37,9 +37,6 @@
       vars:
         rmw_implementation__rosdistro: "{{ rosdistro }}"
       tags: [core, universe, rmw]
-
-    - role: autoware.dev_env.gdown
-      tags: [core, universe, gdown]
 
     - role: autoware.dev_env.build_tools
       tags: [core, universe, build_tools, ccache]
