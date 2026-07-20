@@ -209,7 +209,7 @@
       --revision {{ revision }}
       --local-dir {{ data_dir }}/lidar_centerpoint
   environment:
-    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
   changed_when: false
 
@@ -671,7 +671,7 @@
       --revision {{ revision }}
       --local-dir {{ data_dir }}/simpl_prediction
   environment:
-    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
   changed_when: false
 
@@ -685,7 +685,7 @@
       --revision {{ revision }}
       --local-dir {{ data_dir }}/ptv3
   environment:
-    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
   changed_when: false
 
@@ -699,7 +699,7 @@
       --revision {{ revision }}
       --local-dir {{ data_dir }}/lidar_frnet
   environment:
-    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
   changed_when: false
 
@@ -713,6 +713,6 @@
       --revision {{ revision }}
       --local-dir {{ data_dir }}/calibration_status_classifier
   environment:
-    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
   changed_when: false
