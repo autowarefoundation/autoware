@@ -114,6 +114,13 @@ repositories:
     type: git
     url: https://github.com/rancslab/autoware_launch.git
 
+  # vehicle
+  # DBW2 (ds_dbw) stack: VIN (ds_dbw_autoware) + ds_dbw_can driver + msgs.
+  vehicle/external/dbw_ros:
+    type: git
+    url: https://github.com/rancslab/dbw_ros.git
+    version: ros2
+
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
@@ -122,7 +129,11 @@ repositories:
   sensor_component/external/nebula:
     type: git
     url: https://github.com/ub-cavas/nebula.git
-    version: v1.1.0
+    version: add-ouster-support
+  sensor_component/external/v4l2_camera:
+    type: git
+    url: https://gitlab.com/boldhearts/ros2_v4l2_camera
+    version: humble
   sensor_component/external/sync_tooling_msgs:
     type: git
     url: https://github.com/tier4/sync_tooling_msgs.git
