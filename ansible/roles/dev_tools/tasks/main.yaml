@@ -22,14 +22,14 @@
     update_cache: true
 
 - name: Install pre-commit
-  community.general.pipx:
-    name: pre-commit
-    executable: /usr/bin/pipx
+  ansible.builtin.command:
+    cmd: /usr/bin/pipx install pre-commit
+    creates: ~/.local/bin/pre-commit
 
 - name: Install clang-format
-  community.general.pipx:
-    name: clang-format
-    executable: /usr/bin/pipx
+  ansible.builtin.command:
+    cmd: /usr/bin/pipx install clang-format
+    creates: ~/.local/bin/clang-format
 
 - name: Install Go
   become: true
