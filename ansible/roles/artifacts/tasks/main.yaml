@@ -200,11 +200,13 @@
     checksum: sha256:95ef950bb694bd6de91b7e47f5d191d557e92a7f5e2a6bdf655a8b5eed4075cc
 
 # lidar_centerpoint
-- name: Download lidar_centerpoint model bundle (v3.0)
+- name: Download lidar_centerpoint model bundle ({{ revision }})
+  vars:
+    revision: v3.0
   ansible.builtin.command:
     cmd: >-
       hf download AutowareFoundation/lidar_centerpoint
-      --revision v3.0
+      --revision {{ revision }}
       --local-dir {{ data_dir }}/lidar_centerpoint
   environment:
     PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
@@ -660,11 +662,13 @@
     checksum: sha256:a2a91f5fe9c2e68e3e3647a272bb9bb25cd07631a1990a3fb15efddce7691131
 
 # simpl_prediction
-- name: Download simpl_prediction model bundle (v0.1)
+- name: Download simpl_prediction model bundle ({{ revision }})
+  vars:
+    revision: v0.1
   ansible.builtin.command:
     cmd: >-
       hf download AutowareFoundation/simpl_prediction
-      --revision v0.1
+      --revision {{ revision }}
       --local-dir {{ data_dir }}/simpl_prediction
   environment:
     PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
@@ -672,11 +676,13 @@
   changed_when: false
 
 # ptv3
-- name: Download ptv3 model bundle (v4.0)
+- name: Download ptv3 model bundle ({{ revision }})
+  vars:
+    revision: v4.0
   ansible.builtin.command:
     cmd: >-
       hf download AutowareFoundation/ptv3
-      --revision v4.0
+      --revision {{ revision }}
       --local-dir {{ data_dir }}/ptv3
   environment:
     PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
@@ -684,11 +690,13 @@
   changed_when: false
 
 # lidar_frnet
-- name: Download lidar_frnet model bundle (v2.0)
+- name: Download lidar_frnet model bundle ({{ revision }})
+  vars:
+    revision: v2.0
   ansible.builtin.command:
     cmd: >-
       hf download AutowareFoundation/lidar_frnet
-      --revision v2.0
+      --revision {{ revision }}
       --local-dir {{ data_dir }}/lidar_frnet
   environment:
     PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
@@ -696,11 +704,13 @@
   changed_when: false
 
 # calibration_status_classifier
-- name: Download calibration_status_classifier model bundle (v2.0)
+- name: Download calibration_status_classifier model bundle ({{ revision }})
+  vars:
+    revision: v2.0
   ansible.builtin.command:
     cmd: >-
       hf download AutowareFoundation/calibration_status_classifier
-      --revision v2.0
+      --revision {{ revision }}
       --local-dir {{ data_dir }}/calibration_status_classifier
   environment:
     PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
