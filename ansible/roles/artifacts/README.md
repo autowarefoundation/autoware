@@ -68,7 +68,7 @@ This step should be repeated when a new playbook is added.
 ansible-playbook autoware.dev_env.install_dev_env --tags artifacts -e "data_dir=$HOME/autoware_data/ml_models" --ask-become-pass
 ```
 
-This will download and extract the artifacts to the specified directory and validate the checksums.
+This will download and extract the artifacts to the specified directory. Files fetched with `get_url` are validated against checksums pinned in this role; model bundles fetched from Hugging Face are pinned to a version tag and verified by the `hf` CLI during download.
 
 ### Migrating from the legacy layout
 

@@ -660,133 +660,49 @@
     checksum: sha256:a2a91f5fe9c2e68e3e3647a272bb9bb25cd07631a1990a3fb15efddce7691131
 
 # simpl_prediction
-- name: Create simpl_prediction directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/simpl_prediction"
-    mode: "755"
-    state: directory
-
-- name: Download simpl_prediction/simpl.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/simpl/v0.1.0/simpl.onnx
-    dest: "{{ data_dir }}/simpl_prediction/simpl.onnx"
-    mode: "644"
-    checksum: sha256:ad5e03983193c4d188432f314334697d6a216e7ffc91fb651eee5d6e4c42f492
+- name: Download simpl_prediction model bundle (v0.1)
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/simpl_prediction
+      --revision v0.1
+      --local-dir {{ data_dir }}/simpl_prediction
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
 # ptv3
-- name: Create ptv3 directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/ptv3"
-    mode: "755"
-    state: directory
+- name: Download ptv3 model bundle (v4.0)
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/ptv3
+      --revision v4.0
+      --local-dir {{ data_dir }}/ptv3
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
-- name: Download ptv3/ptv3_encoder.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v4/ptv3_encoder.onnx
-    dest: "{{ data_dir }}/ptv3/ptv3_encoder.onnx"
-    mode: "644"
-    checksum: sha256:c244cfe2e6016740f894fb24480e15d8e29a8c667c90bfcdf95cfbad8a34b9b8
-
-- name: Download ptv3/ptv3_det3d_head.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v4/ptv3_det3d_head.onnx
-    dest: "{{ data_dir }}/ptv3/ptv3_det3d_head.onnx"
-    mode: "644"
-    checksum: sha256:5b199d2765fcec19a4f15e2586f9dde0a85292ba8babd31d2275fd4787807abf
-
-- name: Download ptv3/ptv3_seg3d_head.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v4/ptv3_seg3d_head.onnx
-    dest: "{{ data_dir }}/ptv3/ptv3_seg3d_head.onnx"
-    mode: "644"
-    checksum: sha256:06dcc59e67c39e6ddf9ab26254a188cd85e4d765cfacbd48e9678c152edf5817
-
-- name: Download ptv3/ml_package_ptv3_encoder.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v4/ml_package_ptv3_encoder.param.yaml
-    dest: "{{ data_dir }}/ptv3/ml_package_ptv3_encoder.param.yaml"
-    mode: "644"
-    checksum: sha256:1d7c25436cedf4b785a8f615ad2be2490e6bb707c6194edace46ddd909efbaac
-
-- name: Download ptv3/ml_package_ptv3_det3d_head.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v4/ml_package_ptv3_det3d_head.param.yaml
-    dest: "{{ data_dir }}/ptv3/ml_package_ptv3_det3d_head.param.yaml"
-    mode: "644"
-    checksum: sha256:6b5f724ff03c84add9d9438d279c6ac44722971d345ad72f6052dca4e9adc76b
-
-- name: Download ptv3/ml_package_ptv3_seg3d_head.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/ptv3/v4/ml_package_ptv3_seg3d_head.param.yaml
-    dest: "{{ data_dir }}/ptv3/ml_package_ptv3_seg3d_head.param.yaml"
-    mode: "644"
-    checksum: sha256:db368fda9743370d416b8d17f4aa5eb5ec9bacb1f967edd9f130c3cdd49dde21
-
-# frnet
-- name: Create lidar_frnet directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/lidar_frnet"
-    mode: "755"
-    state: directory
-
-- name: Download lidar_frnet/frnet_ot128.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/frnet_ot128.onnx
-    dest: "{{ data_dir }}/lidar_frnet/frnet_ot128.onnx"
-    mode: "644"
-    checksum: sha256:d29bf5950432360d800c22ff86a590d4d9d006acc501563ac611cfa33747c11f
-
-- name: Download lidar_frnet/frnet_qt128.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/frnet_qt128.onnx
-    dest: "{{ data_dir }}/lidar_frnet/frnet_qt128.onnx"
-    mode: "644"
-    checksum: sha256:647af92790e3d591a19d065fe94d3ded797916ac9ffe5bf96b5e8b8324b31ad2
-
-- name: Download lidar_frnet/ml_package_frnet_ot128.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/ml_package_frnet_ot128.param.yaml
-    dest: "{{ data_dir }}/lidar_frnet/ml_package_frnet_ot128.param.yaml"
-    mode: "644"
-    checksum: sha256:96de220d55a3895131775dba9177e7b8286ea751f5a7cfc20f11e26933fc4575
-
-- name: Download lidar_frnet/ml_package_frnet_qt128.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/frnet/v2/ml_package_frnet_qt128.param.yaml
-    dest: "{{ data_dir }}/lidar_frnet/ml_package_frnet_qt128.param.yaml"
-    mode: "644"
-    checksum: sha256:dcbe9cc2821fa94097ae58cab53a1511a3e974d0662f94389657e666e9a61af6
+# lidar_frnet
+- name: Download lidar_frnet model bundle (v2.0)
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/lidar_frnet
+      --revision v2.0
+      --local-dir {{ data_dir }}/lidar_frnet
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
 # calibration_status_classifier
-- name: Create calibration_status_classifier directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/calibration_status_classifier"
-    mode: "755"
-    state: directory
-
-- name: Download calibration_status_classifier/calibration_status_classifier.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/sensing/models/calibration_status_classifier/v2/calibration_status_classifier.onnx
-    dest: "{{ data_dir }}/calibration_status_classifier/calibration_status_classifier.onnx"
-    mode: "644"
-    checksum: sha256:13d6119e8dc73945ab0efe76b0c9492e2536187fdc7963ba62b8625900f54474
-
-- name: Download calibration_status_classifier/ml_package_calibration_status_classifier.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/sensing/models/calibration_status_classifier/v2/ml_package_calibration_status_classifier.param.yaml
-    dest: "{{ data_dir }}/calibration_status_classifier/ml_package_calibration_status_classifier.param.yaml"
-    mode: "644"
-    checksum: sha256:39d99ce065eea608e2bea3e560eeb1bcee18b2636f988c28afed5219e3e69760
+- name: Download calibration_status_classifier model bundle (v2.0)
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/calibration_status_classifier
+      --revision v2.0
+      --local-dir {{ data_dir }}/calibration_status_classifier
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
