@@ -60,8 +60,7 @@ ros_snapshot_date: "2026-04-13" # a real published date under snapshots.ros.org/
 apt_pins: # Ubuntu-archive origin only, sorted by name; rendered as APT pins
   ccache: 4.9.1-1
   git-lfs: 3.4.1-1ubuntu0.4
-pip_pins: # pip/pipx origin; consumed by roles (e.g. gdown), NOT rendered as APT pins
-  gdown: 6.1.0
+pip_pins: {} # pip/pipx origin; consumed by roles, NOT rendered as APT pins
 ros_overrides: {} # exception pins for individual ROS packages; normally empty
 ```
 
@@ -72,7 +71,7 @@ ros_overrides: {} # exception pins for individual ROS packages; normally empty
   otherwise both sit at priority 500 and apt would install the newer rolling build.
 - `apt_pins` covers Ubuntu-archive packages. It is rendered into `/etc/apt/preferences.d/autoware-lock`
   with `Pin-Priority: 1001`.
-- `pip_pins` covers pip/pipx-managed packages (e.g. `gdown`). It is consumed directly by the
+- `pip_pins` covers pip/pipx-managed packages. It is consumed directly by the
   relevant roles and is **not** rendered as APT pins.
 - `ros_overrides` is rendered into `/etc/apt/preferences.d/autoware-lock` with `Pin-Priority: 1002`,
   one above the snapshot-origin pin so an override wins for its one package.
@@ -101,8 +100,7 @@ contains the build you want, and pinning that exact build so nothing else moves:
 ros_snapshot_date: "2026-05-20" # a snapshot that actually serves the build below
 apt_pins:
   ccache: 4.9.1-1
-pip_pins:
-  gdown: 6.1.0
+pip_pins: {}
 ros_overrides:
   ros-jazzy-rmw-cyclonedds-cpp: 2.2.4-1noble.20260520.083000 # a build present in the 2026-05-20 snapshot
 ```

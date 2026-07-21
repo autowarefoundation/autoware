@@ -26,8 +26,6 @@
       when: module == 'base'
       vars:
         rmw_implementation__rosdistro: "{{ rosdistro }}"
-    - role: autoware.dev_env.gdown
-      when: module == 'base'
     - role: autoware.dev_env.kisak_mesa
       when: module == 'base' and rosdistro != 'jazzy'
     - role: autoware.dev_env.build_tools
