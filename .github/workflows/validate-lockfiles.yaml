@@ -1,0 +1,30 @@
+name: validate-lockfiles
+
+on:
+  pull_request:
+    paths:
+      - ansible/vars/locked-versions-*.yaml
+      - docker/docker-bake.hcl
+      - .github/workflows/validate-lockfiles.yaml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-lockfiles:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Validate lockfiles (format + digest/lockfile coverage)
+        run: ./ansible/scripts/validate_lockfiles.sh
