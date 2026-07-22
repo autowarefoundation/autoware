@@ -32,7 +32,31 @@ ROS_DISTRO=<distro> ROS_SNAPSHOT_DATE=<YYYY-MM-DD> ./ansible/scripts/generate_an
 
 `ROS_SNAPSHOT_DATE` must match the snapshot the machine was provisioned from.
 
-The script reads the package names from the existing lockfile for the current distro/architecture and fills in the versions currently installed on the machine.
+The script reads the package names from the existing lockfile for the current distro/architecture and fills in the versions currently installed on the machine. It rewrites `apt_pins` and `pip_pins`, and preserves `nvidia_pins` and `ros_overrides` verbatim.
+
+### Recording the NVIDIA closure
+
+`nvidia_pins` is filled by a separate script, because the generator above has no way to
+tell an NVIDIA-repo package from an Ubuntu-archive one. On a machine that has just
+completed an **unlocked** `install_nvidia`, run:
+
+```bash
+sudo apt-get update
+./ansible/scripts/emit_nvidia_pins.py ansible/vars/locked-versions-<rosdistro>-<arch>.yaml
+```
+
+<!-- cspell:ignore indextargets -->
+
+The script enumerates every package offered by an NVIDIA apt index (via `apt-get indextargets`,
+so it works with apt's compressed index formats), keeps the ones that are actually installed at a
+version that index offers, and rewrites **only** the `nvidia_pins` section, carrying over the header
+comment block and the contents of every other section. It fails rather than writing a partial file
+if the lockfile has an unknown top-level key or if no NVIDIA-origin packages are installed.
+
+The two generators are order-independent on an already-filled lockfile — `generate_ansible_lockfile.sh`
+preserves `nvidia_pins` and this script preserves `apt_pins`/`pip_pins` — but both must run on a
+machine provisioned from the same snapshot date. On a lockfile that has no `ros_snapshot_date` yet,
+run `generate_ansible_lockfile.sh` first; this script refuses an unfilled lockfile.
 
 ## Validating lockfiles
 
@@ -40,7 +64,7 @@ The script reads the package names from the existing lockfile for the current di
 ./ansible/scripts/validate_lockfiles.sh
 ```
 
-This checks that every `ansible/vars/locked-versions-*.yaml` file is valid YAML with a `ros_snapshot_date` and `apt_pins`/`pip_pins`/`ros_overrides` mappings.
+This checks that every `ansible/vars/locked-versions-*.yaml` file is valid YAML with a `ros_snapshot_date` and `apt_pins`/`pip_pins`/`nvidia_pins`/`ros_overrides` mappings.
 
 Run with no arguments, it additionally cross-checks that the set of ROS distros
 in `docker/docker-bake.hcl`'s `BASE_IMAGE_DIGESTS` map exactly matches the distros
@@ -52,7 +76,7 @@ vice-versa); regenerate both together so the digest matches `ros_snapshot_date`.
 
 ## Lockfile format
 
-A YAML mapping with four keys, one file per distro/arch
+A YAML mapping with five keys, one file per distro/arch
 (`ansible/vars/locked-versions-<rosdistro>-<arch>.yaml`):
 
 ```yaml
@@ -62,6 +86,9 @@ apt_pins: # Ubuntu-archive origin only, sorted by name; rendered as APT pins
   git-lfs: 3.4.1-1ubuntu0.4
 pip_pins: # pip/pipx origin; consumed by roles (e.g. gdown), NOT rendered as APT pins
   gdown: 6.1.0
+nvidia_pins: # NVIDIA apt origin (CUDA/TensorRT closure); rendered as APT pins
+  cuda-nvcc-12-8: 12.8.93-1
+  libnvinfer10: 10.8.0.43-1+cuda12.8
 ros_overrides: {} # exception pins for individual ROS packages; normally empty
 ```
 
@@ -74,13 +101,22 @@ ros_overrides: {} # exception pins for individual ROS packages; normally empty
   with `Pin-Priority: 1001`.
 - `pip_pins` covers pip/pipx-managed packages (e.g. `gdown`). It is consumed directly by the
   relevant roles and is **not** rendered as APT pins.
+- `nvidia_pins` covers the CUDA/TensorRT closure from NVIDIA's apt repo, rendered into
+  `/etc/apt/preferences.d/autoware-lock` with `Pin-Priority: 1001` like `apt_pins`. It is a
+  separate section because NVIDIA publishes no dated snapshot to freeze against — its repo is
+  accretive and only ever serves the newest build by default — so every package in the installed
+  closure has to be pinned by exact version. It is populated by `emit_nvidia_pins.py`, not by
+  `generate_ansible_lockfile.sh` (see "Recording the NVIDIA closure" above), and consumed by the
+  `install_nvidia` playbook, which also enables apt downgrades in locked mode so a machine holding
+  a newer CUDA can be walked back to the pinned versions.
 - `ros_overrides` is rendered into `/etc/apt/preferences.d/autoware-lock` with `Pin-Priority: 1002`,
   one above the snapshot-origin pin so an override wins for its one package.
 - ROS-repo packages (`ros-*`, `python3-colcon-*`, `python3-rosdep`, `python3-vcs2l`,
   `python3-bloom`) are **not** listed in `apt_pins`: the snapshot date freezes them. To move a
   single ROS package ahead of the snapshot, add a one-line entry under `ros_overrides`.
-- After all roles run, the playbook verifies (via `tasks/verify.yaml`) that every `apt_pins` and
-  `ros_overrides` entry actually installed at its locked version, and **fails** listing any drift.
+- After all roles run, the playbook verifies (via `tasks/verify.yaml`) that every `apt_pins`,
+  `nvidia_pins`, and `ros_overrides` entry actually installed at its locked version, and **fails**
+  listing any drift.
   A pin whose version is reachable in no configured source matches nothing, so apt would otherwise
   fall back to the newest candidate silently.
 
