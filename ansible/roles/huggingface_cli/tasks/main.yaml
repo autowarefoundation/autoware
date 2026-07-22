@@ -12,6 +12,6 @@
   when: not huggingface_cli__pipx.stat.exists
 
 - name: Install huggingface_hub for the hf CLI
-  community.general.pipx:
-    name: huggingface_hub
-    executable: /usr/bin/pipx
+  ansible.builtin.command:
+    cmd: /usr/bin/pipx install huggingface_hub
+    creates: ~/.local/bin/hf
