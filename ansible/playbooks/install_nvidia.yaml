@@ -4,7 +4,25 @@
   vars:
     install_devel: N
     cuda_install_drivers: false
+  pre_tasks:
+    # Loads locked_packages and writes /etc/apt/preferences.d/autoware-lock so the
+    # cuda/tensorrt apt installs resolve to the frozen NVIDIA closure. 'always' so
+    # it runs under any --tags; internally gated on use_locked_versions. The base
+    # image already baked this file (rendered from the whole lockfile), so in the
+    # Docker path this is an idempotent re-render that also loads locked_packages
+    # for the verify post_task.
+    - name: Apply APT version pins
+      ansible.builtin.import_role:
+        name: autoware.dev_env.version_lock
+      tags: [always]
   roles:
     - role: autoware.dev_env.cuda
     - role: autoware.dev_env.tensorrt
     - role: autoware.dev_env.spconv
+  post_tasks:
+    - name: Verify installed versions match the lockfile (locked mode)
+      ansible.builtin.import_role:
+        name: autoware.dev_env.version_lock
+        tasks_from: verify
+      when: use_locked_versions | default(false) | bool
+      tags: [always]

@@ -4,7 +4,7 @@
 - name: Verify pinned packages resolved to their locked versions
   when: use_locked_versions | default(false) | bool
   vars:
-    version_lock_expected: "{{ (locked_packages.apt_pins | default({})) | combine(locked_packages.ros_overrides | default({})) }}"
+    version_lock_expected: "{{ (locked_packages.apt_pins | default({})) | combine(locked_packages.nvidia_pins | default({})) | combine(locked_packages.ros_overrides | default({})) }}"
   block:
     - name: Load lockfile for verification
       ansible.builtin.include_vars:
