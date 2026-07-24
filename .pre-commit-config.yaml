@@ -47,7 +47,7 @@ repos:
       - id: check-package-depends
 
   - repo: https://github.com/tier4/pre-commit-hooks-ros
-    rev: v0.10.2
+    rev: v0.10.3
     hooks:
       - id: flake8-ros
       - id: prettier-xacro
@@ -109,10 +109,15 @@ repos:
         additional_dependencies: [prettier@2.7.1, "@prettier/plugin-xml@2.2.0"]
 
   - repo: https://github.com/autowarefoundation/autoware_system_designer
-    rev: v0.3.2
+    rev: v0.4.1
     hooks:
       - id: lint-system-design-format
         args: [--format=github-actions]
+
+  - repo: https://github.com/autowarefoundation/autoware-spell-check-dict
+    rev: e9d756af3ac14bacd5c9cea188d47b39d3160f53
+    hooks:
+      - id: format-cspell-json
 
   - repo: https://github.com/AleksaC/hadolint-py
     rev: v2.14.0
