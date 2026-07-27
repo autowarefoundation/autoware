@@ -15,7 +15,14 @@
       - python3-flake8-quotes
       - python3-pytest-repeat
       - python3-pytest-rerunfailures
-      - ros-build-essential # from ros-dev-tools
+      # ros-build-essential's contents, inlined: the metapackage is served only
+      # by the rolling packages.ros.org repo and is absent from snapshots.ros.org,
+      # so locked mode cannot resolve it. Inlining also lets apt_pins freeze the
+      # actual tools. (python3 is omitted: it is always present.)
+      - build-essential
+      - cmake
+      - git
+      - python3-setuptools
       - python3-bloom # from ros-dev-tools
       - python3-colcon-common-extensions # from ros-dev-tools
       - python3-colcon-mixin # from ros-dev-tools
