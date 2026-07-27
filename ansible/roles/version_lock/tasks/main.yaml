@@ -28,3 +28,14 @@
     path: /etc/apt/preferences.d/autoware-lock
     state: absent
   when: not (use_locked_versions | default(false) | bool)
+
+# Baseline for the pin-completeness check in verify.yaml: whatever is
+# top-level ("manual") before any role runs. Packages the play later installs
+# top-level from the Ubuntu archive must appear in apt_pins; the generator
+# only refreshes keys that already exist, so a forgotten key would otherwise
+# float silently in locked mode.
+- name: Record manually-installed packages before roles run
+  ansible.builtin.command: apt-mark showmanual
+  register: version_lock_manual_before
+  changed_when: false
+  when: use_locked_versions | default(false) | bool

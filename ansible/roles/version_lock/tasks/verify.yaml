@@ -73,3 +73,40 @@
           {{ version_lock_closure_drift.stdout_lines | join('\n') }}
         success_msg: ROS closure matches the {{ locked_packages.ros_snapshot_date }} snapshot.
         quiet: true
+
+    - name: List manually-installed packages after roles ran
+      ansible.builtin.command: apt-mark showmanual
+      register: version_lock_manual_after
+      changed_when: false
+      when: version_lock_manual_before is defined
+
+    - name: Identify packages this run installed top-level from the Ubuntu archive
+      ansible.builtin.command:
+        argv:
+          - python3
+          - "{{ role_path }}/files/check_pin_completeness.py"
+      args:
+        stdin: >-
+          {{ version_lock_manual_after.stdout_lines
+             | difference(version_lock_manual_before.stdout_lines)
+             | join('\n') }}
+      register: version_lock_new_ubuntu_pkgs
+      changed_when: false
+      when: version_lock_manual_before is defined
+
+    - name: Fail if a newly-installed Ubuntu package has no apt_pins entry
+      ansible.builtin.assert:
+        that: version_lock_missing_pins | length == 0
+        fail_msg: |-
+          Locked mode installed top-level Ubuntu-archive packages that have no
+          apt_pins entry, so their versions are not frozen. Add them to every
+          ansible/vars/locked-versions-*.yaml (the regenerate workflow refreshes
+          values but never discovers new keys):
+          {{ version_lock_missing_pins | join('\n') }}
+        success_msg: All newly-installed Ubuntu packages are covered by apt_pins.
+        quiet: true
+      vars:
+        version_lock_missing_pins: >-
+          {{ version_lock_new_ubuntu_pkgs.stdout_lines | default([])
+             | difference((locked_packages.apt_pins | default({})).keys() | list) }}
+      when: version_lock_manual_before is defined
