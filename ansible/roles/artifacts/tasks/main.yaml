@@ -19,98 +19,32 @@
     dest: "{{ data_dir }}/yabloc_pose_initializer/"
 
 # bevfusion
-- name: Create bevfusion directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/bevfusion"
-    mode: "755"
-    state: directory
+- name: Download bevfusion model bundle ({{ revision }})
+  vars:
+    revision: v2.0
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/bevfusion
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/bevfusion"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
-- name: Download bevfusion/bevfusion_lidar.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/bevfusion_lidar.onnx
-    dest: "{{ data_dir }}/bevfusion/bevfusion_lidar.onnx"
-    mode: "644"
-    checksum: sha256:5c29087963bf2c4dc02bf45c29d459303be602d63f9b6adff22a75c9cfb459a6
-
-- name: Download bevfusion/bevfusion_camera_lidar.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/bevfusion_camera_lidar.onnx
-    dest: "{{ data_dir }}/bevfusion/bevfusion_camera_lidar.onnx"
-    mode: "644"
-    checksum: sha256:aa78d2f219146cb1423287643bbef81666d429ddcde4432a2e51db3f212a7c68
-
-- name: Download bevfusion/bevfusion_image_backbone.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/bevfusion_image_backbone.onnx
-    dest: "{{ data_dir }}/bevfusion/bevfusion_image_backbone.onnx"
-    mode: "644"
-    checksum: sha256:799af1e486b5c1245c8e2783bc77522d49e4a6535320ae77eba1b0f829385797
-
-- name: Download bevfusion/ml_package_bevfusion_lidar.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/ml_package_bevfusion_lidar.param.yaml
-    dest: "{{ data_dir }}/bevfusion/ml_package_bevfusion_lidar.param.yaml"
-    mode: "644"
-    checksum: sha256:866265b9f0fc8c17805c0974339d3c7c4e601c1aa212818971fc650d71782181
-
-- name: Download bevfusion/ml_package_bevfusion_camera_lidar.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/ml_package_bevfusion_camera_lidar.param.yaml
-    dest: "{{ data_dir }}/bevfusion/ml_package_bevfusion_camera_lidar.param.yaml"
-    mode: "644"
-    checksum: sha256:50707efcbb7fa80527d0a2effe677557d0be5df5cd72276f9af152399f27c719
-
-- name: Download bevfusion/detection_class_remapper.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/bevfusion/t4base_120m/v2/detection_class_remapper.param.yaml
-    dest: "{{ data_dir }}/bevfusion/detection_class_remapper.param.yaml"
-    mode: "644"
-    checksum: sha256:928f9eb14ac042d725909f12b2be1532c16b09a683485c5936cf04fb04728520
-
-# streampetr
-- name: Create camera_streampetr directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/camera_streampetr"
-    mode: "755"
-    state: directory
-
-- name: Download camera_streampetr/simplify_pts_head_memory.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/streampetr/v1/simplify_pts_head_memory.onnx
-    dest: "{{ data_dir }}/camera_streampetr/simplify_pts_head_memory.onnx"
-    mode: "644"
-    checksum: sha256:49b038bd280a1a4ee4f9e244d6e7315eb9c6f7b6f93e27717d9c21cb4d374015
-
-- name: Download camera_streampetr/simplify_position_embedding.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/streampetr/v1/simplify_position_embedding.onnx
-    dest: "{{ data_dir }}/camera_streampetr/simplify_position_embedding.onnx"
-    mode: "644"
-    checksum: sha256:629f14820cb8288659598f6c056c2f6cebe8df3758f1567e74fd1fb3c0f67163
-
-- name: Download camera_streampetr/simplify_extract_img_feat.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/streampetr/v1/simplify_extract_img_feat.onnx
-    dest: "{{ data_dir }}/camera_streampetr/simplify_extract_img_feat.onnx"
-    mode: "644"
-    checksum: sha256:322c2f426f9a01c43d28456f50b33f0fa2039535cf50db7329483097cd363efd
-
-- name: Download camera_streampetr/ml_package_camera_streampetr.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/streampetr/v1/ml_package_camera_streampetr.param.yaml
-    dest: "{{ data_dir }}/camera_streampetr/ml_package_camera_streampetr.param.yaml"
-    mode: "644"
-    checksum: sha256:f539407f0b3aee65f7d6d30401dd0052dfed86fa7beefef86c79061362615218
+# camera_streampetr
+- name: Download camera_streampetr model bundle ({{ revision }})
+  vars:
+    revision: v1.0
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/camera_streampetr
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/camera_streampetr"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
 # bevdet
 - name: Create tensorrt_bevdet directory inside {{ data_dir }}
@@ -133,41 +67,19 @@
     dest: "{{ data_dir }}/tensorrt_bevdet/"
 
 # image_projection_based_fusion
-- name: Create image_projection_based_fusion directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/image_projection_based_fusion"
-    mode: "755"
-    state: directory
+- name: Download image_projection_based_fusion model bundle ({{ revision }})
+  vars:
+    revision: v5.0
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/image_projection_based_fusion
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/image_projection_based_fusion"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
-- name: Download image_projection_based_fusion/pts_voxel_encoder_pointpainting.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v5/pts_voxel_encoder_pointpainting.onnx
-    dest: "{{ data_dir }}/image_projection_based_fusion/pts_voxel_encoder_pointpainting.onnx"
-    mode: "644"
-    checksum: sha256:3ca452ea5ca9467bf782955f75704ba8466841e275e8b8acd991b9911d53249e
-
-- name: Download image_projection_based_fusion/pts_backbone_neck_head_pointpainting.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v5/pts_backbone_neck_head_pointpainting.onnx
-    dest: "{{ data_dir }}/image_projection_based_fusion/pts_backbone_neck_head_pointpainting.onnx"
-    mode: "644"
-    checksum: sha256:7fe62fcebe0e0f62a000d06aa94d779feb444d933671a4a3189fe01be8c19a00
-- name: Download image_projection_based_fusion/detection_class_remapper.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v5/detection_class_remapper.param.yaml
-    dest: "{{ data_dir }}/image_projection_based_fusion/detection_class_remapper.param.yaml"
-    mode: "644"
-    checksum: sha256:c711f8875ece9b527dfe31ffc75f8c0de2e77945ef67860a959a4e04c36772d5
-- name: Download image_projection_based_fusion/pointpainting_ml_package.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v5/pointpainting_ml_package.param.yaml
-    dest: "{{ data_dir }}/image_projection_based_fusion/pointpainting_ml_package.param.yaml"
-    mode: "644"
-    checksum: sha256:a70f8a01d592aa4e85d481d44377f37ea35ea5271c064723d6d0db7d375990a3
 # lidar_apollo_instance_segmentation
 - name: Create lidar_apollo_instance_segmentation directory inside {{ data_dir }}
   ansible.builtin.file:
@@ -207,42 +119,25 @@
     cmd: >-
       hf download AutowareFoundation/lidar_centerpoint
       --revision {{ revision }}
-      --local-dir {{ data_dir }}/lidar_centerpoint
+      --local-dir "{{ data_dir }}/lidar_centerpoint"
   environment:
     PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
   changed_when: false
 
 # lidar_transfusion
-- name: Create lidar_transfusion directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/lidar_transfusion"
-    mode: "755"
-    state: directory
-
-- name: Download lidar_transfusion/transfusion.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2.1/transfusion.onnx
-    dest: "{{ data_dir }}/lidar_transfusion/transfusion.onnx"
-    mode: "644"
-    checksum: sha256:1d8f0ee6d59ccc3cca914f9892f6ac8f0a9e35082abb91da183c00e3e2c2718a
-
-- name: Download lidar_transfusion/transfusion_ml_package.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2.1/transfusion_ml_package.param.yaml
-    dest: "{{ data_dir }}/lidar_transfusion/transfusion_ml_package.param.yaml"
-    mode: "644"
-    checksum: sha256:476f7727adc17a823962f2e09ba23d40f3116c50be48361d98179d054cd131b6
-
-- name: Download lidar_transfusion/detection_class_remapper.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/transfusion/t4xx1_90m/v2.1/detection_class_remapper.param.yaml
-    dest: "{{ data_dir }}/lidar_transfusion/detection_class_remapper.param.yaml"
-    mode: "644"
-    checksum: sha256:c711f8875ece9b527dfe31ffc75f8c0de2e77945ef67860a959a4e04c36772d5
+- name: Download lidar_transfusion model bundle ({{ revision }})
+  vars:
+    revision: v2.1
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/lidar_transfusion
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/lidar_transfusion"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
 # tensorrt_yolox
 - name: Create tensorrt_yolox directory inside {{ data_dir }}
@@ -669,7 +564,7 @@
     cmd: >-
       hf download AutowareFoundation/simpl_prediction
       --revision {{ revision }}
-      --local-dir {{ data_dir }}/simpl_prediction
+      --local-dir "{{ data_dir }}/simpl_prediction"
   environment:
     PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
@@ -683,7 +578,7 @@
     cmd: >-
       hf download AutowareFoundation/ptv3
       --revision {{ revision }}
-      --local-dir {{ data_dir }}/ptv3
+      --local-dir "{{ data_dir }}/ptv3"
   environment:
     PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
@@ -697,7 +592,7 @@
     cmd: >-
       hf download AutowareFoundation/lidar_frnet
       --revision {{ revision }}
-      --local-dir {{ data_dir }}/lidar_frnet
+      --local-dir "{{ data_dir }}/lidar_frnet"
   environment:
     PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
@@ -711,7 +606,7 @@
     cmd: >-
       hf download AutowareFoundation/calibration_status_classifier
       --revision {{ revision }}
-      --local-dir {{ data_dir }}/calibration_status_classifier
+      --local-dir "{{ data_dir }}/calibration_status_classifier"
   environment:
     PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
