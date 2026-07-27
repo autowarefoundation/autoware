@@ -1,0 +1,31 @@
+# Walk every installed package that the dated ROS snapshot serves at a
+# different version back to the snapshot's version. This matters when packages
+# were installed before the snapshot source existed — above all the ROS closure
+# preinstalled in the ros:<distro>-ros-base base image, whose floating tag is
+# usually newer than the lockfile's ros_snapshot_date. Scoped to
+# snapshot-origin candidates only: a blanket dist-upgrade would also advance
+# unpinned Ubuntu-archive packages past the digest-frozen base-image state.
+# Callers import this file guarded by `when: use_locked_versions`.
+#
+# The apt update below also guarantees python3-apt is present (the apt module
+# installs it on first use), which the enumerator script needs.
+- name: Update apt cache so snapshot candidates are visible
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: List installed packages diverging from the ROS snapshot
+  ansible.builtin.command:
+    argv:
+      - python3
+      - "{{ role_path }}/files/list_ros_snapshot_drift.py"
+  register: version_lock_reconcile_list
+  changed_when: false
+
+- name: Reconcile diverging packages to the snapshot versions
+  become: true
+  ansible.builtin.apt:
+    name: "{{ version_lock_reconcile_list.stdout_lines }}"
+    state: present
+    allow_downgrade: true
+  when: version_lock_reconcile_list.stdout_lines | length > 0
