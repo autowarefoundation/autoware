@@ -24,7 +24,10 @@ sudo apt update && sudo apt install -y \
   python3-flake8-quotes \
   python3-pytest-repeat \
   python3-pytest-rerunfailures \
-  ros-build-essential \
+  build-essential \
+  cmake \
+  git \
+  python3-setuptools \
   python3-bloom \
   python3-colcon-common-extensions \
   python3-colcon-mixin \

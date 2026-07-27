@@ -22,6 +22,21 @@ To use a custom lockfile, override `lockfile_path`:
 ansible-playbook autoware.dev_env.install_dev_env --extra-vars "use_locked_versions=true lockfile_path=/path/to/my-lockfile.yaml" --ask-become-pass
 ```
 
+### Snapshot reconcile
+
+In locked mode the role does not only pin future installs: right after the
+dated snapshot source is configured, a reconcile step walks every **already
+installed** package that the snapshot serves at a different version back to
+the snapshot's version (`tasks/reconcile.yaml`, driven by
+`files/list_ros_snapshot_drift.py`). This matters most for Docker builds: the
+digest-pinned `ros:<distro>-ros-base` base image is built from a floating tag
+and is usually newer than `ros_snapshot_date`, so without the reconcile the
+final image would carry a hybrid ROS closure. The step is scoped to packages
+whose apt candidate originates from `snapshots.ros.org`; Ubuntu-archive
+packages are left at the digest-frozen base-image state plus explicit
+`apt_pins`. After all roles run, verification asserts the whole installed
+closure matches the snapshot (`tasks/verify.yaml`).
+
 ## Generating lockfiles
 
 On a machine already provisioned by `install_dev_env`, run:
@@ -57,6 +72,29 @@ The two generators are order-independent on an already-filled lockfile — `gene
 preserves `nvidia_pins` and this script preserves `apt_pins`/`pip_pins` — but both must run on a
 machine provisioned from the same snapshot date. On a lockfile that has no `ros_snapshot_date` yet,
 run `generate_ansible_lockfile.sh` first; this script refuses an unfilled lockfile.
+
+## When you add a new dependency
+
+Key insertion is the responsibility of the PR that changes a role; the
+`regenerate-lockfiles` workflow refreshes **values** of existing keys but
+never discovers new ones.
+
+| New dependency                                      | Lockfile action                                                                                                                       | Enforced by                                                               |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| ROS-repo package (`ros-*`, `python3-colcon-*`, ...) | none — `ros_snapshot_date` freezes it                                                                                                 | snapshot reconcile + closure verify                                       |
+| Ubuntu-archive package                              | add the key to `apt_pins` in **all four** lockfiles in the same PR (any current version; the next regeneration canonicalizes it)      | locked-mode verify fails listing unpinned newly-installed Ubuntu packages |
+| pip package                                         | add the key to `pip_pins` in the same PR                                                                                              | documented convention only                                                |
+| NVIDIA-repo package                                 | run `emit_nvidia_pins.py` on a machine after an unlocked `install_nvidia`; the regenerate workflow does **not** refresh `nvidia_pins` | documented convention only                                                |
+| Version refresh of existing keys                    | dispatch `regenerate-lockfiles.yaml` (updates lockfiles, snapshot dates, and base-image digests atomically)                           | `validate-lockfiles`                                                      |
+
+The Ubuntu-archive check's "Enforced by" only holds on a fresh host: it diffs
+`apt-mark showmanual` taken before any role runs against the same list taken
+after, so a package that is already manually installed going in — a rerun on
+a developer machine, or a Docker stage inheriting from one that installed it
+already — never shows up in the diff and slips past unchecked. Treat a green
+local run as covering only what was newly installed manual on that host, not
+as proof the lockfiles have no gaps; the check is reliable on the fresh
+containers CI builds from.
 
 ## Validating lockfiles
 
