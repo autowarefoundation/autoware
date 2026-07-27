@@ -51,3 +51,25 @@
           {{ version_lock_drift | default([]) | join('\n') }}
         success_msg: All {{ version_lock_expected | length }} pinned packages match the lockfile.
         quiet: true
+
+    # The asserts above cover only packages listed in the lockfile. The two
+    # tasks below cover the ROS closure as a whole: after every role ran, no
+    # installed package may diverge from what the dated snapshot serves
+    # (reconcile ran earlier; fresh installs always take the 1001-pinned
+    # snapshot candidate, so any hit here means the freeze is broken).
+    - name: Re-check installed packages against the ROS snapshot
+      ansible.builtin.command:
+        argv:
+          - python3
+          - "{{ role_path }}/files/list_ros_snapshot_drift.py"
+      register: version_lock_closure_drift
+      changed_when: false
+
+    - name: Fail if any installed package diverged from the ROS snapshot
+      ansible.builtin.assert:
+        that: version_lock_closure_drift.stdout_lines | length == 0
+        fail_msg: |-
+          Installed packages diverge from the {{ locked_packages.ros_snapshot_date }} ROS snapshot:
+          {{ version_lock_closure_drift.stdout_lines | join('\n') }}
+        success_msg: ROS closure matches the {{ locked_packages.ros_snapshot_date }} snapshot.
+        quiet: true
