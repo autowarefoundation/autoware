@@ -70,9 +70,15 @@
         that: version_lock_closure_drift.stdout_lines | length == 0
         fail_msg: |-
           Installed packages diverge from the {{ locked_packages.ros_snapshot_date }} ROS snapshot:
-          {{ version_lock_closure_drift.stdout_lines | join('\n') }}
+          {{ version_lock_closure_drift_lines }}
         success_msg: ROS closure matches the {{ locked_packages.ros_snapshot_date }} snapshot.
         quiet: true
+      vars:
+        # A folded/literal YAML block scalar leaves join('\n') as a literal
+        # backslash-n, not a real newline (only YAML's own double-quoted-scalar
+        # escape processing decodes \n before Jinja sees it). Precompute the
+        # joined text in a double-quoted var so fail_msg renders one item per line.
+        version_lock_closure_drift_lines: "{{ version_lock_closure_drift.stdout_lines | join(\"\n\") }}"
 
     - name: List manually-installed packages after roles ran
       ansible.builtin.command: apt-mark showmanual
@@ -86,10 +92,13 @@
           - python3
           - "{{ role_path }}/files/check_pin_completeness.py"
       args:
-        stdin: >-
-          {{ version_lock_manual_after.stdout_lines
-             | difference(version_lock_manual_before.stdout_lines)
-             | join('\n') }}
+        # A folded YAML block scalar (>-) does not decode backslash escapes, so
+        # join('\n') would reach the script as a literal backslash-n and never
+        # split into lines. A double-quoted scalar lets YAML's own \n escape
+        # produce a real newline before Jinja evaluates the expression.
+        stdin: "{{ version_lock_manual_after.stdout_lines
+          | difference(version_lock_manual_before.stdout_lines)
+          | join(\"\n\") }}"
       register: version_lock_new_ubuntu_pkgs
       changed_when: false
       when: version_lock_manual_before is defined
@@ -102,11 +111,15 @@
           apt_pins entry, so their versions are not frozen. Add them to every
           ansible/vars/locked-versions-*.yaml (the regenerate workflow refreshes
           values but never discovers new keys):
-          {{ version_lock_missing_pins | join('\n') }}
+          {{ version_lock_missing_pins_lines }}
         success_msg: All newly-installed Ubuntu packages are covered by apt_pins.
         quiet: true
       vars:
         version_lock_missing_pins: >-
           {{ version_lock_new_ubuntu_pkgs.stdout_lines | default([])
              | difference((locked_packages.apt_pins | default({})).keys() | list) }}
+        # See the note on the "diverged from the ROS snapshot" assert above:
+        # fail_msg is a literal block scalar, so join('\n') must be precomputed
+        # in a double-quoted var to get real newlines instead of "\n" text.
+        version_lock_missing_pins_lines: "{{ version_lock_missing_pins | join(\"\n\") }}"
       when: version_lock_manual_before is defined
