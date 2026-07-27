@@ -28,7 +28,7 @@ apt_pins:
   python3-pytest-repeat: 0.9.3-1
   python3-pytest-rerunfailures: 12.0-1
   python3-setuptools: 68.1.2-2ubuntu1.2
-  wget: 1.21.4-1ubuntu4.1
+  wget: 1.21.4-1ubuntu4.4
 pip_pins: {}
 nvidia_pins:
   cuda-cccl-13-0: 13.0.85-1
