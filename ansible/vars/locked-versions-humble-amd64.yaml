@@ -15,6 +15,7 @@ apt_pins:
   git-lfs: 3.0.2-1ubuntu0.3
   golang: 2:1.18~0ubuntu2
   pipx: 1.0.0-1
+  python3-apt: 2.4.0ubuntu4.1
   python3-flake8-blind-except: 0.2.0-2
   python3-flake8-builtins: 1.5.3-3
   python3-flake8-class-newline: 1.6.0-2
@@ -28,6 +29,8 @@ apt_pins:
   python3-pytest-repeat: 0.9.1-2
   python3-pytest-rerunfailures: 10.2-1
   python3-setuptools: 59.6.0-1.2ubuntu0.22.04.3
+  qt5ct: 1.5-1build1
+  rsync: 3.2.7-0ubuntu0.22.04.7
   wget: 1.21.2-2ubuntu1.4
 pip_pins: {}
 nvidia_pins:
