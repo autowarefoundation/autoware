@@ -92,6 +92,7 @@ never discovers new ones.
 | Ubuntu-archive package                              | add the key to `apt_pins` in **all four** lockfiles in the same PR (any current version; the next regeneration canonicalizes it)      | locked-mode verify fails listing unpinned newly-installed Ubuntu packages |
 | pip package                                         | add the key to `pip_pins` in the same PR                                                                                              | documented convention only                                                |
 | NVIDIA-repo package                                 | run `emit_nvidia_pins.py` on a machine after an unlocked `install_nvidia`; the regenerate workflow does **not** refresh `nvidia_pins` | documented convention only                                                |
+| Third-party apt repo package (PPA, vendor repo)     | no lockfile section covers it — see "What the freeze does not cover" below                                                            | nothing                                                                   |
 | Version refresh of existing keys                    | dispatch `regenerate-lockfiles.yaml` (updates lockfiles, snapshot dates, and base-image digests atomically)                           | `validate-lockfiles`                                                      |
 
 The Ubuntu-archive check's "Enforced by" only holds on a fresh host: it diffs
@@ -116,6 +117,27 @@ are exempt from the check. `agnocast` installs `linux-headers-{{ ansible_kernel 
 on bare metal; its name varies per machine and changes on every kernel upgrade,
 so no static lockfile key could cover it. It is a host property, not a
 dependency of Autoware, and freezing it is neither possible nor desirable.
+
+### What the freeze does not cover
+
+The table above is not a complete inventory of what an install pulls in. Two
+categories sit outside the freeze today, and the completeness check does not
+report either of them:
+
+- **Third-party apt repositories.** The check only reports packages whose
+  installed version carries `Origin: Ubuntu`, so a package from any other
+  origin passes silently. The live case is `agnocast`, which installs its
+  heaphook package from a Launchpad PPA (`Origin: LP-PPA-...`) with
+  `state: present`: top-level, version-floating, and covered by none of
+  `ros_snapshot_date`, `apt_pins`, `nvidia_pins`, or `pip_pins`. A locked
+  install that includes `agnocast` therefore is not fully frozen.
+- **pip/pipx-managed packages.** `pip_pins` is currently empty and no role
+  reads it. The pipx installs in `dev_tools` and `huggingface_cli`
+  (`pre-commit`, `clang-format`, `huggingface_hub`) and the venv installs in
+  `acados` all resolve to whatever PyPI serves at build time.
+
+Both are known gaps rather than oversights: closing them means changing how
+those roles install, which is out of scope for the lockfile mechanism itself.
 
 ## Validating lockfiles
 
@@ -157,8 +179,10 @@ ros_overrides: {} # exception pins for individual ROS packages; normally empty
   otherwise both sit at priority 500 and apt would install the newer rolling build.
 - `apt_pins` covers Ubuntu-archive packages. It is rendered into `/etc/apt/preferences.d/autoware-lock`
   with `Pin-Priority: 1001`.
-- `pip_pins` covers pip/pipx-managed packages. It is consumed directly by the
-  relevant roles and is **not** rendered as APT pins.
+- `pip_pins` is the declared home for pip/pipx-managed packages. It is meant to be consumed
+  directly by the relevant roles and is **not** rendered as APT pins. It is currently `{}` in
+  every lockfile and no role reads it: `gdown`, its last consumer, was removed. See "What the
+  freeze does not cover" for the pip/pipx installs that remain unpinned.
 - `nvidia_pins` covers the CUDA/TensorRT closure from NVIDIA's apt repo, rendered into
   `/etc/apt/preferences.d/autoware-lock` with `Pin-Priority: 1001` like `apt_pins`. It is a
   separate section because NVIDIA publishes no dated snapshot to freeze against — its repo is
