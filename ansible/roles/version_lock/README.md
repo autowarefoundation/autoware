@@ -126,11 +126,15 @@ report either of them:
 
 - **Third-party apt repositories.** The check only reports packages whose
   installed version carries `Origin: Ubuntu`, so a package from any other
-  origin passes silently. The live case is `agnocast`, which installs its
-  heaphook package from a Launchpad PPA (`Origin: LP-PPA-...`) with
-  `state: present`: top-level, version-floating, and covered by none of
-  `ros_snapshot_date`, `apt_pins`, `nvidia_pins`, or `pip_pins`. A locked
-  install that includes `agnocast` therefore is not fully frozen.
+  origin passes silently. There are two live cases, both installed top-level
+  with `state: present` and covered by none of `ros_snapshot_date`,
+  `apt_pins`, `nvidia_pins`, or `pip_pins`. `agnocast` installs its heaphook
+  package from a Launchpad PPA (`Origin: LP-PPA-...`). `cuda` installs the
+  `nvidia-open` driver metapackage from NVIDIA's apt repository
+  (`developer.download.nvidia.com`) when `cuda_install_drivers=true`;
+  `nvidia_pins` freezes the CUDA toolkit and TensorRT packages that role names
+  explicitly, not the driver. A locked install that runs either role is
+  therefore not fully frozen.
 - **pip/pipx-managed packages.** `pip_pins` is currently empty and no role
   reads it. The pipx installs in `dev_tools` and `huggingface_cli`
   (`pre-commit`, `clang-format`, `huggingface_hub`) and the Python virtual
