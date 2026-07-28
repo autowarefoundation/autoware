@@ -37,6 +37,13 @@ packages are left at the digest-frozen base-image state plus explicit
 `apt_pins`. After all roles run, verification asserts the whole installed
 closure matches the snapshot (`tasks/verify.yaml`).
 
+Packages under an `apt-mark hold` are **skipped** by both the reconcile and
+the closure assert, and listed in the play output. A hold is an explicit
+operator decision to keep one package where it is; apt refuses to act on a
+held package unless told to override the hold, so including one would abort
+the entire reconcile. The trade-off is that a held package is outside the
+freeze — release the hold if you want locked mode to govern it.
+
 ## Generating lockfiles
 
 On a machine already provisioned by `install_dev_env`, run:

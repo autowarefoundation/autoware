@@ -22,6 +22,13 @@
   register: version_lock_reconcile_list
   changed_when: false
 
+# The enumerator drops held packages rather than aborting the whole reconcile
+# on them; say so out loud, because their versions are then outside the freeze.
+- name: Report packages the reconcile skipped because they are held
+  ansible.builtin.debug:
+    msg: "{{ version_lock_reconcile_list.stderr_lines }}"
+  when: version_lock_reconcile_list.stderr | length > 0
+
 - name: Reconcile diverging packages to the snapshot versions
   become: true
   ansible.builtin.apt:

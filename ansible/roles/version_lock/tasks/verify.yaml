@@ -65,6 +65,13 @@
       register: version_lock_closure_drift
       changed_when: false
 
+    # Held packages are excluded from the closure assert below, so name them:
+    # a hold is the one supported way to keep a package outside the freeze.
+    - name: Report packages the closure check skipped because they are held
+      ansible.builtin.debug:
+        msg: "{{ version_lock_closure_drift.stderr_lines }}"
+      when: version_lock_closure_drift.stderr | length > 0
+
     - name: Fail if any installed package diverged from the ROS snapshot
       ansible.builtin.assert:
         that: version_lock_closure_drift.stdout_lines | length == 0
