@@ -3,8 +3,9 @@ name: validate-lockfiles
 on:
   pull_request:
     paths:
+      - ansible/**
       - ansible/vars/locked-versions-*.yaml
-      - docker/docker-bake.hcl
+      - docker/**
       - .github/workflows/validate-lockfiles.yaml
 
 concurrency:
@@ -28,3 +29,19 @@ jobs:
 
       - name: Validate lockfiles (format + digest/lockfile coverage)
         run: ./ansible/scripts/validate_lockfiles.sh
+
+  build-locked-base:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        rosdistro: [humble, jazzy]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build the locked base image
+        run: USE_LOCKFILE=true ROS_DISTRO=${{ matrix.rosdistro }} docker buildx bake -f docker/docker-bake.hcl base
