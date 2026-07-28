@@ -111,6 +111,12 @@ already-installed package, so on a pre-provisioned machine the pin would never
 be applied while the verification still fails on the mismatch, with advice the
 user cannot act on. Pin only what a task actually moves.
 
+Kernel-coupled packages (`linux-headers-*`, `linux-image-*`, `linux-modules-*`)
+are exempt from the check. `agnocast` installs `linux-headers-{{ ansible_kernel }}`
+on bare metal; its name varies per machine and changes on every kernel upgrade,
+so no static lockfile key could cover it. It is a host property, not a
+dependency of Autoware, and freezing it is neither possible nor desirable.
+
 ## Validating lockfiles
 
 ```bash
