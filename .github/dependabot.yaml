@@ -9,7 +9,6 @@ updates:
     # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#scheduleinterval
     schedule:
       interval: monthly
-    open-pull-requests-limit: 1
     labels:
       - tag:bot
       - type:github-actions
