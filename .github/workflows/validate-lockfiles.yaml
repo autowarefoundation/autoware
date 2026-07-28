@@ -2,10 +2,20 @@ name: validate-lockfiles
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+    # Only what can change the outcome of a locked build. Deliberately narrower
+    # than ansible/** and docker/**: both READMEs and docker/examples live under
+    # those, and a docs-only PR must not trigger two cold container builds.
     paths:
-      - ansible/**
-      - ansible/vars/locked-versions-*.yaml
-      - docker/**
+      - ansible/roles/**
+      - ansible/vars/**
+      - ansible/playbooks/**
+      - docker/*.Dockerfile
+      - docker/docker-bake.hcl
       - .github/workflows/validate-lockfiles.yaml
 
 concurrency:
@@ -30,7 +40,17 @@ jobs:
       - name: Validate lockfiles (format + digest/lockfile coverage)
         run: ./ansible/scripts/validate_lockfiles.sh
 
+  # The locked base bakes below are two cold, uncached container builds. Put
+  # them behind the same opt-in label the repo already uses for its other
+  # expensive lanes (see health-check-ansible.yaml).
+  require-label:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
+    with:
+      label: run:health-check
+
   build-locked-base:
+    needs: require-label
+    if: needs.require-label.outputs.result == 'true'
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
