@@ -7,13 +7,15 @@ on:
       - synchronize
       - reopened
       - labeled
-    # Only what can change the outcome of a locked build. Deliberately narrower
-    # than ansible/** and docker/**: both READMEs and docker/examples live under
+    # Only what can change the outcome of a locked build, plus the scripts that
+    # generate and validate the lockfiles themselves. Deliberately narrower than
+    # ansible/** and docker/**: both READMEs and docker/examples live under
     # those, and a docs-only PR must not trigger two cold container builds.
     paths:
       - ansible/roles/**
       - ansible/vars/**
       - ansible/playbooks/**
+      - ansible/scripts/**
       - docker/*.Dockerfile
       - docker/docker-bake.hcl
       - .github/workflows/validate-lockfiles.yaml
