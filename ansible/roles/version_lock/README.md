@@ -133,8 +133,9 @@ report either of them:
   install that includes `agnocast` therefore is not fully frozen.
 - **pip/pipx-managed packages.** `pip_pins` is currently empty and no role
   reads it. The pipx installs in `dev_tools` and `huggingface_cli`
-  (`pre-commit`, `clang-format`, `huggingface_hub`) and the venv installs in
-  `acados` all resolve to whatever PyPI serves at build time.
+  (`pre-commit`, `clang-format`, `huggingface_hub`) and the Python virtual
+  environment installs in `acados` all resolve to whatever the Python package
+  index serves at install time.
 
 Both are known gaps rather than oversights: closing them means changing how
 those roles install, which is out of scope for the lockfile mechanism itself.
