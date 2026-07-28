@@ -1,3 +1,4 @@
+# cspell:ignore Xsession
 # state: latest so an already-installed package is converged onto the pinned
 # version in locked mode; state: present would leave whatever the machine came
 # with, and the lockfile verification would then fail on a package no task
