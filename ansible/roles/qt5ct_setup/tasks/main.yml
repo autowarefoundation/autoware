@@ -1,13 +1,19 @@
+# state: latest so an already-installed package is converged onto the pinned
+# version in locked mode; state: present would leave whatever the machine came
+# with, and the lockfile verification would then fail on a package no task
+# would ever move.
 - name: Install qt5ct
   ansible.builtin.apt:
     name: qt5ct
-    state: present
+    state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
   become: true
 
 - name: Install rsync
-  ansible.builtin.package:
+  ansible.builtin.apt:
     name: rsync
-    state: present
+    state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
   become: true
 
 - name: Remove qt5ct from auto-start

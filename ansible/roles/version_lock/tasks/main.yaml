@@ -29,6 +29,21 @@
     state: absent
   when: not (use_locked_versions | default(false) | bool)
 
+# Both files/list_ros_snapshot_drift.py and files/check_pin_completeness.py
+# `import apt`, so python3-apt is a declared dependency of this role, not
+# incidental bootstrap. Installing it explicitly, before the baseline below,
+# serves two purposes: it converges onto the pinned version (Ansible's apt
+# module would otherwise self-heal it at whatever apt offers), and it keeps it
+# out of the before/after diff that drives the pin-completeness check.
+- name: Install python3-apt for the version_lock scripts
+  become: true
+  ansible.builtin.apt:
+    name: python3-apt
+    state: latest
+    allow_downgrade: true
+    update_cache: true
+  when: use_locked_versions | default(false) | bool
+
 # Baseline for the pin-completeness check in verify.yaml: whatever is
 # top-level ("manual") before any role runs. Packages the play later installs
 # top-level from the Ubuntu archive must appear in apt_pins; the generator

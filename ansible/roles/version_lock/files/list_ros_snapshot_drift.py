@@ -13,7 +13,7 @@ a hold is an explicit operator decision, and apt refuses to act on a held
 package unless told to override the hold, which would abort the whole
 reconcile over one package the user deliberately froze.
 
-Requires python3-apt (already required by Ansible's apt module) and an
+Requires python3-apt (installed by this role's tasks/main.yaml) and an
 up-to-date apt cache.
 """
 

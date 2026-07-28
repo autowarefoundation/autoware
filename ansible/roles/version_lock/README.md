@@ -103,6 +103,14 @@ local run as covering only what was newly installed manual on that host, not
 as proof the lockfiles have no gaps; the check is reliable on the fresh
 containers CI builds from.
 
+A key in `apt_pins` also obliges the task that installs the package to
+**converge** it — `state: latest` with
+`allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"`, the
+idiom `ros2_dev_tools` uses. `state: present` is a no-op on an
+already-installed package, so on a pre-provisioned machine the pin would never
+be applied while the verification still fails on the mismatch, with advice the
+user cannot act on. Pin only what a task actually moves.
+
 ## Validating lockfiles
 
 ```bash
