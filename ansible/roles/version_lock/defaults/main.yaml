@@ -3,3 +3,11 @@ version_lock_arch_map:
   aarch64: arm64
 # lockfile_path is the published interface-contract variable; renaming would break consumers.
 lockfile_path: "{{ role_path }}/../../vars/locked-versions-{{ rosdistro }}-{{ version_lock_arch_map[ansible_architecture] | default(ansible_architecture) }}.yaml" # noqa: var-naming[no-role-prefix]
+# Optional path to a file whose nvidia_pins describe the CUDA/TensorRT closure
+# THIS run installs. That closure is a function of (cuda_repo_distro,
+# cuda_version, tensorrt_version, arch) and not of rosdistro, so
+# locked-versions-<rosdistro>-<arch>.yaml can only carry the generation the
+# cuda/tensorrt role defaults pick for that distro. A consumer overriding
+# cuda_version or tensorrt_version must point this at its own closure file.
+# Empty means: use the nvidia_pins in lockfile_path.
+nvidia_lockfile_path: "" # noqa: var-naming[no-role-prefix]

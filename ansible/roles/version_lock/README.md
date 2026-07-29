@@ -22,6 +22,20 @@ To use a custom lockfile, override `lockfile_path`:
 ansible-playbook autoware.dev_env.install_dev_env --extra-vars "use_locked_versions=true lockfile_path=/path/to/my-lockfile.yaml" --ask-become-pass
 ```
 
+#### Overriding only the NVIDIA closure
+
+`(rosdistro, arch)` does not identify the CUDA/TensorRT closure. That closure is a function of `(cuda_repo_distro, cuda_version, tensorrt_version, arch)`, and the `cuda` and `tensorrt` roles let a consumer override all four — so `locked-versions-<rosdistro>-<arch>.yaml` can only carry the generation those roles default to for that distro (CUDA 13.0 on 24.04, 12.8 on 22.04). A consumer that overrides `cuda_version` or `tensorrt_version` must supply the matching closure through `nvidia_lockfile_path`:
+
+```bash
+ansible-playbook autoware.dev_env.install_nvidia \
+  --extra-vars "use_locked_versions=true cuda_version=12.8 tensorrt_version=10.8.0.43-1+cuda12.8" \
+  --extra-vars "nvidia_lockfile_path=/path/to/locked-nvidia-ubuntu2404-cuda12.8-amd64.yaml"
+```
+
+The file needs only a top-level `nvidia_pins` mapping, in the same format as a lockfile's. It **replaces** `nvidia_pins` rather than merging into it, and `verify.yaml` then checks the substituted closure, so the pins stay exact and the freeze is unchanged — only the source file moves.
+
+Leaving `nvidia_lockfile_path` empty while overriding a version is not silently tolerated: the `cuda` role fails when no `cuda-*-<version>` entry covers this run, and the `tensorrt` role fails when the pinned `libnvinfer10` disagrees with `tensorrt_version`. Without those guards the CUDA half would install unfrozen (its version-suffixed names simply are not in the closure, and `verify.yaml` reports drift only for keys that are installed) and the TensorRT half would fail with an unattributable `no available installation candidate`.
+
 ### Snapshot reconcile
 
 In locked mode the role does not only pin future installs: right after the

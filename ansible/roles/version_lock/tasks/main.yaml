@@ -14,6 +14,37 @@
       The lockfile may be an unfilled arm64 template.
   when: use_locked_versions | default(false) | bool
 
+- name: Load the consumer-supplied NVIDIA closure
+  ansible.builtin.include_vars:
+    file: "{{ nvidia_lockfile_path }}"
+    name: version_lock_nvidia
+  when:
+    - use_locked_versions | default(false) | bool
+    - nvidia_lockfile_path | length > 0
+
+- name: Assert the consumer-supplied NVIDIA closure provides nvidia_pins
+  ansible.builtin.assert:
+    that:
+      - version_lock_nvidia.nvidia_pins is defined
+      - version_lock_nvidia.nvidia_pins | length > 0
+    fail_msg: >-
+      nvidia_lockfile_path={{ nvidia_lockfile_path }} must define a non-empty
+      'nvidia_pins' mapping.
+  when:
+    - use_locked_versions | default(false) | bool
+    - nvidia_lockfile_path | length > 0
+
+# Substituted, not merged: a consumer supplies its own closure precisely because
+# it installs a different CUDA generation, so keeping the lockfile's own entries
+# would pin packages this run never installs — and, for the unversioned TensorRT
+# names, would pin them to the wrong generation.
+- name: Substitute the consumer-supplied NVIDIA closure # noqa: var-naming[no-role-prefix]
+  ansible.builtin.set_fact:
+    locked_packages: "{{ locked_packages | combine({'nvidia_pins': version_lock_nvidia.nvidia_pins}) }}"
+  when:
+    - use_locked_versions | default(false) | bool
+    - nvidia_lockfile_path | length > 0
+
 - name: Create APT version pins
   become: true
   ansible.builtin.template:
