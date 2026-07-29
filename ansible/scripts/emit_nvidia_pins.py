@@ -139,7 +139,7 @@ def installed_nvidia_pins():
     return dict(sorted(pins.items()))
 
 
-def render(header, data):
+def render(header, data, closure_only=False):
     unknown = set(data) - KNOWN_KEYS
     if unknown:
         sys.exit(
@@ -147,8 +147,12 @@ def render(header, data):
             + ", ".join(sorted(unknown))
         )
     lines = [header.rstrip("\n")]
-    lines.append(f'ros_snapshot_date: "{data["ros_snapshot_date"]}"')
-    for key in ("apt_pins", "pip_pins", "nvidia_pins", "ros_overrides"):
+    if closure_only:
+        keys = ("nvidia_pins",)
+    else:
+        lines.append(f'ros_snapshot_date: "{data["ros_snapshot_date"]}"')
+        keys = ("apt_pins", "pip_pins", "nvidia_pins", "ros_overrides")
+    for key in keys:
         section = data.get(key) or {}
         if not section:
             lines.append(f"{key}: {{}}")
@@ -177,13 +181,18 @@ def main():
             header_lines.append(line)
         else:
             break
-    if "ros_snapshot_date" not in data:
+    # A consumer that overrides cuda_version/tensorrt_version keeps its closure in
+    # a file holding nvidia_pins alone, passed to version_lock as
+    # nvidia_lockfile_path. Such a file has no ROS sections to preserve, so
+    # ros_snapshot_date is not required of it — and must not be invented for it.
+    closure_only = set(data) <= {"nvidia_pins"}
+    if not closure_only and "ros_snapshot_date" not in data:
         sys.exit(f"Error: {path} has no ros_snapshot_date; is it a filled lockfile?")
     data["nvidia_pins"] = installed_nvidia_pins()
     # Render before truncating the output file: render() can sys.exit (e.g. on an
     # unknown top-level key), and opening in "w" mode truncates immediately, so
     # rendering first avoids destroying the lockfile on a failed run.
-    rendered = render("\n".join(header_lines), data)
+    rendered = render("\n".join(header_lines), data, closure_only=closure_only)
     with open(path, "w") as fh:
         fh.write(rendered)
     print(f"Updated nvidia_pins ({len(data['nvidia_pins'])} packages) in {path}")

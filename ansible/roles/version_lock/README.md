@@ -32,7 +32,7 @@ ansible-playbook autoware.dev_env.install_nvidia \
   --extra-vars "nvidia_lockfile_path=/path/to/locked-nvidia-ubuntu2404-cuda12.8-amd64.yaml"
 ```
 
-The file needs only a top-level `nvidia_pins` mapping, in the same format as a lockfile's. It **replaces** `nvidia_pins` rather than merging into it, and `verify.yaml` then checks the substituted closure, so the pins stay exact and the freeze is unchanged — only the source file moves.
+The file needs only a top-level `nvidia_pins` mapping, in the same format as a lockfile's, and is produced the same way (`emit_nvidia_pins.py`, see below). It **replaces** `nvidia_pins` rather than merging into it, and `verify.yaml` then checks the substituted closure, so the pins stay exact and the freeze is unchanged — only the source file moves.
 
 Leaving `nvidia_lockfile_path` empty while overriding a version is not silently tolerated: the `cuda` role fails when no `cuda-*-<version>` entry covers this run, and the `tensorrt` role fails when the pinned `libnvinfer10` disagrees with `tensorrt_version`. Without those guards the CUDA half would install unfrozen (its version-suffixed names simply are not in the closure, and `verify.yaml` reports drift only for keys that are installed) and the TensorRT half would fail with an unattributable `no available installation candidate`.
 
@@ -93,6 +93,17 @@ The two generators are order-independent on an already-filled lockfile — `gene
 preserves `nvidia_pins` and this script preserves `apt_pins`/`pip_pins` — but both must run on a
 machine provisioned from the same snapshot date. On a lockfile that has no `ros_snapshot_date` yet,
 run `generate_ansible_lockfile.sh` first; this script refuses an unfilled lockfile.
+
+The same script records a **closure-only** file for `nvidia_lockfile_path`. Given a file whose only
+top-level key is `nvidia_pins` (an empty one, or one carrying just a header comment), it fills that
+key and leaves the file with no ROS sections — so a consumer's closure never carries a
+`ros_snapshot_date` it does not own. Run it on a machine provisioned with the `cuda_version` /
+`tensorrt_version` that file is meant to describe:
+
+```bash
+printf '# NVIDIA closure for ubuntu2404 / CUDA 12.8 / amd64\nnvidia_pins: {}\n' >closure.yaml
+./ansible/scripts/emit_nvidia_pins.py closure.yaml
+```
 
 ## When you add a new dependency
 
