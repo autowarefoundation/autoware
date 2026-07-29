@@ -26,6 +26,26 @@
   register: cuda__dash_case_cuda_version
   changed_when: false
 
+# The CUDA packages carry version-suffixed names, so a closure from another
+# generation does not collide with them — it simply fails to cover them, and the
+# install proceeds against whatever the accretive NVIDIA repo serves that day.
+# verify.yaml cannot catch that either: it reports drift only for lockfile keys
+# that are installed, and the other generation's keys never are.
+- name: Assert the locked NVIDIA closure covers this cuda_version
+  ansible.builtin.assert:
+    that:
+      - ("cuda-minimal-build-" ~ cuda__dash_case_cuda_version.stdout) in locked_packages.nvidia_pins
+    fail_msg: >-
+      Locked mode: nvidia_pins has no
+      cuda-*-{{ cuda__dash_case_cuda_version.stdout }} entries, so the CUDA
+      closure this run installs would not be frozen. Point nvidia_lockfile_path
+      at a closure recorded for cuda_version={{ cuda_version }}, or drop the
+      cuda_version override.
+    quiet: true
+  when:
+    - use_locked_versions | default(false) | bool
+    - (locked_packages.nvidia_pins | default({})) | length > 0
+
 - name: Install CUDA devel libraries except for cuda-drivers
   become: true
   ansible.builtin.apt:
