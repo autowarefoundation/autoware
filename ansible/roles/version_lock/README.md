@@ -77,7 +77,7 @@ tell an NVIDIA-repo package from an Ubuntu-archive one. On a machine that has ju
 completed an **unlocked** `install_nvidia`, run:
 
 ```bash
-sudo apt-get update
+sudo apt-get update && sudo apt-get install -y python3-apt python3-yaml   # the script imports both
 ./ansible/scripts/emit_nvidia_pins.py ansible/vars/locked-versions-<rosdistro>-<arch>.yaml
 ```
 
