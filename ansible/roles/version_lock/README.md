@@ -147,9 +147,9 @@ dependency of Autoware, and freezing it is neither possible nor desirable.
 
 ### What the freeze does not cover
 
-The table above is not a complete inventory of what an install pulls in. Two
-categories sit outside the freeze today, and the completeness check does not
-report either of them:
+The table above is not a complete inventory of what an install pulls in. Four
+categories sit outside the freeze today, and the completeness check reports
+none of them:
 
 - **Third-party apt repositories.** The check only reports packages whose
   installed version carries `Origin: Ubuntu`, so a package from any other
@@ -168,8 +168,26 @@ report either of them:
   (`pre-commit`, `clang-format`, `huggingface_hub`) and the Python virtual
   environment installs in `acados` all resolve to whatever the Python package
   index serves at install time.
+- **ROS packages the snapshot does not serve at all.** `ros_snapshot_date`
+  freezes the packages the dated snapshot carries. The rolling
+  `packages.ros.org` source stays configured in locked mode, so a `ros-*`
+  package absent from the snapshot still installs from rolling, at the default
+  priority 500 — the `Pin: origin snapshots.ros.org` wildcard cannot apply to a
+  package that origin does not offer. This is not hypothetical: the noble
+  rolling index carries 71 `ros-jazzy-autoware-*` names the 2026-04-13 snapshot
+  lacks, and `core.Dockerfile` deletes the `autoware_core` and
+  `autoware_rviz_plugins` `package.xml` precisely so their dependencies resolve
+  from apt. The closure verify does not report them either: it compares against
+  packages whose apt _candidate_ comes from the snapshot, and theirs does not.
+- **Packages installed outside the roles.** The completeness check diffs
+  `apt-mark showmanual` across the play, so anything installed before
+  `version_lock` runs is invisible to it as well as unpinned — including the
+  packages `docker/base.Dockerfile` installs with a raw `apt-get` before the pin
+  file exists. Transitive Ubuntu dependencies are not checked either (only
+  top-level installs are), nor are the packages the ten `rosdep install` call
+  sites resolve.
 
-Both are known gaps rather than oversights: closing them means changing how
+These are known gaps rather than oversights: closing them means changing how
 those roles install, which is out of scope for the lockfile mechanism itself.
 
 ## Validating lockfiles
