@@ -32,6 +32,8 @@ ansible-playbook autoware.dev_env.install_nvidia \
   --extra-vars "nvidia_lockfile_path=/path/to/locked-nvidia-ubuntu2404-cuda12.8-amd64.yaml"
 ```
 
+`rosdistro` is needed even though the closure does not depend on it: unlike `install_dev_env`, the `install_nvidia` playbook does not define it, and `lockfile_path` — loaded before `nvidia_lockfile_path` is consulted — interpolates it. (`base-cuda.Dockerfile` passes it, which is why the Docker path needs no such note.)
+
 The file needs only a top-level `nvidia_pins` mapping, in the same format as a lockfile's, and is produced the same way (`emit_nvidia_pins.py`, see below). It **replaces** `nvidia_pins` rather than merging into it, and `verify.yaml` then checks the substituted closure, so the pins stay exact and the freeze is unchanged — only the source file moves.
 
 Leaving `nvidia_lockfile_path` empty while overriding a version is not silently tolerated: the `cuda` role fails when no `cuda-*-<version>` entry covers this run, and the `tensorrt` role fails when the pinned `libnvinfer10` disagrees with `tensorrt_version`. Without those guards the CUDA half would install unfrozen (its version-suffixed names simply are not in the closure, and `verify.yaml` reports drift only for keys that are installed) and the TensorRT half would fail with an unattributable `no available installation candidate`.
@@ -153,8 +155,9 @@ report either of them:
   installed version carries `Origin: Ubuntu`, so a package from any other
   origin passes silently. There are three live cases, all installed top-level
   with `state: present` and covered by none of `ros_snapshot_date`,
-  `apt_pins`, `nvidia_pins`, or `pip_pins`. `agnocast` installs its heaphook
-  package from a Launchpad PPA (`Origin: LP-PPA-...`). `cuda` installs the
+  `apt_pins`, `nvidia_pins`, or `pip_pins`. `agnocast` installs two packages
+  from a Launchpad PPA (`Origin: LP-PPA-...`): its heaphook package, and
+  `agnocast_kmod_package` on any non-container host. `cuda` installs the
   `nvidia-open` driver metapackage from NVIDIA's apt repository
   (`developer.download.nvidia.com`) when `cuda_install_drivers=true`;
   `nvidia_pins` freezes the CUDA toolkit and TensorRT packages that role names
