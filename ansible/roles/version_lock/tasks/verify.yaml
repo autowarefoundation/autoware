@@ -57,10 +57,12 @@
     # installed package may diverge from what the dated snapshot serves
     # (reconcile ran earlier; fresh installs always take the 1001-pinned
     # snapshot candidate, so any hit here means the freeze is broken).
+    # See reconcile.yaml for why the interpreter is /usr/bin/python3 and not a
+    # bare `python3` or a templated ansible_python_interpreter.
     - name: Re-check installed packages against the ROS snapshot
       ansible.builtin.command:
         argv:
-          - python3
+          - /usr/bin/python3
           - "{{ role_path }}/files/list_ros_snapshot_drift.py"
       register: version_lock_closure_drift
       changed_when: false
@@ -96,7 +98,7 @@
     - name: Identify packages this run installed top-level from the Ubuntu archive
       ansible.builtin.command:
         argv:
-          - python3
+          - /usr/bin/python3
           - "{{ role_path }}/files/check_pin_completeness.py"
       args:
         # A folded YAML block scalar (>-) does not decode backslash escapes, so
