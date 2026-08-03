@@ -48,9 +48,15 @@
           Locked mode installed versions that differ from the lockfile. The pinned
           version was unreachable in the configured sources, so apt fell back to
           another candidate. Refresh the lockfile or ros_snapshot_date:
-          {{ version_lock_drift | default([]) | join('\n') }}
+          {{ version_lock_drift_lines }}
         success_msg: All {{ version_lock_expected | length }} pinned packages match the lockfile.
         quiet: true
+      vars:
+        # quiet: true suppresses per-item output, so this fail_msg is the only
+        # place the drift list is shown. As at the three sites below, a literal
+        # block scalar leaves join('\n') as backslash-n, so precompute the
+        # joined text in a double-quoted var to get real newlines.
+        version_lock_drift_lines: "{{ version_lock_drift | default([]) | join(\"\n\") }}"
 
     # The asserts above cover only packages listed in the lockfile. The two
     # tasks below cover the ROS closure as a whole: after every role ran, no
