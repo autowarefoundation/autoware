@@ -30,6 +30,7 @@ apt_pins:
   python3-setuptools: 59.6.0-1.2ubuntu0.22.04.3
   qt5ct: 1.5-1build1
   rsync: 3.2.7-0ubuntu0.22.04.7
+  unzip: 6.0-26ubuntu3.2
   wget: 1.21.2-2ubuntu1.4
 pip_pins: {}
 nvidia_pins:
