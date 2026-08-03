@@ -140,84 +140,19 @@
   changed_when: false
 
 # tensorrt_yolox
-- name: Create tensorrt_yolox directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/tensorrt_yolox"
-    mode: "755"
-    state: directory
-
-- name: Download tensorrt_yolox/yolox-tiny.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/yolox-tiny.onnx
-    dest: "{{ data_dir }}/tensorrt_yolox/yolox-tiny.onnx"
-    mode: "644"
-    checksum: sha256:471a665f4243e654dff62578394e508db22ee29fe65d9e389dfc3b0f2dee1255
-
-- name: Download tensorrt_yolox/yolox-sPlus-opt.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/yolox-sPlus-opt.onnx
-    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt.onnx"
-    mode: "644"
-    checksum: sha256:36b0832177b01e6b278e00c7369f1de71e616c36261cbae50f0753d41289da01
-
-- name: Download tensorrt_yolox/yolox-sPlus-opt.EntropyV2-calibration.table
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/yolox-sPlus-opt.EntropyV2-calibration.table
-    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt.EntropyV2-calibration.table"
-    mode: "644"
-    checksum: sha256:b9e9d7da33342262ccaea4469b4d02b8abb32b6d7bf737f9e0883fece1b8f580
-
-- name: Download tensorrt_yolox/yolox-sPlus-T4-960x960-pseudo-finetune.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/object_detection_yolox_s/v1/yolox-sPlus-T4-960x960-pseudo-finetune.onnx
-    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-T4-960x960-pseudo-finetune.onnx"
-    mode: "644"
-    checksum: sha256:f5054e8a890c3be86dc1b4b89a5a36fb2279d4f6110b0159e793be062641bf65
-
-- name: Download tensorrt_yolox/yolox-sPlus-T4-960x960-pseudo-finetune.EntropyV2-calibration.table
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/object_detection_yolox_s/v1/yolox-sPlus-T4-960x960-pseudo-finetune.EntropyV2-calibration.table
-    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-T4-960x960-pseudo-finetune.EntropyV2-calibration.table"
-    mode: "644"
-    checksum: sha256:cc378d327db5616b0b3a4d077bf37100c25a50ecd22d2b542f54098da100f34c
-
-- name: Download tensorrt_yolox/label.txt
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/label.txt
-    dest: "{{ data_dir }}/tensorrt_yolox/label.txt"
-    mode: "644"
-    checksum: sha256:3540a365bfd6d8afb1b5d8df4ec47f82cb984760d3270c9b41dbbb3422d09a0c
-
-# cspell: ignore semseg
-- name: Download tensorrt_yolox/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/object_detection_semseg_yolox_s/v1/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.onnx
-    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.onnx"
-    mode: "644"
-    checksum: sha256:73b3812432cedf65cebf02ca4cb630542fc3b1671c4c0fbf7cee50fa38e416a8
-
-- name: Download tensorrt_yolox/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.EntropyV2-calibration.table
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/object_detection_semseg_yolox_s/v1/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.EntropyV2-calibration.table
-    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt-pseudoV2-T4-960x960-T4-seg16cls.EntropyV2-calibration.table"
-    mode: "644"
-    checksum: sha256:28cd6524d4bcdb2809592a225d28330433e58dc02c92169ea555b44c1a51a584
-
-- name: Download tensorrt_yolox/semseg_color_map.csv
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/object_detection_semseg_yolox_s/v1/semseg_color_map.csv
-    dest: "{{ data_dir }}/tensorrt_yolox/semseg_color_map.csv"
-    mode: "644"
-    checksum: sha256:3d93ca05f31b63424d7d7246a01a2365953705a0ed3323ba5b6fddd744a4bfea
+# Includes the whole_image_traffic_light_detector models (source tl_detector_yolox_s/v1).
+- name: Download tensorrt_yolox model bundle ({{ revision }})
+  vars:
+    revision: v1.0
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/tensorrt_yolox
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/tensorrt_yolox"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
 # tensorrt_rtmdet
 - name: Create tensorrt_rtmdet directory inside {{ data_dir }}
@@ -241,117 +176,20 @@
     extra_opts:
       - --strip-components=1 # Removes the top-level folder during extraction
 
-# tensorrt_yolox for whole_image_traffic_light_detector
-- name: Download tensorrt_yolox/yolox_s_car_ped_tl_detector_960_960_batch_1.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/tl_detector_yolox_s/v1/yolox_s_car_ped_tl_detector_960_960_batch_1.onnx
-    dest: "{{ data_dir }}/tensorrt_yolox/yolox_s_car_ped_tl_detector_960_960_batch_1.onnx"
-    mode: "644"
-    checksum: sha256:0b8478553f2f0374a1236e65f669f11335b1fea7756ca7bcdfcf9646657ed594
-
-- name: Download tensorrt_yolox/yolox_s_car_ped_tl_detector_960_960_batch_1.EntropyV2-calibration.table
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/tl_detector_yolox_s/v1/yolox_s_car_ped_tl_detector_960_960_batch_1.EntropyV2-calibration.table
-    dest: "{{ data_dir }}/tensorrt_yolox/yolox_s_car_ped_tl_detector_960_960_batch_1.EntropyV2-calibration.table"
-    mode: "644"
-    checksum: sha256:690cff409519aca26f4ec0fc56ed35d9aa23ee1c18d6205c43469ae06e2f4e02
-
-- name: Download tensorrt/car_ped_tl_detector_labels.txt
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/tl_detector_yolox_s/v1/car_ped_tl_detector_labels.txt
-    dest: "{{ data_dir }}/tensorrt_yolox/car_ped_tl_detector_labels.txt"
-    mode: "644"
-    checksum: sha256:a2a91f5fe9c2e68e3e3647a272bb9bb25cd07631a1990a3fb15efddce7691131
-
 # traffic_light_classifier
-- name: Create traffic_light_classifier directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/traffic_light_classifier"
-    mode: "755"
-    state: directory
+- name: Download traffic_light_classifier model bundle ({{ revision }})
+  vars:
+    revision: v4.0
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/traffic_light_classifier
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/traffic_light_classifier"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
-- name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_1.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_classifier_mobilenetv2_batch_1.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_1.onnx"
-    mode: "644"
-    checksum: sha256:455b71b3b20d3a96aa0e49f32714ba50421f668a2f9b9907c30b1346ac8a3703
-
-- name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_4.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_classifier_mobilenetv2_batch_4.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_4.onnx"
-    mode: "644"
-    checksum: sha256:41bb79a23a4ac57956adb8e9cb3904420db1b0cd032e97b670cc4f8b174ae3fe
-
-- name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_classifier_mobilenetv2_batch_6.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx"
-    mode: "644"
-    checksum: sha256:e4792eed6a46fdbd02be2f3a4f1ce91f36fa77698493caf3102e445178c0f058
-
-- name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_1.onnx"
-    mode: "644"
-    checksum: sha256:b52632fee96d1bc99922e743335ebfd49d6a0645c8a04e615f156e38661add24
-
-- name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_4.onnx"
-    mode: "644"
-    checksum: sha256:ef0a3052857cdc6f380da524560548b40e9e46f876cccf3cd0cb40ccddae9892
-
-- name: Download traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx"
-    mode: "644"
-    checksum: sha256:b56700551254afa985916d03b74372ebc675f2d9b76ee0e39c46e88c37744a4f
-
-- name: Download traffic_light_classifier/lamp_labels.txt
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/lamp_labels.txt
-    dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels.txt"
-    mode: "644"
-    checksum: sha256:1a5a49eeec5593963eab8d70f48b8a01bfb07e753e9688eb1510ad26e803579d
-
-- name: Download traffic_light_classifier/lamp_labels_ped.txt
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/lamp_labels_ped.txt
-    dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels_ped.txt"
-    mode: "644"
-    checksum: sha256:5427e1b7c2e33acd9565ede29e77992c38137bcf7d7074c73ebbc38080c6bcac
-
-# cspell: ignore comlops
-- name: Download traffic_light_classifier/traffic_light_lamp_recognizer_comlops.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/traffic_light_lamp_recognizer_comlops.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_lamp_recognizer_comlops.onnx"
-    mode: "644"
-    checksum: sha256:300af04a5893961195a9b7ffd9d80364280f328a6dc549f9b1e05d428d96d2e5
-- name: Download traffic_light_classifier/v4/lamp_recognizer_ml.param.yaml
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v4/lamp_recognizer_ml.param.yaml
-    dest: "{{ data_dir }}/traffic_light_classifier/lamp_recognizer_ml.param.yaml"
-    mode: "644"
-    checksum: sha256:80d92943a036ac454aac200a3be83d693dacab924c869f556ef09f70deab097a
 # diffusion_planner
 - name: Create diffusion_planner directory inside {{ data_dir }}
   ansible.builtin.file:
@@ -518,43 +356,18 @@
     checksum: sha256:03d3187fed3c70f761456afc2e93e18c1765113b1c1580ffa78ab42b10dbd179
 
 # traffic_light_fine_detector
-- name: Create traffic_light_fine_detector directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/traffic_light_fine_detector"
-    mode: "755"
-    state: directory
-
-- name: Download traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_1.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v3/tlr_car_ped_yolox_s_batch_1.onnx
-    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_1.onnx"
-    mode: "644"
-    checksum: sha256:1ad633066a1195006f4709f8fa07800dd65a74a814b3efb4c99bcc5a1a7962f6
-
-- name: Download traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_4.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v3/tlr_car_ped_yolox_s_batch_4.onnx
-    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_4.onnx"
-    mode: "644"
-    checksum: sha256:cf93eb1e1a97aefc6edd0c0c4d77c7f5fc2aa1e81e3c5c9cd49d976173d03a04
-
-- name: Download traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_6.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v3/tlr_car_ped_yolox_s_batch_6.onnx
-    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_car_ped_yolox_s_batch_6.onnx"
-    mode: "644"
-    checksum: sha256:0b05a89fb30f1f92c6ec687d48e8ceda4da6f81cbd82d8a102d168753a6cedb6
-
-- name: Download traffic_light_fine_detector/tlr_labels.txt
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v3/tlr_labels.txt
-    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_labels.txt"
-    mode: "644"
-    checksum: sha256:a2a91f5fe9c2e68e3e3647a272bb9bb25cd07631a1990a3fb15efddce7691131
+- name: Download traffic_light_fine_detector model bundle ({{ revision }})
+  vars:
+    revision: v3.0
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/traffic_light_fine_detector
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/traffic_light_fine_detector"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
 # simpl_prediction
 - name: Download simpl_prediction model bundle ({{ revision }})
