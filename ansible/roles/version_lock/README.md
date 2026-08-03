@@ -28,7 +28,7 @@ ansible-playbook autoware.dev_env.install_dev_env --extra-vars "use_locked_versi
 
 ```bash
 ansible-playbook autoware.dev_env.install_nvidia \
-  --extra-vars "use_locked_versions=true cuda_version=12.8 tensorrt_version=10.8.0.43-1+cuda12.8" \
+  --extra-vars "rosdistro=jazzy use_locked_versions=true cuda_version=12.8 tensorrt_version=10.8.0.43-1+cuda12.8" \
   --extra-vars "nvidia_lockfile_path=/path/to/locked-nvidia-ubuntu2404-cuda12.8-amd64.yaml"
 ```
 
@@ -77,7 +77,7 @@ tell an NVIDIA-repo package from an Ubuntu-archive one. On a machine that has ju
 completed an **unlocked** `install_nvidia`, run:
 
 ```bash
-sudo apt-get update && sudo apt-get install -y python3-apt python3-yaml   # the script imports both
+sudo apt-get update && sudo apt-get install -y python3-yaml   # the script imports yaml and shells out to apt-get/apt-helper/dpkg-query
 ./ansible/scripts/emit_nvidia_pins.py ansible/vars/locked-versions-<rosdistro>-<arch>.yaml
 ```
 
@@ -151,7 +151,7 @@ report either of them:
 
 - **Third-party apt repositories.** The check only reports packages whose
   installed version carries `Origin: Ubuntu`, so a package from any other
-  origin passes silently. There are two live cases, both installed top-level
+  origin passes silently. There are three live cases, all installed top-level
   with `state: present` and covered by none of `ros_snapshot_date`,
   `apt_pins`, `nvidia_pins`, or `pip_pins`. `agnocast` installs its heaphook
   package from a Launchpad PPA (`Origin: LP-PPA-...`). `cuda` installs the
