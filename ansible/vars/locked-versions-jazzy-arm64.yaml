@@ -3,7 +3,7 @@
 # Platform: arm64
 # Ubuntu: 24.04 (noble)
 #
-# ros_snapshot_date freezes the entire ROS closure via snapshots.ros.org.
+# ros_snapshot_date freezes every ROS package snapshots.ros.org serves on that date.
 ros_snapshot_date: "2026-04-13"
 apt_pins:
   build-essential: 12.10ubuntu1
@@ -30,7 +30,6 @@ apt_pins:
   python3-setuptools: 68.1.2-2ubuntu1.2
   qt5ct: 1.5-1build11
   rsync: 3.2.7-1ubuntu1.5
-  unzip: 6.0-28ubuntu4.1
   wget: 1.21.4-1ubuntu4.4
 pip_pins: {}
 nvidia_pins:

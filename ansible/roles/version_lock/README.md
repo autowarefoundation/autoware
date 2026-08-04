@@ -147,7 +147,7 @@ dependency of Autoware, and freezing it is neither possible nor desirable.
 
 ### What the freeze does not cover
 
-The table above is not a complete inventory of what an install pulls in. Four
+The table above is not a complete inventory of what an install pulls in. Five
 categories sit outside the freeze today, and the completeness check reports
 none of them:
 
@@ -169,23 +169,46 @@ none of them:
   environment installs in `acados` all resolve to whatever the Python package
   index serves at install time.
 - **ROS packages the snapshot does not serve at all.** `ros_snapshot_date`
-  freezes the packages the dated snapshot carries. The rolling
-  `packages.ros.org` source stays configured in locked mode, so a `ros-*`
-  package absent from the snapshot still installs from rolling, at the default
-  priority 500 — the `Pin: origin snapshots.ros.org` wildcard cannot apply to a
-  package that origin does not offer. This is not hypothetical: the noble
-  rolling index carries 71 `ros-jazzy-autoware-*` names the 2026-04-13 snapshot
-  lacks, and `core.Dockerfile` deletes the `autoware_core` and
-  `autoware_rviz_plugins` `package.xml` precisely so their dependencies resolve
-  from apt. The closure verify does not report them either: it compares against
-  packages whose apt _candidate_ comes from the snapshot, and theirs does not.
+  freezes the packages the dated snapshot carries. A `ros-*` package absent
+  from the snapshot is not frozen, and what happens to it depends on whether a
+  rolling `packages.ros.org` source is configured on the host, because
+  `ros2/tasks/main.yaml:1-2` gates the whole `ros-apt-source` block on
+  `not use_locked_versions` and `snapshot_source.yaml` writes only the snapshot
+  source:
+  - In Docker, where `ros:<distro>-ros-base` brings its own source, and on a
+    machine that previously ran unlocked, such a package **floats**: it
+    installs from rolling at the default priority 500, since the
+    `Pin: origin snapshots.ros.org` wildcard cannot apply to a package that
+    origin does not offer.
+  - On a fresh bare-metal locked run, no rolling source is ever configured,
+    so such a package is **unreachable** rather than floating.
+
+  This is not hypothetical: the noble rolling index carries 71
+  `ros-jazzy-autoware-*` names the 2026-04-13 snapshot lacks, and
+  `core.Dockerfile` deletes the `autoware_core` and `autoware_rviz_plugins`
+  `package.xml` so that the rest of `src/core` resolves them from apt instead
+  of from source. The closure verify does not report any of this either: it
+  compares against packages whose apt _candidate_ comes from the snapshot, and
+  theirs does not.
+
 - **Packages installed outside the roles.** The completeness check diffs
   `apt-mark showmanual` across the play, so anything installed before
-  `version_lock` runs is invisible to it as well as unpinned — including the
-  packages `docker/base.Dockerfile` installs with a raw `apt-get` before the pin
-  file exists. Transitive Ubuntu dependencies are not checked either (only
-  top-level installs are), nor are the packages the ten `rosdep install` call
-  sites resolve.
+  `version_lock` runs is invisible to it — including the five packages
+  `docker/base.Dockerfile` installs with a raw `apt-get` before the pin file
+  exists. Four of those five have no lockfile key at all; `pipx` has a key in
+  all four lockfiles, but the pin is not in effect for that install, so its
+  version is equally unfrozen there. Transitive Ubuntu dependencies are not
+  checked either (only top-level installs are), nor are the packages the ten
+  `rosdep install` call sites resolve.
+- **Packages outside the freeze's remit.** `unzip` is installed only by
+  `demo_artifacts`, which is `tags: [never]` and appears in no other playbook,
+  so no normal locked path converges it — while `verify.yaml` asserts every pin
+  whose package is installed regardless of which roles ran. Since `unzip` is a
+  hard `Depends` of `ubuntu-desktop`, pinning it failed a locked
+  `install_dev_env` on any desktop whose `unzip` differed from the pin, with no
+  task in the play able to fix it. It is therefore exempt via `OUT_OF_SCOPE` in
+  `check_pin_completeness.py` rather than pinned, and floats on a
+  `--tags demo_artifacts` run.
 
 These are known gaps rather than oversights: closing them means changing how
 those roles install, which is out of scope for the lockfile mechanism itself.
@@ -255,16 +278,19 @@ ros_overrides: {} # exception pins for individual ROS packages; normally empty
 
 ### Overriding a single ROS package
 
-`ros_overrides` is normally `{}` — the `ros_snapshot_date` freezes the whole ROS closure, so no
-per-package ROS pins are needed. Use it only to move **one** ROS package to a different version than
-the snapshot (for example, to pick up a security or bug fix) without advancing `ros_snapshot_date`
-for everything else. Each entry is `package: version`, where `version` is the exact APT version
-string, and **that version must be reachable from a configured APT source**.
+`ros_overrides` is normally `{}` — the `ros_snapshot_date` freezes every ROS package the snapshot
+serves, so no per-package ROS pins are needed. Use it only to move **one** ROS package to a
+different version than the snapshot (for example, to pick up a security or bug fix) without
+advancing `ros_snapshot_date` for everything else. Each entry is `package: version`, where `version`
+is the exact APT version string, and **that version must be reachable from a configured APT
+source**.
 
-This is the important constraint: in locked mode the only ROS source is the dated snapshot, which
-serves exactly one build per package, so an override to any other version resolves to nothing unless
-you also make it reachable. In practice that means pointing the whole snapshot at a later date that
-contains the build you want, and pinning that exact build so nothing else moves:
+This is the important constraint: in locked mode the dated snapshot is the only ROS source
+`version_lock` configures, and it serves exactly one build per package, so an override to any other
+version resolves to nothing unless you also make it reachable. (A `ros-*` package the snapshot does
+not carry at all is a separate case — see "What the freeze does not cover" above.) In practice that
+means pointing the whole snapshot at a later date that contains the build you want, and pinning that
+exact build so nothing else moves:
 
 ```yaml
 ros_snapshot_date: "2026-05-20" # a snapshot that actually serves the build below
