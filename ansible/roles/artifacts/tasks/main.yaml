@@ -1,22 +1,18 @@
 # yabloc_pose_initializer
-- name: Create yabloc_pose_initializer directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/yabloc_pose_initializer"
-    mode: "755"
-    state: directory
-
-- name: Download yabloc_pose_initializer/resources.tar.gz
-  become: true
-  ansible.builtin.get_url:
-    url: https://autoware-files.s3.us-west-2.amazonaws.com/models/yabloc/136_road-segmentation-adas-0001/resources.tar.gz
-    dest: "{{ data_dir }}/yabloc_pose_initializer/resources.tar.gz"
-    mode: "644"
-    checksum: sha256:1f660e15f95074bade32b1f80dbf618e9cee1f0b9f76d3f4671cb9be7f56eb3a
-
-- name: Extract yabloc_pose_initializer/resources.tar.gz
-  ansible.builtin.unarchive:
-    src: "{{ data_dir }}/yabloc_pose_initializer/resources.tar.gz"
-    dest: "{{ data_dir }}/yabloc_pose_initializer/"
+# v0.1 is the complete upstream PINTO export, the same file set the old archive delivered. Pruning it to the
+# files the node can actually use (tag v1.0) is a separate follow-up.
+- name: Download yabloc_pose_initializer model bundle ({{ revision }})
+  vars:
+    revision: v0.1
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/yabloc_pose_initializer
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/yabloc_pose_initializer"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
 # bevfusion
 - name: Download bevfusion model bundle ({{ revision }})
@@ -47,24 +43,18 @@
   changed_when: false
 
 # bevdet
-- name: Create tensorrt_bevdet directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/tensorrt_bevdet"
-    mode: "755"
-    state: directory
-
-- name: Download tensorrt_bevdet/tensorrt_bevdet.tar.gz
-  become: true
-  ansible.builtin.get_url:
-    url: https://autoware-files.s3.us-west-2.amazonaws.com/models/tensorrt_bevdet.tar.gz
-    dest: "{{ data_dir }}/tensorrt_bevdet/tensorrt_bevdet.tar.gz"
-    mode: "644"
-    checksum: sha256:c7d16ad395e949e7a654ab511fb3294135553f92c50f2595e63a1b3e0d142c6a
-
-- name: Extract tensorrt_bevdet/tensorrt_bevdet.tar.gz
-  ansible.builtin.unarchive:
-    src: "{{ data_dir }}/tensorrt_bevdet/tensorrt_bevdet.tar.gz"
-    dest: "{{ data_dir }}/tensorrt_bevdet/"
+- name: Download tensorrt_bevdet model bundle ({{ revision }})
+  vars:
+    revision: v1.0
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/tensorrt_bevdet
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/tensorrt_bevdet"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
 # image_projection_based_fusion
 - name: Download image_projection_based_fusion model bundle ({{ revision }})
@@ -81,35 +71,18 @@
   changed_when: false
 
 # lidar_apollo_instance_segmentation
-- name: Create lidar_apollo_instance_segmentation directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/lidar_apollo_instance_segmentation"
-    mode: "755"
-    state: directory
-
-- name: Download lidar_apollo_instance_segmentation/vlp-16.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/vlp-16.onnx
-    dest: "{{ data_dir }}/lidar_apollo_instance_segmentation/vlp-16.onnx"
-    mode: "644"
-    checksum: sha256:eec521ebad7553d0ea2c90472a293aecb7499ab592632f0e100481c8196eb421
-
-- name: Download lidar_apollo_instance_segmentation/hdl-64.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/hdl-64.onnx
-    dest: "{{ data_dir }}/lidar_apollo_instance_segmentation/hdl-64.onnx"
-    mode: "644"
-    checksum: sha256:86348d8c4bced750f54288b01cc471c0d4f1ec9c693466169ef19413731e6ecc
-
-- name: Download lidar_apollo_instance_segmentation/vls-128.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/vls-128.onnx
-    dest: "{{ data_dir }}/lidar_apollo_instance_segmentation/vls-128.onnx"
-    mode: "644"
-    checksum: sha256:95ef950bb694bd6de91b7e47f5d191d557e92a7f5e2a6bdf655a8b5eed4075cc
+- name: Download lidar_apollo_instance_segmentation model bundle ({{ revision }})
+  vars:
+    revision: v1.0
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/lidar_apollo_instance_segmentation
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/lidar_apollo_instance_segmentation"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
 # lidar_centerpoint
 - name: Download lidar_centerpoint model bundle ({{ revision }})
