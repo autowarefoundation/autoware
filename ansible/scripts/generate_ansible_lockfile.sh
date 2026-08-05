@@ -115,7 +115,7 @@ else:
 # Platform: ${ARCH}
 # Ubuntu: $(lsb_release -rs) ($(lsb_release -cs))
 #
-# ros_snapshot_date freezes the entire ROS closure via snapshots.ros.org.
+# ros_snapshot_date freezes every ROS package snapshots.ros.org serves on that date.
 ros_snapshot_date: "${ROS_SNAPSHOT_DATE}"
 apt_pins:
 HEADER

@@ -38,6 +38,12 @@
   ansible.builtin.import_tasks: snapshot_source.yaml
   when: use_locked_versions | default(false) | bool
 
+- name: Reconcile installed packages to the ROS snapshot (locked mode)
+  ansible.builtin.import_role:
+    name: autoware.dev_env.version_lock
+    tasks_from: reconcile
+  when: use_locked_versions | default(false) | bool
+
 - name: Hold check of ros-{{ rosdistro + '-' + ros2_installation_type }}
   ansible.builtin.command: apt-mark showhold
   register: ros2_held_ros_packages

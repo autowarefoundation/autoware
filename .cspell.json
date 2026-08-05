@@ -4,6 +4,9 @@
   ],
   "words": [
     "lockfiles",
-    "runpip"
+    "metapackage",
+    "runpip",
+    "selstate",
+    "showmanual"
   ]
 }

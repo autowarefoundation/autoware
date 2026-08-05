@@ -1,0 +1,44 @@
+# Walk every installed package that the dated ROS snapshot serves at a
+# different version back to the snapshot's version. This matters when packages
+# were installed before the snapshot source existed — above all the ROS closure
+# preinstalled in the ros:<distro>-ros-base base image, whose floating tag is
+# usually newer than the lockfile's ros_snapshot_date. Scoped to
+# snapshot-origin candidates only: a blanket dist-upgrade would also advance
+# unpinned Ubuntu-archive packages past the digest-frozen base-image state.
+# Callers import this file guarded by `when: use_locked_versions`.
+#
+# python3-apt, which the enumerator script needs, is installed by main.yaml.
+# The interpreter is named absolutely rather than as a bare `python3`: the
+# latter resolves from the invoking user's PATH, and any active venv shadows
+# the system interpreter that python3-apt installs into. Templating
+# `ansible_python_interpreter` instead would be worse — on the implicit
+# localhost these plays run against, Ansible sets it to its own sys.executable,
+# and Autoware installs Ansible with pipx (scripts/install-ansible.sh,
+# docker/base.Dockerfile), so it always points at a venv with no apt bindings.
+- name: Update apt cache so snapshot candidates are visible
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: List installed packages diverging from the ROS snapshot
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/python3
+      - "{{ role_path }}/files/list_ros_snapshot_drift.py"
+  register: version_lock_reconcile_list
+  changed_when: false
+
+# The enumerator drops held packages rather than aborting the whole reconcile
+# on them; say so out loud, because their versions are then outside the freeze.
+- name: Report packages the reconcile skipped because they are held
+  ansible.builtin.debug:
+    msg: "{{ version_lock_reconcile_list.stderr_lines }}"
+  when: version_lock_reconcile_list.stderr | length > 0
+
+- name: Reconcile diverging packages to the snapshot versions
+  become: true
+  ansible.builtin.apt:
+    name: "{{ version_lock_reconcile_list.stdout_lines }}"
+    state: present
+    allow_downgrade: true
+  when: version_lock_reconcile_list.stdout_lines | length > 0

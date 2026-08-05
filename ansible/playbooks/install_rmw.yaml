@@ -18,5 +18,20 @@
         tasks_from: snapshot_source
       when: use_locked_versions | default(false) | bool
       tags: [always]
+
+    - name: Reconcile installed packages to the ROS snapshot (locked mode)
+      ansible.builtin.import_role:
+        name: autoware.dev_env.version_lock
+        tasks_from: reconcile
+      when: use_locked_versions | default(false) | bool
+      tags: [always]
   roles:
     - role: autoware.dev_env.rmw_implementation
+
+  post_tasks:
+    - name: Verify installed versions match the lockfile (locked mode)
+      ansible.builtin.import_role:
+        name: autoware.dev_env.version_lock
+        tasks_from: verify
+      when: use_locked_versions | default(false) | bool
+      tags: [always]

@@ -1,13 +1,26 @@
+# cspell:ignore Xsession
+# state: latest so an already-installed package is converged onto the pinned
+# version in locked mode; state: present would leave whatever the machine came
+# with, and the lockfile verification would then fail on a package no task
+# would ever move. state: latest resolves against the apt index, so refresh it
+# first: without update_cache a standalone `--tags qt5ct_setup` run would be an
+# unconditional upgrade against a possibly stale index.
 - name: Install qt5ct
   ansible.builtin.apt:
     name: qt5ct
-    state: present
+    state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
+    update_cache: true
+    cache_valid_time: 3600
   become: true
 
 - name: Install rsync
-  ansible.builtin.package:
+  ansible.builtin.apt:
     name: rsync
-    state: present
+    state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
+    update_cache: true
+    cache_valid_time: 3600
   become: true
 
 - name: Remove qt5ct from auto-start

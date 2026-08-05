@@ -3,15 +3,19 @@
 # Platform: amd64
 # Ubuntu: 24.04 (noble)
 #
-# ros_snapshot_date freezes the entire ROS closure via snapshots.ros.org.
+# ros_snapshot_date freezes every ROS package snapshots.ros.org serves on that date.
 # apt_pins are finalized by ansible/scripts/generate_ansible_lockfile.sh.
 ros_snapshot_date: "2026-04-13"
 apt_pins:
+  build-essential: 12.10ubuntu1
   ccache: 4.9.1-1
+  cmake: 3.28.3-1build7
   geographiclib-tools: 2.3-1build1
+  git: 1:2.43.0-1ubuntu7.3
   git-lfs: 3.4.1-1ubuntu0.4
   golang: 2:1.22~2build1
   pipx: 1.4.3-1
+  python3-apt: 2.7.7ubuntu5.2
   python3-flake8-blind-except: 0.2.1-1
   python3-flake8-builtins: 2.1.0-1
   python3-flake8-class-newline: 1.6.0-5
@@ -24,7 +28,10 @@ apt_pins:
   python3-pytest-cov: 4.1.0-1
   python3-pytest-repeat: 0.9.3-1
   python3-pytest-rerunfailures: 12.0-1
-  wget: 1.21.4-1ubuntu4.1
+  python3-setuptools: 68.1.2-2ubuntu1.2
+  qt5ct: 1.5-1build11
+  rsync: 3.2.7-1ubuntu1.5
+  wget: 1.21.4-1ubuntu4.4
 pip_pins: {}
 nvidia_pins:
   cuda-cccl-13-0: 13.0.85-1

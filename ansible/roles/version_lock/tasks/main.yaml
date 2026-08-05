@@ -14,6 +14,37 @@
       The lockfile may be an unfilled arm64 template.
   when: use_locked_versions | default(false) | bool
 
+- name: Load the consumer-supplied NVIDIA closure
+  ansible.builtin.include_vars:
+    file: "{{ nvidia_lockfile_path }}"
+    name: version_lock_nvidia
+  when:
+    - use_locked_versions | default(false) | bool
+    - nvidia_lockfile_path | length > 0
+
+- name: Assert the consumer-supplied NVIDIA closure provides nvidia_pins
+  ansible.builtin.assert:
+    that:
+      - version_lock_nvidia.nvidia_pins is defined
+      - version_lock_nvidia.nvidia_pins | length > 0
+    fail_msg: >-
+      nvidia_lockfile_path={{ nvidia_lockfile_path }} must define a non-empty
+      'nvidia_pins' mapping.
+  when:
+    - use_locked_versions | default(false) | bool
+    - nvidia_lockfile_path | length > 0
+
+# Substituted, not merged: a consumer supplies its own closure precisely because
+# it installs a different CUDA generation, so keeping the lockfile's own entries
+# would pin packages this run never installs — and, for the unversioned TensorRT
+# names, would pin them to the wrong generation.
+- name: Substitute the consumer-supplied NVIDIA closure # noqa: var-naming[no-role-prefix]
+  ansible.builtin.set_fact:
+    locked_packages: "{{ locked_packages | combine({'nvidia_pins': version_lock_nvidia.nvidia_pins}) }}"
+  when:
+    - use_locked_versions | default(false) | bool
+    - nvidia_lockfile_path | length > 0
+
 - name: Create APT version pins
   become: true
   ansible.builtin.template:
@@ -28,3 +59,29 @@
     path: /etc/apt/preferences.d/autoware-lock
     state: absent
   when: not (use_locked_versions | default(false) | bool)
+
+# Both files/list_ros_snapshot_drift.py and files/check_pin_completeness.py
+# `import apt`, so python3-apt is a declared dependency of this role, not
+# incidental bootstrap. Installing it explicitly, before the baseline below,
+# serves two purposes: it converges onto the pinned version (Ansible's apt
+# module would otherwise self-heal it at whatever apt offers), and it keeps it
+# out of the before/after diff that drives the pin-completeness check.
+- name: Install python3-apt for the version_lock scripts
+  become: true
+  ansible.builtin.apt:
+    name: python3-apt
+    state: latest
+    allow_downgrade: true
+    update_cache: true
+  when: use_locked_versions | default(false) | bool
+
+# Baseline for the pin-completeness check in verify.yaml: whatever is
+# top-level ("manual") before any role runs. Packages the play later installs
+# top-level from the Ubuntu archive must appear in apt_pins; the generator
+# only refreshes keys that already exist, so a forgotten key would otherwise
+# float silently in locked mode.
+- name: Record manually-installed packages before roles run
+  ansible.builtin.command: apt-mark showmanual
+  register: version_lock_manual_before
+  changed_when: false
+  when: use_locked_versions | default(false) | bool

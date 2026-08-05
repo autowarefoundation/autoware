@@ -1,3 +1,28 @@
+# The TensorRT packages carry unversioned names, so a lockfile whose closure is
+# from another CUDA generation pins the very names installed below. Its pin and
+# the 1001 Ansible's apt module gives its own pkg=version request tie, apt keeps
+# the higher version, and the install fails with a bare "no available
+# installation candidate" that names neither the pin nor the lockfile.
+- name: Assert the locked NVIDIA closure matches tensorrt_version
+  ansible.builtin.assert:
+    that:
+      - tensorrt__locked_libnvinfer10 == tensorrt_version
+    fail_msg: >-
+      Locked mode: the lockfile pins libnvinfer10 to
+      {{ tensorrt__locked_libnvinfer10 }}, but this run requests
+      tensorrt_version={{ tensorrt_version }}. Point nvidia_lockfile_path at a
+      closure recorded for this TensorRT version, or drop the tensorrt_version
+      override.
+    quiet: true
+  vars:
+    # "(none)" rather than skipping the assert: a closure with no libnvinfer10
+    # entry leaves the packages below unfrozen, which is exactly the case this
+    # assert exists to catch. locked_packages is always loaded first — every
+    # playbook that reaches this role imports version_lock as a pre_task
+    # tagged 'always'.
+    tensorrt__locked_libnvinfer10: "{{ (locked_packages.nvidia_pins | default({})).libnvinfer10 | default('(none)') }}"
+  when: use_locked_versions | default(false) | bool
+
 - name: Install TensorRT
   become: true
   ansible.builtin.apt:
