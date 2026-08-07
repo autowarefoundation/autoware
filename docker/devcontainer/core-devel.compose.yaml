@@ -15,6 +15,11 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ../..:/home/aw/autoware
-      - ${HOME}/autoware_data:/home/aw/autoware_data
+      # create_host_path is off: Compose creates a missing source as root, which 'aw' cannot write.
+      - type: bind
+        source: ${HOME}/autoware_data
+        target: /home/aw/autoware_data
+        bind:
+          create_host_path: false
     working_dir: /home/aw/autoware
     command: bash

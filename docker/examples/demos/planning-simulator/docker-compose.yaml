@@ -11,8 +11,17 @@ services:
       - QT_X11_NO_MITSHM=1
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - ${HOME}/autoware_data/maps:/home/aw/autoware_data/maps
-      - ${HOME}/autoware_data/ml_models:/home/aw/autoware_data/ml_models
+      # create_host_path is off: Compose creates a missing source as root, which 'aw' cannot write.
+      - type: bind
+        source: ${HOME}/autoware_data/maps
+        target: /home/aw/autoware_data/maps
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOME}/autoware_data/ml_models
+        target: /home/aw/autoware_data/ml_models
+        bind:
+          create_host_path: false
     command:
       - bash
       - -c
