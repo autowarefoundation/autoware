@@ -16,8 +16,8 @@ Remove this role when the installs in use have all migrated. The roles that writ
 
 ## Inputs
 
-| Name | Default | Description |
-| --- | --- | --- |
+| Name                           | Default                                      | Description                                                   |
+| ------------------------------ | -------------------------------------------- | ------------------------------------------------------------- |
 | `autoware_data_ownership__dir` | `{{ ansible_facts.env.HOME }}/autoware_data` | The directory to take ownership of, with everything under it. |
 
 ## Manual correction
