@@ -1,2 +1,4 @@
 dependencies:
+  # Runs first: the download tasks below write into data_dir as the user, not as root.
+  - role: autoware.dev_env.autoware_data_ownership
   - role: autoware.dev_env.huggingface_cli

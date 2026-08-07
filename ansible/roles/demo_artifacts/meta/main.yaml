@@ -1,0 +1,3 @@
+dependencies:
+  # Runs first: the download tasks below write into autoware_data as the user, not as root.
+  - role: autoware.dev_env.autoware_data_ownership

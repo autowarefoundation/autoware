@@ -1,0 +1,34 @@
+# autoware_data lives in the home directory of the user, and every consumer reads it as that user:
+# the ansible roles, the ROS nodes that write TensorRT engine files next to the models, and the
+# containers in docker/, which mount it for the unprivileged 'aw' user. Older installs downloaded
+# into it as root, so the tree has to be normalized once before anything writes into it again.
+- name: Check whether the Autoware data directory exists
+  ansible.builtin.stat:
+    path: "{{ autoware_data_ownership__dir }}"
+  register: autoware_data_ownership__root
+
+- name: List the paths under the Autoware data directory
+  ansible.builtin.find:
+    paths: "{{ autoware_data_ownership__dir }}"
+    recurse: true
+    file_type: any
+    hidden: true
+  register: autoware_data_ownership__tree
+  when: autoware_data_ownership__root.stat.exists
+
+# skipped_paths is non-empty when find could not read a directory. That is itself an ownership
+# problem the walk cannot see through, so it has to trigger the repair rather than mask it.
+- name: Take ownership of the Autoware data directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ autoware_data_ownership__dir }}"
+    state: directory
+    owner: "{{ ansible_facts.user_id }}"
+    group: "{{ ansible_facts.user_gid }}"
+    recurse: true
+  when:
+    - autoware_data_ownership__root.stat.exists
+    - autoware_data_ownership__root.stat.uid != ansible_facts.user_uid
+      or autoware_data_ownership__tree.files
+      | selectattr('uid', 'ne', ansible_facts.user_uid) | list | length > 0
+      or autoware_data_ownership__tree.skipped_paths | length > 0
