@@ -27,6 +27,7 @@ jobs:
         with:
           files: |
             ansible/roles/artifacts/**
+            ansible/roles/autoware_data_ownership/**
             ansible/playbooks/install_dev_env.yaml
             ansible/scripts/install-ansible.sh
             ansible-galaxy-requirements.yaml

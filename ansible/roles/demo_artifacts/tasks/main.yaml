@@ -14,7 +14,6 @@
     state: directory
 
 - name: Download maps/sample-map-planning.zip
-  become: true
   ansible.builtin.get_url:
     url: https://autoware-files.s3.us-west-2.amazonaws.com/maps/demos/sample-map-planning.zip
     dest: "{{ demo_artifacts__autoware_data_dir }}/maps/sample-map-planning.zip"
@@ -28,7 +27,6 @@
 
 # sample-map-rosbag (rosbag-replay-simulation demo)
 - name: Download maps/sample-map-rosbag.zip
-  become: true
   ansible.builtin.get_url:
     url: https://autoware-files.s3.us-west-2.amazonaws.com/maps/demos/sample-map-rosbag.zip
     dest: "{{ demo_artifacts__autoware_data_dir }}/maps/sample-map-rosbag.zip"
@@ -48,7 +46,6 @@
     state: directory
 
 - name: Download recordings/bags/sample-rosbag.zip
-  become: true
   ansible.builtin.get_url:
     url: https://autoware-files.s3.us-west-2.amazonaws.com/recordings/bags/demos/sample-rosbag.zip
     dest: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/sample-rosbag.zip"

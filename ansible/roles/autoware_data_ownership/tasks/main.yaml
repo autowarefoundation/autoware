@@ -1,0 +1,28 @@
+# Older installs downloaded into autoware_data as root, which stops every consumer: the ansible
+# roles, the ROS nodes that write TensorRT engine files, and the 'aw' user in the docker/ containers.
+# The path is resolved first so that the guard and the repair act on one real path. Both then keep
+# the default link behaviour, so a link that points out of the tree keeps the owner of its target.
+- name: Resolve the Autoware data directory
+  ansible.builtin.command:
+    cmd: readlink -f {{ autoware_data_ownership__dir | quote }}
+  register: autoware_data_ownership__real
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Look for a path under the Autoware data directory that the user does not own
+  ansible.builtin.command:
+    cmd: find {{ autoware_data_ownership__real.stdout | quote }} ! -user {{ ansible_facts.user_id | quote }} -print -quit
+  register: autoware_data_ownership__foreign
+  when: autoware_data_ownership__real.stdout | length > 0
+  changed_when: false
+  failed_when: false
+  # Without this the guard does not run under --check, and the repair can never be reported.
+  check_mode: false
+
+- name: Take ownership of the Autoware data directory
+  become: true
+  ansible.builtin.command:
+    cmd: chown -Rh {{ ansible_facts.user_id | quote }}:{{ ansible_facts.user_gid | quote }} {{ autoware_data_ownership__real.stdout | quote }}
+  when: autoware_data_ownership__foreign.stdout | default('') | length > 0
+  changed_when: true

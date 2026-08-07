@@ -11,6 +11,12 @@ Three flavors of "drop me into a shell" container. All three use the `universe-d
 
 `dev-nvidia` uses `universe-devel-cuda-jazzy`; the other two use `universe-devel-jazzy`.
 
+## Prerequisites
+
+- `~/autoware_data/maps` and `~/autoware_data/ml_models` on the host, which the `artifacts` and `demo_artifacts` ansible roles create
+
+Compose does not create these. It stops with `bind source path does not exist` when one is missing, because a path that Compose creates belongs to root, and the unprivileged `aw` user in the container cannot write it.
+
 On NVIDIA hosts running the proprietary driver, `dev-dri` silently falls back to `llvmpipe` (no `nvidia-drm` loader in Mesa) — use `dev-nvidia` instead. Software rendering is fine for text-heavy rviz but laggy on dense point clouds.
 
 Verify you actually got hardware acceleration inside the container:

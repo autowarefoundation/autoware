@@ -70,6 +70,13 @@ ansible-playbook autoware.dev_env.install_dev_env --tags artifacts -e "data_dir=
 
 This will download the artifacts to the specified directory. Files fetched with `get_url` are validated against checksums pinned in this role. Model bundles fetched from Hugging Face are pinned to a version tag instead; their integrity relies on the Hub and the transport, not on checksums pinned here.
 
+Every task in this role downloads as the user that runs the playbook, so the artifacts stay owned by that user. No task in this role uses sudo. Two of its dependencies do, and each one only under a condition:
+
+- `autoware_data_ownership` corrects an install that root owns
+- `huggingface_cli` installs pipx when pipx is absent
+
+Keep `--ask-become-pass` while either condition can be true.
+
 ### Migrating from the legacy layout
 
 Earlier versions of this role downloaded directly into `~/autoware_data/`. To match the new
