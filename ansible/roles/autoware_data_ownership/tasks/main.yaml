@@ -1,34 +1,28 @@
-# autoware_data lives in the home directory of the user, and every consumer reads it as that user:
-# the ansible roles, the ROS nodes that write TensorRT engine files next to the models, and the
-# containers in docker/, which mount it for the unprivileged 'aw' user. Older installs downloaded
-# into it as root, so the tree has to be normalized once before anything writes into it again.
-- name: Check whether the Autoware data directory exists
-  ansible.builtin.stat:
-    path: "{{ autoware_data_ownership__dir }}"
-  register: autoware_data_ownership__root
+# Older installs downloaded into autoware_data as root, which stops every consumer: the ansible
+# roles, the ROS nodes that write TensorRT engine files, and the 'aw' user in the docker/ containers.
+# The path is resolved first so that the guard and the repair act on one real path. Both then keep
+# the default link behaviour, so a link that points out of the tree keeps the owner of its target.
+- name: Resolve the Autoware data directory
+  ansible.builtin.command:
+    cmd: readlink -f {{ autoware_data_ownership__dir | quote }}
+  register: autoware_data_ownership__real
+  changed_when: false
+  failed_when: false
+  check_mode: false
 
-- name: List the paths under the Autoware data directory
-  ansible.builtin.find:
-    paths: "{{ autoware_data_ownership__dir }}"
-    recurse: true
-    file_type: any
-    hidden: true
-  register: autoware_data_ownership__tree
-  when: autoware_data_ownership__root.stat.exists
+- name: Look for a path under the Autoware data directory that the user does not own
+  ansible.builtin.command:
+    cmd: find {{ autoware_data_ownership__real.stdout | quote }} ! -user {{ ansible_facts.user_id | quote }} -print -quit
+  register: autoware_data_ownership__foreign
+  when: autoware_data_ownership__real.stdout | length > 0
+  changed_when: false
+  failed_when: false
+  # Without this the guard does not run under --check, and the repair can never be reported.
+  check_mode: false
 
-# skipped_paths is non-empty when find could not read a directory. That is itself an ownership
-# problem the walk cannot see through, so it has to trigger the repair rather than mask it.
 - name: Take ownership of the Autoware data directory
   become: true
-  ansible.builtin.file:
-    path: "{{ autoware_data_ownership__dir }}"
-    state: directory
-    owner: "{{ ansible_facts.user_id }}"
-    group: "{{ ansible_facts.user_gid }}"
-    recurse: true
-  when:
-    - autoware_data_ownership__root.stat.exists
-    - autoware_data_ownership__root.stat.uid != ansible_facts.user_uid
-      or autoware_data_ownership__tree.files
-      | selectattr('uid', 'ne', ansible_facts.user_uid) | list | length > 0
-      or autoware_data_ownership__tree.skipped_paths | length > 0
+  ansible.builtin.command:
+    cmd: chown -Rh {{ ansible_facts.user_id | quote }}:{{ ansible_facts.user_gid | quote }} {{ autoware_data_ownership__real.stdout | quote }}
+  when: autoware_data_ownership__foreign.stdout | default('') | length > 0
+  changed_when: true

@@ -6,7 +6,6 @@
     "lockfiles",
     "metapackage",
     "runpip",
-    "selectattr",
     "selstate",
     "showmanual"
   ]
