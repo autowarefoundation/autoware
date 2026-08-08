@@ -2,7 +2,7 @@
 
 The Autoware perception stack uses models for inference. These models are downloaded by running `ansible-playbook autoware.dev_env.install_dev_env --tags artifacts`.
 
-The models are hosted on [Hugging Face](https://huggingface.co/AutowareFoundation) under the `AutowareFoundation` organization. `diffusion_planner` and `tensorrt_vad` have not been migrated yet and are still hosted by Web.Auto.
+Every model is hosted on [Hugging Face](https://huggingface.co/AutowareFoundation), under the `AutowareFoundation` organization. Each download is pinned to a tag.
 
 Default `data_dir` location is `~/autoware_data/ml_models` (part of the asset-typed `~/autoware_data/` layout: `assets/`, `maps/`, `ml_models/`, `recordings/`, `scenarios/`).
 
@@ -68,7 +68,7 @@ This step should be repeated when a new playbook is added.
 ansible-playbook autoware.dev_env.install_dev_env --tags artifacts -e "data_dir=$HOME/autoware_data/ml_models" --ask-become-pass
 ```
 
-This will download the artifacts to the specified directory. Files fetched with `get_url` are validated against checksums pinned in this role. Model bundles fetched from Hugging Face are pinned to a version tag instead; their integrity relies on the Hub and the transport, not on checksums pinned here.
+This will download the artifacts to the specified directory. Each model bundle is pinned to a version tag on Hugging Face. Their integrity relies on the Hub and the transport, not on checksums pinned in this role.
 
 Every task in this role downloads as the user that runs the playbook, so the artifacts stay owned by that user. No task in this role uses sudo. Two of its dependencies do, and each one only under a condition:
 

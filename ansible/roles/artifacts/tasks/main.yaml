@@ -142,153 +142,74 @@
   changed_when: false
 
 # diffusion_planner
-- name: Create diffusion_planner directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/diffusion_planner"
-    mode: "755"
-    state: directory
+# Each version is a tag on one repository, and every tag holds its files at the repository root,
+# so the versions are downloaded separately into the per-version directories the node expects.
+- name: Download diffusion_planner model bundle ({{ revision }})
+  vars:
+    revision: v3.0
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/diffusion_planner
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/diffusion_planner/{{ revision }}"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
-- name: Create diffusion_planner v3.0 directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/diffusion_planner/v3.0"
-    mode: "755"
-    state: directory
+- name: Download diffusion_planner model bundle ({{ revision }})
+  vars:
+    revision: v3.1
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/diffusion_planner
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/diffusion_planner/{{ revision }}"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
-- name: Download diffusion_planner/v3.0/diffusion_planner.onnx
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v3.0/diffusion_planner.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v3.0/diffusion_planner.onnx"
-    mode: "644"
-    checksum: sha256:3026918b55869b02ea561c1e1b9fed05c34092294c035d743f1d1cb756f4abcc
+- name: Download diffusion_planner model bundle ({{ revision }})
+  vars:
+    revision: v4.0
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/diffusion_planner
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/diffusion_planner/{{ revision }}"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
-- name: Download diffusion_planner/v3.0/diffusion_planner.param.json
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v3.0/diffusion_planner.param.json
-    dest: "{{ data_dir }}/diffusion_planner/v3.0/diffusion_planner.param.json"
-    mode: "644"
-    checksum: sha256:d726ce7b257ddaf39da8a7dfbd016512e866843c26a9622fdec8a59b45da3e04
-
-- name: Create diffusion_planner/v3.1 directory
-  ansible.builtin.file:
-    path: "{{ data_dir }}/diffusion_planner/v3.1"
-    mode: "755"
-    state: directory
-
-- name: Download diffusion_planner/v3.1/diffusion_planner.onnx
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v3.1/diffusion_planner.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v3.1/diffusion_planner.onnx"
-    mode: "644"
-    checksum: sha256:a063d323af20d962048315dc0969e4d3cad46e81a20299f39d74a470d58b148b
-
-- name: Download diffusion_planner/v3.1/diffusion_planner.param.json
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v3.1/diffusion_planner.param.json
-    dest: "{{ data_dir }}/diffusion_planner/v3.1/diffusion_planner.param.json"
-    mode: "644"
-    checksum: sha256:d726ce7b257ddaf39da8a7dfbd016512e866843c26a9622fdec8a59b45da3e04
-
-- name: Create diffusion_planner v4.0 directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/diffusion_planner/v4.0"
-    mode: "755"
-    state: directory
-
-- name: Download diffusion_planner/v4.0/diffusion_planner.onnx
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v4.0/diffusion_planner.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v4.0/diffusion_planner.onnx"
-    mode: "644"
-    checksum: sha256:6fd21662a655e7c262ffa465fc0d93b51d8a7fe1b56f95c6abd110f6cfa15ffd
-
-- name: Download diffusion_planner/v4.0/diffusion_planner.param.json
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v4.0/diffusion_planner.param.json
-    dest: "{{ data_dir }}/diffusion_planner/v4.0/diffusion_planner.param.json"
-    mode: "644"
-    checksum: sha256:d74dfe1b960c67c5e0a7ea5c62f691ade2614aa92062b8f86dd9b0860e81d323
-
-- name: Create diffusion_planner v5.0 directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/diffusion_planner/v5.0"
-    mode: "755"
-    state: directory
-
-- name: Download diffusion_planner/v5.0/diffusion_planner.onnx
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v5.0/diffusion_planner.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v5.0/diffusion_planner.onnx"
-    mode: "644"
-    checksum: sha256:87a0969ded325fe52ecfec59beb717976396ebfb6800e2cfe2b9f34238d32c77
-
-- name: Download diffusion_planner/v5.0/diffusion_planner_encoder.onnx
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v5.0/diffusion_planner_encoder.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v5.0/diffusion_planner_encoder.onnx"
-    mode: "644"
-    checksum: sha256:2856886a3ed63b963cb18b457876d0bbd8916d345549ee5f199ceb49e3fcca49
-
-- name: Download diffusion_planner/v5.0/diffusion_planner_decoder.onnx
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v5.0/diffusion_planner_decoder.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v5.0/diffusion_planner_decoder.onnx"
-    mode: "644"
-    checksum: sha256:eb30c0c0c8e80b8460d293d600c7b8c9e21f615ff6ce8de5ed01670c3d1057ca
-
-- name: Download diffusion_planner/v5.0/diffusion_planner_turn_indicator.onnx
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v5.0/diffusion_planner_turn_indicator.onnx
-    dest: "{{ data_dir }}/diffusion_planner/v5.0/diffusion_planner_turn_indicator.onnx"
-    mode: "644"
-    checksum: sha256:07acfb58a5de1f25587fa86deb39a6de5605f8d93518e97f960ee27145f4a732
-
-- name: Download diffusion_planner/v5.0/diffusion_planner.param.json
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/diffusion_planner/v5.0/diffusion_planner.param.json
-    dest: "{{ data_dir }}/diffusion_planner/v5.0/diffusion_planner.param.json"
-    mode: "644"
-    checksum: sha256:ee3145b68fd1e1e44e532933dfe66cfee4384fbd637382c87ab5190c66a8e268
+- name: Download diffusion_planner model bundle ({{ revision }})
+  vars:
+    revision: v5.0
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/diffusion_planner
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/diffusion_planner/{{ revision }}"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
 # tensorrt_vad
-- name: Create tensorrt_vad directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/vad"
-    mode: "755"
-    state: directory
-
-- name: Create tensorrt_vad v0.1 directory inside {{ data_dir }}
-  ansible.builtin.file:
-    path: "{{ data_dir }}/vad/v0.1"
-    mode: "755"
-    state: directory
-
-- name: Download tensorrt_vad/vad-carla-tiny_backbone.onnx
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny_backbone.onnx
-    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny_backbone.onnx"
-    mode: "644"
-    checksum: sha256:04b925f2750fd1c4adf16b5aae9c149d0baa39185e99d141232ebe20bddba4da
-
-- name: Download tensorrt_vad/vad-carla-tiny_head.onnx
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny_head.onnx
-    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny_head.onnx"
-    mode: "644"
-    checksum: sha256:31f49a592a764ce82bbe6e26d0bfc99dc8a9613628884dc73dd5e67521ff3e9e
-
-- name: Download tensorrt_vad/vad-carla-tiny_head_no_prev.onnx
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny_head_no_prev.onnx
-    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny_head_no_prev.onnx"
-    mode: "644"
-    checksum: sha256:6a89d479e0717b1e526f1aa3a1137c631a9ef854e810d0328a035aae11818c2a
-
-- name: Download tensorrt_vad/vad-carla-tiny.param.json
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/planning/models/tensorrt_vad/carla_tiny/v0.1/vad-carla-tiny.param.json
-    dest: "{{ data_dir }}/vad/v0.1/vad-carla-tiny.param.json"
-    mode: "644"
-    checksum: sha256:03d3187fed3c70f761456afc2e93e18c1765113b1c1580ffa78ab42b10dbd179
+# The local directory is vad, not tensorrt_vad: the node reads $(var data_path)/vad/v0.1.
+- name: Download tensorrt_vad model bundle ({{ revision }})
+  vars:
+    revision: v0.1
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/tensorrt_vad
+      --revision {{ revision }}
+      --local-dir "{{ data_dir }}/vad/{{ revision }}"
+  environment:
+    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
 
 # traffic_light_fine_detector
 - name: Download traffic_light_fine_detector model bundle ({{ revision }})
