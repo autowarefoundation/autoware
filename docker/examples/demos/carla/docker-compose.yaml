@@ -40,7 +40,9 @@ services:
       - -quality-level=Low
       - -nosound
     healthcheck:
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/2000'"]
+      test:
+        - CMD-SHELL
+        - bash -c '</dev/tcp/localhost/2000'
       interval: 5s
       timeout: 5s
       retries: 10
