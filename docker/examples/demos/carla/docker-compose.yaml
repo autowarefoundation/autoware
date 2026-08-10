@@ -70,7 +70,7 @@ services:
           map_path:=/home/aw/autoware_data/maps/Town01 \
           port:=2000 \
           timeout:=60 \
-          use_light_weight_sensor_mapping:=false
+          use_light_weight_sensor_mapping:=true
         exec bash
     # Healthy once the ego exists in the current CARLA episode.
     healthcheck:
