@@ -1,4 +1,4 @@
-# CARLA 
+# CARLA
 
 Runs the [CARLA](https://carla.readthedocs.io/en/0.9.16/) simulator and the autoware-side bridge in a single Docker Compose stack, split into four services:
 
