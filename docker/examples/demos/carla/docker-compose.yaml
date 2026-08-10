@@ -1,3 +1,5 @@
+# cspell:ignore getusersitepackages urllib urlopen urlretrieve manylinux AUDIODRIVER nosound
+
 # Installs the CARLA Python API into the user site-packages of the autoware image.
 # Shared by every service that talks to the CARLA server.
 x-carla-python-api: &carla-python-api |
