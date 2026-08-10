@@ -16,7 +16,7 @@ Splitting the interface out makes it easier to restart just the bridge (e.g. whe
 ## Prerequisites
 
 - NVIDIA GPU with the NVIDIA Container Toolkit installed
-- CARLA Lanelet2 map (e.g. `Town01`) extracted to `~/autoware_data/maps/Town01` — see the [autoware_carla_interface README](../../../../src/universe/autoware_universe/simulator/autoware_carla_interface/README.md#map-setup) for the expected layout (`lanelet2_map.osm`, `pointcloud_map.pcd`, `map_projector_info.yaml`)
+- CARLA Lanelet2 map (e.g. `Town01`) extracted to `~/autoware_data/maps/Town01` — see the [autoware_carla_interface README](https://autowarefoundation.github.io/autoware_universe/main/simulator/autoware_carla_interface/#map-setup) for the expected layout (`lanelet2_map.osm`, `pointcloud_map.pcd`, `map_projector_info.yaml`)
 - Perception model data under `~/autoware_data/ml_models`
 - Docker Compose v2
 
@@ -116,7 +116,7 @@ ros2 run autoware_carla_interface spectator_follow \
   --rate 30.0
 ```
 
-See the [autoware_carla_interface README](../../../../src/universe/autoware_universe/simulator/autoware_carla_interface/README.md#following-the-ego-vehicle-with-the-carla-spectator-camera) for the full flag list.
+See the [autoware_carla_interface README](https://autowarefoundation.github.io/autoware_universe/main/simulator/autoware_carla_interface/#following-the-ego-vehicle-with-the-carla-spectator-camera) for the full flag list.
 
 `autoware` runs:
 
