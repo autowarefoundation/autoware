@@ -6,7 +6,7 @@
       --revision {{ item.revision }}
       --local-dir "{{ data_dir }}/{{ item.dest | default(item.repo) }}"
   environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
+    PATH: "{{ ansible_facts.env.PIPX_BIN_DIR | default(ansible_facts.env.HOME ~ '/.local/bin', true) }}:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
   changed_when: false
   loop_control:
