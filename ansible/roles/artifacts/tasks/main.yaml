@@ -87,7 +87,7 @@
 # lidar_centerpoint
 - name: Download lidar_centerpoint model bundle ({{ revision }})
   vars:
-    revision: v3.0
+    revision: v4.0
   ansible.builtin.command:
     cmd: >-
       hf download AutowareFoundation/lidar_centerpoint
