@@ -12,9 +12,7 @@
   loop_control:
     label: "{{ item.repo }} {{ item.revision }}"
   loop:
-    # v0.1 is the complete upstream PINTO export, the same file set the old archive delivered.
-    # Pruning it to the files the node can actually use (tag v1.0) is a separate follow-up.
-    - { repo: yabloc_pose_initializer, revision: v0.1 }
+    - { repo: yabloc_pose_initializer, revision: v1.0 }
     - { repo: bevfusion, revision: v2.0 }
     - { repo: camera_streampetr, revision: v1.0 }
     - { repo: tensorrt_bevdet, revision: v1.0 }
