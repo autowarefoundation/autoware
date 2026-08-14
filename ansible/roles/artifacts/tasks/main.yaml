@@ -1,282 +1,41 @@
-# yabloc_pose_initializer
-# v0.1 is the complete upstream PINTO export, the same file set the old archive delivered. Pruning it to the
-# files the node can actually use (tag v1.0) is a separate follow-up.
-- name: Download yabloc_pose_initializer model bundle ({{ revision }})
-  vars:
-    revision: v0.1
+# dest is relative to data_dir and defaults to the repository name.
+- name: Download the model bundles from Hugging Face
   ansible.builtin.command:
     cmd: >-
-      hf download AutowareFoundation/yabloc_pose_initializer
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/yabloc_pose_initializer"
+      hf download AutowareFoundation/{{ item.repo }}
+      --revision {{ item.revision }}
+      --local-dir "{{ data_dir }}/{{ item.dest | default(item.repo) }}"
   environment:
     PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
   changed_when: false
-
-# bevfusion
-- name: Download bevfusion model bundle ({{ revision }})
-  vars:
-    revision: v2.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/bevfusion
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/bevfusion"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# camera_streampetr
-- name: Download camera_streampetr model bundle ({{ revision }})
-  vars:
-    revision: v1.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/camera_streampetr
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/camera_streampetr"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# bevdet
-- name: Download tensorrt_bevdet model bundle ({{ revision }})
-  vars:
-    revision: v1.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/tensorrt_bevdet
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/tensorrt_bevdet"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# image_projection_based_fusion
-- name: Download image_projection_based_fusion model bundle ({{ revision }})
-  vars:
-    revision: v5.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/image_projection_based_fusion
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/image_projection_based_fusion"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# lidar_apollo_instance_segmentation
-- name: Download lidar_apollo_instance_segmentation model bundle ({{ revision }})
-  vars:
-    revision: v1.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/lidar_apollo_instance_segmentation
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/lidar_apollo_instance_segmentation"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# lidar_centerpoint
-- name: Download lidar_centerpoint model bundle ({{ revision }})
-  vars:
-    revision: v4.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/lidar_centerpoint
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/lidar_centerpoint"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# lidar_transfusion
-- name: Download lidar_transfusion model bundle ({{ revision }})
-  vars:
-    revision: v2.1
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/lidar_transfusion
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/lidar_transfusion"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# tensorrt_yolox
-# Includes the whole_image_traffic_light_detector models (source tl_detector_yolox_s/v1).
-- name: Download tensorrt_yolox model bundle ({{ revision }})
-  vars:
-    revision: v1.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/tensorrt_yolox
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/tensorrt_yolox"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# traffic_light_classifier
-- name: Download traffic_light_classifier model bundle ({{ revision }})
-  vars:
-    revision: v4.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/traffic_light_classifier
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/traffic_light_classifier"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# diffusion_planner
-# Each version is a tag on one repository, and every tag holds its files at the repository root,
-# so the versions are downloaded separately into the per-version directories the node expects.
-- name: Download diffusion_planner model bundle ({{ revision }})
-  vars:
-    revision: v3.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/diffusion_planner
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/diffusion_planner/{{ revision }}"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-- name: Download diffusion_planner model bundle ({{ revision }})
-  vars:
-    revision: v3.1
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/diffusion_planner
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/diffusion_planner/{{ revision }}"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-- name: Download diffusion_planner model bundle ({{ revision }})
-  vars:
-    revision: v4.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/diffusion_planner
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/diffusion_planner/{{ revision }}"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-- name: Download diffusion_planner model bundle ({{ revision }})
-  vars:
-    revision: v5.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/diffusion_planner
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/diffusion_planner/{{ revision }}"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# tensorrt_vad
-# The local directory is vad, not tensorrt_vad: the node reads $(var data_path)/vad/v0.1.
-- name: Download tensorrt_vad model bundle ({{ revision }})
-  vars:
-    revision: v0.1
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/tensorrt_vad
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/vad/{{ revision }}"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# traffic_light_fine_detector
-- name: Download traffic_light_fine_detector model bundle ({{ revision }})
-  vars:
-    revision: v3.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/traffic_light_fine_detector
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/traffic_light_fine_detector"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# simpl_prediction
-- name: Download simpl_prediction model bundle ({{ revision }})
-  vars:
-    revision: v0.1
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/simpl_prediction
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/simpl_prediction"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# ptv3
-- name: Download ptv3 model bundle ({{ revision }})
-  vars:
-    revision: v4.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/ptv3
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/ptv3"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# lidar_frnet
-- name: Download lidar_frnet model bundle ({{ revision }})
-  vars:
-    revision: v2.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/lidar_frnet
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/lidar_frnet"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
-
-# calibration_status_classifier
-- name: Download calibration_status_classifier model bundle ({{ revision }})
-  vars:
-    revision: v2.0
-  ansible.builtin.command:
-    cmd: >-
-      hf download AutowareFoundation/calibration_status_classifier
-      --revision {{ revision }}
-      --local-dir "{{ data_dir }}/calibration_status_classifier"
-  environment:
-    PATH: "{{ ansible_facts.env.HOME }}/.local/bin:{{ ansible_facts.env.PATH }}"
-    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
-  changed_when: false
+  loop_control:
+    label: "{{ item.repo }} {{ item.revision }}"
+  loop:
+    # v0.1 is the complete upstream PINTO export, the same file set the old archive delivered.
+    # Pruning it to the files the node can actually use (tag v1.0) is a separate follow-up.
+    - { repo: yabloc_pose_initializer, revision: v0.1 }
+    - { repo: bevfusion, revision: v2.0 }
+    - { repo: camera_streampetr, revision: v1.0 }
+    - { repo: tensorrt_bevdet, revision: v1.0 }
+    - { repo: image_projection_based_fusion, revision: v5.0 }
+    - { repo: lidar_apollo_instance_segmentation, revision: v1.0 }
+    - { repo: lidar_centerpoint, revision: v4.0 }
+    - { repo: lidar_transfusion, revision: v2.1 }
+    # Also holds the whole_image_traffic_light_detector models.
+    - { repo: tensorrt_yolox, revision: v1.0 }
+    - { repo: traffic_light_classifier, revision: v4.0 }
+    # Each diffusion_planner version is a tag on one repository. Every tag holds the same
+    # filenames at the repository root, so the tags need separate directories or they
+    # overwrite each other.
+    - { repo: diffusion_planner, revision: v3.0, dest: diffusion_planner/v3.0 }
+    - { repo: diffusion_planner, revision: v3.1, dest: diffusion_planner/v3.1 }
+    - { repo: diffusion_planner, revision: v4.0, dest: diffusion_planner/v4.0 }
+    - { repo: diffusion_planner, revision: v5.0, dest: diffusion_planner/v5.0 }
+    # The local directory is vad, not tensorrt_vad: the node reads $(var data_path)/vad/v0.1.
+    - { repo: tensorrt_vad, revision: v0.1, dest: vad/v0.1 }
+    - { repo: traffic_light_fine_detector, revision: v3.0 }
+    - { repo: simpl_prediction, revision: v0.1 }
+    - { repo: ptv3, revision: v4.0 }
+    - { repo: lidar_frnet, revision: v2.0 }
+    - { repo: calibration_status_classifier, revision: v2.0 }
