@@ -9,5 +9,5 @@ None.
 ## Manual Installation
 
 ```bash
-pipx install huggingface_hub
+pipx install --force "huggingface_hub==1.*"
 ```
