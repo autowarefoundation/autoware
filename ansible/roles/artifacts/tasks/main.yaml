@@ -18,7 +18,7 @@
     - { repo: tensorrt_bevdet, revision: v1.0 }
     - { repo: image_projection_based_fusion, revision: v5.0 }
     - { repo: lidar_apollo_instance_segmentation, revision: v1.0 }
-    - { repo: lidar_centerpoint, revision: v4.0 }
+    - { repo: lidar_centerpoint, revision: v4.1 }
     - { repo: lidar_transfusion, revision: v2.1 }
     # Also holds the whole_image_traffic_light_detector models.
     - { repo: tensorrt_yolox, revision: v1.0 }
