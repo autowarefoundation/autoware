@@ -1,0 +1,69 @@
+# The hf CLI install in ansible/roles/huggingface_cli pins huggingface_hub to one major, so a new
+# major on PyPI is invisible to provisioning. This check makes it visible: it opens one issue per
+# new major, and reads the pinned major from the role file so the two never drift apart.
+
+name: watch-huggingface-hub-major
+
+on:
+  schedule:
+    - cron: 0 0 * * 1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  watch-huggingface-hub-major:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Compare the pinned major with the latest release on PyPI
+        id: compare
+        run: |
+          pinned_major=$(grep -oP 'huggingface_hub==\K[0-9]+' ansible/roles/huggingface_cli/tasks/main.yaml)
+          latest=$(curl -fsSL https://pypi.org/pypi/huggingface_hub/json | jq -r .info.version)
+          latest_major=${latest%%.*}
+          {
+            echo "pinned-major=${pinned_major}"
+            echo "latest=${latest}"
+            echo "latest-major=${latest_major}"
+            echo "new-major=$([ "${latest_major}" -gt "${pinned_major}" ] && echo true || echo false)"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Create the issue for the new major
+        if: steps.compare.outputs.new-major == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PINNED_MAJOR: ${{ steps.compare.outputs.pinned-major }}
+          LATEST: ${{ steps.compare.outputs.latest }}
+          LATEST_MAJOR: ${{ steps.compare.outputs.latest-major }}
+        run: |
+          title="Evaluate huggingface_hub ${LATEST_MAJOR}.x for the hf CLI pin"
+          count=$(gh issue list --repo "${GITHUB_REPOSITORY}" --state all --search "\"${title}\" in:title" --json number --jq length)
+          if [ "${count}" -gt 0 ]; then
+            echo "An issue for major ${LATEST_MAJOR} exists. Nothing to do."
+            exit 0
+          fi
+          cat > body.md << EOF
+          @autowarefoundation/autoware-maintainers @xmfcx @mitsudome-r
+
+          huggingface_hub ${LATEST} is on PyPI. The hf CLI install in \`ansible/roles/huggingface_cli\` pins \`huggingface_hub==${PINNED_MAJOR}.*\`, so provisioning stays on the old major and does not pick this release up.
+
+          A new major can change the CLI surface. To move the pin:
+
+          1. Read the huggingface_hub release notes for the breaking changes.
+          2. Run the artifacts role with the new major. Make sure that all downloads pass.
+          3. Update the version bound in \`ansible/roles/huggingface_cli/tasks/main.yaml\` and in the README of the role.
+
+          To stay on ${PINNED_MAJOR}.x, close this issue. The check opens one issue per major.
+
+          This issue comes from the \`${GITHUB_WORKFLOW}\` workflow.
+          EOF
+          gh issue create --repo "${GITHUB_REPOSITORY}" --title "${title}" --body-file body.md --label type:installation --assignee xmfcx --assignee mitsudome-r

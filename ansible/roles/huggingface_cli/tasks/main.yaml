@@ -11,7 +11,9 @@
     update_cache: true
   when: not huggingface_cli__pipx.stat.exists
 
+# The major bound keeps the hf CLI surface stable. --force makes every run converge to the
+# bound, so an install that holds an out-of-range version gets corrected.
 - name: Install huggingface_hub for the hf CLI
   ansible.builtin.command:
-    cmd: /usr/bin/pipx install huggingface_hub
-    creates: ~/.local/bin/hf
+    cmd: /usr/bin/pipx install --force huggingface_hub==1.*
+  changed_when: false
