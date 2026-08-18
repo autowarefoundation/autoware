@@ -109,7 +109,7 @@ repos:
         additional_dependencies: [prettier@2.7.1, "@prettier/plugin-xml@2.2.0"]
 
   - repo: https://github.com/autowarefoundation/autoware_system_designer
-    rev: v0.4.1
+    rev: v0.4.2
     hooks:
       - id: lint-system-design-format
         args: [--format=github-actions]
