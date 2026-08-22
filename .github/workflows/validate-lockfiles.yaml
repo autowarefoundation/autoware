@@ -2,8 +2,21 @@ name: validate-lockfiles
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+    # Only what can change the outcome of a locked build, plus the scripts that
+    # generate and validate the lockfiles themselves. Deliberately narrower than
+    # ansible/** and docker/**: both READMEs and docker/examples live under
+    # those, and a docs-only PR must not trigger two cold container builds.
     paths:
-      - ansible/vars/locked-versions-*.yaml
+      - ansible/roles/**
+      - ansible/vars/**
+      - ansible/playbooks/**
+      - ansible/scripts/**
+      - docker/*.Dockerfile
       - docker/docker-bake.hcl
       - .github/workflows/validate-lockfiles.yaml
 
@@ -28,3 +41,29 @@ jobs:
 
       - name: Validate lockfiles (format + digest/lockfile coverage)
         run: ./ansible/scripts/validate_lockfiles.sh
+
+  # The locked base bakes below are two cold, uncached container builds. Put
+  # them behind the same opt-in label the repo already uses for its other
+  # expensive lanes (see health-check-ansible.yaml).
+  require-label:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
+    with:
+      label: run:health-check
+
+  build-locked-base:
+    needs: require-label
+    if: needs.require-label.outputs.result == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        rosdistro: [humble, jazzy]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build the locked base image
+        run: USE_LOCKFILE=true ROS_DISTRO=${{ matrix.rosdistro }} docker buildx bake -f docker/docker-bake.hcl base
