@@ -5,6 +5,12 @@
 #
 # ros_snapshot_date freezes every ROS package snapshots.ros.org serves on that date.
 ros_snapshot_date: "2026-05-14"
+#
+# ubuntu_snapshot_date freezes what the Ubuntu archive can still serve: snapshot.ubuntu.com
+# republishes the pockets as they stood at that timestamp, so every apt_pins build below
+# stays downloadable after the live pockets supersede it. Take it at the same time as the
+# versions below, or a pin here will resolve to nothing.
+ubuntu_snapshot_date: 20260805T000000Z
 apt_pins:
   build-essential: 12.9ubuntu3
   ccache: 4.5.1-1
