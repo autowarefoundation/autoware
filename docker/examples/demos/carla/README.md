@@ -99,7 +99,7 @@ ros2 launch autoware_carla_interface autoware_carla_interface.launch.xml \
   map_path:=/home/aw/autoware_data/maps/Town01 \
   port:=2000 \
   timeout:=60 \
-  use_light_weight_sensor_mapping:=false
+  use_light_weight_sensor_mapping:=true
 ```
 
 `spectator-follow` runs:
