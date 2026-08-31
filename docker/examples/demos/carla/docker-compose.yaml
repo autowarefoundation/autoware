@@ -1,0 +1,168 @@
+# cspell:ignore getusersitepackages urllib urlopen urlretrieve manylinux AUDIODRIVER nosound
+
+# Installs the CARLA Python API into the user site-packages of the autoware image.
+# Shared by every service that talks to the CARLA server.
+x-carla-python-api: &carla-python-api |
+  CARLA_VERSION=0.9.16
+  if ! python3 -c "import carla" 2>/dev/null; then
+    # install missing wheel package for Carla Python API
+    USER_SITE="$$(python3 -c 'import site; print(site.getusersitepackages())')"
+    TAG="$$(python3 -c 'import sys; print("cp%d%d" % sys.version_info[:2])')"
+    WHEEL_URL="$$(python3 -c "import json, urllib.request; m = json.load(urllib.request.urlopen('https://pypi.org/pypi/carla/$$CARLA_VERSION/json')); print(next(u['url'] for u in m['urls'] if u['filename'].startswith('carla-$$CARLA_VERSION-$$TAG-$$TAG-manylinux')))")"
+    mkdir -p "$$USER_SITE"
+    python3 -c "import urllib.request; urllib.request.urlretrieve('$$WHEEL_URL', '/tmp/carla.whl')"
+    python3 -m zipfile -e /tmp/carla.whl "$$USER_SITE"
+    rm /tmp/carla.whl
+  fi
+
+services:
+  carla-simulator:
+    image: carlasim/carla:0.9.16
+    runtime: nvidia
+    network_mode: host
+    stdin_open: true
+    tty: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - SDL_AUDIODRIVER=dummy
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command:
+      - ./CarlaUE4.sh
+      - -prefernvidia
+      - -quality-level=Low
+      - -nosound
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - bash -c '</dev/tcp/localhost/2000'
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  carla-interface:
+    image: ghcr.io/autowarefoundation/autoware:universe-cuda-jazzy
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    stdin_open: true
+    tty: true
+    depends_on:
+      carla-simulator:
+        condition: service_healthy
+    environment:
+      HOST_UID: ${HOST_UID:-1000}
+      HOST_GID: ${HOST_GID:-1000}
+      CARLA_PYTHON_API_BOOTSTRAP: *carla-python-api
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        eval "$$CARLA_PYTHON_API_BOOTSTRAP"
+        exec ros2 launch autoware_carla_interface autoware_carla_interface.launch.xml \
+          map_path:=/home/aw/autoware_data/maps/Town01 \
+          port:=2000 \
+          timeout:=60 \
+          use_light_weight_sensor_mapping:=true
+    # Healthy once the ego exists in the current CARLA episode.
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - |
+          PYTHONPATH="$$(ls -d /home/*/.local/lib/python3*/site-packages 2>/dev/null | head -1)" \
+          python3 -c "
+          import sys, carla
+          client = carla.Client('localhost', 2000)
+          client.set_timeout(5.0)
+          world = client.get_world()
+          world.wait_for_tick(5.0)
+          sys.exit(0 if any(a.attributes.get('role_name') == 'ego_vehicle'
+                            for a in world.get_actors().filter('vehicle.*')) else 1)
+          "
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  spectator-follow:
+    image: ghcr.io/autowarefoundation/autoware:universe-cuda-jazzy
+    network_mode: host
+    stdin_open: true
+    tty: true
+    depends_on:
+      carla-interface:
+        condition: service_healthy
+    restart: on-failure:5
+    environment:
+      HOST_UID: ${HOST_UID:-1000}
+      HOST_GID: ${HOST_GID:-1000}
+      CARLA_PYTHON_API_BOOTSTRAP: *carla-python-api
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        eval "$$CARLA_PYTHON_API_BOOTSTRAP"
+        exec ros2 run autoware_carla_interface spectator_follow \
+          --host localhost \
+          --port 2000 \
+          --timeout 60 \
+          --role ego_vehicle \
+          --distance 8.0 \
+          --height 4.0 \
+          --pitch -15.0 \
+          --rate 30.0
+
+  autoware:
+    image: ghcr.io/autowarefoundation/autoware:universe-cuda-jazzy
+    privileged: true
+    runtime: nvidia
+    network_mode: host
+    stdin_open: true
+    tty: true
+    depends_on:
+      carla-interface:
+        condition: service_healthy
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+      - HOST_UID=${HOST_UID:-1000}
+      - HOST_GID=${HOST_GID:-1000}
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - type: bind
+        source: ${HOME}/autoware_data
+        target: /home/aw/autoware_data
+        bind:
+          create_host_path: false
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command:
+      - bash
+      - -c
+      - |
+        ros2 launch autoware_launch e2e_simulator.launch.xml \
+          vehicle_model:=sample_vehicle \
+          sensor_model:=carla_sensor_kit \
+          simulator_type:=carla \
+          launch_simulator_interface:=false \
+          map_path:=/home/aw/autoware_data/maps/Town01
+        exec bash
