@@ -35,7 +35,7 @@ Or, to drop into a shell on the autoware side after the launch exits:
 HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose run --rm autoware
 ```
 
-`docker compose run` starts the `carla-simulator` dependency automatically and waits for its healthcheck (a TCP probe of port `2000`) to pass before launching autoware, so the carla interface won't hit its 20 s connect timeout on a cold start. Note that `docker compose run autoware` only pulls in autoware's own dependencies — add `spectator-follow` explicitly (`docker compose up -d spectator-follow`) if you want the chase camera in that flow.
+`docker compose run` starts the full dependency chain automatically: `carla-simulator` (healthcheck: a TCP probe of port `2000`), then `carla-interface` (healthcheck: the ego vehicle exists in the episode), so autoware launches only after the bridge is healthy. Note that `docker compose run autoware` only pulls in autoware's own dependencies — add `spectator-follow` explicitly (`docker compose up -d spectator-follow`) if you want the chase camera in that flow.
 
 To run everything except the chase camera and keep manual control of the CARLA spectator:
 
