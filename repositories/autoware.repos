@@ -96,7 +96,7 @@ repositories:
   universe/external/bevdet_vendor: # TODO: wrap the original bevdet-tensorrt-cpp source code as a vendor package and provide it to autoware_tensorrt_bevdet package
     type: git
     url: https://github.com/autowarefoundation/bevdet_vendor.git
-    version: 0.1.0
+    version: 0.2.1
   universe/external/cuda_blackboard:
     type: git
     url: https://github.com/autowarefoundation/cuda_blackboard.git
