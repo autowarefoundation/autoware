@@ -11,6 +11,9 @@ src/**/.*
 src/**/*.asc
 src/**/*.gif
 src/**/*.md
+# ros2agnocast_discovery_agent installs this via setup.py data_files;
+# removing it fails colcon build in the container (can't copy 'systemd/README.md').
+!src/**/systemd/README.md
 src/**/*.svg
 
 # Ignore generated files by colcon
