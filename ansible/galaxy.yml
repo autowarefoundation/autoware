@@ -12,7 +12,8 @@ license:
   - Apache-2.0
 tags:
   - autoware
-dependencies: {}
+dependencies:
+  ansible.posix: ">=1.0.0"
 repository: https://github.com/autowarefoundation/autoware
 documentation: https://autowarefoundation.github.io/autoware-documentation
 homepage: https://www.autoware.org/
