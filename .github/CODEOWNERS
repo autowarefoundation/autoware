@@ -3,5 +3,5 @@
 .devcontainer/** oguzkaganozt@gmail.com yutaka.kondo@tier4.jp ryohsuke.mitsudome@tier4.jp mfc@autoware.org
 .github/** oguzkaganozt@gmail.com yutaka.kondo@tier4.jp isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp mfc@autoware.org
 ansible/** oguzkaganozt@gmail.com yutaka.kondo@tier4.jp isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp mfc@autoware.org
-ansible/roles/agnocast/** oguzkaganozt@gmail.com yutaka.kondo@tier4.jp isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp mfc@autoware.org @Koichi98
+ansible/roles/agnocast/** oguzkaganozt@gmail.com yutaka.kondo@tier4.jp isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp mfc@autoware.org koichi.imai.2@tier4.jp
 docker/** oguzkaganozt@gmail.com yutaka.kondo@tier4.jp isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp mfc@autoware.org
