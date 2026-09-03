@@ -56,3 +56,22 @@
   ansible.builtin.unarchive:
     src: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/sample-rosbag.zip"
     dest: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/"
+
+# map-carla-kashiwanoha (CARLA docker-compose demo)
+# dest is relative to the maps directory. The demo video in the dataset is not part of the map.
+- name: Download the map datasets from Hugging Face
+  ansible.builtin.command:
+    cmd: >-
+      hf download AutowareFoundation/{{ item.repo }}
+      --repo-type dataset
+      --revision {{ item.revision }}
+      --exclude "*.mp4"
+      --local-dir "{{ demo_artifacts__autoware_data_dir }}/maps/{{ item.dest | default(item.repo) }}"
+  environment:
+    PATH: "{{ ansible_facts.env.PIPX_BIN_DIR | default(ansible_facts.env.HOME ~ '/.local/bin', true) }}:{{ ansible_facts.env.PATH }}"
+    HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
+  changed_when: false
+  loop_control:
+    label: "{{ item.repo }} {{ item.revision }}"
+  loop:
+    - { repo: map-carla-kashiwanoha, revision: 0.2.0, dest: carla-kashiwanoha }
