@@ -50,6 +50,9 @@ jobs:
         image:
           - ubuntu:22.04
           - ubuntu:24.04
+        locked:
+          - false
+          - true
     container:
       image: ${{ matrix.image }}
     steps:
@@ -80,7 +83,7 @@ jobs:
           bash ansible/scripts/install-ansible.sh
           export PATH="$HOME/.local/bin:$PATH"
           ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml
-          ansible-playbook autoware.dev_env.install_dev_env --skip-tags artifacts -v
+          ansible-playbook autoware.dev_env.install_dev_env --skip-tags artifacts -e use_locked_versions=${{ matrix.locked }} -v
 
       - name: 📊 Report installation disk footprint
         run: |
@@ -90,7 +93,7 @@ jobs:
           delta_gb=$(awk -v b="${delta}" 'BEGIN { printf "%.2f", b/1e9 }')
           echo "📦 Installation disk usage: ${delta_gb} GB"
           {
-            echo "## 📦 Installation disk usage (\`${{ matrix.image }}\`)"
+            echo "## 📦 Installation disk usage (\`${{ matrix.image }}\`, locked=${{ matrix.locked }})"
             echo ""
             echo "Root filesystem grew by **${delta_gb} GB** during the install."
           } >> "$GITHUB_STEP_SUMMARY"

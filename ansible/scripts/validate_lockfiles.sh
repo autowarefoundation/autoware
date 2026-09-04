@@ -24,6 +24,9 @@ if not isinstance(data, dict):
 date = data.get('ros_snapshot_date')
 if not isinstance(date, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}', date):
     sys.exit('Error: ros_snapshot_date must be a YYYY-MM-DD string')
+ubuntu_date = data.get('ubuntu_snapshot_date')
+if not isinstance(ubuntu_date, str) or not re.fullmatch(r'\d{8}T\d{6}Z', ubuntu_date):
+    sys.exit('Error: ubuntu_snapshot_date must be a snapshot.ubuntu.com timestamp, e.g. 20260805T000000Z')
 for key in ('apt_pins', 'pip_pins', 'nvidia_pins', 'ros_overrides'):
     section = data.get(key, {})
     if section is None:
