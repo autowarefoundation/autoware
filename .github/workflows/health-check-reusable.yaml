@@ -1,10 +1,10 @@
-# Builds `universe-devel` on independent matrix routes:
-# `main/amd64`, `nightly/amd64`, `main-arm64/arm64`,
-# `main-jazzy-amd64/amd64`, `main-jazzy-arm64/arm64`.
-# Each route owns a self-contained cache lineage keyed on
-# `{build-type}-{ros-distro}-{platform}`; there is no cross-route
-# fallback. Within a lineage, registry tags are per-ref so consecutive
-# PR runs reuse their own layers.
+# Builds `universe-devel` on independent matrix routes, one per
+# `build-type`: `main-humble-amd64`, `nightly-humble-amd64`,
+# `main-humble-arm64`, `main-jazzy-amd64`, `main-jazzy-arm64`.
+# The build-type names the ROS distro and the platform, and each route
+# owns a self-contained cache lineage keyed on `{build-type}`; there is
+# no cross-route fallback. Within a lineage, registry tags are per-ref
+# so consecutive PR runs reuse their own layers.
 #
 #   - GHA mount cache (actions/cache). Caches BuildKit RUN mounts (apt,
 #     ccache, pip, pipx) as a tarball keyed per route+sha. Only main
@@ -26,7 +26,7 @@ on:
   workflow_call:
     inputs:
       build-type:
-        description: Build-type label (e.g. main, nightly, main-arm64); drives caching lineage and conditional steps
+        description: Build-type label (e.g. main-humble-amd64, nightly-humble-amd64); names the cache lineage and drives conditional steps
         type: string
         required: true
       platform:
@@ -59,8 +59,8 @@ jobs:
       packages: write
       actions: write
     env:
-      CACHE_KEY_PREFIX: buildkit-mounts-health-check-${{ inputs.build-type }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-
-      CACHE_REF_PREFIX: ghcr.io/${{ github.repository }}-buildcache:health-check-${{ inputs.build-type }}-${{ inputs.ros-distro }}-${{ inputs.platform }}
+      CACHE_KEY_PREFIX: buildkit-mounts-health-check-${{ inputs.build-type }}-
+      CACHE_REF_PREFIX: ghcr.io/${{ github.repository }}-buildcache:health-check-${{ inputs.build-type }}
       IS_MAIN_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     steps:
       - name: 🔧 Change permission of workspace
@@ -88,7 +88,7 @@ jobs:
           echo "::endgroup::"
 
       - name: 🧹 Free disk space
-        if: inputs.build-type != 'main'
+        if: inputs.build-type != 'main-humble-amd64'
         uses: ./.github/actions/free-disk-space
 
       - name: 💾 Create additional swap
@@ -107,7 +107,7 @@ jobs:
           vcs import --shallow src < repositories/autoware.repos
 
       - name: 📦 Overlay nightly repos
-        if: inputs.build-type == 'nightly'
+        if: startsWith(inputs.build-type, 'nightly')
         run: |
           vcs import --shallow --force src < repositories/autoware-nightly.repos
 
