@@ -1,5 +1,6 @@
 acados_version: v0.5.3
 acados_tera_renderer_version: v0.2.0
 acados_pip_packages:
-  - casadi
+  # CasADi 3.8.0 ARM64 wheels require a newer libstdc++ than Ubuntu 22.04 provides.
+  - casadi==3.7.2
   - sympy
