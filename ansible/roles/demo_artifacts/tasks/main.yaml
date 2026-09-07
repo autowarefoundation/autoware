@@ -57,16 +57,22 @@
     src: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/sample-rosbag.zip"
     dest: "{{ demo_artifacts__autoware_data_dir }}/recordings/bags/"
 
-# map-carla-kashiwanoha (CARLA docker-compose demo)
-# dest is relative to the maps directory. The demo video in the dataset is not part of the map.
+# Maps for the CARLA demos.
+#
+# dest is relative to demo_artifacts__autoware_data_dir. hf keeps the repo-relative path of
+# every file it downloads under --local-dir, so a dataset that already namespaces its worlds
+# (carla-ue5-maps) points dest at maps/ itself instead of claiming a directory of its own.
+#
+# include/exclude drop what is not part of a map: the demo video, the preview renders.
 - name: Download the map datasets from Hugging Face
   ansible.builtin.command:
     cmd: >-
       hf download AutowareFoundation/{{ item.repo }}
       --repo-type dataset
       --revision {{ item.revision }}
-      --exclude "*.mp4"
-      --local-dir "{{ demo_artifacts__autoware_data_dir }}/maps/{{ item.dest | default(item.repo) }}"
+      {% for pattern in item.include | default([]) %}--include "{{ pattern }}" {% endfor %}
+      {% for pattern in item.exclude | default([]) %}--exclude "{{ pattern }}" {% endfor %}
+      --local-dir "{{ demo_artifacts__autoware_data_dir }}/{{ item.dest }}"
   environment:
     PATH: "{{ ansible_facts.env.PIPX_BIN_DIR | default(ansible_facts.env.HOME ~ '/.local/bin', true) }}:{{ ansible_facts.env.PATH }}"
     HF_TOKEN: "{{ lookup('env', 'HF_TOKEN') }}"
@@ -74,4 +80,15 @@
   loop_control:
     label: "{{ item.repo }} {{ item.revision }}"
   loop:
-    - { repo: map-carla-kashiwanoha, revision: 0.2.0, dest: carla-kashiwanoha }
+    # CARLA docker-compose demo.
+    - repo: map-carla-kashiwanoha
+      revision: 0.2.0
+      exclude: ["*.mp4"]
+      dest: maps/carla-kashiwanoha
+
+    # Autoware maps for the CARLA 0.10 towns, one directory per world. The dataset carries no
+    # tag yet, so the revision is the commit that published Town10HD_Opt.
+    - repo: carla-ue5-maps
+      revision: 682ddd48b4cf305507646cb2f2e563bbedac4c2e
+      include: [autoware_maps/Town10HD_Opt/*]
+      dest: maps
