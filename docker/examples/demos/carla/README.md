@@ -16,6 +16,7 @@ Splitting the interface out makes it easier to restart just the bridge (e.g. whe
 ## Prerequisites
 
 - NVIDIA GPU with the NVIDIA Container Toolkit installed
+- CARLA **0.9.16** — the version this stack pins, for both the simulator image and the Python API. The maps under `~/autoware_data/maps/autoware_maps/` are for CARLA 0.10 and will not work here; see [Maps for CARLA 0.10](#maps-for-carla-010).
 - CARLA Lanelet2 map (e.g. `Town01`) extracted to `~/autoware_data/maps/Town01` — see the [autoware_carla_interface README](https://autowarefoundation.github.io/autoware_universe/main/simulator/autoware_carla_interface/#map-setup) for the expected layout (`lanelet2_map.osm`, `pointcloud_map.pcd`, `map_projector_info.yaml`)
 - Perception model data under `~/autoware_data/ml_models`
 - Docker Compose v2
@@ -64,7 +65,7 @@ Edit the `command:` block in `docker-compose.yaml` to change launch arguments.
 
 **`carla-interface`**:
 
-- **Map**: change `map_path` (e.g. `Town10HD`) — the basename is forwarded to CARLA as the world to load. Keep this in sync with the `map_path` on the `autoware` service.
+- **Map**: change `map_path` (e.g. `Town10HD`) — the basename is forwarded to CARLA as the world to load. Keep this in sync with the `map_path` on the `autoware` service. Use a map recorded on 0.9; not the 0.10 ones (see [Maps for CARLA 0.10](#maps-for-carla-010)).
 - **Light-weight sensors**: set `use_light_weight_sensor_mapping:=true` to use a single front camera at lower frequencies (lower GPU load).
 - **Timeout**: `timeout:=60` is the CARLA client connect timeout in seconds.
 
@@ -138,3 +139,33 @@ ros2 launch autoware_launch e2e_simulator.launch.xml \
 ```bash
 ./CarlaUE4.sh -prefernvidia -quality-level=Low -nosound
 ```
+
+## Maps for CARLA 0.10
+
+CARLA 0.10 re-authored the towns in Unreal Engine 5. The geometry moved, so a point cloud map
+recorded on one release does not describe the world of the other, in either direction: NDT scores a
+confident match against walls that are no longer there, drifts, and the MRM handler emergency-stops
+the route.
+
+The [`demo_artifacts`](../../../../ansible/roles/demo_artifacts/README.md) ansible role downloads
+maps recorded from 0.10 into `~/autoware_data/maps/autoware_maps/<World>/`. **They are not for this
+stack.** This one pins 0.9.16 in two places, and both would have to move together:
+
+|            | Pinned to               | Where                                                  |
+| ---------- | ----------------------- | ------------------------------------------------------ |
+| Simulator  | `carlasim/carla:0.9.16` | `docker-compose.yaml`, the `carla-simulator` service   |
+| Python API | `CARLA_VERSION=0.9.16`  | `docker-compose.yaml`, the `x-carla-python-api` anchor |
+
+Two things are missing before that pin can be raised:
+
+- **There is no CARLA 0.10 Python client to install.** `x-carla-python-api` resolves a wheel from
+  PyPI, and the `carla` project publishes nothing past 0.9.16 there; the 0.10.0 release ships no
+  client wheel either. A 0.10 client has to be built from the CARLA source tree against the same
+  Python and toolchain as the Autoware image.
+- **`autoware_carla_interface` does not handle 0.10 yet.** Its pedal map and vehicle catalogue are
+  0.9-era — `vehicle.toyota.prius`, the default ego, does not exist in 0.10, and the creep throttle
+  that starts a pull-out is too low for the 0.10 vehicles to move at all.
+
+`carlasim/carla:0.10.0` does exist on Docker Hub, so the simulator half is available; it is the
+client and the bridge that are not. Until both land, treat the 0.10 maps as data published ahead of
+the runtime that reads them.
