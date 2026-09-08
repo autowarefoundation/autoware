@@ -31,7 +31,9 @@ ENV CXX="/usr/lib/ccache/g++"
 ENV CCACHE_DIR="/home/aw/.ccache"
 
 COPY --parents --chown=${USERNAME}:${USERNAME} src/core/**/package.xml /tmp/autoware/
-RUN rm -rf /tmp/autoware/src/core/autoware_core /tmp/autoware/src/core/autoware_rviz_plugins
+RUN rm -rf /tmp/autoware/src/core/autoware_core \
+           /tmp/autoware/src/core/autoware_rviz_plugins \
+           /tmp/autoware/src/core/autoware_simple_planning_simulator
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
@@ -49,7 +51,8 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
 RUN --mount=type=bind,source=src/core,target=/tmp/autoware/src/core,rw \
     --mount=type=cache,id=ccache-${ROS_DISTRO},target=/home/aw/.ccache,uid=1000,gid=1000 \
     rm -rf /tmp/autoware/src/core/autoware_core \
-           /tmp/autoware/src/core/autoware_rviz_plugins && \
+           /tmp/autoware/src/core/autoware_rviz_plugins \
+           /tmp/autoware/src/core/autoware_simple_planning_simulator && \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     colcon build \
       --base-paths /tmp/autoware/src/core \
@@ -63,6 +66,7 @@ ARG ROS_DISTRO
 COPY --parents --chown=${USERNAME}:${USERNAME} \
     src/core/autoware_core/**/package.xml \
     src/core/autoware_rviz_plugins/**/package.xml \
+    src/core/autoware_simple_planning_simulator/**/package.xml \
     /tmp/autoware/
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
@@ -81,12 +85,14 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
 
 RUN --mount=type=bind,source=src/core/autoware_core,target=/tmp/autoware/src/core/autoware_core \
     --mount=type=bind,source=src/core/autoware_rviz_plugins,target=/tmp/autoware/src/core/autoware_rviz_plugins \
+    --mount=type=bind,source=src/core/autoware_simple_planning_simulator,target=/tmp/autoware/src/core/autoware_simple_planning_simulator \
     --mount=type=cache,id=ccache-${ROS_DISTRO},target=/home/aw/.ccache,uid=1000,gid=1000 \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     . /opt/autoware/setup.sh && \
     colcon build \
       --base-paths /tmp/autoware/src/core/autoware_core \
                    /tmp/autoware/src/core/autoware_rviz_plugins \
+                   /tmp/autoware/src/core/autoware_simple_planning_simulator \
       --install-base /opt/autoware \
       --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     rm -rf build log
