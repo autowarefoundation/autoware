@@ -2,10 +2,24 @@ name: validate-lockfiles
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+    # Wide enough for whichever of the two jobs below could be affected. They no
+    # longer share one gate: the cheap lint runs on anything reaching this
+    # workflow, and the two cold container builds gate themselves on a
+    # changed-files job scoped to what the `base` target actually consumes.
+    # Markdown is excluded outright — 19 READMEs live under ansible/roles/**,
+    # and a docs-only PR must start neither job.
     paths:
-      - ansible/vars/locked-versions-*.yaml
+      - ansible/**
+      - ansible-galaxy-requirements.yaml
+      - docker/*.Dockerfile
       - docker/docker-bake.hcl
       - .github/workflows/validate-lockfiles.yaml
+      - "!**/*.md"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -28,3 +42,84 @@ jobs:
 
       - name: Validate lockfiles (format + digest/lockfile coverage)
         run: ./ansible/scripts/validate_lockfiles.sh
+
+  # What a locked `base` bake resolves against: the roles install_rmw runs, the
+  # lockfile it reads, the collection those roles are resolved from, and the two
+  # docker files the bake itself consumes. Deliberately narrower than the
+  # workflow trigger above — ansible/scripts/** and the other four playbooks
+  # reach the lint but no bake.
+  changed-files:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.any_modified }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - id: check
+        uses: step-security/changed-files@v47
+        with:
+          files: |
+            ansible/roles/**
+            ansible/vars/**
+            ansible/playbooks/install_rmw.yaml
+            ansible-galaxy-requirements.yaml
+            docker/base.Dockerfile
+            docker/docker-bake.hcl
+            .github/workflows/validate-lockfiles.yaml
+          files_ignore: |
+            ansible/roles/artifacts/**
+            **/*.md
+
+  # The locked base bakes below are two cold, uncached container builds. Put
+  # them behind the same opt-in label the repo already uses for its other
+  # expensive lanes, wired to run-condition exactly as health-check-ansible.yaml,
+  # health-check-ansible-artifacts.yaml and health-check-pr.yaml wire theirs.
+  # Without run-condition this call site reports red — not skipped — on any PR
+  # that reaches the workflow without touching a bake input, and all four sites
+  # publish the same required `require-label / require-label` context.
+  require-label:
+    needs: changed-files
+    if: ${{ always() }}
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/require-label.yaml@v1
+    with:
+      label: run:health-check
+      run-condition: ${{ needs.changed-files.outputs.should-run == 'true' }}
+
+  build-locked-base:
+    needs: require-label
+    if: needs.require-label.outputs.result == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        rosdistro: [humble, jazzy]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build the locked base image
+        run: USE_LOCKFILE=true ROS_DISTRO=${{ matrix.rosdistro }} docker buildx bake -f docker/docker-bake.hcl base
+
+  # The matrix above emits one context per distro, none of which is a stable
+  # name a branch ruleset can require. Aggregate them into one, the same way
+  # health-check-ansible.yaml aggregates install-dev-env, so this lane can be
+  # promoted to a required check without the name changing again when a distro
+  # is added or dropped.
+  build-locked-base-required:
+    needs: build-locked-base
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify build-locked-base outcome
+        run: |
+          result="${{ needs.build-locked-base.result }}"
+          echo "build-locked-base: $result"
+          case "$result" in
+            success|skipped) exit 0 ;;
+            *) exit 1 ;;
+          esac

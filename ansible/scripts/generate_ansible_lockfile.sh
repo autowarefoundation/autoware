@@ -12,6 +12,20 @@ if [[ -z ${ROS_SNAPSHOT_DATE:-} ]]; then
     echo "Error: ROS_SNAPSHOT_DATE is not set (e.g. 2026-04-13)." >&2
     exit 1
 fi
+# The Ubuntu archive counterpart of ROS_SNAPSHOT_DATE. Take it at the same time
+# as the apt versions recorded below: snapshot.ubuntu.com is what keeps those
+# builds downloadable once the live pockets supersede them, so a timestamp from
+# before this run would freeze the archive at versions that are not the ones
+# pinned here.
+if [[ -z ${UBUNTU_SNAPSHOT_DATE:-} ]]; then
+    echo "Error: UBUNTU_SNAPSHOT_DATE is not set (snapshot.ubuntu.com timestamp, e.g. 20260805T000000Z)." >&2
+    echo "Hint: date -u +%Y%m%dT000000Z" >&2
+    exit 1
+fi
+if [[ ! $UBUNTU_SNAPSHOT_DATE =~ ^[0-9]{8}T[0-9]{6}Z$ ]]; then
+    echo "Error: UBUNTU_SNAPSHOT_DATE must look like 20260805T000000Z, got '${UBUNTU_SNAPSHOT_DATE}'." >&2
+    exit 1
+fi
 ARCH=$(dpkg --print-architecture)
 OUTPUT_FILE="${ANSIBLE_DIR}/vars/locked-versions-${ROS_DISTRO}-${ARCH}.yaml"
 
@@ -117,6 +131,12 @@ else:
 #
 # ros_snapshot_date freezes every ROS package snapshots.ros.org serves on that date.
 ros_snapshot_date: "${ROS_SNAPSHOT_DATE}"
+#
+# ubuntu_snapshot_date freezes what the Ubuntu archive can still serve: snapshot.ubuntu.com
+# republishes the pockets as they stood at that timestamp, so every apt_pins build below
+# stays downloadable after the live pockets supersede it. Take it at the same time as the
+# versions below, or a pin here will resolve to nothing.
+ubuntu_snapshot_date: ${UBUNTU_SNAPSHOT_DATE}
 apt_pins:
 HEADER
         for pkg in "${apt_packages[@]}"; do

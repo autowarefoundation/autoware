@@ -60,6 +60,21 @@
     state: absent
   when: not (use_locked_versions | default(false) | bool)
 
+# Keeps every pinned build downloadable after Ubuntu supersedes it in the live
+# pockets, which is what makes the pins above bind at all. Runs before the
+# python3-apt install below so that package, itself an apt_pin, already resolves
+# from the snapshot. See ubuntu_snapshot_source.yaml for the full rationale.
+- name: Configure the dated Ubuntu archive snapshot source
+  ansible.builtin.include_tasks: ubuntu_snapshot_source.yaml
+  when: use_locked_versions | default(false) | bool
+
+- name: Remove the dated Ubuntu archive snapshot source
+  become: true
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/ubuntu-snapshot.sources
+    state: absent
+  when: not (use_locked_versions | default(false) | bool)
+
 # Both files/list_ros_snapshot_drift.py and files/check_pin_completeness.py
 # `import apt`, so python3-apt is a declared dependency of this role, not
 # incidental bootstrap. Installing it explicitly, before the baseline below,
