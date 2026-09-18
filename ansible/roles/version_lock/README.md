@@ -38,6 +38,43 @@ The file needs only a top-level `nvidia_pins` mapping, in the same format as a l
 
 Leaving `nvidia_lockfile_path` empty while overriding a version is not silently tolerated: the `cuda` role fails when no `cuda-*-<version>` entry covers this run, and the `tensorrt` role fails when the pinned `libnvinfer10` disagrees with `tensorrt_version`. Without those guards the CUDA half would install unfrozen (its version-suffixed names simply are not in the closure, and `verify.yaml` reports drift only for keys that are installed) and the TensorRT half would fail with an unattributable `no available installation candidate`.
 
+### Ubuntu archive snapshot
+
+An exact-version pin only binds a version APT can still reach. Ubuntu drops a
+superseded build from `<suite>-updates` and `<suite>-security` the moment it
+publishes the replacement, and a preference naming a version no configured
+source serves matches nothing at all — so APT quietly installs the current
+candidate and `tasks/verify.yaml` fails the play on the drift. This decays on
+its own: 17 days after the lockfiles were last regenerated, `wget` had moved on
+both distros with no change to this repository.
+
+In locked mode the role therefore also writes
+`/etc/apt/sources.list.d/ubuntu-snapshot.sources`, pointing at
+`snapshot.ubuntu.com` at the lockfile's `ubuntu_snapshot_date`
+(`tasks/ubuntu_snapshot_source.yaml`). That service republishes the archive as
+it stood at a given timestamp, so every `apt_pins` build stays downloadable
+after the live pockets move past it. It is the Ubuntu-archive counterpart of
+the dated `snapshots.ros.org` source the `ros2` role configures, it covers
+`amd64` and `arm64` from the same tree, and it is signed by the stock
+`ubuntu-archive-keyring`, so no extra key is installed.
+
+The source is added **alongside** the distribution's own sources, not in place
+of them:
+
+- The pins are the contract for Ubuntu-archive packages. At `Pin-Priority: 1001`
+  they select the locked build wherever it is served, so this source only has to
+  keep that build reachable — it does not have to win on its own.
+- `install_dev_env` runs on developer machines, and rewriting a user's
+  `/etc/apt/sources.list` is not this role's to do.
+- Packages outside `apt_pins` keep resolving exactly as they do without it, so
+  the change affects nothing but a pin that would otherwise be unreachable. A
+  newly introduced Ubuntu-archive package that nobody pinned is caught
+  separately, by `files/check_pin_completeness.py` in `tasks/verify.yaml`.
+
+`snapshot.ubuntu.com` is https-only, and the minimal Ubuntu images CI runs in
+ship no CA bundle, so the task installs `ca-certificates` from the sources
+configured at that point, before APT has to speak TLS.
+
 ### Snapshot reconcile
 
 In locked mode the role does not only pin future installs: right after the
@@ -65,10 +102,18 @@ freeze — release the hold if you want locked mode to govern it.
 On a machine already provisioned by `install_dev_env`, run:
 
 ```bash
-ROS_DISTRO=<distro> ROS_SNAPSHOT_DATE=<YYYY-MM-DD> ./ansible/scripts/generate_ansible_lockfile.sh
+ROS_DISTRO=<distro> ROS_SNAPSHOT_DATE=<YYYY-MM-DD> \
+  UBUNTU_SNAPSHOT_DATE=$(date -u +%Y%m%dT000000Z) \
+  ./ansible/scripts/generate_ansible_lockfile.sh
 ```
 
 `ROS_SNAPSHOT_DATE` must match the snapshot the machine was provisioned from.
+
+`UBUNTU_SNAPSHOT_DATE` is a `snapshot.ubuntu.com` timestamp of the form
+`20260805T000000Z`, and must be taken at the same time as the versions this run
+records. A timestamp from before the run would freeze the archive at builds that
+are not the ones pinned here, and every pin would then resolve to nothing.
+Today's date at midnight, as in the command above, is the normal choice.
 
 The script reads the package names from the existing lockfile for the current distro/architecture and fills in the versions currently installed on the machine. It rewrites `apt_pins` and `pip_pins`, and preserves `nvidia_pins` and `ros_overrides` verbatim.
 
@@ -231,11 +276,12 @@ vice-versa); regenerate both together so the digest matches `ros_snapshot_date`.
 
 ## Lockfile format
 
-A YAML mapping with five keys, one file per distro/arch
+A YAML mapping with six keys, one file per distro/arch
 (`ansible/vars/locked-versions-<rosdistro>-<arch>.yaml`):
 
 ```yaml
 ros_snapshot_date: "2026-04-13" # a real published date under snapshots.ros.org/<distro>/
+ubuntu_snapshot_date: 20260805T000000Z # a real published timestamp under snapshot.ubuntu.com/ubuntu/
 apt_pins: # Ubuntu-archive origin only, sorted by name; rendered as APT pins
   ccache: 4.9.1-1
   git-lfs: 3.4.1-1ubuntu0.4
@@ -251,6 +297,10 @@ ros_overrides: {} # exception pins for individual ROS packages; normally empty
   also carries a `Package: * / Pin: origin snapshots.ros.org / Pin-Priority: 1001` stanza so the
   snapshot outranks the rolling `packages.ros.org` repo even on a machine that already had it —
   otherwise both sit at priority 500 and apt would install the newer rolling build.
+- `ubuntu_snapshot_date` drives the dated `snapshot.ubuntu.com` source the role adds in locked
+  mode, which keeps every `apt_pins` build below downloadable after Ubuntu supersedes it in the
+  live pockets. Unlike `ros_snapshot_date` it does not by itself freeze a closure — the pins do
+  that — it only keeps the pinned builds reachable. See "Ubuntu archive snapshot" above.
 - `apt_pins` covers Ubuntu-archive packages. It is rendered into `/etc/apt/preferences.d/autoware-lock`
   with `Pin-Priority: 1001`.
 - `pip_pins` is the declared home for pip/pipx-managed packages. It is meant to be consumed
