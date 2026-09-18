@@ -29,6 +29,7 @@ USER root
 ENV CC="/usr/lib/ccache/gcc"
 ENV CXX="/usr/lib/ccache/g++"
 ENV CCACHE_DIR="/home/aw/.ccache"
+RUN mkdir -p /home/aw/.ccache && chown "${USERNAME}:${USERNAME}" /home/aw/.ccache
 
 COPY --parents --chown=${USERNAME}:${USERNAME} src/core/**/package.xml /tmp/autoware/
 RUN rm -rf /tmp/autoware/src/core/autoware_core \
