@@ -6,6 +6,13 @@
     allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
 
+- name: Create ccache directory
+  become: false
+  ansible.builtin.file:
+    path: ~/.ccache
+    state: directory
+    mode: "0755"
+
 - name: Add CCACHE_DIR to .bashrc
   ansible.builtin.lineinfile:
     dest: ~/.bashrc
