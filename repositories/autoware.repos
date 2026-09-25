@@ -44,7 +44,7 @@ repositories:
     type: git
     url:
       https://github.com/autowarefoundation/autoware_simple_planning_simulator.git
-    version: 1.0.0
+    version: 1.1.0
   core/autoware_system_designer:
     type: git
     url: https://github.com/autowarefoundation/autoware_system_designer.git
