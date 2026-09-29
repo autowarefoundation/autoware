@@ -130,10 +130,10 @@ repositories:
     type: git
     url: https://github.com/ub-cavas/nebula.git
     version: add-ouster-support
-  sensor_component/external/v4l2_camera:
+  sensor_component/external/lucid_vision_driver:
     type: git
-    url: https://gitlab.com/boldhearts/ros2_v4l2_camera
-    version: humble
+    url: https://github.com/rancslab/lucid_vision_driver
+    version: main
   sensor_component/external/sync_tooling_msgs:
     type: git
     url: https://github.com/tier4/sync_tooling_msgs.git
