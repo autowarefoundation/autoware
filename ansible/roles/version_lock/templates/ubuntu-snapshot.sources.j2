@@ -1,0 +1,13 @@
+{# Rendered to /etc/apt/sources.list.d/ubuntu-snapshot.sources in locked mode. #}
+{# Added alongside the distribution's own sources, not in place of them: the #}
+{# exact-version pins in /etc/apt/preferences.d/autoware-lock (priority 1001) #}
+{# decide which candidate wins, and this source only has to make the pinned #}
+{# build downloadable again once the live pockets drop it. See #}
+{# tasks/ubuntu_snapshot_source.yaml for why. #}
+{# Signed by the stock Ubuntu archive key: snapshot.ubuntu.com republishes the #}
+{# original Release files, so no extra keyring is needed. #}
+Types: deb
+URIs: https://snapshot.ubuntu.com/ubuntu/{{ locked_packages.ubuntu_snapshot_date }}
+Suites: {{ ansible_distribution_release }} {{ ansible_distribution_release }}-updates {{ ansible_distribution_release }}-backports {{ ansible_distribution_release }}-security
+Components: main restricted universe multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
