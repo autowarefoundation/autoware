@@ -1,5 +1,6 @@
 {
   "ignorePaths": [
+    "ansible/roles/qt5ct_setup/files/",
     "ansible/vars/"
   ],
   "words": [
