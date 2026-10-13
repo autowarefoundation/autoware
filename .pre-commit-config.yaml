@@ -25,7 +25,7 @@ repos:
         args: [--markdown-linebreak-ext=md]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.49.0
+    rev: v0.49.1
     hooks:
       - id: markdownlint
         args: [-c, .markdownlint.yaml, --fix]
@@ -57,18 +57,18 @@ repos:
       - id: sort-package-xml
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.11.0.1
+    rev: v0.11.0.1-1
     hooks:
       - id: shellcheck
 
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.13.1-1
+    rev: v3.14.1-1
     hooks:
       - id: shfmt
         args: [-w, -s, -i=4]
 
   - repo: https://github.com/pycqa/isort
-    rev: 9.0.0a3
+    rev: 9.0.2
     hooks:
       - id: isort
         args: [--profile=black, --line-length=100]
@@ -80,7 +80,7 @@ repos:
         args: [--line-length=100]
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v22.1.5
+    rev: v23.1.1
     hooks:
       - id: clang-format
         types_or: [c++, c, cuda]
@@ -93,7 +93,7 @@ repos:
         exclude: .cu
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.4
+    rev: 0.38.2
     hooks:
       - id: check-metaschema
         files: ^.+/schema/.*schema\.json$
@@ -115,12 +115,12 @@ repos:
         args: [--format=github-actions]
 
   - repo: https://github.com/autowarefoundation/autoware-spell-check-dict
-    rev: e9d756af3ac14bacd5c9cea188d47b39d3160f53
+    rev: 11cff6151a3c2141850535c0d62e5e13a7383c5f
     hooks:
       - id: format-cspell-json
 
   - repo: https://github.com/AleksaC/hadolint-py
-    rev: v2.14.0
+    rev: v2.15.1
     hooks:
       - id: hadolint
         exclude: .svg$
