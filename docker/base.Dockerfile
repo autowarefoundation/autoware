@@ -6,6 +6,7 @@ FROM ros:${ROS_DISTRO}-ros-base${BASE_IMAGE_DIGEST} AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG ROS_DISTRO
+# hadolint ignore=DL3064
 ARG USERNAME=aw
 ARG USE_LOCKFILE=false
 
@@ -71,6 +72,7 @@ USER root
 COPY --chmod=755 docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 ENV ROS_DISTRO=${ROS_DISTRO}
+# hadolint ignore=DL3064
 ENV USERNAME=${USERNAME}
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

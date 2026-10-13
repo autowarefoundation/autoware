@@ -5,3 +5,4 @@ ignored:
   - DL3009 # Delete the apt-get lists after installing something
   - DL3002 # Last USER should not be root (multi-stage builds need root in intermediate stages)
   - DL3004 # Do not use sudo (our images use passwordless sudo by design)
+  - DL3066 # Non-numeric user-id (the entrypoint sets the UID/GID of the named user at runtime)
