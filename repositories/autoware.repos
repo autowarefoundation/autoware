@@ -35,14 +35,14 @@ repositories:
   core/autoware_core:
     type: git
     url: https://github.com/autowarefoundation/autoware_core.git
-    version: 1.9.0
+    version: 1.10.0
   core/autoware_rviz_plugins:
     type: git
     url: https://github.com/autowarefoundation/autoware_rviz_plugins.git
     version: 0.6.0
   core/autoware_simple_planning_simulator:
     type: git
-    url:
+    url: 
       https://github.com/autowarefoundation/autoware_simple_planning_simulator.git
     version: 1.1.0
   core/autoware_system_designer:
