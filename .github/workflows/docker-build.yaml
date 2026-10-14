@@ -49,6 +49,10 @@ on:
         description: Registry image name
         type: string
         default: autoware
+      tag-date:
+        description: Date tag (YYYYMMDD) shared by all images of the run
+        type: string
+        required: true
       needs-source:
         description: Whether to clone source repos via vcs import
         type: boolean
@@ -199,7 +203,6 @@ jobs:
         run: |
           ref_name="${GITHUB_REF_NAME//\//-}"
           echo "ref_name=${ref_name}" >> "$GITHUB_OUTPUT"
-          echo "date=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
           echo "build_start=$(date +%s)" >> "$GITHUB_OUTPUT"
           echo "disk_before_kb=$(df --output=avail / | tail -1 | tr -d ' ')" >> "$GITHUB_OUTPUT"
 
@@ -226,7 +229,7 @@ jobs:
           ROS_DISTRO: ${{ inputs.ros-distro }}
           REGISTRY: ghcr.io/${{ github.repository_owner }}/${{ inputs.target-image }}
           PLATFORM: ${{ inputs.platform }}
-          TAG_DATE: ${{ steps.meta.outputs.date }}
+          TAG_DATE: ${{ inputs.tag-date }}
           TAG_VERSION: ${{ steps.meta.outputs.version }}
           TAG_REF: ${{ steps.meta.outputs.ref }}
           USE_REGISTRY_CONTEXTS: ${{ inputs.bake-group != 'ci-base' }}

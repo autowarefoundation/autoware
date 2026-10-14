@@ -16,8 +16,13 @@ jobs:
   changed-files:
     runs-on: ubuntu-24.04
     outputs:
+      date: ${{ steps.date.outputs.date }}
       should-build: ${{ steps.check.outputs.any_modified == 'true' || steps.last-success.outputs.sha == '' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_type == 'tag') }}
     steps:
+      - name: Set the date tag for all images of this run
+        id: date
+        run: echo "date=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -60,6 +65,7 @@ jobs:
     with:
       ros-distro: humble
       platform: amd64
+      tag-date: ${{ needs.changed-files.outputs.date }}
 
   humble-arm64:
     needs: changed-files
@@ -68,12 +74,14 @@ jobs:
     with:
       ros-distro: humble
       platform: arm64
+      tag-date: ${{ needs.changed-files.outputs.date }}
 
   humble-manifest:
-    needs: [humble-amd64, humble-arm64]
+    needs: [changed-files, humble-amd64, humble-arm64]
     uses: ./.github/workflows/docker-manifest.yaml
     with:
       ros-distro: humble
+      tag-date: ${{ needs.changed-files.outputs.date }}
 
   jazzy-amd64:
     needs: changed-files
@@ -82,6 +90,7 @@ jobs:
     with:
       ros-distro: jazzy
       platform: amd64
+      tag-date: ${{ needs.changed-files.outputs.date }}
 
   jazzy-arm64:
     needs: changed-files
@@ -90,9 +99,11 @@ jobs:
     with:
       ros-distro: jazzy
       platform: arm64
+      tag-date: ${{ needs.changed-files.outputs.date }}
 
   jazzy-manifest:
-    needs: [jazzy-amd64, jazzy-arm64]
+    needs: [changed-files, jazzy-amd64, jazzy-arm64]
     uses: ./.github/workflows/docker-manifest.yaml
     with:
       ros-distro: jazzy
+      tag-date: ${{ needs.changed-files.outputs.date }}

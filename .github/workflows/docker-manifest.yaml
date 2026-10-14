@@ -18,6 +18,10 @@ on:
         description: Registry image name
         type: string
         default: autoware
+      tag-date:
+        description: Date tag (YYYYMMDD) shared by all images of the run
+        type: string
+        required: true
 
 jobs:
   manifest:
@@ -64,10 +68,11 @@ jobs:
         id: tags
         env:
           TARGETS: ${{ steps.targets.outputs.list }}
+          TAG_DATE: ${{ inputs.tag-date }}
         run: |
           set -euo pipefail
 
-          date=$(date +'%Y%m%d')
+          date="$TAG_DATE"
           ref=""
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.ref_name }}" != "main" ]]; then
             ref="${GITHUB_REF_NAME//\//-}"
