@@ -34,6 +34,7 @@
     - { repo: tensorrt_vad, revision: v0.1, dest: vad/v0.1 }
     - { repo: traffic_light_fine_detector, revision: v3.0 }
     - { repo: simpl_prediction, revision: v0.1 }
-    - { repo: ptv3, revision: v4.0 }
+    # ptv3 uses the version numbers of the internal model releases, so v0.1.1 is newer than v4.0.
+    - { repo: ptv3, revision: v0.1.1 }
     - { repo: lidar_frnet, revision: v2.0 }
     - { repo: calibration_status_classifier, revision: v2.0 }
