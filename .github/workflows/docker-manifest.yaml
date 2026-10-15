@@ -72,6 +72,11 @@ jobs:
         run: |
           set -euo pipefail
 
+          if [[ ! "$TAG_DATE" =~ ^[0-9]{8}$ ]]; then
+            echo "::error::Invalid tag-date '${TAG_DATE}', expected YYYYMMDD"
+            exit 1
+          fi
+
           date="$TAG_DATE"
           ref=""
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.ref_name }}" != "main" ]]; then

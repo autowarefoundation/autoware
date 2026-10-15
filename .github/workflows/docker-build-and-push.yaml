@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Set the date tag for all images of this run
         id: date
-        run: echo "date=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+        run: echo "date=$(date -u +'%Y%m%d')" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
         with:

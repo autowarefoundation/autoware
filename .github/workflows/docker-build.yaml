@@ -200,7 +200,14 @@ jobs:
 
       - name: 📋 Prepare build metadata
         id: meta
+        env:
+          TAG_DATE: ${{ inputs.tag-date }}
         run: |
+          if [[ ! "$TAG_DATE" =~ ^[0-9]{8}$ ]]; then
+            echo "::error::Invalid tag-date '${TAG_DATE}', expected YYYYMMDD"
+            exit 1
+          fi
+
           ref_name="${GITHUB_REF_NAME//\//-}"
           echo "ref_name=${ref_name}" >> "$GITHUB_OUTPUT"
           echo "build_start=$(date +%s)" >> "$GITHUB_OUTPUT"
