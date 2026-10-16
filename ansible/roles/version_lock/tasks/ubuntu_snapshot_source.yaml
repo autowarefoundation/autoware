@@ -1,0 +1,58 @@
+# Configure the dated Ubuntu archive snapshot apt source (locked mode).
+#
+# An exact-version pin in /etc/apt/preferences.d/autoware-lock only binds a
+# version apt can actually reach. Ubuntu drops a superseded build from
+# <suite>-updates and <suite>-security as soon as it publishes the replacement,
+# so a pin taken at lockfile-generation time stops matching anything the moment
+# a security update lands. apt then silently installs the current candidate and
+# tasks/verify.yaml fails the play on the drift. This decayed on its own 17 days
+# after the lockfiles were last regenerated (wget, both distros), with no change
+# to the repository.
+#
+# snapshot.ubuntu.com republishes the archive as it stood at a given timestamp,
+# so pointing at the lockfile's own date makes every pinned build downloadable
+# again. It is the Ubuntu-archive counterpart to the dated snapshots.ros.org
+# source the ros2 role configures (roles/ros2/tasks/snapshot_source.yaml).
+#
+# Added ALONGSIDE the distribution's own sources rather than replacing them:
+#   - The pins are the contract for Ubuntu-archive packages, and at priority
+#     1001 they select the locked build wherever it is served. This source only
+#     has to keep that build reachable; it does not need to win by itself.
+#   - install_dev_env runs on developer machines, and rewriting a user's
+#     /etc/apt/sources.list is not this role's to do.
+#   - Packages outside apt_pins keep resolving exactly as they do today, so the
+#     change has no effect on anything but a pin that would otherwise be
+#     unreachable. A newly-introduced Ubuntu-archive package that nobody pinned
+#     is caught separately, by files/check_pin_completeness.py in verify.yaml.
+#
+# Callers do not import this file directly; tasks/main.yaml runs it in locked mode.
+- name: Assert lockfile provides an Ubuntu snapshot date
+  ansible.builtin.assert:
+    that:
+      - locked_packages.ubuntu_snapshot_date is defined
+      - locked_packages.ubuntu_snapshot_date | string | length > 0
+    fail_msg: >-
+      Locked mode requires 'ubuntu_snapshot_date' in {{ lockfile_path }}
+      (snapshot.ubuntu.com timestamp, e.g. 20260805T000000Z).
+    quiet: true
+
+# snapshot.ubuntu.com is https-only (plain http 301-redirects to it), and the
+# minimal Ubuntu images CI runs in ship no CA bundle. Install it from whatever
+# sources are configured now, before apt has to speak TLS. Not pinned: it is a
+# bootstrap prerequisite of this source, in the same spirit as python3-apt in
+# main.yaml, and it is installed before the pin-completeness baseline is taken.
+- name: Install ca-certificates so apt can reach the snapshot over https
+  become: true
+  ansible.builtin.apt:
+    name: ca-certificates
+    state: present
+    update_cache: true
+
+- name: Write dated Ubuntu snapshot apt source
+  become: true
+  ansible.builtin.template:
+    src: ubuntu-snapshot.sources.j2
+    dest: /etc/apt/sources.list.d/ubuntu-snapshot.sources
+    owner: root
+    group: root
+    mode: "0644"
