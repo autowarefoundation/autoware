@@ -115,6 +115,9 @@ jobs:
     steps:
       - name: 🛒 Check out repository
         uses: actions/checkout@v6
+        with:
+          # The push must run as the App, which bypasses the branch rulesets, not as GITHUB_TOKEN.
+          persist-credentials: false
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v6
