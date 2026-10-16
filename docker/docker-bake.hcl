@@ -13,8 +13,8 @@ variable "USE_LOCKFILE" {
 // manifest digest serves both amd64 and arm64.
 variable "BASE_IMAGE_DIGESTS" {
   default = {
-    humble = "@sha256:afb40d6be65331c20a114d4e229a7ef099fed1b17bf6370daee193514b32aa16"
-    jazzy  = "@sha256:31daab66eef9139933379fb67159449944f4e2dcf2e22c2d12cc715f29873e0f"
+    humble = "@sha256:860e53793ccf575e5369b5e9a19939de2bfcfb46a299954d06f54f2af54fed19"
+    jazzy  = "@sha256:066420e07f60aa18262f2479981def87ebcfcec42eefb0c0c57c4a46098348ca"
   }
 }
 
