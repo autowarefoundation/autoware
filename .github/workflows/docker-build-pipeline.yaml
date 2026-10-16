@@ -15,6 +15,10 @@ on:
         description: Registry image name
         type: string
         default: autoware
+      tag-date:
+        description: Date tag (YYYYMMDD) shared by all images of the run
+        type: string
+        required: true
 
 jobs:
   build-base:
@@ -24,6 +28,7 @@ jobs:
       platform: ${{ inputs.platform }}
       ros-distro: ${{ inputs.ros-distro }}
       target-image: ${{ inputs.target-image }}
+      tag-date: ${{ inputs.tag-date }}
       free-disk-space: false
 
   build-core:
@@ -34,6 +39,7 @@ jobs:
       platform: ${{ inputs.platform }}
       ros-distro: ${{ inputs.ros-distro }}
       target-image: ${{ inputs.target-image }}
+      tag-date: ${{ inputs.tag-date }}
       needs-source: true
       free-disk-space: false
 
@@ -45,6 +51,7 @@ jobs:
       platform: ${{ inputs.platform }}
       ros-distro: ${{ inputs.ros-distro }}
       target-image: ${{ inputs.target-image }}
+      tag-date: ${{ inputs.tag-date }}
       needs-source: true
 
   build-base-cuda:
@@ -55,6 +62,7 @@ jobs:
       platform: ${{ inputs.platform }}
       ros-distro: ${{ inputs.ros-distro }}
       target-image: ${{ inputs.target-image }}
+      tag-date: ${{ inputs.tag-date }}
       free-disk-space: true
 
   build-universe-cuda:
@@ -65,4 +73,5 @@ jobs:
       platform: ${{ inputs.platform }}
       ros-distro: ${{ inputs.ros-distro }}
       target-image: ${{ inputs.target-image }}
+      tag-date: ${{ inputs.tag-date }}
       needs-source: true
