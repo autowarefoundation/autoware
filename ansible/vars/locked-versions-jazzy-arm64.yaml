@@ -4,7 +4,7 @@
 # Ubuntu: 24.04 (noble)
 #
 # ros_snapshot_date freezes every ROS package snapshots.ros.org serves on that date.
-ros_snapshot_date: "2026-04-13"
+ros_snapshot_date: "2026-10-05"
 apt_pins:
   build-essential: 12.10ubuntu1
   ccache: 4.9.1-1
@@ -14,7 +14,7 @@ apt_pins:
   git-lfs: 3.4.1-1ubuntu0.4
   golang: 2:1.22~2build1
   pipx: 1.4.3-1
-  python3-apt: 2.7.7ubuntu5.2
+  python3-apt: 2.7.7ubuntu5.3
   python3-flake8-blind-except: 0.2.1-1
   python3-flake8-builtins: 2.1.0-1
   python3-flake8-class-newline: 1.6.0-5
@@ -30,7 +30,7 @@ apt_pins:
   python3-setuptools: 68.1.2-2ubuntu1.2
   qt5ct: 1.5-1build11
   rsync: 3.2.7-1ubuntu1.5
-  wget: 1.21.4-1ubuntu4.4
+  wget: 1.21.4-1ubuntu4.5
 pip_pins: {}
 nvidia_pins:
   cuda-cccl-13-0: 13.0.85-1
