@@ -1,0 +1,11 @@
+{
+  "rules": [
+    { "pattern": { "feature": "procname", "matches": "rviz2" }, "profile": "NoThreadedOptimizationsRviz" }
+  ],
+  "profiles": [
+    {
+      "name": "NoThreadedOptimizationsRviz",
+      "settings": [ { "key": "GLThreadedOptimizations", "value": false } ]
+    }
+  ]
+}

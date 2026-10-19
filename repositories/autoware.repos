@@ -32,6 +32,7 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_lanelet2_extension.git
     version: 1.1.0
+  # Upstream 1.8.0 + mach_e_setup/patches/autoware_core.patch (EKF MRM-flicker fix); run mach_e_setup/apply_patches.sh
   core/autoware_core:
     type: git
     url: https://github.com/autowarefoundation/autoware_core.git
@@ -51,10 +52,11 @@ repositories:
     version: 1.4.0
 
   # universe
+  # RANCS Lab fork: 0.51.0 + Mach-E perception changes
   universe/autoware_universe:
     type: git
-    url: https://github.com/autowarefoundation/autoware_universe.git
-    version: 0.51.0
+    url: https://github.com/rancslab/autoware_universe.git
+    version: b122097b4fd7cb3a2fe0755d4ba389ebe911465c  # branch mach-e
   universe/external/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
@@ -113,13 +115,14 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/rancslab/autoware_launch.git
+    version: 85788c6a9cb4506d36489f0b4b6aeb36c523af9d  # branch dev (OS-128 on 192.168.88.x, ADMA orientation, stop-line margin)
 
   # vehicle
   # DBW2 (ds_dbw) stack: VIN (ds_dbw_autoware) + ds_dbw_can driver + msgs.
   vehicle/external/dbw_ros:
     type: git
-    url: https://github.com/rancslab/dbw_ros.git
-    version: ros2
+    url: https://github.com/rancslab/dbw_ros.git  # PRIVATE: needs rancslab GitHub access
+    version: 83fdc58d6f9a1902e34bf0b9eed70f3ca78627ac  # branch ros2
 
   # sensor_component
   sensor_component/external/sensor_component_description:
@@ -128,12 +131,16 @@ repositories:
     version: 03ba094851ec90febfcfc0adb20b64b0e19df7a8
   sensor_component/external/nebula:
     type: git
-    url: https://github.com/ub-cavas/nebula.git
-    version: add-ouster-support
+    url: https://github.com/rancslab/nebula.git
+    version: accdda50d29417187b35ff432c85ee33b1fc4ae5  # branch add-ouster-support
   sensor_component/external/lucid_vision_driver:
     type: git
-    url: https://github.com/rancslab/lucid_vision_driver
-    version: main
+    url: https://github.com/rancslab/lucid_vision_driver.git
+    version: 5aac959565d2b04cab63a290b42a882f513606f7  # branch dev
+  sensor_component/external/adma_ros_driver:
+    type: git
+    url: https://github.com/rancslab/adma_ros_driver.git
+    version: f78a6fdcc0940c5fcb6eef602a5c3cbef298dd90  # branch dev (Mach-E config, autoware_orientation node)
   sensor_component/external/sync_tooling_msgs:
     type: git
     url: https://github.com/tier4/sync_tooling_msgs.git

@@ -1,0 +1,13 @@
+[Unit]
+Description=PTP grandmaster on eno1 for the Ouster lidar
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l-ouster.conf -m
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

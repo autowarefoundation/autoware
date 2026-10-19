@@ -1,0 +1,42 @@
+{
+  "configById": {
+    "3D!leaktest": {
+      "followTf": "map",
+      "followMode": "follow-pose",
+      "scene": { "enableStats": true },
+      "cameraState": {
+        "distance": 60,
+        "perspective": true,
+        "phi": 50,
+        "thetaOffset": 0,
+        "targetOffset": [0, 0, 0],
+        "target": [0, 0, 0],
+        "targetOrientation": [0, 0, 0, 1],
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "transforms": {},
+      "topics": {
+        "/sensing/lidar/concatenated/pointcloud": {
+          "visible": true,
+          "pointShape": "square",
+          "pointSize": 2,
+          "decayTime": 0,
+          "colorField": "z",
+          "colorMode": "colormap",
+          "colorMap": "turbo"
+        }
+      },
+      "layers": {
+        "grid": { "layerId": "foxglove.Grid", "visible": true, "size": 100, "divisions": 20 }
+      },
+      "publish": { "type": "point", "poseTopic": "/move_base_simple/goal", "pointTopic": "/clicked_point", "poseEstimateTopic": "/initialpose" },
+      "imageMode": {}
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": { "speed": 1 },
+  "layout": "3D!leaktest"
+}

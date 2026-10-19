@@ -1,0 +1,61 @@
+diff --git a/localization/autoware_ekf_localizer/src/ekf_localizer.cpp b/localization/autoware_ekf_localizer/src/ekf_localizer.cpp
+index 70fa66c5..72614566 100644
+--- a/localization/autoware_ekf_localizer/src/ekf_localizer.cpp
++++ b/localization/autoware_ekf_localizer/src/ekf_localizer.cpp
+@@ -189,14 +189,18 @@ void EKFLocalizer::timer_callback()
+ 
+   bool pose_is_updated = false;
+ 
++  // The gates start as passed even when the queue is empty: a cycle without a new pose
++  // (EKF 50 Hz vs. NDT 10 Hz) must not report "topic is delay" / "mahalanobis distance is large",
++  // or the WARN makes the autonomous mode unavailable and the MRM emergency stop toggles.
++  // measurement_update_pose sets them to false when a real measurement is rejected.
++  pose_diag_info_.is_passed_delay_gate = true;
++  pose_diag_info_.is_passed_mahalanobis_gate = true;
++
+   if (!pose_queue_.empty()) {
+     DEBUG_INFO(get_logger(), "------------------------- start Pose -------------------------");
+     stop_watch_.tic();
+ 
+     // Sequential state update for all Pose observations in the queue
+-    // These flags are initialized true before their checks in measurement_update_pose
+-    pose_diag_info_.is_passed_delay_gate = true;
+-    pose_diag_info_.is_passed_mahalanobis_gate = true;
+     // save the initial size because the queue size can change in the loop
+     const size_t n = pose_queue_.size();
+     for (size_t i = 0; i < n; ++i) {
+@@ -224,14 +228,18 @@ void EKFLocalizer::timer_callback()
+ 
+   bool twist_is_updated = false;
+ 
++  // The gates start as passed even when the queue is empty: a cycle without a new twist
++  // (EKF 50 Hz vs. NDT 10 Hz) must not report "topic is delay" / "mahalanobis distance is large",
++  // or the WARN makes the autonomous mode unavailable and the MRM emergency stop toggles.
++  // measurement_update_twist sets them to false when a real measurement is rejected.
++  twist_diag_info_.is_passed_delay_gate = true;
++  twist_diag_info_.is_passed_mahalanobis_gate = true;
++
+   if (!twist_queue_.empty()) {
+     DEBUG_INFO(get_logger(), "------------------------- start Twist -------------------------");
+     stop_watch_.tic();
+ 
+     // Sequential state update for all Twist observations in the queue
+-    // These flags are initialized true before their checks in measurement_update_twist
+-    twist_diag_info_.is_passed_delay_gate = true;
+-    twist_diag_info_.is_passed_mahalanobis_gate = true;
+     // save the initial size because the queue size can change in the loop
+     const size_t n = twist_queue_.size();
+     for (size_t i = 0; i < n; ++i) {
+diff --git a/planning/autoware_route_handler/src/route_handler.cpp b/planning/autoware_route_handler/src/route_handler.cpp
+index 5f9844a9..14e3d43b 100644
+--- a/planning/autoware_route_handler/src/route_handler.cpp
++++ b/planning/autoware_route_handler/src/route_handler.cpp
+@@ -2267,7 +2267,7 @@ bool RouteHandler::planPathLaneletsBetweenCheckpoints(
+   bool is_route_found = false;
+ 
+   double min_route_cost = std::numeric_limits<double>::max();
+-  constexpr double yaw_threshold = M_PI / 2.0;
++  constexpr double yaw_threshold = M_PI ;
+   constexpr double angle_diff_weight = 1000.0;
+ 
+   for (const auto & st_llt : start_lanelets) {

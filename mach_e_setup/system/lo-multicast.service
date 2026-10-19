@@ -1,0 +1,11 @@
+[Unit]
+Description=Enable multicast on loopback (CycloneDDS bound to lo for Autoware)
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/ip link set lo multicast on
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

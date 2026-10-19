@@ -1,0 +1,5 @@
+__pycache__/
+*.npy
+*.bak_*
+bringup/verify/bagpath
+bringup/verify/bag.log
