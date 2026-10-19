@@ -67,6 +67,16 @@ COPY docker/files/cyclonedds.xml /home/${USERNAME}/cyclonedds.xml
 ENV CYCLONEDDS_URI=file:///home/${USERNAME}/cyclonedds.xml
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
+# ament_xmllint downloads the package.xml schema from download.ros.org for every package,
+# and its tests time out when that server is slow. The catalog points xmllint to local copies.
+COPY docker/files/ros-schema-catalog.xml /usr/share/xml/ros/catalog.xml
+ADD --chmod=644 \
+    http://download.ros.org/schema/package_format1.xsd \
+    http://download.ros.org/schema/package_format2.xsd \
+    http://download.ros.org/schema/package_format3.xsd \
+    /usr/share/xml/ros/
+ENV XML_CATALOG_FILES="file:///etc/xml/catalog file:///usr/share/xml/ros/catalog.xml"
+
 # Entrypoint runs as root so it can adjust UID/GID, then drops to user
 USER root
 COPY --chmod=755 docker/docker-entrypoint.sh /docker-entrypoint.sh
