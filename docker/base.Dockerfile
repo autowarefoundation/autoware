@@ -69,12 +69,14 @@ ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # ament_xmllint downloads the package.xml schema from download.ros.org for every package,
 # and its tests time out when that server is slow. The catalog points xmllint to local copies.
+# The COPY must come first: ADD --chmod would also set the mode of a new directory to 644.
 COPY docker/files/ros-schema-catalog.xml /usr/share/xml/ros/catalog.xml
-ADD --chmod=644 \
-    http://download.ros.org/schema/package_format1.xsd \
-    http://download.ros.org/schema/package_format2.xsd \
-    http://download.ros.org/schema/package_format3.xsd \
-    /usr/share/xml/ros/
+ADD --chmod=644 --checksum=sha256:db232e4957751cfaa7235829691a475929733c3d8a45e8b24946bc3328196879 \
+    http://download.ros.org/schema/package_format1.xsd /usr/share/xml/ros/
+ADD --chmod=644 --checksum=sha256:a7328af0859b3f15ae4f04912d846a58edc6664db1e69aff061b22940c194304 \
+    http://download.ros.org/schema/package_format2.xsd /usr/share/xml/ros/
+ADD --chmod=644 --checksum=sha256:585201809cbf8c81ec5a4d7d84d827f4676dd62a4bc0a812da7a485dea2ad43a \
+    http://download.ros.org/schema/package_format3.xsd /usr/share/xml/ros/
 ENV XML_CATALOG_FILES="file:///etc/xml/catalog file:///usr/share/xml/ros/catalog.xml"
 
 # Entrypoint runs as root so it can adjust UID/GID, then drops to user
