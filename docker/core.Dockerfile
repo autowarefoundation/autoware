@@ -33,7 +33,8 @@ ENV CCACHE_DIR="/home/aw/.ccache"
 COPY --parents --chown=${USERNAME}:${USERNAME} src/core/**/package.xml /tmp/autoware/
 RUN rm -rf /tmp/autoware/src/core/autoware_core \
            /tmp/autoware/src/core/autoware_rviz_plugins \
-           /tmp/autoware/src/core/autoware_simple_planning_simulator
+           /tmp/autoware/src/core/autoware_simple_planning_simulator \
+           /tmp/autoware/src/core/cuda
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
@@ -52,7 +53,8 @@ RUN --mount=type=bind,source=src/core,target=/tmp/autoware/src/core,rw \
     --mount=type=cache,id=ccache-${ROS_DISTRO},target=/home/aw/.ccache,uid=1000,gid=1000 \
     rm -rf /tmp/autoware/src/core/autoware_core \
            /tmp/autoware/src/core/autoware_rviz_plugins \
-           /tmp/autoware/src/core/autoware_simple_planning_simulator && \
+           /tmp/autoware/src/core/autoware_simple_planning_simulator \
+           /tmp/autoware/src/core/cuda && \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     colcon build \
       --base-paths /tmp/autoware/src/core \
@@ -138,6 +140,7 @@ COPY --parents src/core/**/package.xml /tmp/
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
+    rm -rf /tmp/src/core/cuda && \
     apt-get update && \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     sudo apt-get install -y "ros-${ROS_DISTRO}-topic-tools" && \
