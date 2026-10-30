@@ -49,12 +49,20 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_system_designer.git
     version: v0.4.2
+  core/cuda/autoware_cuda:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_cuda.git
+    version: 1.0.0
+  core/cuda/cuda_blackboard:
+    type: git
+    url: https://github.com/autowarefoundation/cuda_blackboard.git
+    version: 0.5.0
 
   # universe
   universe/autoware_universe:
     type: git
     url: https://github.com/autowarefoundation/autoware_universe.git
-    version: 0.53.1
+    version: 2b945e04a366b620eb86d5c4da9148b00fc497af # TODO: replace with the universe release that removes the CUDA base packages
   universe/external/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
@@ -92,10 +100,6 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/bevdet_vendor.git
     version: 0.2.1
-  universe/external/cuda_blackboard:
-    type: git
-    url: https://github.com/autowarefoundation/cuda_blackboard.git
-    version: 0.5.0
   universe/external/negotiated:
     type: git
     url: https://github.com/osrf/negotiated.git
