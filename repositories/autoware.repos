@@ -62,7 +62,7 @@ repositories:
   universe/autoware_universe:
     type: git
     url: https://github.com/autowarefoundation/autoware_universe.git
-    version: 2b945e04a366b620eb86d5c4da9148b00fc497af # TODO: replace with the universe release that removes the CUDA base packages
+    version: 0.53.2
   universe/external/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
