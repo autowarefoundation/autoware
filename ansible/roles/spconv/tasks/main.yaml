@@ -1,6 +1,5 @@
 # cspell:ignore Bcumm
-- name: Run spconv install (skipped on Ubuntu 24.04 until cu130-rev1 release lands)
-  when: ansible_distribution_version != '24.04'
+- name: Run spconv install
   block:
     - name: Normalize dpkg architecture
       ansible.builtin.set_fact:
@@ -8,7 +7,8 @@
 
     - name: Set architecture suffix
       ansible.builtin.set_fact:
-        spconv_arch_suffix: "{{ '-jetson' if (spconv_normalized_arch == 'arm64' and spconv_is_jetson | bool) else ('-sbsa' if spconv_normalized_arch == 'arm64' else '') }}"
+        # CUDA 13 (cu130) ships a single arm64 package for SBSA and Jetson; CUDA 12 (cu128) has one per platform
+        spconv_arch_suffix: "{{ '' if (spconv_normalized_arch != 'arm64' or spconv_cuda_tag.startswith('cu13')) else ('-jetson' if spconv_is_jetson | bool else '-sbsa') }}"
 
     - name: Download the cumm package
       ansible.builtin.get_url:

@@ -8,7 +8,8 @@ The [original implementation](https://github.com/traveller59/spconv) did not pro
 This role supports different architectures with platform-specific package variants:
 
 - **amd64**: No suffix (e.g., `cumm_0.5.3_amd64.deb`)
-- **arm64**:
+- **arm64** with CUDA 13 (`cu130`, Ubuntu 24.04): one package for SBSA and Jetson, no suffix (e.g., `cumm_0.5.3_arm64.deb`)
+- **arm64** with CUDA 12 (`cu128`, Ubuntu 22.04):
   - Default: `-sbsa` suffix for server platforms (e.g., `cumm_0.5.3_arm64-sbsa.deb`)
   - Jetson: `-jetson` suffix when `spconv_is_jetson=true` (e.g., `cumm_0.5.3_arm64-jetson.deb`)
 
@@ -29,6 +30,8 @@ ansible-playbook autoware.dev_env.install_dev_env --tags spconv -e spconv_cumm_v
 ```
 
 ### Installation for NVIDIA Jetson platforms
+
+`spconv_is_jetson=true` is needed only on Ubuntu 22.04 (`cu128`). With `cu130` (Ubuntu 24.04) there is one arm64 package for SBSA and Jetson and the variable is ignored.
 
 ```bash
 export SPCONV_CUMM_VERSION=0.5.3
