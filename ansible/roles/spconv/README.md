@@ -31,6 +31,8 @@ ansible-playbook autoware.dev_env.install_dev_env --tags spconv -e spconv_cumm_v
 
 ### Installation for NVIDIA Jetson platforms
 
+`spconv_is_jetson=true` is needed only on Ubuntu 22.04 (`cu128`). With `cu130` (Ubuntu 24.04) there is one arm64 package for SBSA and Jetson and the variable is ignored.
+
 ```bash
 export SPCONV_CUMM_VERSION=0.5.3
 export SPCONV_VERSION=2.3.8
