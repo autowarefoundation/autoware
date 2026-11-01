@@ -1,11 +1,14 @@
 # syntax=docker/dockerfile:1
 # check=skip=InvalidDefaultArgInFrom
 ARG BASE_IMAGE
+ARG RUNTIME_BASE_IMAGE
+ARG WITH_CUDA=false
 
 FROM ${BASE_IMAGE} AS core-dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 ARG USE_LOCKFILE=false
+ARG WITH_CUDA
 
 USER ${USERNAME}
 # hadolint ignore=DL3003
@@ -34,7 +37,9 @@ COPY --parents --chown=${USERNAME}:${USERNAME} src/core/**/package.xml /tmp/auto
 RUN rm -rf /tmp/autoware/src/core/autoware_core \
            /tmp/autoware/src/core/autoware_rviz_plugins \
            /tmp/autoware/src/core/autoware_simple_planning_simulator \
-           /tmp/autoware/src/core/cuda
+           /tmp/autoware/src/core/cuda/autoware_cuda \
+           /tmp/autoware/src/core/cuda/cuda_blackboard && \
+    if [ "${WITH_CUDA}" != "true" ]; then rm -rf /tmp/autoware/src/core/cuda; fi
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
@@ -54,7 +59,9 @@ RUN --mount=type=bind,source=src/core,target=/tmp/autoware/src/core,rw \
     rm -rf /tmp/autoware/src/core/autoware_core \
            /tmp/autoware/src/core/autoware_rviz_plugins \
            /tmp/autoware/src/core/autoware_simple_planning_simulator \
-           /tmp/autoware/src/core/cuda && \
+           /tmp/autoware/src/core/cuda/autoware_cuda \
+           /tmp/autoware/src/core/cuda/cuda_blackboard && \
+    if [ "${WITH_CUDA}" != "true" ]; then rm -rf /tmp/autoware/src/core/cuda; fi && \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     colcon build \
       --base-paths /tmp/autoware/src/core \
@@ -64,15 +71,13 @@ RUN --mount=type=bind,source=src/core,target=/tmp/autoware/src/core,rw \
 
 FROM core-dependencies AS core-devel
 ARG ROS_DISTRO
+ARG WITH_CUDA
 
-COPY --parents --chown=${USERNAME}:${USERNAME} \
-    src/core/autoware_core/**/package.xml \
-    src/core/autoware_rviz_plugins/**/package.xml \
-    src/core/autoware_simple_planning_simulator/**/package.xml \
-    /tmp/autoware/
+COPY --parents --chown=${USERNAME}:${USERNAME} src/core/**/package.xml /tmp/autoware/
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
+    if [ "${WITH_CUDA}" != "true" ]; then rm -rf /tmp/autoware/src/core/cuda; fi && \
     apt-get update && \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     . /opt/autoware/setup.sh && \
@@ -85,16 +90,20 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
       --dependency-types=buildtool_export \
       --dependency-types=test
 
-RUN --mount=type=bind,source=src/core/autoware_core,target=/tmp/autoware/src/core/autoware_core \
-    --mount=type=bind,source=src/core/autoware_rviz_plugins,target=/tmp/autoware/src/core/autoware_rviz_plugins \
-    --mount=type=bind,source=src/core/autoware_simple_planning_simulator,target=/tmp/autoware/src/core/autoware_simple_planning_simulator \
+# hadolint ignore=SC2086
+RUN --mount=type=bind,source=src/core,target=/tmp/autoware/src/core \
     --mount=type=cache,id=ccache-${ROS_DISTRO},target=/home/aw/.ccache,uid=1000,gid=1000 \
+    cuda_paths="" && \
+    if [ "${WITH_CUDA}" = "true" ]; then \
+      cuda_paths="/tmp/autoware/src/core/cuda/autoware_cuda /tmp/autoware/src/core/cuda/cuda_blackboard"; \
+    fi && \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     . /opt/autoware/setup.sh && \
     colcon build \
       --base-paths /tmp/autoware/src/core/autoware_core \
                    /tmp/autoware/src/core/autoware_rviz_plugins \
                    /tmp/autoware/src/core/autoware_simple_planning_simulator \
+                   ${cuda_paths} \
       --install-base /opt/autoware \
       --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     rm -rf build log
@@ -109,9 +118,10 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
       --rosdistro "${ROS_DISTRO}" \
       --dependency-types=exec
 
-FROM ${BASE_IMAGE} AS core
+FROM ${RUNTIME_BASE_IMAGE} AS core
 ARG ROS_DISTRO
 ARG USE_LOCKFILE=false
+ARG WITH_CUDA
 ENV AUTOWARE_RUNTIME=1
 
 USER ${USERNAME}
@@ -140,7 +150,7 @@ COPY --parents src/core/**/package.xml /tmp/
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
-    rm -rf /tmp/src/core/cuda && \
+    if [ "${WITH_CUDA}" != "true" ]; then rm -rf /tmp/src/core/cuda; fi && \
     apt-get update && \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     sudo apt-get install -y "ros-${ROS_DISTRO}-topic-tools" && \

@@ -65,6 +65,18 @@ jobs:
       tag-date: ${{ inputs.tag-date }}
       free-disk-space: true
 
+  build-core-cuda:
+    needs: build-base-cuda
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      bake-group: ci-core-cuda
+      platform: ${{ inputs.platform }}
+      ros-distro: ${{ inputs.ros-distro }}
+      target-image: ${{ inputs.target-image }}
+      tag-date: ${{ inputs.tag-date }}
+      needs-source: true
+      free-disk-space: true
+
   build-universe-cuda:
     needs: [build-core, build-base-cuda]
     uses: ./.github/workflows/docker-build.yaml

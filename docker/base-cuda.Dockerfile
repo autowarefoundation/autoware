@@ -26,6 +26,8 @@ USER root
 
 ENV PATH="/usr/local/cuda/bin${PATH:+:$PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+# Compute capabilities: 86=Ampere consumer, 87=Orin, 89=Ada, 90=Hopper, 110=Thor Blackwell (Jetson Thor + DRIVE Thor).
+ENV CMAKE_CUDA_ARCHITECTURES="86;87;89;90;110"
 
 FROM base-cuda-runtime AS base-cuda-devel
 ARG ROS_DISTRO

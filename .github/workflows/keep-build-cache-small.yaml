@@ -30,6 +30,11 @@ jobs:
           - { image_tag: ci-base-cuda-humble-arm64-main, cache_threshold_gb: 11.0 }
           - { image_tag: ci-base-cuda-jazzy-amd64-main, cache_threshold_gb: 9.0 }
           - { image_tag: ci-base-cuda-jazzy-arm64-main, cache_threshold_gb: 11.0 }
+          # ci-core-cuda
+          - { image_tag: ci-core-cuda-humble-amd64-main, cache_threshold_gb: 9.0 }
+          - { image_tag: ci-core-cuda-humble-arm64-main, cache_threshold_gb: 11.0 }
+          - { image_tag: ci-core-cuda-jazzy-amd64-main, cache_threshold_gb: 9.0 }
+          - { image_tag: ci-core-cuda-jazzy-arm64-main, cache_threshold_gb: 11.0 }
           # ci-universe
           - { image_tag: ci-universe-humble-amd64-main, cache_threshold_gb: 7.0 }
           - { image_tag: ci-universe-humble-arm64-main, cache_threshold_gb: 9.0 }
