@@ -34,23 +34,23 @@ graph TB
 
 ## Images
 
-| Image                        | Description                                                                                                                    | Use case                                                   |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| `base`                       | ROS base, sudo, pipx, ansible, RMW, user `aw`                                                                                  | Foundation for all other images                            |
-| `core-dependencies`          | Build deps + compiled core packages (except autoware_core and autoware_rviz_plugins)                                           | CI for autoware_core                                       |
-| `core-devel`                 | Adds autoware_core build on top of core-dependencies                                                                           | Development and CI for packages depending on autoware_core |
-| `core`                       | Runtime-only: rosdep exec deps + compiled core from core-devel                                                                 | Lightweight core runtime                                   |
-| `base-cuda-runtime`          | `base` + CUDA/cuDNN/TensorRT runtime libs (no `-dev` packages)                                                                 | Runtime foundation for `universe-cuda`                     |
-| `base-cuda-devel`            | `base-cuda-runtime` + CUDA/cuDNN/TensorRT dev headers                                                                          | Build foundation for CUDA universe packages                |
-| `core-dependencies-cuda`     | Same as `core-dependencies`, on `base-cuda-devel`, with the deps of `src/core/cuda` (except autoware_cuda and cuda_blackboard) | CI for autoware_cuda                                       |
-| `core-devel-cuda`            | Adds autoware_core and the CUDA layer (autoware_cuda, cuda_blackboard) on top of core-dependencies-cuda                        | Development on core with GPU                               |
-| `core-cuda`                  | Runtime-only: compiled core and CUDA layer from core-devel-cuda, on `base-cuda-runtime`                                        | Lightweight core runtime with GPU                          |
-| `universe-dependencies`      | Acados + rosdep build deps for all of autoware (non-CUDA path)                                                                 | CI for autoware_universe                                   |
-| `universe-dependencies-cuda` | Core ansible roles + acados + rosdep build deps, inherits CUDA from `base-cuda-devel`                                          | CI for CUDA-dependent packages                             |
-| `universe-devel`             | Builds all universe sources (no CUDA)                                                                                          | Development without GPU                                    |
-| `universe-devel-cuda`        | Builds all universe sources with CUDA                                                                                          | Development with GPU                                       |
-| `universe`                   | Runtime image with compiled autoware (no CUDA)                                                                                 | Deployment without GPU                                     |
-| `universe-cuda`              | Runtime image with compiled autoware, inherits CUDA runtime from `base-cuda-runtime`                                           | Deployment with GPU                                        |
+| Image                        | Description                                                                           | Use case                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `base`                       | ROS base, sudo, pipx, ansible, RMW, user `aw`                                         | Foundation for all other images                            |
+| `core-dependencies`          | Build deps + compiled core packages (except autoware_core and autoware_rviz_plugins)  | CI for autoware_core                                       |
+| `core-devel`                 | Adds autoware_core build on top of core-dependencies                                  | Development and CI for packages depending on autoware_core |
+| `core`                       | Runtime-only: rosdep exec deps + compiled core from core-devel                        | Lightweight core runtime                                   |
+| `base-cuda-runtime`          | `base` + CUDA/cuDNN/TensorRT runtime libs (no `-dev` packages)                        | Runtime foundation for `universe-cuda`                     |
+| `base-cuda-devel`            | `base-cuda-runtime` + CUDA/cuDNN/TensorRT dev headers                                 | Build foundation for CUDA universe packages                |
+| `core-dependencies-cuda`     | Same as `core-dependencies` on `base-cuda-devel`, plus `negotiated` from source       | CI for autoware_cuda                                       |
+| `core-devel-cuda`            | Adds autoware_core, autoware_cuda and cuda_blackboard on core-dependencies-cuda       | Development on core with GPU                               |
+| `core-cuda`                  | Runtime-only: compiled core and CUDA layer from core-devel-cuda                       | Lightweight core runtime with GPU                          |
+| `universe-dependencies`      | Acados + rosdep build deps for all of autoware (non-CUDA path)                        | CI for autoware_universe                                   |
+| `universe-dependencies-cuda` | Core ansible roles + acados + rosdep build deps, inherits CUDA from `base-cuda-devel` | CI for CUDA-dependent packages                             |
+| `universe-devel`             | Builds all universe sources (no CUDA)                                                 | Development without GPU                                    |
+| `universe-devel-cuda`        | Builds all universe sources with CUDA                                                 | Development with GPU                                       |
+| `universe`                   | Runtime image with compiled autoware (no CUDA)                                        | Deployment without GPU                                     |
+| `universe-cuda`              | Runtime image with compiled autoware, inherits CUDA runtime from `base-cuda-runtime`  | Deployment with GPU                                        |
 
 ## Pull from GHCR
 
