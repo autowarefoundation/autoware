@@ -15,9 +15,9 @@ graph TB
     core --> universe(["universe"])
     universe-devel -- " COPY /opt/autoware " --> universe
     universe-devel-cuda -- " COPY /opt/autoware " --> universe-cuda(["universe-cuda"])
-    core-devel -- " COPY /opt/autoware " --> universe-dependencies-cuda
-    base-cuda-devel(["base-cuda-devel"]) --> universe-dependencies-cuda
-    base-cuda-runtime --> universe-cuda & base-cuda-devel
+    core-devel-cuda --> universe-dependencies-cuda
+    core-cuda --> universe-cuda
+    base-cuda-runtime --> base-cuda-devel(["base-cuda-devel"])
     base-cuda-devel --> core-dependencies-cuda(["core-dependencies-cuda"])
     core-dependencies-cuda --> core-devel-cuda(["core-devel-cuda"])
     core-devel-cuda -- " COPY /opt/autoware " --> core-cuda(["core-cuda"])
@@ -40,17 +40,17 @@ graph TB
 | `core-dependencies`          | Build deps + compiled core packages (except autoware_core and autoware_rviz_plugins)  | CI for autoware_core                                       |
 | `core-devel`                 | Adds autoware_core build on top of core-dependencies                                  | Development and CI for packages depending on autoware_core |
 | `core`                       | Runtime-only: rosdep exec deps + compiled core from core-devel                        | Lightweight core runtime                                   |
-| `base-cuda-runtime`          | `base` + CUDA/cuDNN/TensorRT runtime libs (no `-dev` packages)                        | Runtime foundation for `universe-cuda`                     |
-| `base-cuda-devel`            | `base-cuda-runtime` + CUDA/cuDNN/TensorRT dev headers                                 | Build foundation for CUDA universe packages                |
+| `base-cuda-runtime`          | `base` + CUDA/cuDNN/TensorRT runtime libs (no `-dev` packages)                        | Runtime foundation for `core-cuda`                         |
+| `base-cuda-devel`            | `base-cuda-runtime` + CUDA/cuDNN/TensorRT dev headers                                 | Build foundation for `core-dependencies-cuda`              |
 | `core-dependencies-cuda`     | Same as `core-dependencies` on `base-cuda-devel`, plus `negotiated` from source       | CI for autoware_cuda                                       |
 | `core-devel-cuda`            | Adds autoware_core, autoware_cuda and cuda_blackboard on core-dependencies-cuda       | Development on core with GPU                               |
 | `core-cuda`                  | Runtime-only: compiled core and CUDA layer from core-devel-cuda                       | Lightweight core runtime with GPU                          |
 | `universe-dependencies`      | Acados + rosdep build deps for all of autoware (non-CUDA path)                        | CI for autoware_universe                                   |
-| `universe-dependencies-cuda` | Core ansible roles + acados + rosdep build deps, inherits CUDA from `base-cuda-devel` | CI for CUDA-dependent packages                             |
+| `universe-dependencies-cuda` | Same as `universe-dependencies`, but it builds on `core-devel-cuda`, not `core-devel` | CI for CUDA-dependent packages                             |
 | `universe-devel`             | Builds all universe sources (no CUDA)                                                 | Development without GPU                                    |
 | `universe-devel-cuda`        | Builds all universe sources with CUDA                                                 | Development with GPU                                       |
 | `universe`                   | Runtime image with compiled autoware (no CUDA)                                        | Deployment without GPU                                     |
-| `universe-cuda`              | Runtime image with compiled autoware, inherits CUDA runtime from `base-cuda-runtime`  | Deployment with GPU                                        |
+| `universe-cuda`              | Runtime image with compiled autoware, built on `core-cuda` instead of `core`          | Deployment with GPU                                        |
 
 ## Pull from GHCR
 
