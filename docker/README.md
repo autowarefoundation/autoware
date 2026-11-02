@@ -84,7 +84,7 @@ Available images (replace `jazzy` with `humble` for other distros):
 | `core-devel-cuda-jazzy`            | Full core development with the CUDA layer         |
 | `core-cuda-jazzy`                  | Lightweight core runtime with GPU                 |
 | `universe-dependencies-jazzy`      | Universe build dependencies (no CUDA)             |
-| `universe-dependencies-cuda-jazzy` | Universe build deps on base-cuda-devel            |
+| `universe-dependencies-cuda-jazzy` | Universe build deps on core-devel-cuda            |
 | `universe-devel-jazzy`             | Full universe development (no CUDA)               |
 | `universe-devel-cuda-jazzy`        | Full universe development with CUDA               |
 | `universe-jazzy`                   | Runtime without GPU                               |
