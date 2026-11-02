@@ -48,7 +48,6 @@ ARG ROS_DISTRO
 
 RUN --mount=type=bind,source=src,target=/tmp/autoware/src \
     --mount=type=cache,id=ccache-${ROS_DISTRO},target=/home/aw/.ccache,uid=1000,gid=1000,sharing=shared \
-    CCACHE_READONLY=1 \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     . /opt/autoware/setup.sh && \
     colcon build \

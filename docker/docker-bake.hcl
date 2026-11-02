@@ -243,34 +243,27 @@ target "universe" {
 }
 
 target "_universe-cuda-base" {
-  dockerfile = "docker/universe-cuda.Dockerfile"
+  inherits = ["_universe-base"]
   contexts = {
-    autoware-base-cuda-runtime = ctx("base-cuda-runtime")
-    autoware-base-cuda-devel   = ctx("base-cuda-devel")
-    autoware-core-devel        = ctx("core-devel")
-  }
-  args = {
-    BASE_CUDA_RUNTIME_IMAGE = "autoware-base-cuda-runtime"
-    BASE_CUDA_DEVEL_IMAGE   = "autoware-base-cuda-devel"
-    ROS_DISTRO              = ROS_DISTRO
-    USE_LOCKFILE            = USE_LOCKFILE
+    autoware-core-devel = ctx("core-devel-cuda")
+    autoware-core       = ctx("core-cuda")
   }
 }
 
 target "universe-dependencies-cuda" {
   inherits = ["_universe-cuda-base"]
-  target   = "universe-dependencies-cuda"
+  target   = "universe-dependencies"
   tags     = tags("universe-dependencies-cuda")
 }
 
 target "universe-devel-cuda" {
   inherits = ["_universe-cuda-base"]
-  target   = "universe-devel-cuda"
+  target   = "universe-devel"
   tags     = tags("universe-devel-cuda")
 }
 
 target "universe-cuda" {
   inherits = ["_universe-cuda-base"]
-  target   = "universe-cuda"
+  target   = "universe"
   tags     = tags("universe-cuda")
 }

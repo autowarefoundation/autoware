@@ -78,7 +78,7 @@ jobs:
       free-disk-space: true
 
   build-universe-cuda:
-    needs: [build-core, build-base-cuda]
+    needs: build-core-cuda
     uses: ./.github/workflows/docker-build.yaml
     with:
       bake-group: ci-universe-cuda
