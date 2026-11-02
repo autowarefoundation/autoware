@@ -18,6 +18,10 @@ graph TB
     core-devel -- " COPY /opt/autoware " --> universe-dependencies-cuda
     base-cuda-devel(["base-cuda-devel"]) --> universe-dependencies-cuda
     base-cuda-runtime --> universe-cuda & base-cuda-devel
+    base-cuda-devel --> core-dependencies-cuda(["core-dependencies-cuda"])
+    core-dependencies-cuda --> core-devel-cuda(["core-devel-cuda"])
+    core-devel-cuda -- " COPY /opt/autoware " --> core-cuda(["core-cuda"])
+    base-cuda-runtime --> core-cuda
     classDef base fill: #e8e8e8, color: #333
     classDef devel fill: #bbdefb, color: #333
     classDef runtime fill: #c8e6c9, color: #333
@@ -25,7 +29,7 @@ graph TB
     class base,base-cuda-runtime,base-cuda-devel base
     class core-dependencies,core-devel,universe-dependencies,universe-devel devel
     class core,universe runtime
-    class universe-dependencies-cuda,universe-devel-cuda,universe-cuda cuda
+    class core-dependencies-cuda,core-devel-cuda,core-cuda,universe-dependencies-cuda,universe-devel-cuda,universe-cuda cuda
 ```
 
 ## Images
@@ -38,6 +42,9 @@ graph TB
 | `core`                       | Runtime-only: rosdep exec deps + compiled core from core-devel                        | Lightweight core runtime                                   |
 | `base-cuda-runtime`          | `base` + CUDA/cuDNN/TensorRT runtime libs (no `-dev` packages)                        | Runtime foundation for `universe-cuda`                     |
 | `base-cuda-devel`            | `base-cuda-runtime` + CUDA/cuDNN/TensorRT dev headers                                 | Build foundation for CUDA universe packages                |
+| `core-dependencies-cuda`     | Same as `core-dependencies` on `base-cuda-devel`, plus `negotiated` from source       | CI for autoware_cuda                                       |
+| `core-devel-cuda`            | Adds autoware_core, autoware_cuda and cuda_blackboard on core-dependencies-cuda       | Development on core with GPU                               |
+| `core-cuda`                  | Runtime-only: compiled core and CUDA layer from core-devel-cuda                       | Lightweight core runtime with GPU                          |
 | `universe-dependencies`      | Acados + rosdep build deps for all of autoware (non-CUDA path)                        | CI for autoware_universe                                   |
 | `universe-dependencies-cuda` | Core ansible roles + acados + rosdep build deps, inherits CUDA from `base-cuda-devel` | CI for CUDA-dependent packages                             |
 | `universe-devel`             | Builds all universe sources (no CUDA)                                                 | Development without GPU                                    |
@@ -73,6 +80,9 @@ Available images (replace `jazzy` with `humble` for other distros):
 | `core-jazzy`                       | Lightweight core runtime                          |
 | `base-cuda-runtime-jazzy`          | base + CUDA/cuDNN/TensorRT runtime                |
 | `base-cuda-devel-jazzy`            | base-cuda-runtime + CUDA/cuDNN/TensorRT dev       |
+| `core-dependencies-cuda-jazzy`     | Core build deps on base-cuda-devel                |
+| `core-devel-cuda-jazzy`            | Full core development with the CUDA layer         |
+| `core-cuda-jazzy`                  | Lightweight core runtime with GPU                 |
 | `universe-dependencies-jazzy`      | Universe build dependencies (no CUDA)             |
 | `universe-dependencies-cuda-jazzy` | Universe build deps on base-cuda-devel            |
 | `universe-devel-jazzy`             | Full universe development (no CUDA)               |
@@ -94,6 +104,7 @@ docker buildx bake -f docker/docker-bake.hcl
 # Build a specific target (dependencies are resolved automatically)
 docker buildx bake -f docker/docker-bake.hcl base
 docker buildx bake -f docker/docker-bake.hcl core-devel
+docker buildx bake -f docker/docker-bake.hcl core-devel-cuda
 docker buildx bake -f docker/docker-bake.hcl universe
 docker buildx bake -f docker/docker-bake.hcl universe-cuda
 

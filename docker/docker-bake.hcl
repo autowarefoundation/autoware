@@ -77,6 +77,7 @@ group "default" {
   targets = ["base",
              "core-dependencies", "core-devel", "core",
              "base-cuda-runtime", "base-cuda-devel",
+             "core-dependencies-cuda", "core-devel-cuda", "core-cuda",
              "universe-dependencies", "universe-devel", "universe",
              "universe-dependencies-cuda", "universe-devel-cuda", "universe-cuda"]
 }
@@ -91,6 +92,10 @@ group "ci-core" {
 
 group "ci-base-cuda" {
   targets = ["base-cuda-runtime", "base-cuda-devel"]
+}
+
+group "ci-core-cuda" {
+  targets = ["core-dependencies-cuda", "core-devel-cuda", "core-cuda"]
 }
 
 group "ci-universe" {
@@ -112,46 +117,36 @@ target "base" {
   }
 }
 
-target "core-dependencies" {
+target "_core-base" {
   dockerfile = "docker/core.Dockerfile"
-  target     = "core-dependencies"
-  tags       = tags("core-dependencies")
   contexts = {
-    autoware-base = ctx("base")
+    autoware-base         = ctx("base")
+    autoware-runtime-base = ctx("base")
   }
   args = {
-    BASE_IMAGE   = "autoware-base"
-    ROS_DISTRO   = ROS_DISTRO
-    USE_LOCKFILE = USE_LOCKFILE
+    BASE_IMAGE         = "autoware-base"
+    RUNTIME_BASE_IMAGE = "autoware-runtime-base"
+    ROS_DISTRO         = ROS_DISTRO
+    USE_LOCKFILE       = USE_LOCKFILE
   }
+}
+
+target "core-dependencies" {
+  inherits = ["_core-base"]
+  target   = "core-dependencies"
+  tags     = tags("core-dependencies")
 }
 
 target "core-devel" {
-  dockerfile = "docker/core.Dockerfile"
-  target     = "core-devel"
-  tags       = tags("core-devel")
-  contexts = {
-    autoware-base = ctx("base")
-  }
-  args = {
-    BASE_IMAGE   = "autoware-base"
-    ROS_DISTRO   = ROS_DISTRO
-    USE_LOCKFILE = USE_LOCKFILE
-  }
+  inherits = ["_core-base"]
+  target   = "core-devel"
+  tags     = tags("core-devel")
 }
 
 target "core" {
-  dockerfile = "docker/core.Dockerfile"
-  target     = "core"
-  tags       = tags("core")
-  contexts = {
-    autoware-base = ctx("base")
-  }
-  args = {
-    BASE_IMAGE   = "autoware-base"
-    ROS_DISTRO   = ROS_DISTRO
-    USE_LOCKFILE = USE_LOCKFILE
-  }
+  inherits = ["_core-base"]
+  target   = "core"
+  tags     = tags("core")
 }
 
 target "base-cuda-runtime" {
@@ -184,6 +179,35 @@ target "base-cuda-devel" {
     ROS_DISTRO = ROS_DISTRO
     USE_LOCKFILE = USE_LOCKFILE
   }
+}
+
+target "_core-cuda-base" {
+  inherits = ["_core-base"]
+  contexts = {
+    autoware-base         = ctx("base-cuda-devel")
+    autoware-runtime-base = ctx("base-cuda-runtime")
+  }
+  args = {
+    WITH_CUDA = true
+  }
+}
+
+target "core-dependencies-cuda" {
+  inherits = ["_core-cuda-base"]
+  target   = "core-dependencies"
+  tags     = tags("core-dependencies-cuda")
+}
+
+target "core-devel-cuda" {
+  inherits = ["_core-cuda-base"]
+  target   = "core-devel"
+  tags     = tags("core-devel-cuda")
+}
+
+target "core-cuda" {
+  inherits = ["_core-cuda-base"]
+  target   = "core"
+  tags     = tags("core-cuda")
 }
 
 target "_universe-base" {

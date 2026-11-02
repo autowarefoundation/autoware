@@ -57,6 +57,10 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/cuda_blackboard.git
     version: 0.5.0
+  core/cuda/negotiated:
+    type: git
+    url: https://github.com/osrf/negotiated.git
+    version: eac198b55dcd052af5988f0f174902913c5f20e7
 
   # universe
   universe/autoware_universe:
@@ -100,10 +104,6 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/bevdet_vendor.git
     version: 0.2.1
-  universe/external/negotiated:
-    type: git
-    url: https://github.com/osrf/negotiated.git
-    version: eac198b55dcd052af5988f0f174902913c5f20e7
   universe/external/managed_transform_buffer:
     type: git
     url: https://github.com/autowarefoundation/managed_transform_buffer.git
