@@ -6,7 +6,7 @@
       <stop offset="1" stop-color="#00c8ff"/>
     </linearGradient>
   </defs>
-  <rect width="28" height="28" rx="7" fill="url(#tile)"/>
+  <rect width="28" height="28" rx="7" fill="url(#tile)" fill-opacity="1"/>
   <svg x="7" y="7.77778" width="14" height="12.4444" viewBox="0 0 576 512">
     <path
       fill="#ffffff"

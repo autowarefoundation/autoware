@@ -38,11 +38,11 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/installation/"><img src=".github/assets/icons/card-circle-down.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Install Autoware</strong></a><br />
+      <a href="https://docs.autoware.org/main/installation/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-circle-down-dark.svg" /><img src=".github/assets/icons/card-circle-down-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Install Autoware</strong></a><br />
       Set up Autoware from source or with Docker.
     </td>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/simulation/"><img src=".github/assets/icons/card-gamepad.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Simulation</strong></a><br />
+      <a href="https://docs.autoware.org/main/simulation/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-gamepad-dark.svg" /><img src=".github/assets/icons/card-gamepad-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Simulation</strong></a><br />
       Run Autoware in a planning, rosbag replay, scenario, or digital twin simulation.
     </td>
   </tr>
@@ -51,11 +51,11 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/tutorials/"><img src=".github/assets/icons/card-book.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Tutorials</strong></a><br />
+      <a href="https://docs.autoware.org/main/tutorials/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-book-dark.svg" /><img src=".github/assets/icons/card-book-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Tutorials</strong></a><br />
       Follow step-by-step guides, from simulation to your own vehicle.
     </td>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/design/"><img src=".github/assets/icons/card-compass-drafting.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Architecture design</strong></a><br />
+      <a href="https://docs.autoware.org/main/design/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-compass-drafting-dark.svg" /><img src=".github/assets/icons/card-compass-drafting-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Architecture design</strong></a><br />
       Learn how Autoware is built: its components and interfaces.
     </td>
   </tr>
@@ -64,11 +64,11 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/community/support/"><img src=".github/assets/icons/card-circle-question.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Support</strong></a><br />
+      <a href="https://docs.autoware.org/main/community/support/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-circle-question-dark.svg" /><img src=".github/assets/icons/card-circle-question-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Support</strong></a><br />
       Find out where to ask questions, report problems, and talk with the community.
     </td>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/contributing/"><img src=".github/assets/icons/card-circle-plus.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Contribute</strong></a><br />
+      <a href="https://docs.autoware.org/main/contributing/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-circle-plus-dark.svg" /><img src=".github/assets/icons/card-circle-plus-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Contribute</strong></a><br />
       Help improve Autoware and its documentation.
     </td>
   </tr>
