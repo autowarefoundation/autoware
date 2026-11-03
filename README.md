@@ -10,12 +10,12 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 
 <p align="center">
   <a href="https://docs.autoware.org/main/installation/"><img src=".github/assets/button-install-autoware.svg" alt="Install Autoware" /></a>
-  <a href="https://docs.autoware.org/main/simulation/"><img src=".github/assets/button-run-in-simulation.svg" alt="Run in simulation" /></a>
+  <a href="https://docs.autoware.org/main/simulation/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/button-run-in-simulation-dark.svg" /><img src=".github/assets/button-run-in-simulation-light.svg" alt="Run in simulation" /></picture></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/autowarefoundation/autoware/releases/tag/2.0.0"><img src=".github/assets/chip-autoware-2-0-release-notes.svg" alt="New: Autoware 2.0 release notes" /></a>
-  <a href="https://docs.autoware.org/main/installation/autoware/autoware-index/"><img src=".github/assets/chip-autoware-index.svg" alt="New: Autoware Index (community packages)" /></a>
+  <a href="https://github.com/autowarefoundation/autoware/releases/tag/2.0.0"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/chip-autoware-2-0-release-notes-dark.svg" /><img src=".github/assets/chip-autoware-2-0-release-notes-light.svg" alt="New: Autoware 2.0 release notes" /></picture></a>
+  <a href="https://docs.autoware.org/main/installation/autoware/autoware-index/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/chip-autoware-index-dark.svg" /><img src=".github/assets/chip-autoware-index-light.svg" alt="New: Autoware Index (community packages)" /></picture></a>
 </p>
 
 <p align="center">
