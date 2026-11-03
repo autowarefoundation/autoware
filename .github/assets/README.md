@@ -23,14 +23,14 @@ The script computes the width of each label from the character widths of Montser
 
 ## Inputs
 
-- Font Awesome Free 7: the `svgs` folder of the `@fortawesome/fontawesome-free` npm package. The documentation site uses the same icons.
+- Font Awesome Free 7.3.0: the `svgs` folder of the `@fortawesome/fontawesome-free` npm package. The documentation site uses the same icons. Use version 7.3.0, because another version can draw an icon differently. To get it, run `npm pack @fortawesome/fontawesome-free@7.3.0` and unpack the `.tgz` file. The folder is `package/svgs`.
 - The media kit logos: the `docs/home/media-kit/logos` folder of [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation).
 - The demo frame (optional): only to change the demo image. Without `--demo-frame`, the script keeps `obstacle-avoidance-demo.svg` as it is.
 
 To make the demo frame, crop the poster of the demo video in the documentation repository. The crop removes the RViz toolbar and the status bar:
 
 ```bash
-ffmpeg -i docs/assets/videos/obstacle-avoidance-demo.jpg -vf "crop=1268:661:0:41" -q:v 3 frame.jpg
+ffmpeg -i docs/assets/videos/obstacle-avoidance-demo.jpg -vf "crop=1268:660:0:41" -q:v 3 frame.jpg
 ```
 
 Then add `--demo-frame frame.jpg` to the command above.

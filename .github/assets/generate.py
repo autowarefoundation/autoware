@@ -16,6 +16,7 @@ import base64
 from pathlib import Path
 import re
 import struct
+from xml.sax.saxutils import escape
 
 ASSETS = Path(__file__).resolve().parent
 
@@ -112,7 +113,7 @@ class Generator:
         return (
             f'<text x="{x:g}" y="{cy:g}" fill="{color}" font-family="{FONT}" font-size="{size}" '
             f'font-weight="{weight}" dominant-baseline="central" text-anchor="{anchor}" '
-            f'textLength="{width:.1f}" lengthAdjust="{adjust}">{label}</text>'
+            f'textLength="{width:.1f}" lengthAdjust="{adjust}">{escape(label)}</text>'
         )
 
     def icon(self, name):
@@ -220,12 +221,16 @@ class Generator:
         )
         self.write(f"icons/{name}", size + gap, size, body, defs, icon)
 
-    def logo(self, file_name, x, y, width):
+    def read_logo(self, file_name):
         source = (self.logos / file_name).read_text()
         view_width, view_height = map(
             float, re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', source).groups()
         )
         path = " ".join(re.search(r'\sd="([^"]+)"', source).group(1).split())
+        return view_width, view_height, path
+
+    def logo(self, file_name, x, y, width):
+        view_width, view_height, path = self.read_logo(file_name)
         height = width * view_height / view_width
         svg = (
             f'<svg x="{x:g}" y="{y:g}" width="{width:g}" height="{height:g}" '
@@ -274,9 +279,11 @@ class Generator:
         self.banner("banner-autoware", width, height, body, glows)
 
         width, height, logo_width = 880, 110, 260
-        logo_height = logo_width * 80.38 / 565.38
+        file_name = "autoware-foundation-one-line-white.svg"
+        view_width, view_height, _ = self.read_logo(file_name)
+        logo_height = logo_width * view_height / view_width
         logo, _ = self.logo(
-            "autoware-foundation-one-line-white.svg",
+            file_name,
             (width - logo_width) / 2,
             (height - logo_height) / 2 + 2,
             logo_width,
