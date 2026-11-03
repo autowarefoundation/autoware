@@ -2,9 +2,9 @@
 
 <h1 align="center">
   <a href="https://docs.autoware.org/main/home/"><img src=".github/assets/banner-autoware.svg" alt="Autoware" width="100%" /></a>
+  <br />
+  <sub>Open-source software for autonomous driving</sub>
 </h1>
-
-<p align="center"><strong>Open-source software for autonomous driving</strong></p>
 
 <p align="center">
 Autoware is the world's leading open-source autonomous driving framework. Autoware provides a comprehensive, production-ready software stack designed to accelerate the commercial deployment of autonomous vehicles across diverse platforms and use cases.
