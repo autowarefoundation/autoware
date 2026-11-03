@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="267.5" height="30" viewBox="0 0 267.5 30" role="img" aria-label="New: Autoware 2.0 release notes">
+  <!--! Font Awesome Free 7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc. -->
+  <defs>
+    <linearGradient id="brand" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#3f2ee3"/>
+      <stop offset="0.55" stop-color="#00c8ff"/>
+      <stop offset="1" stop-color="#00e678"/>
+    </linearGradient>
+  </defs>
+  <rect x="0.75" y="0.75" width="266" height="28.5" rx="14.25" fill="#00002a" stroke="url(#brand)" stroke-width="1.5"/>
+  <svg x="13" y="8.5" width="13" height="13" viewBox="0 0 512 512">
+    <path
+      fill="#00c8ff"
+      d="M128 320L24.5 320c-24.9 0-40.2-27.1-27.4-48.5L50 183.3C58.7 168.8 74.3 160 91.2 160l95 0c76.1-128.9 189.6-135.4 265.5-124.3 12.8 1.9 22.8 11.9 24.6 24.6 11.1 75.9 4.6 189.4-124.3 265.5l0 95c0 16.9-8.8 32.5-23.3 41.2l-88.2 52.9c-21.3 12.8-48.5-2.6-48.5-27.4L192 384c0-35.3-28.7-64-64-64l-.1 0zM400 160a48 48 0 1 0 -96 0 48 48 0 1 0 96 0z"
+    />
+  </svg>
+  <text
+    x="33"
+    y="15"
+    fill="#ffffff"
+    font-family="Montserrat, 'Segoe UI', Helvetica, Arial, sans-serif"
+    font-size="13"
+    font-weight="600"
+    dominant-baseline="central"
+    text-anchor="start"
+    textLength="180.2"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    Autoware 2.0 release notes
+  </text>
+  <rect x="221.2" y="6" width="40.3" height="18" rx="9" fill="#00e678"/>
+  <text
+    x="241.35"
+    y="15"
+    fill="#00002a"
+    font-family="Montserrat, 'Segoe UI', Helvetica, Arial, sans-serif"
+    font-size="10"
+    font-weight="700"
+    dominant-baseline="central"
+    text-anchor="middle"
+    textLength="26.3"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    NEW
+  </text>
+</svg>

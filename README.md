@@ -1,77 +1,182 @@
-# Autoware - the world's leading open-source software project for autonomous driving
-
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/63835446/158918717-58d6deaf-93fb-47f9-891d-e242b02cba7b.png"
-        alt="Autoware_RViz" width="75%" />
+  <a href="https://docs.autoware.org/main/home/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/autoware-horizontal-white.svg" />
+      <img src=".github/assets/autoware-horizontal-black.svg" alt="Autoware" width="360" />
+    </picture>
+  </a>
 </p>
 
-<!--- License -->
+<h3 align="center">Open-source software for autonomous driving</h3>
+
 <p align="center">
-    <a href="https://github.com/autowarefoundation/autoware/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/autowarefoundation/autoware?style=flat&label=License"
-            alt="License" /></a>
+  <img src=".github/assets/gradient-line.svg" alt="" width="120" height="4" />
 </p>
 
-<!--- Social Media -->
+<!--- License and social media -->
 <p align="center">
-    <a href="https://discord.gg/Q94UsPvReQ">
-        <img src="https://img.shields.io/discord/953808765935816715?logo=discord&logoColor=white&style=flat&label=Autoware%20Discord"
-            alt="Autoware Discord"></a>
-    <a href="https://twitter.com/intent/follow?screen_name=AutowareFdn">
-        <img src="https://img.shields.io/twitter/follow/AutowareFdn?logo=x&logoColor=white&style=flat"
-            alt="Autoware Twitter / X"></a>
-    <a href="https://www.linkedin.com/company/the-autoware-foundation/">
-        <img src="https://img.shields.io/badge/Linkedin-Autoware%20Foundation-0a66c2?logo=linkedin&logoColor=white&style=flat"
-            alt="Autoware Linkedin"></a>
+  <a href="https://github.com/autowarefoundation/autoware/blob/main/LICENSE"><img src=".github/assets/chip-license.svg" alt="Apache-2.0 license" /></a>
+  <a href="https://discord.gg/Q94UsPvReQ"><img src=".github/assets/chip-discord.svg" alt="Autoware Discord" /></a>
+  <a href="https://twitter.com/intent/follow?screen_name=AutowareFdn"><img src=".github/assets/chip-x.svg" alt="Autoware on X (Twitter)" /></a>
+  <a href="https://www.linkedin.com/company/the-autoware-foundation/"><img src=".github/assets/chip-linkedin.svg" alt="Autoware Foundation on LinkedIn" /></a>
 </p>
 
+<p align="center">
 Autoware is the world's leading open-source autonomous driving framework. Autoware provides a comprehensive, production-ready software stack designed to accelerate the commercial deployment of autonomous vehicles across diverse platforms and use cases.
-
-## 🚀 Get Started
-
-<p align="center">
-    <a href="https://autowarefoundation.github.io/autoware-documentation/main/installation">
-        <img src="https://img.shields.io/badge/📥_Installation-Get_Autoware_Running-2ea44f?style=for-the-badge"
-            alt="Installation" /></a>
-    &nbsp;&nbsp;
-    <a href="https://autowarefoundation.github.io/autoware-documentation/main/demos/">
-        <img src="https://img.shields.io/badge/⚡_Quick_Start-Try_the_Demo-1f6feb?style=for-the-badge"
-            alt="Quick Start" /></a>
 </p>
 
-> **New to Autoware?**
->
-> 1. **[Install Autoware](https://autowarefoundation.github.io/autoware-documentation/main/installation)** → Set up your environment and build the stack from source.
-> 2. **[Run the Quick Start demo](https://autowarefoundation.github.io/autoware-documentation/main/demos/)** → Drive a simulated vehicle in just a few minutes.
+<p align="center">
+  <a href="https://docs.autoware.org/main/installation/"><img src=".github/assets/button-install-autoware.svg" alt="Install Autoware" /></a>
+  <a href="https://docs.autoware.org/main/simulation/"><img src=".github/assets/button-run-in-simulation.svg" alt="Run in simulation" /></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/autowarefoundation/autoware/releases/tag/2.0.0"><img src=".github/assets/chip-autoware-2-0-release-notes.svg" alt="New: Autoware 2.0 release notes" /></a>
+  <a href="https://docs.autoware.org/main/installation/autoware/autoware-index/"><img src=".github/assets/chip-autoware-index.svg" alt="New: Autoware Index (community packages)" /></a>
+</p>
+
+<p align="center">
+    <a href="https://docs.autoware.org/main/home/">
+        <img src=".github/assets/obstacle-avoidance-demo.jpg"
+            alt="Autoware obstacle avoidance demo by TIER IV" width="100%" /></a>
+    <br />
+    <sub>Obstacle avoidance demo by TIER IV. <a href="https://docs.autoware.org/main/home/">Watch the video</a> on the documentation site.</sub>
+</p>
+
+## Get started
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <a href="https://docs.autoware.org/main/installation/"><img src=".github/assets/icons/card-circle-down.svg" alt="" width="36" height="36" /></a><br />
+      <a href="https://docs.autoware.org/main/installation/"><strong>Install Autoware</strong></a><br />
+      Set up Autoware from source or with Docker.
+    </td>
+    <td width="33%" valign="top">
+      <a href="https://docs.autoware.org/main/simulation/"><img src=".github/assets/icons/card-gamepad.svg" alt="" width="36" height="36" /></a><br />
+      <a href="https://docs.autoware.org/main/simulation/"><strong>Simulation</strong></a><br />
+      Run Autoware in a planning, rosbag replay, scenario, or digital twin simulation.
+    </td>
+    <td width="33%" valign="top">
+      <a href="https://docs.autoware.org/main/tutorials/"><img src=".github/assets/icons/card-book.svg" alt="" width="36" height="36" /></a><br />
+      <a href="https://docs.autoware.org/main/tutorials/"><strong>Tutorials</strong></a><br />
+      Follow step-by-step guides, from simulation to your own vehicle.
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <a href="https://docs.autoware.org/main/design/"><img src=".github/assets/icons/card-compass-drafting.svg" alt="" width="36" height="36" /></a><br />
+      <a href="https://docs.autoware.org/main/design/"><strong>Architecture design</strong></a><br />
+      Learn how Autoware is built: its components and interfaces.
+    </td>
+    <td width="33%" valign="top">
+      <a href="https://docs.autoware.org/main/community/support/"><img src=".github/assets/icons/card-circle-question.svg" alt="" width="36" height="36" /></a><br />
+      <a href="https://docs.autoware.org/main/community/support/"><strong>Support</strong></a><br />
+      Find out where to ask questions and report problems.
+    </td>
+    <td width="33%" valign="top">
+      <a href="https://docs.autoware.org/main/contributing/"><img src=".github/assets/icons/card-circle-plus.svg" alt="" width="36" height="36" /></a><br />
+      <a href="https://docs.autoware.org/main/contributing/"><strong>Contribute</strong></a><br />
+      Help improve Autoware and its documentation.
+    </td>
+  </tr>
+</table>
+
+## Capabilities
+
+Autoware handles the full autonomous driving stack, from sensing to control.
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src=".github/assets/icons/feature-robot.svg" alt="" width="40" height="40" /><br />
+      <strong>AI and learning</strong><br />
+      End-to-end (E2E) driving models, ML-based perception, and data-driven trajectory prediction.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/icons/feature-eye.svg" alt="" width="40" height="40" /><br />
+      <strong>Perception</strong><br />
+      Multi-sensor fusion (lidar, camera, radar), traffic light recognition, and dynamic object tracking.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/icons/feature-location-dot.svg" alt="" width="40" height="40" /><br />
+      <strong>Localization</strong><br />
+      NDT matching combined with GNSS/IMU odometry for positioning in mapped environments.
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <img src=".github/assets/icons/feature-route.svg" alt="" width="40" height="40" /><br />
+      <strong>Planning</strong><br />
+      Behavior planning for intersections and lane changes, plus real-time dynamic obstacle avoidance.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/icons/feature-car.svg" alt="" width="40" height="40" /><br />
+      <strong>Control</strong><br />
+      Trajectory following and standardized vehicle interfaces for drive-by-wire platforms.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/icons/feature-gamepad.svg" alt="" width="40" height="40" /><br />
+      <strong>Simulation</strong><br />
+      Digital twin simulation (AWSIM), rosbag replay, and scenario simulation for validation.
+    </td>
+  </tr>
+</table>
+
+Autoware runs on many vehicle platforms. Its validated use cases are:
+
+<table>
+  <tr>
+    <td width="25%" align="center" valign="top">
+      <img src=".github/assets/icons/feature-taxi.svg" alt="" width="40" height="40" /><br />
+      <strong>Robo-taxis</strong>
+    </td>
+    <td width="25%" align="center" valign="top">
+      <img src=".github/assets/icons/feature-truck-fast.svg" alt="" width="40" height="40" /><br />
+      <strong>Cargo delivery</strong>
+    </td>
+    <td width="25%" align="center" valign="top">
+      <img src=".github/assets/icons/feature-bus.svg" alt="" width="40" height="40" /><br />
+      <strong>Robo-bus shuttles</strong>
+    </td>
+    <td width="25%" align="center" valign="top">
+      <img src=".github/assets/icons/feature-car-side.svg" alt="" width="40" height="40" /><br />
+      <strong>Privately owned vehicles</strong>
+    </td>
+  </tr>
+</table>
 
 ## Documentation
 
-To learn more about using or developing Autoware, refer to the [Autoware documentation site](https://autowarefoundation.github.io/autoware-documentation/main/). You can find the source for the documentation in [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation).
+The [Autoware documentation site](https://docs.autoware.org/main/home/) is the start point for users and developers. Its source is in [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation).
+
+Each main repository also has its own documentation:
+
+- [Autoware Core](https://autowarefoundation.github.io/autoware_core/main/): the core packages of Autoware.
+- [Autoware Universe](https://autowarefoundation.github.io/autoware_universe/main/): community packages that extend Autoware Core.
+- [Autoware Tools](https://autowarefoundation.github.io/autoware_tools/main/): tools to develop and evaluate Autoware.
+- [Autoware Index](https://index.autoware.org/): community packages that live in their own repositories.
 
 ## Contributing
 
 <p align="left">
     <a href="https://github.com/autowarefoundation/autoware_universe/graphs/contributors">
-        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Contributors"
+        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Contributors&color=3f2ee3"
             alt="Autoware Universe Contributors" /></a>
     <a href="https://github.com/autowarefoundation/autoware/graphs/contributors">
-        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware?style=flat&label=Autoware%20Contributors"
+        <img src="https://img.shields.io/github/contributors/autowarefoundation/autoware?style=flat&label=Autoware%20Contributors&color=3f2ee3"
             alt="Autoware Contributors" /></a>
-</p>
-
-<!--- Commit Activity -->
-<p align="left">
     <a href="https://github.com/autowarefoundation/autoware_universe/pulse">
-        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Commit%20Activity"
+        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware_universe?style=flat&label=Autoware%20Universe%20Commit%20Activity&color=3f2ee3"
             alt="Autoware Universe Activity" /></a>
     <a href="https://github.com/autowarefoundation/autoware/pulse">
-        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware?style=flat&label=Autoware%20Commit%20Activity"
+        <img src="https://img.shields.io/github/commit-activity/m/autowarefoundation/autoware?style=flat&label=Autoware%20Commit%20Activity&color=3f2ee3"
             alt="Autoware Activity" /></a>
 </p>
 
-- Make sure to follow the [Contribution Guidelines](https://autowarefoundation.github.io/autoware-documentation/main/contributing/).
-- Take a look at Autoware's [various working groups](https://github.com/autowarefoundation/autoware-projects/wiki#working-group-list) to gain an understanding of any work in progress and to see how projects are managed.
-- If you have any technical questions, you can start a discussion in the [Q&A category](https://github.com/autowarefoundation/autoware/discussions/categories/q-a) to request help and confirm if a potential issue is a bug or not.
+- Read the [contribution guidelines](https://docs.autoware.org/main/contributing/) before you open a pull request.
+- See the [working groups](https://github.com/autowarefoundation/autoware-projects/wiki#working-group-list) to learn about the work in progress and how the projects are managed.
+- If you have a technical question, start a discussion in the [Q&A category](https://github.com/autowarefoundation/autoware/discussions/categories/q-a). You can also ask there if a problem is a bug.
 
 ## Useful resources
 
@@ -86,5 +191,25 @@ To learn more about using or developing Autoware, refer to the [Autoware documen
 </p>
 
 - [Autoware Foundation homepage](https://www.autoware.org/)
-- [Support guidelines](https://autowarefoundation.github.io/autoware-documentation/main/community/support/)
+- [Vision, mission, and core values](https://docs.autoware.org/main/home/vision-mission-core-values/)
+- [Multi-year roadmap](https://docs.autoware.org/main/home/roadmap/multi-year-roadmap/)
+- [Media kit](https://docs.autoware.org/main/home/media-kit/): the logos, the colors, and the fonts of Autoware.
+- [Support guidelines](https://docs.autoware.org/main/community/support/)
 - [CI metrics](https://autowarefoundation.github.io/autoware-ci-metrics/)
+
+<br />
+
+<p align="center">
+  <img src=".github/assets/gradient-line.svg" alt="" width="100%" height="4" />
+</p>
+
+<p align="center">
+  <a href="https://www.autoware.org/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/autoware-foundation-one-line-white.svg" />
+      <img src=".github/assets/autoware-foundation-one-line-black.svg" alt="The Autoware Foundation" width="240" />
+    </picture>
+  </a>
+  <br />
+  <sub>The Autoware Foundation manages the development of Autoware.</sub>
+</p>
