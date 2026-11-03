@@ -1,17 +1,8 @@
 <p align="center">
-  <a href="https://docs.autoware.org/main/home/">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/autoware-horizontal-white.svg" />
-      <img src=".github/assets/autoware-horizontal-black.svg" alt="Autoware" width="360" />
-    </picture>
-  </a>
+  <a href="https://docs.autoware.org/main/home/"><img src=".github/assets/banner-autoware.svg" alt="Autoware" width="100%" /></a>
 </p>
 
 <h3 align="center">Open-source software for autonomous driving</h3>
-
-<p align="center">
-  <img src=".github/assets/gradient-line.svg" alt="" width="120" height="4" />
-</p>
 
 <p align="center">
 Autoware is the world's leading open-source autonomous driving framework. Autoware provides a comprehensive, production-ready software stack designed to accelerate the commercial deployment of autonomous vehicles across diverse platforms and use cases.
@@ -19,12 +10,12 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 
 <p align="center">
   <a href="https://docs.autoware.org/main/installation/"><img src=".github/assets/button-install-autoware.svg" alt="Install Autoware" /></a>
-  <a href="https://docs.autoware.org/main/simulation/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/button-run-in-simulation-dark.svg" /><img src=".github/assets/button-run-in-simulation-light.svg" alt="Run in simulation" /></picture></a>
+  <a href="https://docs.autoware.org/main/simulation/"><img src=".github/assets/button-run-in-simulation.svg" alt="Run in simulation" /></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/autowarefoundation/autoware/releases/tag/2.0.0"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/chip-autoware-2-0-release-notes-dark.svg" /><img src=".github/assets/chip-autoware-2-0-release-notes-light.svg" alt="New: Autoware 2.0 release notes" /></picture></a>
-  <a href="https://docs.autoware.org/main/installation/autoware/autoware-index/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/chip-autoware-index-dark.svg" /><img src=".github/assets/chip-autoware-index-light.svg" alt="New: Autoware Index (community packages)" /></picture></a>
+  <a href="https://github.com/autowarefoundation/autoware/releases/tag/2.0.0"><img src=".github/assets/chip-autoware-2-0-release-notes.svg" alt="New: Autoware 2.0 release notes" /></a>
+  <a href="https://docs.autoware.org/main/installation/autoware/autoware-index/"><img src=".github/assets/chip-autoware-index.svg" alt="New: Autoware Index (community packages)" /></a>
 </p>
 
 <p align="center">
@@ -38,11 +29,11 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/installation/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-circle-down-dark.svg" /><img src=".github/assets/icons/card-circle-down-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Install Autoware</strong></a><br />
+      <a href="https://docs.autoware.org/main/installation/"><img src=".github/assets/icons/card-circle-down.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Install Autoware</strong></a><br />
       Set up Autoware from source or with Docker.
     </td>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/simulation/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-gamepad-dark.svg" /><img src=".github/assets/icons/card-gamepad-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Simulation</strong></a><br />
+      <a href="https://docs.autoware.org/main/simulation/"><img src=".github/assets/icons/card-gamepad.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Simulation</strong></a><br />
       Run Autoware in a planning, rosbag replay, scenario, or digital twin simulation.
     </td>
   </tr>
@@ -51,11 +42,11 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/tutorials/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-book-dark.svg" /><img src=".github/assets/icons/card-book-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Tutorials</strong></a><br />
+      <a href="https://docs.autoware.org/main/tutorials/"><img src=".github/assets/icons/card-book.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Tutorials</strong></a><br />
       Follow step-by-step guides, from simulation to your own vehicle.
     </td>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/design/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-compass-drafting-dark.svg" /><img src=".github/assets/icons/card-compass-drafting-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Architecture design</strong></a><br />
+      <a href="https://docs.autoware.org/main/design/"><img src=".github/assets/icons/card-compass-drafting.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Architecture design</strong></a><br />
       Learn how Autoware is built: its components and interfaces.
     </td>
   </tr>
@@ -64,11 +55,11 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/community/support/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-circle-question-dark.svg" /><img src=".github/assets/icons/card-circle-question-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Support</strong></a><br />
+      <a href="https://docs.autoware.org/main/community/support/"><img src=".github/assets/icons/card-circle-question.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Support</strong></a><br />
       Find out where to ask questions, report problems, and talk with the community.
     </td>
     <td width="50%" valign="top">
-      <a href="https://docs.autoware.org/main/contributing/"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/icons/card-circle-plus-dark.svg" /><img src=".github/assets/icons/card-circle-plus-light.svg" alt="" width="36" height="28" align="absmiddle" /></picture><strong>Contribute</strong></a><br />
+      <a href="https://docs.autoware.org/main/contributing/"><img src=".github/assets/icons/card-circle-plus.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Contribute</strong></a><br />
       Help improve Autoware and its documentation.
     </td>
   </tr>
@@ -180,16 +171,7 @@ Each main repository also has its own documentation:
 <br />
 
 <p align="center">
-  <img src=".github/assets/gradient-line.svg" alt="" width="100%" height="4" />
-</p>
-
-<p align="center">
-  <a href="https://www.autoware.org/">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/autoware-foundation-one-line-white.svg" />
-      <img src=".github/assets/autoware-foundation-one-line-black.svg" alt="The Autoware Foundation" width="240" />
-    </picture>
-  </a>
+  <a href="https://www.autoware.org/"><img src=".github/assets/banner-autoware-foundation.svg" alt="The Autoware Foundation" width="100%" /></a>
   <br />
   <sub>The Autoware Foundation manages the development of Autoware.</sub>
 </p>
