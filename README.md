@@ -21,7 +21,7 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 </p>
 
 <p align="center">
-  <a href="https://docs.autoware.org/main/home/"><img src=".github/assets/obstacle-avoidance-demo.svg" alt="Autoware obstacle avoidance demo by TIER IV" width="100%" /></a>
+  <a href="https://docs.autoware.org/main/home/"><img src=".github/assets/obstacle-avoidance-demo.svg" alt="Autoware obstacle avoidance demo by TIER IV" width="80%" /></a>
   <br />
   <sub>Obstacle avoidance demo by TIER IV. <a href="https://docs.autoware.org/main/home/">Watch the video</a> on the documentation site.</sub>
 </p>
