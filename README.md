@@ -13,14 +13,6 @@
   <img src=".github/assets/gradient-line.svg" alt="" width="120" height="4" />
 </p>
 
-<!--- License and social media -->
-<p align="center">
-  <a href="https://github.com/autowarefoundation/autoware/blob/main/LICENSE"><img src=".github/assets/chip-license.svg" alt="Apache-2.0 license" /></a>
-  <a href="https://discord.gg/Q94UsPvReQ"><img src=".github/assets/chip-discord.svg" alt="Autoware Discord" /></a>
-  <a href="https://twitter.com/intent/follow?screen_name=AutowareFdn"><img src=".github/assets/chip-x.svg" alt="Autoware on X (Twitter)" /></a>
-  <a href="https://www.linkedin.com/company/the-autoware-foundation/"><img src=".github/assets/chip-linkedin.svg" alt="Autoware Foundation on LinkedIn" /></a>
-</p>
-
 <p align="center">
 Autoware is the world's leading open-source autonomous driving framework. Autoware provides a comprehensive, production-ready software stack designed to accelerate the commercial deployment of autonomous vehicles across diverse platforms and use cases.
 </p>
@@ -36,47 +28,47 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 </p>
 
 <p align="center">
-    <a href="https://docs.autoware.org/main/home/">
-        <img src=".github/assets/obstacle-avoidance-demo.jpg"
-            alt="Autoware obstacle avoidance demo by TIER IV" width="100%" /></a>
-    <br />
-    <sub>Obstacle avoidance demo by TIER IV. <a href="https://docs.autoware.org/main/home/">Watch the video</a> on the documentation site.</sub>
+  <a href="https://docs.autoware.org/main/home/"><img src=".github/assets/obstacle-avoidance-demo.svg" alt="Autoware obstacle avoidance demo by TIER IV" width="100%" /></a>
+  <br />
+  <sub>Obstacle avoidance demo by TIER IV. <a href="https://docs.autoware.org/main/home/">Watch the video</a> on the documentation site.</sub>
 </p>
 
 ## Get started
 
 <table>
   <tr>
-    <td width="33%" valign="top">
-      <a href="https://docs.autoware.org/main/installation/"><img src=".github/assets/icons/card-circle-down.svg" alt="" width="36" height="36" /></a><br />
-      <a href="https://docs.autoware.org/main/installation/"><strong>Install Autoware</strong></a><br />
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/installation/"><img src=".github/assets/icons/card-circle-down.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>Install Autoware</strong></a><br />
       Set up Autoware from source or with Docker.
     </td>
-    <td width="33%" valign="top">
-      <a href="https://docs.autoware.org/main/simulation/"><img src=".github/assets/icons/card-gamepad.svg" alt="" width="36" height="36" /></a><br />
-      <a href="https://docs.autoware.org/main/simulation/"><strong>Simulation</strong></a><br />
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/simulation/"><img src=".github/assets/icons/card-gamepad.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>Simulation</strong></a><br />
       Run Autoware in a planning, rosbag replay, scenario, or digital twin simulation.
     </td>
-    <td width="33%" valign="top">
-      <a href="https://docs.autoware.org/main/tutorials/"><img src=".github/assets/icons/card-book.svg" alt="" width="36" height="36" /></a><br />
-      <a href="https://docs.autoware.org/main/tutorials/"><strong>Tutorials</strong></a><br />
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/tutorials/"><img src=".github/assets/icons/card-book.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>Tutorials</strong></a><br />
       Follow step-by-step guides, from simulation to your own vehicle.
     </td>
-  </tr>
-  <tr>
-    <td width="33%" valign="top">
-      <a href="https://docs.autoware.org/main/design/"><img src=".github/assets/icons/card-compass-drafting.svg" alt="" width="36" height="36" /></a><br />
-      <a href="https://docs.autoware.org/main/design/"><strong>Architecture design</strong></a><br />
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/design/"><img src=".github/assets/icons/card-compass-drafting.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>Architecture design</strong></a><br />
       Learn how Autoware is built: its components and interfaces.
     </td>
-    <td width="33%" valign="top">
-      <a href="https://docs.autoware.org/main/community/support/"><img src=".github/assets/icons/card-circle-question.svg" alt="" width="36" height="36" /></a><br />
-      <a href="https://docs.autoware.org/main/community/support/"><strong>Support</strong></a><br />
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/community/support/"><img src=".github/assets/icons/card-circle-question.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>Support</strong></a><br />
       Find out where to ask questions and report problems.
     </td>
-    <td width="33%" valign="top">
-      <a href="https://docs.autoware.org/main/contributing/"><img src=".github/assets/icons/card-circle-plus.svg" alt="" width="36" height="36" /></a><br />
-      <a href="https://docs.autoware.org/main/contributing/"><strong>Contribute</strong></a><br />
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/contributing/"><img src=".github/assets/icons/card-circle-plus.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>Contribute</strong></a><br />
       Help improve Autoware and its documentation.
     </td>
   </tr>
@@ -88,36 +80,38 @@ Autoware handles the full autonomous driving stack, from sensing to control.
 
 <table>
   <tr>
-    <td width="33%" valign="top">
-      <img src=".github/assets/icons/feature-robot.svg" alt="" width="40" height="40" /><br />
-      <strong>AI and learning</strong><br />
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/design/autoware-architecture-v2/"><img src=".github/assets/icons/feature-robot.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>AI and learning</strong></a><br />
       End-to-end (E2E) driving models, ML-based perception, and data-driven trajectory prediction.
     </td>
-    <td width="33%" valign="top">
-      <img src=".github/assets/icons/feature-eye.svg" alt="" width="40" height="40" /><br />
-      <strong>Perception</strong><br />
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/design/autoware-architecture-v1/components/perception/"><img src=".github/assets/icons/feature-eye.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>Perception</strong></a><br />
       Multi-sensor fusion (lidar, camera, radar), traffic light recognition, and dynamic object tracking.
     </td>
-    <td width="33%" valign="top">
-      <img src=".github/assets/icons/feature-location-dot.svg" alt="" width="40" height="40" /><br />
-      <strong>Localization</strong><br />
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/design/autoware-architecture-v1/components/localization/"><img src=".github/assets/icons/feature-location-dot.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>Localization</strong></a><br />
       NDT matching combined with GNSS/IMU odometry for positioning in mapped environments.
     </td>
-  </tr>
-  <tr>
-    <td width="33%" valign="top">
-      <img src=".github/assets/icons/feature-route.svg" alt="" width="40" height="40" /><br />
-      <strong>Planning</strong><br />
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/design/autoware-architecture-v1/components/planning/"><img src=".github/assets/icons/feature-route.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>Planning</strong></a><br />
       Behavior planning for intersections and lane changes, plus real-time dynamic obstacle avoidance.
     </td>
-    <td width="33%" valign="top">
-      <img src=".github/assets/icons/feature-car.svg" alt="" width="40" height="40" /><br />
-      <strong>Control</strong><br />
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/design/autoware-architecture-v1/components/control/"><img src=".github/assets/icons/feature-car.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>Control</strong></a><br />
       Trajectory following and standardized vehicle interfaces for drive-by-wire platforms.
     </td>
-    <td width="33%" valign="top">
-      <img src=".github/assets/icons/feature-gamepad.svg" alt="" width="40" height="40" /><br />
-      <strong>Simulation</strong><br />
+    <td width="50%" valign="top">
+      <a href="https://docs.autoware.org/main/simulation/"><img src=".github/assets/icons/feature-gamepad.svg" alt="" width="32" height="32" align="absmiddle" />&nbsp;&nbsp;<strong>Simulation</strong></a><br />
       Digital twin simulation (AWSIM), rosbag replay, and scenario simulation for validation.
     </td>
   </tr>
@@ -125,26 +119,12 @@ Autoware handles the full autonomous driving stack, from sensing to control.
 
 Autoware runs on many vehicle platforms. Its validated use cases are:
 
-<table>
-  <tr>
-    <td width="25%" align="center" valign="top">
-      <img src=".github/assets/icons/feature-taxi.svg" alt="" width="40" height="40" /><br />
-      <strong>Robo-taxis</strong>
-    </td>
-    <td width="25%" align="center" valign="top">
-      <img src=".github/assets/icons/feature-truck-fast.svg" alt="" width="40" height="40" /><br />
-      <strong>Cargo delivery</strong>
-    </td>
-    <td width="25%" align="center" valign="top">
-      <img src=".github/assets/icons/feature-bus.svg" alt="" width="40" height="40" /><br />
-      <strong>Robo-bus shuttles</strong>
-    </td>
-    <td width="25%" align="center" valign="top">
-      <img src=".github/assets/icons/feature-car-side.svg" alt="" width="40" height="40" /><br />
-      <strong>Privately owned vehicles</strong>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <a href="https://docs.autoware.org/main/reference-design/get-started/find-your-reference-design/"><img src=".github/assets/use-case-robo-taxis.svg" alt="Robo-taxis" /></a>
+  <a href="https://docs.autoware.org/main/reference-design/get-started/find-your-reference-design/"><img src=".github/assets/use-case-cargo-delivery.svg" alt="Cargo delivery" /></a>
+  <a href="https://docs.autoware.org/main/reference-design/get-started/find-your-reference-design/"><img src=".github/assets/use-case-robo-bus-shuttles.svg" alt="Robo-bus shuttles" /></a>
+  <a href="https://docs.autoware.org/main/reference-design/get-started/find-your-reference-design/"><img src=".github/assets/use-case-privately-owned-vehicles.svg" alt="Privately owned vehicles" /></a>
+</p>
 
 ## Documentation
 
@@ -212,4 +192,12 @@ Each main repository also has its own documentation:
   </a>
   <br />
   <sub>The Autoware Foundation manages the development of Autoware.</sub>
+</p>
+
+<!--- License and social media -->
+<p align="center">
+  <a href="https://github.com/autowarefoundation/autoware/blob/main/LICENSE"><img src=".github/assets/chip-license.svg" alt="Apache-2.0 license" /></a>
+  <a href="https://discord.gg/Q94UsPvReQ"><img src=".github/assets/chip-discord.svg" alt="Autoware Discord" /></a>
+  <a href="https://twitter.com/intent/follow?screen_name=AutowareFdn"><img src=".github/assets/chip-x.svg" alt="Autoware on X (Twitter)" /></a>
+  <a href="https://www.linkedin.com/company/the-autoware-foundation/"><img src=".github/assets/chip-linkedin.svg" alt="Autoware Foundation on LinkedIn" /></a>
 </p>
