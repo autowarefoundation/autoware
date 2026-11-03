@@ -341,9 +341,11 @@ class Generator:
         for icon in FEATURE_ICONS:
             self.tile(f"feature-{icon}", f"solid/{icon}", TILE_GRADIENT, "url(#tile)")
 
-        # A transparent 1 px image. Each README card holds a 1000 px wide copy, floated left, so that
+        # A transparent 1 px image. Each README card holds a 1000 px wide copy, floated right, so that
         # every card table fills the column and splits in the middle. GitHub sizes a table to its
-        # content, and its max-width: 100% on images shrinks the spacer on a narrow screen.
+        # content, and its max-width: 100% on images shrinks the spacer on a narrow screen. Float it
+        # right: GitHub pads img[align=left] on the right, which overflows the table and shows a
+        # scrollbar, but pads img[align=right] on the left, where an overflow shows no scrollbar.
         self.write("spacer", 1, 1, "")
 
         self.banners()
