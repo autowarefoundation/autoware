@@ -31,10 +31,12 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 <table>
   <tr>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/installation/"><img src=".github/assets/icons/card-circle-down.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Install Autoware</strong></a><br />
       Set up Autoware from source or with Docker.
     </td>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/simulation/"><img src=".github/assets/icons/card-gamepad.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Simulation</strong></a><br />
       Run Autoware in a planning, rosbag replay, scenario, or digital twin simulation.
     </td>
@@ -44,10 +46,12 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 <table>
   <tr>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/tutorials/"><img src=".github/assets/icons/card-book.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Tutorials</strong></a><br />
       Follow step-by-step guides, from simulation to your own vehicle.
     </td>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/design/"><img src=".github/assets/icons/card-compass-drafting.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Architecture design</strong></a><br />
       Learn how Autoware is built: its components and interfaces.
     </td>
@@ -57,10 +61,12 @@ Autoware is the world's leading open-source autonomous driving framework. Autowa
 <table>
   <tr>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/community/support/"><img src=".github/assets/icons/card-circle-question.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Support</strong></a><br />
       Find out where to ask questions, report problems, and talk with the community.
     </td>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/contributing/"><img src=".github/assets/icons/card-circle-plus.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Contribute</strong></a><br />
       Help improve Autoware and its documentation.
     </td>
@@ -74,10 +80,12 @@ Autoware handles the full autonomous driving stack, from sensing to control.
 <table>
   <tr>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/design/autoware-architecture-v2/"><img src=".github/assets/icons/feature-robot.svg" alt="" width="36" height="28" align="absmiddle" /><strong>AI and learning</strong></a><br />
       End-to-end (E2E) driving models, ML-based perception, and data-driven trajectory prediction.
     </td>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/design/autoware-architecture-v1/components/perception/"><img src=".github/assets/icons/feature-eye.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Perception</strong></a><br />
       Multi-sensor fusion (lidar, camera, radar), traffic light recognition, and dynamic object tracking.
     </td>
@@ -87,10 +95,12 @@ Autoware handles the full autonomous driving stack, from sensing to control.
 <table>
   <tr>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/design/autoware-architecture-v1/components/localization/"><img src=".github/assets/icons/feature-location-dot.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Localization</strong></a><br />
       NDT matching combined with GNSS/IMU odometry for positioning in mapped environments.
     </td>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/design/autoware-architecture-v1/components/planning/"><img src=".github/assets/icons/feature-route.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Planning</strong></a><br />
       Behavior planning for intersections and lane changes, plus real-time dynamic obstacle avoidance.
     </td>
@@ -100,10 +110,12 @@ Autoware handles the full autonomous driving stack, from sensing to control.
 <table>
   <tr>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/design/autoware-architecture-v1/components/control/"><img src=".github/assets/icons/feature-car.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Control</strong></a><br />
       Trajectory following and standardized vehicle interfaces for drive-by-wire platforms.
     </td>
     <td width="50%" valign="top">
+      <img src=".github/assets/spacer.svg" alt="" width="1000" height="1" align="left" />
       <a href="https://docs.autoware.org/main/simulation/"><img src=".github/assets/icons/feature-gamepad.svg" alt="" width="36" height="28" align="absmiddle" /><strong>Simulation</strong></a><br />
       Digital twin simulation (AWSIM), rosbag replay, and scenario simulation for validation.
     </td>
