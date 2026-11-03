@@ -1,13 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="269.5" height="30" viewBox="0 0 269.5 30" role="img" aria-label="New: Autoware 2.0 release notes">
+<svg xmlns="http://www.w3.org/2000/svg" width="271.186" height="30" viewBox="0 0 271.186 30">
   <!--! Font Awesome Free 7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc. -->
   <defs>
-    <linearGradient id="brand" x1="0" x2="1" y1="0" y2="0">
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0" stop-color="#3f2ee3"/>
       <stop offset="0.55" stop-color="#00c8ff"/>
       <stop offset="1" stop-color="#00e678"/>
     </linearGradient>
   </defs>
-  <rect x="0.5" y="0.5" width="268.5" height="29" rx="14.5" fill="#ffffff" stroke="url(#brand)"/>
+  <rect x="0.5" y="0.5" width="270.186" height="29" rx="14.5" fill="#ffffff" stroke="url(#brand)"/>
   <svg x="13" y="8.5" width="13" height="13" viewBox="0 0 512 512">
     <path
       fill="#1f2328"
@@ -23,14 +23,14 @@
     font-weight="600"
     dominant-baseline="central"
     text-anchor="start"
-    textLength="180.2"
+    textLength="181.8"
     lengthAdjust="spacingAndGlyphs"
   >
     Autoware 2.0 release notes
   </text>
-  <rect x="221.2" y="6" width="42.3" height="18" rx="9" fill="#dc143c"/>
+  <rect x="222.766" y="6" width="42.42" height="18" rx="9" fill="#dc143c"/>
   <text
-    x="242.35"
+    x="243.976"
     y="15"
     fill="#ffffff"
     font-family="Montserrat, 'Segoe UI', Helvetica, Arial, sans-serif"
@@ -38,7 +38,7 @@
     font-weight="700"
     dominant-baseline="central"
     text-anchor="middle"
-    textLength="28.3"
+    textLength="28.4"
     lengthAdjust="spacing"
   >
     NEW

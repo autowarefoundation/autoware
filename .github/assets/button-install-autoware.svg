@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="211.6" height="64" viewBox="0 0 211.6 64" role="img" aria-label="Install Autoware">
+<svg xmlns="http://www.w3.org/2000/svg" width="213.065" height="64" viewBox="0 0 213.065 64">
   <!--! Font Awesome Free 7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc. -->
   <defs>
-    <linearGradient id="fill" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="button" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#3f2ee3"/>
       <stop offset="1" stop-color="#2a6df2"/>
     </linearGradient>
@@ -9,7 +9,7 @@
       <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#3f2ee3" flood-opacity="0.45"/>
     </filter>
   </defs>
-  <rect x="8" y="8" width="195.6" height="44" rx="22" fill="url(#fill)" stroke="none" filter="url(#shadow)"/>
+  <rect x="8.5" y="8.5" width="196.065" height="43" rx="21.5" fill="url(#button)" stroke="none" stroke-opacity="1" filter="url(#shadow)"/>
   <svg x="30" y="21.5" width="17" height="17" viewBox="0 0 512 512">
     <path
       fill="#ffffff"
@@ -25,7 +25,7 @@
     font-weight="600"
     dominant-baseline="central"
     text-anchor="start"
-    textLength="125.6"
+    textLength="127.1"
     lengthAdjust="spacingAndGlyphs"
   >
     Install Autoware

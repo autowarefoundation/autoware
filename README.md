@@ -1,8 +1,10 @@
-<p align="center">
-  <a href="https://docs.autoware.org/main/home/"><img src=".github/assets/banner-autoware.svg" alt="Autoware" width="100%" /></a>
-</p>
+<!-- cspell:ignore absmiddle -->
 
-<h3 align="center">Open-source software for autonomous driving</h3>
+<h1 align="center">
+  <a href="https://docs.autoware.org/main/home/"><img src=".github/assets/banner-autoware.svg" alt="Autoware" width="100%" /></a>
+</h1>
+
+<p align="center"><strong>Open-source software for autonomous driving</strong></p>
 
 <p align="center">
 Autoware is the world's leading open-source autonomous driving framework. Autoware provides a comprehensive, production-ready software stack designed to accelerate the commercial deployment of autonomous vehicles across diverse platforms and use cases.
@@ -119,7 +121,7 @@ Autoware runs on many vehicle platforms. Its validated use cases are:
 
 ## Documentation
 
-The [Autoware documentation site](https://docs.autoware.org/main/home/) is the start point for users and developers. Its source is in [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation).
+The [Autoware documentation site](https://docs.autoware.org/main/home/) is the starting point for users and developers. Its source is in [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation).
 
 Each main repository also has its own documentation:
 

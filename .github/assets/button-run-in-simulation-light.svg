@@ -1,7 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="222.5" height="64" viewBox="0 0 222.5 64" role="img" aria-label="Run in simulation">
+<svg xmlns="http://www.w3.org/2000/svg" width="222.5" height="64" viewBox="0 0 222.5 64">
   <!--! Font Awesome Free 7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc. -->
-  <defs/>
-  <rect x="8.5" y="8.5" width="205.5" height="43" rx="21.5" fill="#f2f0fd" stroke="#b2abf4"/>
+  <rect x="8.5" y="8.5" width="205.5" height="43" rx="21.5" fill="#f2f0fd" stroke="#b2abf4" stroke-opacity="1"/>
   <svg x="30" y="23.2" width="17" height="13.6" viewBox="0 0 640 512">
     <path
       fill="#3f2ee3"

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="36" height="28" viewBox="0 0 36 28" role="img" aria-label="car">
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="28" viewBox="0 0 36 28">
   <!--! Font Awesome Free 7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc. -->
   <defs>
     <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
@@ -6,7 +6,7 @@
       <stop offset="1" stop-color="#00c8ff"/>
     </linearGradient>
   </defs>
-  <rect width="28" height="28" rx="7" fill="url(#tile)" fill-opacity="1"/>
+  <rect width="28" height="28" rx="7" fill="url(#tile)"/>
   <svg x="7" y="7" width="14" height="14" viewBox="0 0 512 512">
     <path
       fill="#ffffff"

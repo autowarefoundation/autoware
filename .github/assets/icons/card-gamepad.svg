@@ -1,12 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="36" height="28" viewBox="0 0 36 28" role="img" aria-label="gamepad">
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="28" viewBox="0 0 36 28">
   <!--! Font Awesome Free 7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc. -->
   <defs>
-    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="button" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#3f2ee3"/>
       <stop offset="1" stop-color="#2a6df2"/>
     </linearGradient>
   </defs>
-  <rect width="28" height="28" rx="7" fill="url(#card)" fill-opacity="1"/>
+  <rect width="28" height="28" rx="7" fill="url(#button)"/>
   <svg x="7" y="8.4" width="14" height="11.2" viewBox="0 0 640 512">
     <path
       fill="#ffffff"
