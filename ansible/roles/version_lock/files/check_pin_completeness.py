@@ -29,9 +29,9 @@ KERNEL_COUPLED = re.compile(r"^linux-(headers|image|modules)-")
 # These are installed by opt-in roles alone -- demo_artifacts and carla, both
 # tags: [never] and in no other playbook -- so they converge on no normal
 # locked path, while verify.yaml asserts every pin whose package is installed
-# regardless of which roles ran. Most are also pulled in by ubuntu-desktop, so
-# pinning them fails a locked install_dev_env on any desktop whose version
-# differs from the pin, with no task in the play able to fix it.
+# regardless of which roles ran. All of them but libomp5 are also pulled in by
+# ubuntu-desktop, so pinning them fails a locked install_dev_env on any desktop
+# whose version differs from the pin, with no task in the play able to fix it.
 OUT_OF_SCOPE = frozenset(
     {
         # demo_artifacts

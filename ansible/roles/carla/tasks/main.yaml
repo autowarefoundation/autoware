@@ -73,13 +73,16 @@
       register: carla__record_content
       when: carla__record_file.stat.exists
 
+    # Fields of an error response (a 405, say) would never match the server's real ones later.
     - name: Record what the server has now
+      vars:
+        carla__headers: "{{ carla__remote if carla__remote.status | default(-1) == 200 else {} }}"
       ansible.builtin.set_fact:
         carla__source:
           url: "{{ carla__package.url }}"
-          etag: "{{ carla__remote.etag | default('') }}"
-          last_modified: "{{ carla__remote.last_modified | default('') }}"
-          size: "{{ carla__remote.content_length | default('') }}"
+          etag: "{{ carla__headers.etag | default('') }}"
+          last_modified: "{{ carla__headers.last_modified | default('') }}"
+          size: "{{ carla__headers.content_length | default('') }}"
 
     - name: Compare the installed download with the server's
       vars:
@@ -132,12 +135,12 @@
         mode: "755"
         state: directory
 
-    # tmp_dest keeps get_url's temporary copy next to the archive instead of in ~/.ansible/tmp.
+    # tmp_dest keeps get_url's temporary copy in the staging directory, which both cleanups remove.
     - name: Download {{ carla__package.url }}
       ansible.builtin.get_url:
         url: "{{ carla__package.url }}"
         dest: "{{ carla__archive }}"
-        tmp_dest: "{{ carla__install_root }}"
+        tmp_dest: "{{ carla__staging }}"
         checksum: "{{ ('sha256:' ~ carla__package.sha256) if carla__pinned | bool else omit }}"
         mode: "644"
 
@@ -155,11 +158,17 @@
           - --no-same-owner
       changed_when: true
 
-    - name: Check that the package is a CARLA Linux package
+    - name: Check the launcher of the unpacked package
       ansible.builtin.stat:
         path: "{{ carla__staging }}/{{ carla__package.launcher }}"
       register: carla__staged_launcher
-      failed_when: not carla__staged_launcher.stat.exists
+
+    - name: Check that the package is a CARLA Linux package
+      ansible.builtin.assert:
+        that: carla__staged_launcher.stat.exists
+        fail_msg: >-
+          {{ carla__package.url }} has no {{ carla__package.launcher }} under its top folder.
+          The role unpacks it with --strip-components=1, so the package must have one top folder.
 
     - name: Stamp the install with its checksum
       ansible.builtin.copy:

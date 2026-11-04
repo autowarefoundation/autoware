@@ -208,8 +208,8 @@ none of them:
   failed a locked `install_dev_env` on any desktop whose `unzip` differed from
   the pin, with no task in the play able to fix it. The four runtime
   dependencies of `carla` (`libomp5`, `libsdl2-2.0-0`, `libvulkan1`,
-  `xdg-user-dirs`) sit the same way, and most of them a desktop already
-  carries. They are therefore exempt via `OUT_OF_SCOPE` in
+  `xdg-user-dirs`) sit the same way, and all of them but `libomp5` are pulled
+  in by `ubuntu-desktop`. They are therefore exempt via `OUT_OF_SCOPE` in
   `check_pin_completeness.py` rather than pinned, and float on a
   `--tags demo_artifacts` or `--tags carla` run.
 
