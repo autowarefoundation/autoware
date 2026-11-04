@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="213.065" height="64" viewBox="0 0 213.065 64">
+  <!--! Font Awesome Free 7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc. -->
+  <defs>
+    <linearGradient id="button" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3f2ee3"/>
+      <stop offset="1" stop-color="#2a6df2"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-30%" width="120%" height="180%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#3f2ee3" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <rect x="8.5" y="8.5" width="196.065" height="43" rx="21.5" fill="url(#button)" stroke="none" stroke-opacity="1" filter="url(#shadow)"/>
+  <svg x="30" y="21.5" width="17" height="17" viewBox="0 0 512 512">
+    <path
+      fill="#ffffff"
+      d="M256 0a256 256 0 1 0 0 512 256 256 0 1 0 0-512zM244.7 387.3l-104-104c-4.6-4.6-5.9-11.5-3.5-17.4s8.3-9.9 14.8-9.9l56 0 0-96c0-17.7 14.3-32 32-32l32 0c17.7 0 32 14.3 32 32l0 96 56 0c6.5 0 12.3 3.9 14.8 9.9s1.1 12.9-3.5 17.4l-104 104c-6.2 6.2-16.4 6.2-22.6 0z"
+    />
+  </svg>
+  <text
+    x="56"
+    y="30"
+    fill="#ffffff"
+    font-family="Montserrat, 'Segoe UI', Helvetica, Arial, sans-serif"
+    font-size="15"
+    font-weight="600"
+    dominant-baseline="central"
+    text-anchor="start"
+    textLength="127.1"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    Install Autoware
+  </text>
+</svg>
