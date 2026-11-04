@@ -16,12 +16,15 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 # Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
-'''
+"""
 Compat module for Python3.x's unittest.mock module
-'''
+"""
 import sys
 
 # Python 2.7
@@ -40,7 +43,7 @@ except ImportError:
     try:
         from mock import *
     except ImportError:
-        print('You need the mock library installed on python2.x to run tests')
+        print("You need the mock library installed on python2.x to run tests")
 
 
 # Prior to 3.4.4, mock_open cannot handle binary read_data
@@ -51,7 +54,7 @@ if sys.version_info >= (3,) and sys.version_info < (3, 4, 4):
         # Helper for mock_open:
         # Retrieve lines from read_data via a generator so that separate calls to
         # readline, read, and readlines are properly interleaved
-        sep = b'\n' if isinstance(read_data, bytes) else '\n'
+        sep = b"\n" if isinstance(read_data, bytes) else "\n"
         data_as_list = [l + sep for l in read_data.split(sep)]
 
         if data_as_list[-1] == sep:
@@ -66,7 +69,7 @@ if sys.version_info >= (3,) and sys.version_info < (3, 4, 4):
 
         yield from data_as_list
 
-    def mock_open(mock=None, read_data=''):
+    def mock_open(mock=None, read_data=""):
         """
         A helper function to create a mock to replace the use of `open`. It works
         for `open` called directly or used as a context manager.
@@ -78,6 +81,7 @@ if sys.version_info >= (3,) and sys.version_info < (3, 4, 4):
         `read_data` is a string for the `read` methoddline`, and `readlines` of the
         file handle to return.  This is an empty string by default.
         """
+
         def _readlines_side_effect(*args, **kwargs):
             if handle.readlines.return_value is not None:
                 return handle.readlines.return_value
@@ -97,10 +101,11 @@ if sys.version_info >= (3,) and sys.version_info < (3, 4, 4):
         global file_spec
         if file_spec is None:
             import _io
+
             file_spec = list(set(dir(_io.TextIOWrapper)).union(set(dir(_io.BytesIO))))
 
         if mock is None:
-            mock = MagicMock(name='open', spec=open)
+            mock = MagicMock(name="open", spec=open)
 
         handle = MagicMock(spec=file_spec)
         handle.__enter__.return_value = handle

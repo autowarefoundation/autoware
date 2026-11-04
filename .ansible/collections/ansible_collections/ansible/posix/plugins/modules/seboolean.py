@@ -3,11 +3,14 @@
 # Copyright: (c) 2012, Stephen Fromm <sfromm@gmail.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: seboolean
 short_description: Toggles SELinux booleans
@@ -43,15 +46,15 @@ requirements:
 - python3-libsemanage
 author:
 - Stephen Fromm (@sfromm)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Set httpd_can_network_connect flag on and keep it persistent across reboots
   ansible.posix.seboolean:
     name: httpd_can_network_connect
     state: true
     persistent: true
-'''
+"""
 
 import os
 import traceback
@@ -59,6 +62,7 @@ import traceback
 SELINUX_IMP_ERR = None
 try:
     import selinux
+
     HAVE_SELINUX = True
 except ImportError:
     SELINUX_IMP_ERR = traceback.format_exc()
@@ -67,14 +71,17 @@ except ImportError:
 SEMANAGE_IMP_ERR = None
 try:
     import semanage
+
     HAVE_SEMANAGE = True
 except ImportError:
     SEMANAGE_IMP_ERR = traceback.format_exc()
     HAVE_SEMANAGE = False
 
-from ansible.module_utils.basic import AnsibleModule, missing_required_lib
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.text.converters import to_text
-from ansible_collections.ansible.posix.plugins.module_utils._respawn import respawn_module, HAS_RESPAWN_UTIL
+from ansible_collections.ansible.posix.plugins.module_utils._respawn import HAS_RESPAWN_UTIL
+from ansible_collections.ansible.posix.plugins.module_utils._respawn import respawn_module
 
 
 def get_runtime_status(ignore_selinux_state=False):
@@ -157,8 +164,8 @@ def semanage_set_boolean_value(module, handle, name, value):
         module.fail_json(msg="Failed to modify boolean key with semanage")
 
     if (
-            selinux.is_selinux_enabled()
-            and semanage.semanage_bool_set_active(handle, boolkey, sebool) < 0
+        selinux.is_selinux_enabled()
+        and semanage.semanage_bool_set_active(handle, boolkey, sebool) < 0
     ):
         semanage.semanage_handle_destroy(handle)
         module.fail_json(msg="Failed to set boolean key active with semanage")
@@ -237,7 +244,7 @@ def semanage_boolean_value(module, name, state):
                 semanage_commit(module, handle)
         semanage_destroy_handle(module, handle)
     except Exception as e:
-        module.fail_json(msg=u"Failed to manage policy for boolean %s: %s" % (name, to_text(e)))
+        module.fail_json(msg="Failed to manage policy for boolean %s: %s" % (name, to_text(e)))
     return changed
 
 
@@ -259,10 +266,10 @@ def set_boolean_value(module, name, state):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            ignore_selinux_state=dict(type='bool', default=False),
-            name=dict(type='str', required=True),
-            persistent=dict(type='bool', default=False),
-            state=dict(type='bool', required=True),
+            ignore_selinux_state=dict(type="bool", default=False),
+            name=dict(type="str", required=True),
+            persistent=dict(type="bool", default=False),
+            state=dict(type="bool", required=True),
         ),
         supports_check_mode=True,
     )
@@ -274,28 +281,27 @@ def main():
         respawn_module("selinux")
 
     if not HAVE_SELINUX:
-        module.fail_json(msg=missing_required_lib('libselinux-python'), exception=SELINUX_IMP_ERR)
+        module.fail_json(msg=missing_required_lib("libselinux-python"), exception=SELINUX_IMP_ERR)
 
     if not HAVE_SEMANAGE:
-        module.fail_json(msg=missing_required_lib('libsemanage-python or python3-libsemanage'), exception=SEMANAGE_IMP_ERR)
+        module.fail_json(
+            msg=missing_required_lib("libsemanage-python or python3-libsemanage"),
+            exception=SEMANAGE_IMP_ERR,
+        )
 
-    ignore_selinux_state = module.params['ignore_selinux_state']
+    ignore_selinux_state = module.params["ignore_selinux_state"]
 
     if not get_runtime_status(ignore_selinux_state):
         module.fail_json(msg="SELinux is disabled on this host.")
 
-    name = module.params['name']
-    persistent = module.params['persistent']
-    state = module.params['state']
+    name = module.params["name"]
+    persistent = module.params["persistent"]
+    state = module.params["state"]
 
-    result = dict(
-        name=name,
-        persistent=persistent,
-        state=state
-    )
+    result = dict(name=name, persistent=persistent, state=state)
     changed = False
 
-    if hasattr(selinux, 'selinux_boolean_sub'):
+    if hasattr(selinux, "selinux_boolean_sub"):
         # selinux_boolean_sub allows sites to rename a boolean and alias the old name
         # Feature only available in selinux library since 2012.
         name = selinux.selinux_boolean_sub(name)
@@ -315,10 +321,10 @@ def main():
                 except Exception:
                     module.fail_json(msg="Failed to commit pending boolean %s value" % name)
 
-    result['changed'] = changed
+    result["changed"] = changed
 
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

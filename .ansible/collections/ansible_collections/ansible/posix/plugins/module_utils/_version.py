@@ -25,7 +25,9 @@ Every version number class implements the following interface:
     of the same class, thus must follow the same rules)
 """
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 __metaclass__ = type
 
@@ -142,7 +144,7 @@ class StrictVersion(Version):
         if not match:
             raise ValueError("invalid version number '%s'" % vstring)
 
-        (major, minor, patch, prerelease, prerelease_num) = match.group(1, 2, 4, 5, 6)
+        major, minor, patch, prerelease, prerelease_num = match.group(1, 2, 4, 5, 6)
 
         if patch:
             self.version = tuple(map(int, [major, minor, patch]))

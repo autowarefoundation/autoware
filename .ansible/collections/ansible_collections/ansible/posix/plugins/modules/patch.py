@@ -6,11 +6,14 @@
 # Copyright: (c) 2017, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: patch
 author:
@@ -81,9 +84,9 @@ options:
     default: false
 notes:
   - This module requires GNU I(patch) utility to be installed on the remote host.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Apply patch to one file
   ansible.posix.patch:
     src: /tmp/index.html.patch
@@ -100,11 +103,12 @@ EXAMPLES = r'''
     src: /tmp/index.html.patch
     dest: /var/www/index.html
     state: absent
-'''
+"""
 
 import os
 import platform
 from traceback import format_exc
+
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_native
 
@@ -115,48 +119,78 @@ class PatchError(Exception):
 
 def add_dry_run_option(opts):
     # Older versions of FreeBSD, OpenBSD and NetBSD support the --check option only.
-    if platform.system().lower() in ['openbsd', 'netbsd', 'freebsd']:
-        opts.append('--check')
+    if platform.system().lower() in ["openbsd", "netbsd", "freebsd"]:
+        opts.append("--check")
     else:
-        opts.append('--dry-run')
+        opts.append("--dry-run")
 
 
-def is_already_applied(patch_func, patch_file, basedir, dest_file=None, binary=False, ignore_whitespace=False, strip=0, state='present'):
-    opts = ['--quiet', '--forward',
-            "--strip=%s" % strip, "--directory='%s'" % basedir,
-            "--input='%s'" % patch_file]
+def is_already_applied(
+    patch_func,
+    patch_file,
+    basedir,
+    dest_file=None,
+    binary=False,
+    ignore_whitespace=False,
+    strip=0,
+    state="present",
+):
+    opts = [
+        "--quiet",
+        "--forward",
+        "--strip=%s" % strip,
+        "--directory='%s'" % basedir,
+        "--input='%s'" % patch_file,
+    ]
     add_dry_run_option(opts)
     if binary:
-        opts.append('--binary')
+        opts.append("--binary")
     if ignore_whitespace:
-        opts.append('--ignore-whitespace')
+        opts.append("--ignore-whitespace")
     if dest_file:
         opts.append("'%s'" % dest_file)
-    if state == 'present':
-        opts.append('--reverse')
+    if state == "present":
+        opts.append("--reverse")
 
-    (rc, var1, var2) = patch_func(opts)
+    rc, var1, var2 = patch_func(opts)
     return rc == 0
 
 
-def apply_patch(patch_func, patch_file, basedir, dest_file=None, binary=False, ignore_whitespace=False, strip=0, dry_run=False, backup=False, state='present'):
-    opts = ['--quiet', '--forward', '--batch', '--reject-file=-',
-            "--strip=%s" % strip, "--directory='%s'" % basedir,
-            "--input='%s'" % patch_file]
+def apply_patch(
+    patch_func,
+    patch_file,
+    basedir,
+    dest_file=None,
+    binary=False,
+    ignore_whitespace=False,
+    strip=0,
+    dry_run=False,
+    backup=False,
+    state="present",
+):
+    opts = [
+        "--quiet",
+        "--forward",
+        "--batch",
+        "--reject-file=-",
+        "--strip=%s" % strip,
+        "--directory='%s'" % basedir,
+        "--input='%s'" % patch_file,
+    ]
     if dry_run:
         add_dry_run_option(opts)
     if binary:
-        opts.append('--binary')
+        opts.append("--binary")
     if ignore_whitespace:
-        opts.append('--ignore-whitespace')
+        opts.append("--ignore-whitespace")
     if dest_file:
         opts.append("'%s'" % dest_file)
     if backup:
-        opts.append('--backup --version-control=numbered')
-    if state == 'absent':
-        opts.append('--reverse')
+        opts.append("--backup --version-control=numbered")
+    if state == "absent":
+        opts.append("--reverse")
 
-    (rc, out, err) = patch_func(opts)
+    rc, out, err = patch_func(opts)
     if rc != 0:
         msg = err or out
         raise PatchError(msg)
@@ -165,24 +199,24 @@ def apply_patch(patch_func, patch_file, basedir, dest_file=None, binary=False, i
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            src=dict(type='path', required=True, aliases=['patchfile']),
-            dest=dict(type='path', aliases=['originalfile']),
-            basedir=dict(type='path'),
-            strip=dict(type='int', default=0),
-            remote_src=dict(type='bool', default=False),
+            src=dict(type="path", required=True, aliases=["patchfile"]),
+            dest=dict(type="path", aliases=["originalfile"]),
+            basedir=dict(type="path"),
+            strip=dict(type="int", default=0),
+            remote_src=dict(type="bool", default=False),
             # NB: for 'backup' parameter, semantics is slightly different from standard
             #     since patch will create numbered copies, not strftime("%Y-%m-%d@%H:%M:%S~")
-            backup=dict(type='bool', default=False),
-            binary=dict(type='bool', default=False),
-            ignore_whitespace=dict(type='bool', default=False),
-            state=dict(type='str', default='present', choices=['absent', 'present']),
+            backup=dict(type="bool", default=False),
+            binary=dict(type="bool", default=False),
+            ignore_whitespace=dict(type="bool", default=False),
+            state=dict(type="str", default="present", choices=["absent", "present"]),
         ),
-        required_one_of=[['dest', 'basedir']],
+        required_one_of=[["dest", "basedir"]],
         supports_check_mode=True,
     )
 
     # Create type object as namespace for module params
-    p = type('Params', (), module.params)
+    p = type("Params", (), module.params)
 
     if not os.access(p.src, os.R_OK):
         module.fail_json(msg="src %s doesn't exist or not readable" % (p.src))
@@ -196,22 +230,40 @@ def main():
     if not p.basedir:
         p.basedir = os.path.dirname(p.dest)
 
-    patch_bin = module.get_bin_path('patch')
+    patch_bin = module.get_bin_path("patch")
     if patch_bin is None:
         module.fail_json(msg="patch command not found")
 
     def patch_func(opts):
-        return module.run_command('%s %s' % (patch_bin, ' '.join(opts)))
+        return module.run_command("%s %s" % (patch_bin, " ".join(opts)))
 
     # patch need an absolute file name
     p.src = os.path.abspath(p.src)
 
     changed = False
-    if not is_already_applied(patch_func, p.src, p.basedir, dest_file=p.dest, binary=p.binary,
-                              ignore_whitespace=p.ignore_whitespace, strip=p.strip, state=p.state):
+    if not is_already_applied(
+        patch_func,
+        p.src,
+        p.basedir,
+        dest_file=p.dest,
+        binary=p.binary,
+        ignore_whitespace=p.ignore_whitespace,
+        strip=p.strip,
+        state=p.state,
+    ):
         try:
-            apply_patch(patch_func, p.src, p.basedir, dest_file=p.dest, binary=p.binary, ignore_whitespace=p.ignore_whitespace, strip=p.strip,
-                        dry_run=module.check_mode, backup=p.backup, state=p.state)
+            apply_patch(
+                patch_func,
+                p.src,
+                p.basedir,
+                dest_file=p.dest,
+                binary=p.binary,
+                ignore_whitespace=p.ignore_whitespace,
+                strip=p.strip,
+                dry_run=module.check_mode,
+                backup=p.backup,
+                state=p.state,
+            )
             changed = True
         except PatchError as e:
             module.fail_json(msg=to_native(e), exception=format_exc())
@@ -219,5 +271,5 @@ def main():
     module.exit_json(changed=changed)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

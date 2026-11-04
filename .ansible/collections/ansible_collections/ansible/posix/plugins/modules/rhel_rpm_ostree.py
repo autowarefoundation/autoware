@@ -4,11 +4,14 @@
 # Copyright: Red Hat Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: rhel_rpm_ostree
 version_added: 1.5.0
@@ -47,16 +50,16 @@ notes:
   - This module does not support installing or removing packages to/from an overlay as this is not supported
     by RHEL for Edge, packages needed should be defined in the osbuild Blueprint and provided to Image Builder
     at build time. This module exists only for C(package) module compatibility.
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 - name: Ensure htop and ansible are installed on rpm-ostree based RHEL
   ansible.posix.rhel_rpm_ostree:
     name:
       - htop
       - ansible
     state: present
-'''
+"""
 
 RETURN = """
 msg:
@@ -74,36 +77,48 @@ from ansible.module_utils.common.text.converters import to_text
 
 
 def locally_installed(module, pkgname):
-    (rc, out, err) = module.run_command('{0} -q {1}'.format(module.get_bin_path("rpm"), pkgname).split())
-    return (rc == 0)
+    rc, out, err = module.run_command(
+        "{0} -q {1}".format(module.get_bin_path("rpm"), pkgname).split()
+    )
+    return rc == 0
 
 
 def rpm_ostree_transaction(module):
     pkgs = []
 
-    if module.params['state'] in ['present', 'installed', 'latest']:
-        for pkg in module.params['name']:
+    if module.params["state"] in ["present", "installed", "latest"]:
+        for pkg in module.params["name"]:
             if not locally_installed(module, pkg):
                 pkgs.append(pkg)
-    elif module.params['state'] in ['absent', 'removed']:
-        for pkg in module.params['name']:
+    elif module.params["state"] in ["absent", "removed"]:
+        for pkg in module.params["name"]:
             if locally_installed(module, pkg):
                 pkgs.append(pkg)
 
     if not pkgs:
         module.exit_json(msg="No changes made.")
     else:
-        if module.params['state'] in ['present', 'installed', 'latest']:
-            module.fail_json(msg="The following packages are absent in the currently booted rpm-ostree commit: %s" ' '.join(pkgs))
+        if module.params["state"] in ["present", "installed", "latest"]:
+            module.fail_json(
+                msg="The following packages are absent in the currently booted rpm-ostree commit: %s"
+                " ".join(pkgs)
+            )
         else:
-            module.fail_json(msg="The following packages are present in the currently booted rpm-ostree commit: %s" ' '.join(pkgs))
+            module.fail_json(
+                msg="The following packages are present in the currently booted rpm-ostree commit: %s"
+                " ".join(pkgs)
+            )
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            name=dict(type='list', elements='str', aliases=['pkg'], default=[]),
-            state=dict(type='str', default=None, choices=['absent', 'installed', 'latest', 'present', 'removed']),
+            name=dict(type="list", elements="str", aliases=["pkg"], default=[]),
+            state=dict(
+                type="str",
+                default=None,
+                choices=["absent", "installed", "latest", "present", "removed"],
+            ),
         ),
     )
 
@@ -117,5 +132,5 @@ def main():
         module.fail_json(msg=to_text(e), exception=traceback.format_exc())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

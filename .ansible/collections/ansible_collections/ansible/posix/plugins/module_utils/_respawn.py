@@ -5,7 +5,9 @@
 Helpers to respawn a module to run using the system interpreter
 """
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 __metaclass__ = type
 
@@ -38,8 +40,6 @@ def respawn_module(module):
     """
     if respawn.has_respawned():
         return
-    interpreter = respawn.probe_interpreters_for_module(
-        SYSTEM_PYTHON_INTERPRETERS, module
-    )
+    interpreter = respawn.probe_interpreters_for_module(SYSTEM_PYTHON_INTERPRETERS, module)
     if interpreter:
         respawn.respawn_module(interpreter)

@@ -11,12 +11,11 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    - cron: '0 6 * * *'
+    - cron: "0 6 * * *"
 
 concurrency:
   group: cert-ver-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
-
 
 # Files that are not related to the core functionality
 # of your collection can cause Ansible Lint to fail.

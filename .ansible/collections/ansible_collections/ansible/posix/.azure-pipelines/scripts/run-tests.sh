@@ -5,7 +5,7 @@ set -o pipefail -eu
 
 entry_point="$1"
 test="$2"
-read -r -a coverage_branches <<< "$3"  # space separated list of branches to run code coverage on for scheduled builds
+read -r -a coverage_branches <<<"$3" # space separated list of branches to run code coverage on for scheduled builds
 
 export COMMIT_MESSAGE
 export COMPLETE

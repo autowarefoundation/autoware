@@ -3,10 +3,13 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
     name: profile_roles
     type: aggregate
     short_description: adds timing information to roles
@@ -27,13 +30,13 @@ DOCUMENTATION = '''
           - section: callback_profile_roles
             key: summary_only
         version_added: 1.5.0
-'''
+"""
 
 import collections
+from functools import reduce
 import time
 
 from ansible.plugins.callback import CallbackBase
-from functools import reduce
 
 # define start time
 t0 = tn = time.time()
@@ -45,7 +48,18 @@ def secondsToStr(t):
         return list(divmod(ll[0], b)) + ll[1:]
 
     return "%d:%02d:%02d.%03d" % tuple(
-        reduce(rediv, [[t * 1000, ], 1000, 60, 60]))
+        reduce(
+            rediv,
+            [
+                [
+                    t * 1000,
+                ],
+                1000,
+                60,
+                60,
+            ],
+        )
+    )
 
 
 def filled(msg, fchar="*"):
@@ -68,21 +82,21 @@ def timestamp(self):
 
 def tasktime():
     global tn
-    time_current = time.strftime('%A %d %B %Y  %H:%M:%S %z')
+    time_current = time.strftime("%A %d %B %Y  %H:%M:%S %z")
     time_elapsed = secondsToStr(time.time() - tn)
     time_total_elapsed = secondsToStr(time.time() - t0)
     tn = time.time()
-    return filled('%s (%s)%s%s' %
-                  (time_current, time_elapsed, ' ' * 7, time_total_elapsed))
+    return filled("%s (%s)%s%s" % (time_current, time_elapsed, " " * 7, time_total_elapsed))
 
 
 class CallbackModule(CallbackBase):
     """
     This callback module provides profiling for ansible roles.
     """
+
     CALLBACK_VERSION = 2.0
-    CALLBACK_TYPE = 'aggregate'
-    CALLBACK_NAME = 'ansible.posix.profile_roles'
+    CALLBACK_TYPE = "aggregate"
+    CALLBACK_NAME = "ansible.posix.profile_roles"
     CALLBACK_NEEDS_WHITELIST = True
 
     def __init__(self):
@@ -96,9 +110,11 @@ class CallbackModule(CallbackBase):
 
     def set_options(self, task_keys=None, var_options=None, direct=None):
 
-        super(CallbackModule, self).set_options(task_keys=task_keys, var_options=var_options, direct=direct)
+        super(CallbackModule, self).set_options(
+            task_keys=task_keys, var_options=var_options, direct=direct
+        )
 
-        self.summary_only = self.get_option('summary_only')
+        self.summary_only = self.get_option("summary_only")
 
     def _display_tasktime(self):
         if not self.summary_only:
@@ -136,9 +152,9 @@ class CallbackModule(CallbackBase):
 
         # Print the timings starting with the largest one
         for result in self.totals.most_common():
-            msg = u"{0:-<70}{1:->9}".format(result[0] + u' ', u' {0:.02f}s'.format(result[1]))
+            msg = "{0:-<70}{1:->9}".format(result[0] + " ", " {0:.02f}s".format(result[1]))
             self._display.display(msg)
 
-        msg_total = u"{0:-<70}{1:->9}".format(u'total ', u' {0:.02f}s'.format(total_time))
+        msg_total = "{0:-<70}{1:->9}".format("total ", " {0:.02f}s".format(total_time))
         self._display.display(filled("", fchar="~"))
         self._display.display(msg_total)

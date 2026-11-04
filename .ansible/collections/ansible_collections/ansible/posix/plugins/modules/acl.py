@@ -4,11 +4,14 @@
 # Copyright: (c) 2017, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: acl
 short_description: Set and retrieve file ACL information.
@@ -96,9 +99,9 @@ notes:
 - The M(ansible.posix.acl) module requires that ACLs are enabled on the target filesystem and that the C(setfacl) and C(getfacl) binaries are installed.
 - As of Ansible 2.0, this module only supports Linux distributions.
 - As of Ansible 2.3, the O(name) option has been changed to O(path) as default, but O(name) still works as well.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Grant user Joe read access to a file
   ansible.posix.acl:
     path: /etc/foo.conf
@@ -133,15 +136,15 @@ EXAMPLES = r'''
   ansible.posix.acl:
     path: /etc/foo.conf
   register: acl_info
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 acl:
     description: Current ACL on provided path (after changes, if any)
     returned: success
     type: list
     sample: [ "user::rwx", "group::rwx", "other::rwx" ]
-'''
+"""
 
 import os
 import platform
@@ -151,9 +154,9 @@ from ansible.module_utils.common.text.converters import to_native
 
 
 def split_entry(entry):
-    ''' splits entry and ensures normalized return'''
+    """splits entry and ensures normalized return"""
 
-    a = entry.split(':')
+    a = entry.split(":")
 
     d = None
     if entry.lower().startswith("d"):
@@ -181,70 +184,72 @@ def split_entry(entry):
 
 
 def build_entry(etype, entity, permissions=None, use_nfsv4_acls=False):
-    '''Builds and returns an entry string. Does not include the permissions bit if they are not provided.'''
+    """Builds and returns an entry string. Does not include the permissions bit if they are not provided."""
     if use_nfsv4_acls:
-        return ':'.join(['A', 'g' if etype == 'group' else '', entity, permissions + 'tcy'])
+        return ":".join(["A", "g" if etype == "group" else "", entity, permissions + "tcy"])
 
     if permissions:
-        return etype + ':' + entity + ':' + permissions
+        return etype + ":" + entity + ":" + permissions
 
-    return etype + ':' + entity
+    return etype + ":" + entity
 
 
-def build_command(module, mode, path, follow, default, recursive, recalculate_mask, use_nfsv4_acls, entry=''):
-    '''Builds and returns a getfacl/setfacl command.'''
-    if mode == 'set':
-        cmd = [module.get_bin_path('nfs4_setfacl' if use_nfsv4_acls else 'setfacl', True)]
-        cmd.extend(['-a' if use_nfsv4_acls else '-m', entry])
-    elif mode == 'rm':
-        cmd = [module.get_bin_path('nfs4_setfacl' if use_nfsv4_acls else 'setfacl', True)]
-        cmd.extend(['-x', entry])
+def build_command(
+    module, mode, path, follow, default, recursive, recalculate_mask, use_nfsv4_acls, entry=""
+):
+    """Builds and returns a getfacl/setfacl command."""
+    if mode == "set":
+        cmd = [module.get_bin_path("nfs4_setfacl" if use_nfsv4_acls else "setfacl", True)]
+        cmd.extend(["-a" if use_nfsv4_acls else "-m", entry])
+    elif mode == "rm":
+        cmd = [module.get_bin_path("nfs4_setfacl" if use_nfsv4_acls else "setfacl", True)]
+        cmd.extend(["-x", entry])
     else:  # mode == 'get'
-        cmd = [module.get_bin_path('getfacl', True)]
+        cmd = [module.get_bin_path("getfacl", True)]
         # prevents absolute path warnings and removes headers
-        if platform.system().lower() == 'linux':
+        if platform.system().lower() == "linux":
             if use_nfsv4_acls:
                 # use nfs4_getfacl instead of getfacl if use_nfsv4_acls is True
-                cmd = [module.get_bin_path('nfs4_getfacl', True)]
+                cmd = [module.get_bin_path("nfs4_getfacl", True)]
             else:
-                cmd = [module.get_bin_path('getfacl', True)]
-                cmd.append('--absolute-names')
-            cmd.append('--omit-header')
+                cmd = [module.get_bin_path("getfacl", True)]
+                cmd.append("--absolute-names")
+            cmd.append("--omit-header")
 
     if recursive and not use_nfsv4_acls:
-        cmd.append('--recursive')
+        cmd.append("--recursive")
 
-    if recalculate_mask == 'mask' and mode in ['set', 'rm']:
-        cmd.append('--mask')
-    elif recalculate_mask == 'no_mask' and mode in ['set', 'rm']:
-        cmd.append('--no-mask')
+    if recalculate_mask == "mask" and mode in ["set", "rm"]:
+        cmd.append("--mask")
+    elif recalculate_mask == "no_mask" and mode in ["set", "rm"]:
+        cmd.append("--no-mask")
 
     if not follow and not use_nfsv4_acls:
-        if platform.system().lower() == 'linux':
-            cmd.append('--physical')
-        elif platform.system().lower() == 'freebsd':
-            cmd.append('-h')
+        if platform.system().lower() == "linux":
+            cmd.append("--physical")
+        elif platform.system().lower() == "freebsd":
+            cmd.append("-h")
 
     if default:
-        cmd.insert(1, '-d')
+        cmd.insert(1, "-d")
 
     cmd.append(path)
     return cmd
 
 
 def acl_changed(module, cmd, entry, use_nfsv4_acls=False):
-    '''Returns true if the provided command affects the existing ACLs, false otherwise.'''
+    """Returns true if the provided command affects the existing ACLs, false otherwise."""
     # To check the ACL changes, use the output of setfacl or nfs4_setfacl with '--test'.
     # FreeBSD do not have a --test flag, so by default, it is safer to always say "true".
-    if platform.system().lower() == 'freebsd':
+    if platform.system().lower() == "freebsd":
         return True
 
     cmd = cmd[:]  # lists are mutables so cmd would be overwritten without this
-    cmd.insert(1, '--test')
+    cmd.insert(1, "--test")
     lines = run_acl(module, cmd)
     counter = 0
     for line in lines:
-        if not use_nfsv4_acls and not line.endswith('*,*'):
+        if not use_nfsv4_acls and not line.endswith("*,*"):
             return True
         # if use_nfsv4_acls and entry is listed
         if use_nfsv4_acls and entry == line:
@@ -259,15 +264,15 @@ def acl_changed(module, cmd, entry, use_nfsv4_acls=False):
 
 
 def run_acl(module, cmd, check_rc=True):
-    '''Runs the provided command and returns the output as a list of lines.'''
+    """Runs the provided command and returns the output as a list of lines."""
     try:
-        (rc, out, err) = module.run_command(cmd, check_rc=check_rc)
+        rc, out, err = module.run_command(cmd, check_rc=check_rc)
     except Exception as e:
         module.fail_json(msg=to_native(e))
 
     lines = []
     for l in out.splitlines():
-        if not l.startswith('#'):
+        if not l.startswith("#"):
             lines.append(l.strip())
 
     if lines and not lines[-1].split():
@@ -280,96 +285,103 @@ def run_acl(module, cmd, check_rc=True):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            path=dict(type='path', required=True, aliases=['name']),
-            entry=dict(type='str'),
-            entity=dict(type='str', default=''),
+            path=dict(type="path", required=True, aliases=["name"]),
+            entry=dict(type="str"),
+            entity=dict(type="str", default=""),
             etype=dict(
-                type='str',
-                choices=['group', 'mask', 'other', 'user'],
+                type="str",
+                choices=["group", "mask", "other", "user"],
             ),
-            permissions=dict(type='str'),
+            permissions=dict(type="str"),
             state=dict(
-                type='str',
-                default='query',
-                choices=['absent', 'present', 'query'],
+                type="str",
+                default="query",
+                choices=["absent", "present", "query"],
             ),
-            follow=dict(type='bool', default=True),
-            default=dict(type='bool', default=False),
-            recursive=dict(type='bool', default=False, aliases=['recurse']),
+            follow=dict(type="bool", default=True),
+            default=dict(type="bool", default=False),
+            recursive=dict(type="bool", default=False, aliases=["recurse"]),
             recalculate_mask=dict(
-                type='str',
-                default='default',
-                choices=['default', 'mask', 'no_mask'],
+                type="str",
+                default="default",
+                choices=["default", "mask", "no_mask"],
             ),
-            use_nfsv4_acls=dict(type='bool', default=False)
+            use_nfsv4_acls=dict(type="bool", default=False),
         ),
         supports_check_mode=True,
     )
 
-    if platform.system().lower() not in ['linux', 'freebsd']:
+    if platform.system().lower() not in ["linux", "freebsd"]:
         module.fail_json(msg="The acl module is not available on this system.")
 
-    path = module.params.get('path')
-    entry = module.params.get('entry')
-    entity = module.params.get('entity')
-    etype = module.params.get('etype')
-    permissions = module.params.get('permissions')
-    state = module.params.get('state')
-    follow = module.params.get('follow')
-    default = module.params.get('default')
-    recursive = module.params.get('recursive')
-    recalculate_mask = module.params.get('recalculate_mask')
-    use_nfsv4_acls = module.params.get('use_nfsv4_acls')
+    path = module.params.get("path")
+    entry = module.params.get("entry")
+    entity = module.params.get("entity")
+    etype = module.params.get("etype")
+    permissions = module.params.get("permissions")
+    state = module.params.get("state")
+    follow = module.params.get("follow")
+    default = module.params.get("default")
+    recursive = module.params.get("recursive")
+    recalculate_mask = module.params.get("recalculate_mask")
+    use_nfsv4_acls = module.params.get("use_nfsv4_acls")
 
     if not os.path.exists(path):
         module.fail_json(msg="Path not found or not accessible.")
 
-    if state == 'query':
+    if state == "query":
         if recursive:
             module.fail_json(msg="'recursive' MUST NOT be set when 'state=query'.")
 
-        if recalculate_mask in ['mask', 'no_mask']:
-            module.fail_json(msg="'recalculate_mask' MUST NOT be set to 'mask' or 'no_mask' when 'state=query'.")
+        if recalculate_mask in ["mask", "no_mask"]:
+            module.fail_json(
+                msg="'recalculate_mask' MUST NOT be set to 'mask' or 'no_mask' when 'state=query'."
+            )
 
     if not entry:
-        if state == 'absent' and permissions and not use_nfsv4_acls:
+        if state == "absent" and permissions and not use_nfsv4_acls:
             module.fail_json(msg="'permissions' MUST NOT be set when 'state=absent'.")
 
-        if state == 'absent' and not entity:
+        if state == "absent" and not entity:
             module.fail_json(msg="'entity' MUST be set when 'state=absent'.")
 
-        if state in ['present', 'absent'] and not etype:
+        if state in ["present", "absent"] and not etype:
             module.fail_json(msg="'etype' MUST be set when 'state=%s'." % state)
 
     if entry:
         if etype or entity or permissions:
-            module.fail_json(msg="'entry' MUST NOT be set when 'entity', 'etype' or 'permissions' are set.")
+            module.fail_json(
+                msg="'entry' MUST NOT be set when 'entity', 'etype' or 'permissions' are set."
+            )
 
-        if state == 'present' and not entry.count(":") in [2, 3]:
-            module.fail_json(msg="'entry' MUST have 3 or 4 sections divided by ':' when 'state=present'.")
+        if state == "present" and not entry.count(":") in [2, 3]:
+            module.fail_json(
+                msg="'entry' MUST have 3 or 4 sections divided by ':' when 'state=present'."
+            )
 
-        if state == 'absent' and not entry.count(":") in [1, 2]:
-            module.fail_json(msg="'entry' MUST have 2 or 3 sections divided by ':' when 'state=absent'.")
+        if state == "absent" and not entry.count(":") in [1, 2]:
+            module.fail_json(
+                msg="'entry' MUST have 2 or 3 sections divided by ':' when 'state=absent'."
+            )
 
-        if state == 'query':
+        if state == "query":
             module.fail_json(msg="'entry' MUST NOT be set when 'state=query'.")
 
         default_flag, etype, entity, permissions = split_entry(entry)
         if default_flag is not None:
             default = default_flag
 
-    if platform.system().lower() == 'freebsd':
+    if platform.system().lower() == "freebsd":
         if recursive:
             module.fail_json(msg="recursive is not supported on that platform.")
 
     changed = False
     msg = ""
 
-    if state == 'present':
+    if state == "present":
         entry = build_entry(etype, entity, permissions, use_nfsv4_acls)
         command = build_command(
-            module, 'set', path, follow,
-            default, recursive, recalculate_mask, use_nfsv4_acls, entry
+            module, "set", path, follow, default, recursive, recalculate_mask, use_nfsv4_acls, entry
         )
         changed = acl_changed(module, command, entry, use_nfsv4_acls)
 
@@ -377,14 +389,13 @@ def main():
             run_acl(module, command)
         msg = "%s is present" % entry
 
-    elif state == 'absent':
+    elif state == "absent":
         if use_nfsv4_acls:
             entry = build_entry(etype, entity, permissions, use_nfsv4_acls)
         else:
             entry = build_entry(etype, entity, use_nfsv4_acls)
         command = build_command(
-            module, 'rm', path, follow,
-            default, recursive, recalculate_mask, use_nfsv4_acls, entry
+            module, "rm", path, follow, default, recursive, recalculate_mask, use_nfsv4_acls, entry
         )
         changed = acl_changed(module, command, entry, use_nfsv4_acls)
 
@@ -392,19 +403,18 @@ def main():
             run_acl(module, command, False)
         msg = "%s is absent" % entry
 
-    elif state == 'query':
+    elif state == "query":
         msg = "current acl"
 
     acl = run_acl(
         module,
         build_command(
-            module, 'get', path, follow, default, recursive,
-            recalculate_mask, use_nfsv4_acls
-        )
+            module, "get", path, follow, default, recursive, recalculate_mask, use_nfsv4_acls
+        ),
     )
 
     module.exit_json(changed=changed, msg=msg, acl=acl)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

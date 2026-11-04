@@ -3,7 +3,7 @@
 set -o pipefail -eux
 
 declare -a args
-IFS='/:' read -ra args <<< "$1"
+IFS='/:' read -ra args <<<"$1"
 
 image="${args[1]}"
 

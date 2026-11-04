@@ -4,11 +4,14 @@
 # Copyright: (c) 2014, Richard Isaacson <richard.c.isaacson@gmail.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: at
 short_description: Schedule the execution of a command or script file via the at command
@@ -49,9 +52,9 @@ requirements:
  - at
 author:
 - Richard Isaacson (@risaacson)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Schedule a command to execute in 20 minutes as root
   ansible.posix.at:
     command: ls -d / >/dev/null
@@ -69,7 +72,7 @@ EXAMPLES = r'''
     count: 20
     units: minutes
     unique: true
-'''
+"""
 
 import os
 import platform
@@ -83,14 +86,14 @@ def add_job(module, result, at_cmd, count, units, command, script_file):
     rc, out, err = module.run_command(at_command, check_rc=True)
     if command:
         os.unlink(script_file)
-    result['changed'] = True
+    result["changed"] = True
 
 
 def delete_job(module, result, at_cmd, command, script_file):
     for matching_job in get_matching_jobs(module, at_cmd, script_file):
         at_command = "%s -r %s" % (at_cmd, matching_job)
         rc, out, err = module.run_command(at_command, check_rc=True)
-        result['changed'] = True
+        result["changed"] = True
     if command:
         os.unlink(script_file)
     module.exit_json(**result)
@@ -99,7 +102,7 @@ def delete_job(module, result, at_cmd, command, script_file):
 def get_matching_jobs(module, at_cmd, script_file):
     matching_jobs = []
 
-    atq_cmd = module.get_bin_path('atq', True)
+    atq_cmd = module.get_bin_path("atq", True)
 
     # Get list of job numbers for the user.
     atq_command = "%s" % atq_cmd
@@ -116,7 +119,7 @@ def get_matching_jobs(module, at_cmd, script_file):
     #   If the script text is contained in a job add job number to list.
     for current_job in current_jobs:
         split_current_job = current_job.split()
-        at_opt = '-c' if platform.system() != 'AIX' else '-lv'
+        at_opt = "-c" if platform.system() != "AIX" else "-lv"
         at_command = "%s %s %s" % (at_cmd, at_opt, split_current_job[0])
         rc, out, err = module.run_command(at_command, check_rc=True)
         if script_file_string in out:
@@ -127,8 +130,8 @@ def get_matching_jobs(module, at_cmd, script_file):
 
 
 def create_tempfile(command):
-    filed, script_file = tempfile.mkstemp(prefix='at')
-    fileh = os.fdopen(filed, 'w')
+    filed, script_file = tempfile.mkstemp(prefix="at")
+    fileh = os.fdopen(filed, "w")
     fileh.write(command + os.linesep)
     fileh.close()
     return script_file
@@ -138,28 +141,28 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            command=dict(type='str'),
-            script_file=dict(type='str'),
-            count=dict(type='int'),
-            units=dict(type='str', choices=['minutes', 'hours', 'days', 'weeks']),
-            state=dict(type='str', default='present', choices=['absent', 'present']),
-            unique=dict(type='bool', default=False),
+            command=dict(type="str"),
+            script_file=dict(type="str"),
+            count=dict(type="int"),
+            units=dict(type="str", choices=["minutes", "hours", "days", "weeks"]),
+            state=dict(type="str", default="present", choices=["absent", "present"]),
+            unique=dict(type="bool", default=False),
         ),
-        mutually_exclusive=[['command', 'script_file']],
-        required_one_of=[['command', 'script_file']],
+        mutually_exclusive=[["command", "script_file"]],
+        required_one_of=[["command", "script_file"]],
         supports_check_mode=False,
     )
 
-    at_cmd = module.get_bin_path('at', True)
+    at_cmd = module.get_bin_path("at", True)
 
-    command = module.params['command']
-    script_file = module.params['script_file']
-    count = module.params['count']
-    units = module.params['units']
-    state = module.params['state']
-    unique = module.params['unique']
+    command = module.params["command"]
+    script_file = module.params["script_file"]
+    count = module.params["count"]
+    units = module.params["units"]
+    state = module.params["state"]
+    unique = module.params["unique"]
 
-    if (state == 'present') and (not count or not units):
+    if (state == "present") and (not count or not units):
         module.fail_json(msg="present state requires count and units")
 
     result = dict(
@@ -172,7 +175,7 @@ def main():
         script_file = create_tempfile(command)
 
     # if absent remove existing and return
-    if state == 'absent':
+    if state == "absent":
         delete_job(module, result, at_cmd, command, script_file)
 
     # if unique if existing return unchanged
@@ -182,14 +185,14 @@ def main():
                 os.unlink(script_file)
             module.exit_json(**result)
 
-    result['script_file'] = script_file
-    result['count'] = count
-    result['units'] = units
+    result["script_file"] = script_file
+    result["count"] = count
+    result["units"] = units
 
     add_job(module, result, at_cmd, count, units, command, script_file)
 
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

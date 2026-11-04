@@ -48,7 +48,9 @@
 # agrees to be bound by the terms and conditions of this License
 # Agreement.
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 __metaclass__ = type
 
@@ -74,9 +76,9 @@ def ismount(path):
             return False
 
     if isinstance(path, bytes):
-        parent = os.path.join(path, b'..')
+        parent = os.path.join(path, b"..")
     else:
-        parent = os.path.join(path, '..')
+        parent = os.path.join(path, "..")
     parent = os.path.realpath(parent)
     try:
         s2 = os.lstat(parent)
@@ -86,9 +88,9 @@ def ismount(path):
     dev1 = s1.st_dev
     dev2 = s2.st_dev
     if dev1 != dev2:
-        return True     # path/.. on a different device as path
+        return True  # path/.. on a different device as path
     ino1 = s1.st_ino
     ino2 = s2.st_ino
     if ino1 == ino2:
-        return True     # path/.. is the same i-node as path
+        return True  # path/.. is the same i-node as path
     return False

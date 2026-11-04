@@ -2,4 +2,3 @@
 ssh-rsa somekeydata somekeyalias
 # It is a very pleasant temperature outside today.
 ssh-rsa otherkeydata otherkeyalias
-

@@ -89,34 +89,33 @@
     ephemeral_fstab: /etc/fstab
   when: ansible_system == 'OpenBSD'
 
-
 - name: Create the mount point
   ansible.builtin.file:
     state: directory
-    path: '{{ output_dir }}/mount_dest'
-    mode: '0755'
+    path: "{{ output_dir }}/mount_dest"
+    mode: "0755"
 
 - name: Create a directory to bind mount
   ansible.builtin.file:
     state: directory
-    path: '{{ output_dir }}/mount_source'
-    mode: '0755'
+    path: "{{ output_dir }}/mount_source"
+    mode: "0755"
 
 - name: Put something in the directory so we see that it worked
   ansible.builtin.copy:
-    content: 'Testing
+    content: "Testing
 
-      '
-    dest: '{{ output_dir }}/mount_source/test_file'
-    mode: '0644'
+      "
+    dest: "{{ output_dir }}/mount_source/test_file"
+    mode: "0644"
   register: orig_info
 
 # BIND MOUNT ################################################################################
 # bind mount check mode
 - name: Bind mount a filesystem (Linux) (check mode)
   ansible.posix.mount:
-    src: '{{ output_dir }}/mount_source'
-    name: '{{ output_dir }}/mount_dest'
+    src: "{{ output_dir }}/mount_source"
+    name: "{{ output_dir }}/mount_dest"
     state: mounted
     fstype: None
     opts: bind
@@ -126,8 +125,8 @@
 
 - name: Bind mount a filesystem (FreeBSD) (check mode)
   ansible.posix.mount:
-    src: '{{ output_dir }}/mount_source'
-    name: '{{ output_dir }}/mount_dest'
+    src: "{{ output_dir }}/mount_source"
+    name: "{{ output_dir }}/mount_dest"
     state: mounted
     fstype: nullfs
   when: ansible_system == 'FreeBSD'
@@ -136,7 +135,7 @@
 
 - name: Attempt to stat bind mounted file
   ansible.builtin.stat:
-    path: '{{ output_dir }}/mount_dest/test_file'
+    path: "{{ output_dir }}/mount_dest/test_file"
   when: ansible_system in ('FreeBSD', 'Linux')
   register: dest_stat
 
@@ -149,8 +148,8 @@
 # bind mount
 - name: Bind mount a filesystem (Linux)
   ansible.posix.mount:
-    src: '{{ output_dir }}/mount_source'
-    name: '{{ output_dir }}/mount_dest'
+    src: "{{ output_dir }}/mount_source"
+    name: "{{ output_dir }}/mount_dest"
     state: mounted
     fstype: None
     opts: bind
@@ -159,8 +158,8 @@
 
 - name: Bind mount a filesystem (FreeBSD)
   ansible.posix.mount:
-    src: '{{ output_dir }}/mount_source'
-    name: '{{ output_dir }}/mount_dest'
+    src: "{{ output_dir }}/mount_source"
+    name: "{{ output_dir }}/mount_dest"
     state: mounted
     fstype: nullfs
   when: ansible_system == 'FreeBSD'
@@ -168,7 +167,7 @@
 
 - name: Get checksum for bind mounted file
   ansible.builtin.stat:
-    path: '{{ output_dir }}/mount_dest/test_file'
+    path: "{{ output_dir }}/mount_dest/test_file"
   when: ansible_system in ('FreeBSD', 'Linux')
   register: dest_stat
 
@@ -182,8 +181,8 @@
 
 - name: Bind mount a filesystem (Linux)
   ansible.posix.mount:
-    src: '{{ output_dir }}/mount_source'
-    name: '{{ output_dir }}/mount_dest'
+    src: "{{ output_dir }}/mount_source"
+    name: "{{ output_dir }}/mount_dest"
     state: mounted
     fstype: None
     opts: bind
@@ -192,8 +191,8 @@
 
 - name: Bind mount a filesystem (FreeBSD)
   ansible.posix.mount:
-    src: '{{ output_dir }}/mount_source'
-    name: '{{ output_dir }}/mount_dest'
+    src: "{{ output_dir }}/mount_source"
+    name: "{{ output_dir }}/mount_dest"
     state: mounted
     fstype: nullfs
   when: ansible_system == 'FreeBSD'
@@ -208,8 +207,8 @@
 # remount check mode
 - name: Remount filesystem with different opts (Linux) (check mode)
   ansible.posix.mount:
-    src: '{{ output_dir }}/mount_source'
-    name: '{{ output_dir }}/mount_dest'
+    src: "{{ output_dir }}/mount_source"
+    name: "{{ output_dir }}/mount_dest"
     state: mounted
     fstype: None
     opts: bind,ro
@@ -219,8 +218,8 @@
 
 - name: Remount filesystem with different opts (FreeBSD) (check mode)
   ansible.posix.mount:
-    src: '{{ output_dir }}/mount_source'
-    name: '{{ output_dir }}/mount_dest'
+    src: "{{ output_dir }}/mount_source"
+    name: "{{ output_dir }}/mount_dest"
     state: mounted
     fstype: nullfs
     opts: ro
@@ -249,8 +248,8 @@
 # remount
 - name: Remount filesystem with different opts (Linux)
   ansible.posix.mount:
-    src: '{{ output_dir }}/mount_source'
-    name: '{{ output_dir }}/mount_dest'
+    src: "{{ output_dir }}/mount_source"
+    name: "{{ output_dir }}/mount_dest"
     state: mounted
     fstype: None
     opts: bind,ro
@@ -259,8 +258,8 @@
 
 - name: Remount filesystem with different opts (FreeBSD)
   ansible.posix.mount:
-    src: '{{ output_dir }}/mount_source'
-    name: '{{ output_dir }}/mount_dest'
+    src: "{{ output_dir }}/mount_source"
+    name: "{{ output_dir }}/mount_dest"
     state: mounted
     fstype: nullfs
     opts: ro
@@ -278,14 +277,14 @@
   ansible.builtin.assert:
     that:
       - (ansible_system == 'Linux' and bind_result_linux['changed']) or (ansible_system == 'FreeBSD' and bind_result_freebsd['changed'])
-      - '''1'' in remount_options.stdout'
+      - "'1' in remount_options.stdout"
       - 1 == remount_options.stdout_lines | length
   when: ansible_system in ('FreeBSD', 'Linux')
 
 # unmount check mode
 - name: Unmount the bind mount (check mode)
   ansible.posix.mount:
-    name: '{{ output_dir }}/mount_dest'
+    name: "{{ output_dir }}/mount_dest"
     state: absent
   when: ansible_system in ('Linux', 'FreeBSD')
   register: unmount_result
@@ -293,7 +292,7 @@
 
 - name: Make sure the file still exists in dest
   ansible.builtin.stat:
-    path: '{{ output_dir }}/mount_dest/test_file'
+    path: "{{ output_dir }}/mount_dest/test_file"
   when: ansible_system in ('FreeBSD', 'Linux')
   register: dest_stat
 
@@ -307,14 +306,14 @@
 # unmount
 - name: Unmount the bind mount
   ansible.posix.mount:
-    name: '{{ output_dir }}/mount_dest'
+    name: "{{ output_dir }}/mount_dest"
     state: absent
   when: ansible_system in ('Linux', 'FreeBSD')
   register: unmount_result
 
 - name: Make sure the file no longer exists in dest
   ansible.builtin.stat:
-    path: '{{ output_dir }}/mount_dest/test_file'
+    path: "{{ output_dir }}/mount_dest/test_file"
   when: ansible_system in ('FreeBSD', 'Linux')
   register: dest_stat
 
@@ -476,9 +475,10 @@
     - name: Create fstab record with missing last two fields
       ansible.builtin.copy:
         dest: /etc/fstab
-        content: '//nas/photo /home/jik/pictures cifs defaults,credentials=/etc/security/nas.creds,uid=jik,gid=users,forceuid,forcegid,noserverino,_netdev
+        content:
+          "//nas/photo /home/jik/pictures cifs defaults,credentials=/etc/security/nas.creds,uid=jik,gid=users,forceuid,forcegid,noserverino,_netdev
 
-          '
+          "
         mode: "0644"
 
     - name: Try to change the fstab record with the missing last two fields
@@ -499,7 +499,7 @@
       ansible.builtin.assert:
         that:
           - optional_fields_update['changed']
-          - ''' 0 0'' in optional_fields_content.stdout'
+          - "' 0 0' in optional_fields_content.stdout"
           - 1 == optional_fields_content.stdout_lines | length
 
 # REMOUNTED #############################################################
@@ -641,7 +641,7 @@
 
     - name: Remove the test FS
       ansible.builtin.file:
-        path: '{{ item }}'
+        path: "{{ item }}"
         state: absent
       loop:
         - /tmp/myfs.img
@@ -705,7 +705,7 @@
 
     - name: Remove the test FS
       ansible.builtin.file:
-        path: '{{ item }}'
+        path: "{{ item }}"
         state: absent
       loop:
         - /tmp/myfs.img
@@ -725,7 +725,7 @@
         dev: /tmp/myfs1.img
     - name: Create custom fstab file without newline
       ansible.builtin.copy:
-        content: '#TEST COMMENT WITHOUT NEWLINE'
+        content: "#TEST COMMENT WITHOUT NEWLINE"
         dest: /tmp/test_fstab
         mode: "0644"
     - name: Mount the FS using the custom fstab
@@ -743,7 +743,7 @@
         fstab: /tmp/test_fstab
     - name: Remove the test FS and the custom fstab
       ansible.builtin.file:
-        path: '{{ item }}'
+        path: "{{ item }}"
         state: absent
       loop:
         - /tmp/myfs1.img
@@ -799,19 +799,19 @@
       ansible.builtin.file:
         path: "{{ ephemeral_fstab }}"
         state: touch
-        mode: '0644'
+        mode: "0644"
 
     # normal ephemeral mount check mode
     - name: Get checksum of /etc/fstab before mounting anything
       ansible.builtin.stat:
-        path: '{{ ephemeral_fstab }}'
+        path: "{{ ephemeral_fstab }}"
       register: fstab_stat_before_mount
 
     - name: Mount the FS A with ephemeral state (check mode)
       ansible.posix.mount:
         path: /tmp/myfs
-        src: '{{ ephemeral_device_a }}'
-        fstype: '{{ ephemeral_fstype }}'
+        src: "{{ ephemeral_device_a }}"
+        fstype: "{{ ephemeral_fstype }}"
         opts: rw
         state: ephemeral
       register: ephemeral_mount_info
@@ -819,7 +819,7 @@
 
     - name: Get checksum of /etc/fstab after an ephemeral mount
       ansible.builtin.stat:
-        path: '{{ ephemeral_fstab }}'
+        path: "{{ ephemeral_fstab }}"
       register: fstab_stat_after_mount
 
     - name: Get mountinfo
@@ -840,27 +840,27 @@
     # normal ephemeral mount
     - name: Get checksum of /etc/fstab before mounting anything
       ansible.builtin.stat:
-        path: '{{ ephemeral_fstab }}'
+        path: "{{ ephemeral_fstab }}"
       register: fstab_stat_before_mount
 
     - name: Mount the FS A with ephemeral state
       ansible.posix.mount:
         path: /tmp/myfs
-        src: '{{ ephemeral_device_a }}'
-        fstype: '{{ ephemeral_fstype }}'
+        src: "{{ ephemeral_device_a }}"
+        fstype: "{{ ephemeral_fstype }}"
         opts: rw
         state: ephemeral
       register: ephemeral_mount_info
 
     - name: Put something in the directory so we can do additional checks later on
       ansible.builtin.copy:
-        content: 'Testing'
+        content: "Testing"
         dest: /tmp/myfs/test_file
-        mode: '0644'
+        mode: "0644"
 
     - name: Get checksum of /etc/fstab after an ephemeral mount
       ansible.builtin.stat:
-        path: '{{ ephemeral_fstab }}'
+        path: "{{ ephemeral_fstab }}"
       register: fstab_stat_after_mount
 
     - name: Get mountinfo
@@ -889,8 +889,8 @@
     - name: Try to mount FS A where FS A is already mounted (should trigger remount and changed)
       ansible.posix.mount:
         path: /tmp/myfs
-        src: '{{ ephemeral_device_a }}'
-        fstype: '{{ ephemeral_fstype }}'
+        src: "{{ ephemeral_device_a }}"
+        fstype: "{{ ephemeral_fstype }}"
         opts: ro
         state: ephemeral
       register: ephemeral_mount_info
@@ -930,8 +930,8 @@
     - name: Try to mount FS A where FS A is already mounted (should trigger remount and changed)
       ansible.posix.mount:
         path: /tmp/myfs
-        src: '{{ ephemeral_device_a }}'
-        fstype: '{{ ephemeral_fstype }}'
+        src: "{{ ephemeral_device_a }}"
+        fstype: "{{ ephemeral_fstype }}"
         opts: ro
         state: ephemeral
       register: ephemeral_mount_info
@@ -963,8 +963,8 @@
     - name: Try to mount file B on file A mountpoint (should fail)
       ansible.posix.mount:
         path: /tmp/myfs
-        src: '{{ ephemeral_device_b }}'
-        fstype: '{{ ephemeral_fstype }}'
+        src: "{{ ephemeral_device_b }}"
+        fstype: "{{ ephemeral_fstype }}"
         state: ephemeral
       register: ephemeral_mount_b_info
       ignore_errors: true
@@ -1006,7 +1006,7 @@
 
     - name: Get fstab checksum after unmounting an ephemeral mount with state = unmounted
       ansible.builtin.stat:
-        path: '{{ ephemeral_fstab }}'
+        path: "{{ ephemeral_fstab }}"
       register: fstab_stat_after_unmount
 
     - name: Get mountinfo
@@ -1037,7 +1037,7 @@
 
     - name: Get fstab checksum after unmounting an ephemeral mount with state = unmounted
       ansible.builtin.stat:
-        path: '{{ ephemeral_fstab }}'
+        path: "{{ ephemeral_fstab }}"
       register: fstab_stat_after_unmount
 
     - name: Get mountinfo
@@ -1075,7 +1075,7 @@
 
     - name: Remove the test FS
       ansible.builtin.file:
-        path: '{{ item }}'
+        path: "{{ item }}"
         state: absent
       loop:
         - /tmp/myfs_A.img
@@ -1127,7 +1127,7 @@
         state: absent
     - name: Remove the test FS
       ansible.builtin.file:
-        path: '{{ item }}'
+        path: "{{ item }}"
         state: absent
       loop:
         - /tmp/myfs.img

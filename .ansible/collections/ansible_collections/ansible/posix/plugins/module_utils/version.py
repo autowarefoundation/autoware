@@ -5,7 +5,9 @@
 
 """Provide version object to compare version numbers."""
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 __metaclass__ = type
 
@@ -15,6 +17,7 @@ __metaclass__ = type
 #
 #     from ansible.module_utils.compat.version import LooseVersion
 
-from ._version import LooseVersion, StrictVersion
+from ._version import LooseVersion
+from ._version import StrictVersion
 
-__all__ = ['LooseVersion', 'StrictVersion']
+__all__ = ["LooseVersion", "StrictVersion"]

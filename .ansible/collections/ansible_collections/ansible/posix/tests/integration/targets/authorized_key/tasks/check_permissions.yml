@@ -7,7 +7,7 @@
     state: touch
     path: "{{ output_dir | expanduser }}/file_permissions"
     owner: root
-    mode: '0000'
+    mode: "0000"
 
 - name: Create unprivileged user
   ansible.builtin.user:

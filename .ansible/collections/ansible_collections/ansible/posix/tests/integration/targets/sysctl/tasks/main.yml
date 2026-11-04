@@ -349,8 +349,8 @@
 
     - name: Use sysctl module with symlink sysctl file
       ansible.posix.sysctl:
-        name: 'kernel.randomize_va_space'
-        value: '1'
+        name: "kernel.randomize_va_space"
+        value: "1"
         sysctl_file: /tmp/ansible_sysctl_test_symlink.conf
         state: present
         sysctl_set: false

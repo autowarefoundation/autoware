@@ -6,11 +6,14 @@
 # based on the mount modules from salt and puppet
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: mount
 short_description: Control active and configured mount points
@@ -138,9 +141,9 @@ notes:
   - Using O(state=remounted) with O(opts) set may create unexpected results based on
     the existing options already defined on mount, so care should be taken to
     ensure that conflicting options are not present before hand.
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Before 2.3, option 'name' was used instead of 'path'
 - name: Mount DVD read-only
   ansible.posix.mount:
@@ -217,26 +220,27 @@ EXAMPLES = r'''
     opts_no_log: true
     fstype: cifs
     state: ephemeral
-'''
+"""
 
 import errno
 import os
 import platform
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.posix.plugins.module_utils.mount import ismount
-from ansible.module_utils.common.text.converters import to_bytes, to_native
+from ansible.module_utils.common.text.converters import to_bytes
+from ansible.module_utils.common.text.converters import to_native
 from ansible.module_utils.parsing.convert_bool import boolean
+from ansible_collections.ansible.posix.plugins.module_utils.mount import ismount
 
 
 def write_fstab(module, lines, path):
 
-    if module.params['backup']:
+    if module.params["backup"]:
         backup_file = module.backup_local(path)
     else:
         backup_file = ""
 
-    fs_w = open(path, 'w')
+    fs_w = open(path, "w")
 
     for l in lines:
         fs_w.write(l)
@@ -258,11 +262,7 @@ def _escape_fstab(v):
     if isinstance(v, int):
         return v
     else:
-        return (
-            v.
-            replace('\\', '\\134').
-            replace(' ', '\\040').
-            replace('&', '\\046'))
+        return v.replace("\\", "\\134").replace(" ", "\\040").replace("&", "\\046")
 
 
 def set_mount(module, args):
@@ -279,16 +279,15 @@ def _set_mount_save_old(module, args):
     exists = False
     changed = False
     escaped_args = dict([(k, _escape_fstab(v)) for k, v in args.items()])
-    new_line = '%(src)s %(name)s %(fstype)s %(opts)s %(dump)s %(passno)s\n'
+    new_line = "%(src)s %(name)s %(fstype)s %(opts)s %(dump)s %(passno)s\n"
 
-    if platform.system() == 'SunOS':
-        new_line = (
-            '%(src)s - %(name)s %(fstype)s %(passno)s %(boot)s %(opts)s\n')
+    if platform.system() == "SunOS":
+        new_line = "%(src)s - %(name)s %(fstype)s %(passno)s %(boot)s %(opts)s\n"
 
-    for line in open(args['fstab'], 'r').readlines():
+    for line in open(args["fstab"], "r").readlines():
         # Append newline if the line in fstab does not finished with newline.
-        if not line.endswith('\n'):
-            line += '\n'
+        if not line.endswith("\n"):
+            line += "\n"
 
         old_lines.append(line)
 
@@ -297,54 +296,50 @@ def _set_mount_save_old(module, args):
 
             continue
 
-        if line.strip().startswith('#'):
+        if line.strip().startswith("#"):
             to_write.append(line)
 
             continue
 
-        fields = line.split('#')[0].split()
+        fields = line.split("#")[0].split()
 
         # Check if we got a valid line for splitting
         # (on Linux the 5th and the 6th field is optional)
         if (
-                platform.system() == 'SunOS' and len(fields) != 7 or
-                platform.system() == 'Linux' and len(fields) not in [4, 5, 6] or
-                platform.system() not in ['SunOS', 'Linux'] and len(fields) != 6):
+            platform.system() == "SunOS"
+            and len(fields) != 7
+            or platform.system() == "Linux"
+            and len(fields) not in [4, 5, 6]
+            or platform.system() not in ["SunOS", "Linux"]
+            and len(fields) != 6
+        ):
             to_write.append(line)
 
             continue
 
         ld = {}
 
-        if platform.system() == 'SunOS':
-            (
-                ld['src'],
-                dash,
-                ld['name'],
-                ld['fstype'],
-                ld['passno'],
-                ld['boot'],
-                ld['opts']
-            ) = fields
+        if platform.system() == "SunOS":
+            ld["src"], dash, ld["name"], ld["fstype"], ld["passno"], ld["boot"], ld["opts"] = fields
         else:
-            fields_labels = ['src', 'name', 'fstype', 'opts', 'dump', 'passno']
+            fields_labels = ["src", "name", "fstype", "opts", "dump", "passno"]
 
             # The last two fields are optional on Linux so we fill in default values
-            ld['dump'] = 0
-            ld['passno'] = 0
+            ld["dump"] = 0
+            ld["passno"] = 0
 
             # Fill in the rest of the available fields
             for i, field in enumerate(fields):
                 ld[fields_labels[i]] = field
 
         # Check if we found the correct line
-        if (
-                ld['name'] != escaped_args['name'] or (
-                    # In the case of swap, check the src instead
-                    'src' in args and
-                    ld['name'] == 'none' and
-                    ld['fstype'] == 'swap' and
-                    ld['src'] != args['src'])):
+        if ld["name"] != escaped_args["name"] or (
+            # In the case of swap, check the src instead
+            "src" in args
+            and ld["name"] == "none"
+            and ld["fstype"] == "swap"
+            and ld["src"] != args["src"]
+        ):
             to_write.append(line)
 
             continue
@@ -352,10 +347,10 @@ def _set_mount_save_old(module, args):
         # If we got here we found a match - let's check if there is any
         # difference
         exists = True
-        args_to_check = ('src', 'fstype', 'opts', 'dump', 'passno')
+        args_to_check = ("src", "fstype", "opts", "dump", "passno")
 
-        if platform.system() == 'SunOS':
-            args_to_check = ('src', 'fstype', 'passno', 'boot', 'opts')
+        if platform.system() == "SunOS":
+            args_to_check = ("src", "fstype", "passno", "boot", "opts")
 
         for t in args_to_check:
             if ld[t] != escaped_args[t]:
@@ -372,9 +367,9 @@ def _set_mount_save_old(module, args):
         changed = True
 
     if changed and not module.check_mode:
-        args['backup_file'] = write_fstab(module, to_write, args['fstab'])
+        args["backup_file"] = write_fstab(module, to_write, args["fstab"])
 
-    return (args['name'], old_lines, changed)
+    return (args["name"], old_lines, changed)
 
 
 def unset_mount(module, args):
@@ -382,56 +377,46 @@ def unset_mount(module, args):
 
     to_write = []
     changed = False
-    escaped_name = _escape_fstab(args['name'])
+    escaped_name = _escape_fstab(args["name"])
 
-    for line in open(args['fstab'], 'r').readlines():
+    for line in open(args["fstab"], "r").readlines():
         if not line.strip():
             to_write.append(line)
 
             continue
 
-        if line.strip().startswith('#'):
+        if line.strip().startswith("#"):
             to_write.append(line)
 
             continue
 
         # Check if we got a valid line for splitting
         if (
-                platform.system() == 'SunOS' and len(line.split()) != 7 or
-                platform.system() != 'SunOS' and len(line.split()) != 6):
+            platform.system() == "SunOS"
+            and len(line.split()) != 7
+            or platform.system() != "SunOS"
+            and len(line.split()) != 6
+        ):
             to_write.append(line)
 
             continue
 
         ld = {}
 
-        if platform.system() == 'SunOS':
-            (
-                ld['src'],
-                dash,
-                ld['name'],
-                ld['fstype'],
-                ld['passno'],
-                ld['boot'],
-                ld['opts']
-            ) = line.split()
+        if platform.system() == "SunOS":
+            ld["src"], dash, ld["name"], ld["fstype"], ld["passno"], ld["boot"], ld["opts"] = (
+                line.split()
+            )
         else:
-            (
-                ld['src'],
-                ld['name'],
-                ld['fstype'],
-                ld['opts'],
-                ld['dump'],
-                ld['passno']
-            ) = line.split()
+            ld["src"], ld["name"], ld["fstype"], ld["opts"], ld["dump"], ld["passno"] = line.split()
 
-        if (
-                ld['name'] != escaped_name or (
-                    # In the case of swap, check the src instead
-                    'src' in args and
-                    ld['name'] == 'none' and
-                    ld['fstype'] == 'swap' and
-                    ld['src'] != args['src'])):
+        if ld["name"] != escaped_name or (
+            # In the case of swap, check the src instead
+            "src" in args
+            and ld["name"] == "none"
+            and ld["fstype"] == "swap"
+            and ld["src"] != args["src"]
+        ):
             to_write.append(line)
 
             continue
@@ -440,22 +425,19 @@ def unset_mount(module, args):
         changed = True
 
     if changed and not module.check_mode:
-        write_fstab(module, to_write, args['fstab'])
+        write_fstab(module, to_write, args["fstab"])
 
-    return (args['name'], changed)
+    return (args["name"], changed)
 
 
 def _set_fstab_args(fstab_file):
     result = []
 
-    if (
-            fstab_file and
-            fstab_file != '/etc/fstab' and
-            platform.system().lower() != 'sunos'):
-        if platform.system().lower().endswith('bsd'):
-            result.append('-F')
+    if fstab_file and fstab_file != "/etc/fstab" and platform.system().lower() != "sunos":
+        if platform.system().lower().endswith("bsd"):
+            result.append("-F")
         else:
-            result.append('-T')
+            result.append("-T")
 
         result.append(fstab_file)
 
@@ -465,17 +447,17 @@ def _set_fstab_args(fstab_file):
 def _set_ephemeral_args(args):
     result = []
     # Set fstype switch according to platform. SunOS/Solaris use -F
-    if platform.system().lower() == 'sunos':
-        result.append('-F')
+    if platform.system().lower() == "sunos":
+        result.append("-F")
     else:
-        result.append('-t')
-    result.append(args['fstype'])
+        result.append("-t")
+    result.append(args["fstype"])
 
     # Even if '-o remount' is already set, specifying multiple -o is valid
-    if args['opts'] != 'defaults':
-        result += ['-o', args['opts']]
+    if args["opts"] != "defaults":
+        result += ["-o", args["opts"]]
 
-    result.append(args['src'])
+    result.append(args["src"])
 
     return result
 
@@ -483,23 +465,25 @@ def _set_ephemeral_args(args):
 def mount(module, args):
     """Mount up a path or remount if needed."""
 
-    mount_bin = module.get_bin_path('mount', required=True)
-    name = args['name']
+    mount_bin = module.get_bin_path("mount", required=True)
+    name = args["name"]
     cmd = [mount_bin]
 
-    if platform.system().lower() == 'openbsd':
+    if platform.system().lower() == "openbsd":
         # Use module.params['fstab'] here as args['fstab'] has been set to the
         # default value.
-        if module.params['fstab'] is not None:
+        if module.params["fstab"] is not None:
             module.fail_json(
                 msg=(
-                    'OpenBSD does not support alternate fstab files. Do not '
-                    'specify the fstab parameter for OpenBSD hosts'))
+                    "OpenBSD does not support alternate fstab files. Do not "
+                    "specify the fstab parameter for OpenBSD hosts"
+                )
+            )
     else:
-        if module.params['state'] != 'ephemeral':
-            cmd += _set_fstab_args(args['fstab'])
+        if module.params["state"] != "ephemeral":
+            cmd += _set_fstab_args(args["fstab"])
 
-    if module.params['state'] == 'ephemeral':
+    if module.params["state"] == "ephemeral":
         cmd += _set_ephemeral_args(args)
 
     cmd += [name]
@@ -507,7 +491,7 @@ def mount(module, args):
     rc, out, err = module.run_command(cmd)
 
     if rc == 0:
-        return 0, ''
+        return 0, ""
     else:
         return rc, out + err
 
@@ -515,54 +499,56 @@ def mount(module, args):
 def umount(module, path):
     """Unmount a path."""
 
-    umount_bin = module.get_bin_path('umount', required=True)
+    umount_bin = module.get_bin_path("umount", required=True)
     cmd = [umount_bin, path]
 
     rc, out, err = module.run_command(cmd)
 
     if rc == 0:
-        return 0, ''
+        return 0, ""
     else:
         return rc, out + err
 
 
 def remount(module, args):
     """Try to use 'remount' first and fallback to (u)mount if unsupported."""
-    mount_bin = module.get_bin_path('mount', required=True)
+    mount_bin = module.get_bin_path("mount", required=True)
     cmd = [mount_bin]
 
     # Multiplatform remount opts
-    if platform.system().lower().endswith('bsd'):
-        if module.params['state'] == 'remounted' and args['opts'] != 'defaults':
-            cmd += ['-u', '-o', args['opts']]
+    if platform.system().lower().endswith("bsd"):
+        if module.params["state"] == "remounted" and args["opts"] != "defaults":
+            cmd += ["-u", "-o", args["opts"]]
         else:
-            cmd += ['-u']
+            cmd += ["-u"]
     else:
-        if module.params['state'] == 'remounted' and args['opts'] != 'defaults':
-            cmd += ['-o', 'remount,' + args['opts']]
+        if module.params["state"] == "remounted" and args["opts"] != "defaults":
+            cmd += ["-o", "remount," + args["opts"]]
         else:
-            cmd += ['-o', 'remount']
+            cmd += ["-o", "remount"]
 
-    if platform.system().lower() == 'openbsd':
+    if platform.system().lower() == "openbsd":
         # Use module.params['fstab'] here as args['fstab'] has been set to the
         # default value.
-        if module.params['fstab'] is not None:
+        if module.params["fstab"] is not None:
             module.fail_json(
                 msg=(
-                    'OpenBSD does not support alternate fstab files. Do not '
-                    'specify the fstab parameter for OpenBSD hosts'))
+                    "OpenBSD does not support alternate fstab files. Do not "
+                    "specify the fstab parameter for OpenBSD hosts"
+                )
+            )
     else:
-        if module.params['state'] != 'ephemeral':
-            cmd += _set_fstab_args(args['fstab'])
+        if module.params["state"] != "ephemeral":
+            cmd += _set_fstab_args(args["fstab"])
 
-    if module.params['state'] == 'ephemeral':
+    if module.params["state"] == "ephemeral":
         cmd += _set_ephemeral_args(args)
 
-    cmd += [args['name']]
-    out = err = ''
+    cmd += [args["name"]]
+    out = err = ""
 
     try:
-        if module.params['state'] != 'ephemeral' and platform.system().lower().endswith('bsd'):
+        if module.params["state"] != "ephemeral" and platform.system().lower().endswith("bsd"):
             # Note: Forcing BSDs to do umount/mount due to BSD remount not
             # working as expected (suspect bug in the BSD mount command)
             # Interested contributor could rework this to use mount options on
@@ -576,21 +562,23 @@ def remount(module, args):
     except Exception:
         rc = 1
 
-    msg = ''
+    msg = ""
 
     if rc != 0:
         msg = out + err
 
-        if module.params['state'] == 'remounted' and args['opts'] != 'defaults':
+        if module.params["state"] == "remounted" and args["opts"] != "defaults":
             module.fail_json(
                 msg=(
-                    'Options were specified with remounted, but the remount '
-                    'command failed. Failing in order to prevent an '
-                    'unexpected mount result. Try replacing this command with '
+                    "Options were specified with remounted, but the remount "
+                    "command failed. Failing in order to prevent an "
+                    "unexpected mount result. Try replacing this command with "
                     'a "state: unmounted" followed by a "state: mounted" '
-                    'using the full desired mount options instead.'))
+                    "using the full desired mount options instead."
+                )
+            )
 
-        rc, msg = umount(module, args['name'])
+        rc, msg = umount(module, args["name"])
 
         if rc == 0:
             rc, msg = mount(module, args)
@@ -618,31 +606,32 @@ def is_bind_mounted(module, linux_mounts, dest, src=None, fstype=None):
 
     is_mounted = False
 
-    if platform.system() == 'Linux' and linux_mounts is not None:
+    if platform.system() == "Linux" and linux_mounts is not None:
         if src is None:
             # That's for unmounted/absent
             if dest in linux_mounts:
                 is_mounted = True
         else:
             if dest in linux_mounts:
-                is_mounted = linux_mounts[dest]['src'] == src
+                is_mounted = linux_mounts[dest]["src"] == src
 
     else:
-        bin_path = module.get_bin_path('mount', required=True)
-        cmd = '%s -l' % bin_path
+        bin_path = module.get_bin_path("mount", required=True)
+        cmd = "%s -l" % bin_path
         rc, out, err = module.run_command(cmd)
         mounts = []
 
         if len(out):
-            mounts = to_native(out).strip().split('\n')
+            mounts = to_native(out).strip().split("\n")
 
         for mnt in mounts:
             arguments = mnt.split()
 
             if (
-                    (arguments[0] == src or src is None) and
-                    arguments[2] == dest and
-                    (arguments[4] == fstype or fstype is None)):
+                (arguments[0] == src or src is None)
+                and arguments[2] == dest
+                and (arguments[4] == fstype or fstype is None)
+            ):
                 is_mounted = True
 
             if is_mounted:
@@ -672,32 +661,30 @@ def get_linux_mounts(module, mntinfo_file="/proc/self/mountinfo"):
         fields = line.split()
 
         record = {
-            'id': int(fields[0]),
-            'parent_id': int(fields[1]),
-            'root': fields[3],
-            'dst': fields[4],
-            'opts': fields[5],
-            'fs': fields[-3],
-            'src': fields[-2]
+            "id": int(fields[0]),
+            "parent_id": int(fields[1]),
+            "root": fields[3],
+            "dst": fields[4],
+            "opts": fields[5],
+            "fs": fields[-3],
+            "src": fields[-2],
         }
 
-        mntinfo[record['id']] = record
+        mntinfo[record["id"]] = record
 
     mounts = {}
 
     for mnt in mntinfo.values():
-        if mnt['parent_id'] != 1 and mnt['parent_id'] in mntinfo:
-            m = mntinfo[mnt['parent_id']]
-            if (
-                    len(m['root']) > 1 and
-                    mnt['root'].startswith("%s/" % m['root'])):
+        if mnt["parent_id"] != 1 and mnt["parent_id"] in mntinfo:
+            m = mntinfo[mnt["parent_id"]]
+            if len(m["root"]) > 1 and mnt["root"].startswith("%s/" % m["root"]):
                 # Omit the parent's root in the child's root
                 # == Example:
                 # 140 136 253:2 /rootfs / rw - ext4 /dev/sdb2 rw
                 # 141 140 253:2 /rootfs/tmp/aaa /tmp/bbb rw - ext4 /dev/sdb2 rw
                 # == Expected result:
                 # src=/tmp/aaa
-                mnt['root'] = mnt['root'][len(m['root']):]
+                mnt["root"] = mnt["root"][len(m["root"]) :]
 
             # Prepend the parent's dst to the child's root
             # == Example:
@@ -705,20 +692,15 @@ def get_linux_mounts(module, mntinfo_file="/proc/self/mountinfo"):
             # 78 42 0:35 /aaa /tmp/bbb rw - tmpfs tmpfs rw
             # == Expected result:
             # src=/tmp/aaa
-            if m['dst'] != '/':
-                mnt['root'] = "%s%s" % (m['dst'], mnt['root'])
-            src = mnt['root']
+            if m["dst"] != "/":
+                mnt["root"] = "%s%s" % (m["dst"], mnt["root"])
+            src = mnt["root"]
         else:
-            src = mnt['src']
+            src = mnt["src"]
 
-        record = {
-            'dst': mnt['dst'],
-            'src': src,
-            'opts': mnt['opts'],
-            'fs': mnt['fs']
-        }
+        record = {"dst": mnt["dst"], "src": src, "opts": mnt["opts"], "fs": mnt["fs"]}
 
-        mounts[mnt['dst']] = record
+        mounts[mnt["dst"]] = record
 
     return mounts
 
@@ -726,13 +708,11 @@ def get_linux_mounts(module, mntinfo_file="/proc/self/mountinfo"):
 def _is_same_mount_src(module, src, mountpoint, linux_mounts):
     """Return True if the mounted fs on mountpoint is the same source than src. Return False if mountpoint is not a mountpoint"""
     # If the provided mountpoint is not a mountpoint, don't waste time
-    if (
-            not ismount(mountpoint) and
-            not is_bind_mounted(module, linux_mounts, mountpoint)):
+    if not ismount(mountpoint) and not is_bind_mounted(module, linux_mounts, mountpoint):
         return False
 
     # Treat Linux bind mounts
-    if platform.system() == 'Linux' and linux_mounts is not None:
+    if platform.system() == "Linux" and linux_mounts is not None:
         # For Linux bind mounts only: the mount command does not return
         # the actual source for bind mounts, but the device of the source.
         # is_bind_mounted() called with the 'src' parameter will return True if
@@ -745,12 +725,12 @@ def _is_same_mount_src(module, src, mountpoint, linux_mounts):
     # mount with parameter -v has a close behavior on Linux, *BSD, SunOS
     # Requires -v with SunOS. Without -v, source and destination are reversed
     # Output format differs from a system to another, but field[0:3] are consistent: [src, 'on', dest]
-    cmd = '%s -v' % module.get_bin_path('mount', required=True)
+    cmd = "%s -v" % module.get_bin_path("mount", required=True)
     rc, out, err = module.run_command(cmd)
     mounts = []
 
     if len(out):
-        mounts = to_native(out).strip().split('\n')
+        mounts = to_native(out).strip().split("\n")
     else:
         module.fail_json(msg="Unable to retrieve mount info with command '%s'" % cmd)
 
@@ -767,28 +747,40 @@ def _is_same_mount_src(module, src, mountpoint, linux_mounts):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            boot=dict(type='bool', default=True),
-            dump=dict(type='str', default='0'),
-            fstab=dict(type='str'),
-            fstype=dict(type='str'),
-            path=dict(type='path', required=True, aliases=['name']),
-            opts=dict(type='str'),
-            opts_no_log=dict(type='bool', default=False),
-            passno=dict(type='str', no_log=False, default='0'),
-            src=dict(type='path'),
-            backup=dict(type='bool', default=False),
-            state=dict(type='str', required=True, choices=['absent', 'absent_from_fstab', 'mounted', 'present', 'unmounted', 'remounted', 'ephemeral']),
+            boot=dict(type="bool", default=True),
+            dump=dict(type="str", default="0"),
+            fstab=dict(type="str"),
+            fstype=dict(type="str"),
+            path=dict(type="path", required=True, aliases=["name"]),
+            opts=dict(type="str"),
+            opts_no_log=dict(type="bool", default=False),
+            passno=dict(type="str", no_log=False, default="0"),
+            src=dict(type="path"),
+            backup=dict(type="bool", default=False),
+            state=dict(
+                type="str",
+                required=True,
+                choices=[
+                    "absent",
+                    "absent_from_fstab",
+                    "mounted",
+                    "present",
+                    "unmounted",
+                    "remounted",
+                    "ephemeral",
+                ],
+            ),
         ),
         supports_check_mode=True,
         required_if=(
-            ['state', 'mounted', ['src', 'fstype']],
-            ['state', 'present', ['src', 'fstype']],
-            ['state', 'ephemeral', ['src', 'fstype']]
+            ["state", "mounted", ["src", "fstype"]],
+            ["state", "present", ["src", "fstype"]],
+            ["state", "ephemeral", ["src", "fstype"]],
         ),
     )
 
-    if module.params['opts_no_log']:
-        module.no_log_values.add(module.params['opts'])
+    if module.params["opts_no_log"]:
+        module.no_log_values.add(module.params["opts"])
 
     # solaris args:
     #   name, src, fstype, opts, boot, passno, state, fstab=/etc/vfstab
@@ -796,72 +788,74 @@ def main():
     #   name, src, fstype, opts, dump, passno, state, fstab=/etc/fstab
     # Note: Do not modify module.params['fstab'] as we need to know if the user
     # explicitly specified it in mount() and remount()
-    if platform.system().lower() == 'sunos':
+    if platform.system().lower() == "sunos":
         args = dict(
-            name=module.params['path'],
-            opts='-',
-            passno='-',
-            fstab=module.params['fstab'],
-            boot='yes' if module.params['boot'] else 'no',
+            name=module.params["path"],
+            opts="-",
+            passno="-",
+            fstab=module.params["fstab"],
+            boot="yes" if module.params["boot"] else "no",
         )
-        if args['fstab'] is None:
-            args['fstab'] = '/etc/vfstab'
+        if args["fstab"] is None:
+            args["fstab"] = "/etc/vfstab"
     else:
         args = dict(
-            name=module.params['path'],
-            opts='defaults',
-            dump='0',
-            passno='0',
-            fstab=module.params['fstab'],
-            boot='yes',
+            name=module.params["path"],
+            opts="defaults",
+            dump="0",
+            passno="0",
+            fstab=module.params["fstab"],
+            boot="yes",
         )
-        if args['fstab'] is None:
-            args['fstab'] = '/etc/fstab'
+        if args["fstab"] is None:
+            args["fstab"] = "/etc/fstab"
 
         # FreeBSD doesn't have any 'default' so set 'rw' instead
-        if platform.system() == 'FreeBSD':
-            args['opts'] = 'rw'
+        if platform.system() == "FreeBSD":
+            args["opts"] = "rw"
 
-    args['backup_file'] = ""
+    args["backup_file"] = ""
     linux_mounts = []
 
     # Cache all mounts here in order we have consistent results if we need to
     # call is_bind_mounted() multiple times
-    if platform.system() == 'Linux':
+    if platform.system() == "Linux":
         linux_mounts = get_linux_mounts(module)
 
         if linux_mounts is None:
-            module.warn('Cannot open file /proc/self/mountinfo. Bind mounts might be misinterpreted.')
+            module.warn(
+                "Cannot open file /proc/self/mountinfo. Bind mounts might be misinterpreted."
+            )
 
     # Override defaults with user specified params
-    for key in ('src', 'fstype', 'passno', 'opts', 'dump', 'fstab'):
+    for key in ("src", "fstype", "passno", "opts", "dump", "fstab"):
         if module.params[key] is not None:
             args[key] = module.params[key]
-    if platform.system().lower() == 'linux' or platform.system().lower().endswith('bsd'):
+    if platform.system().lower() == "linux" or platform.system().lower().endswith("bsd"):
         # Linux, FreeBSD, NetBSD and OpenBSD have 'noauto' as mount option to
         # handle mount on boot.  To avoid mount option conflicts, if 'noauto'
         # specified in 'opts',  mount module will ignore 'boot'.
-        opts = args['opts'].split(',')
-        if module.params['boot'] and 'noauto' in opts:
+        opts = args["opts"].split(",")
+        if module.params["boot"] and "noauto" in opts:
             module.warn("Ignore the 'boot' due to 'opts' contains 'noauto'.")
-        elif not module.params['boot']:
-            args['boot'] = 'no'
-            opts.append('noauto')
-            args['opts'] = ','.join(opts)
+        elif not module.params["boot"]:
+            args["boot"] = "no"
+            opts.append("noauto")
+            args["opts"] = ",".join(opts)
 
     # If fstab file does not exist, we first need to create it. This mainly
     # happens when fstab option is passed to the module.
     # If state is 'ephemeral', we do not need fstab file
-    if module.params['state'] != 'ephemeral':
-        if not os.path.exists(args['fstab']):
-            if not os.path.exists(os.path.dirname(args['fstab'])):
-                os.makedirs(os.path.dirname(args['fstab']))
+    if module.params["state"] != "ephemeral":
+        if not os.path.exists(args["fstab"]):
+            if not os.path.exists(os.path.dirname(args["fstab"])):
+                os.makedirs(os.path.dirname(args["fstab"]))
             try:
-                open(args['fstab'], 'a').close()
+                open(args["fstab"], "a").close()
             except PermissionError as e:
-                module.fail_json(msg="Failed to open %s due to permission issue" % args['fstab'])
+                module.fail_json(msg="Failed to open %s due to permission issue" % args["fstab"])
             except Exception as e:
-                module.fail_json(msg="Failed to open %s due to %s" % (args['fstab'], to_native(e)))
+                module.fail_json(msg="Failed to open %s due to %s" % (args["fstab"], to_native(e)))
 
     # absent:
     #   Remove from fstab and unmounted.
@@ -875,13 +869,13 @@ def main():
     # ephemeral:
     #   Do not change fstab state, but mount.
 
-    state = module.params['state']
-    name = module.params['path']
+    state = module.params["state"]
+    name = module.params["path"]
     changed = False
 
-    if state == 'absent_from_fstab':
+    if state == "absent_from_fstab":
         name, changed = unset_mount(module, args)
-    elif state == 'absent':
+    elif state == "absent":
         name, changed = unset_mount(module, args)
 
         if changed and not module.check_mode:
@@ -889,38 +883,36 @@ def main():
                 res, msg = umount(module, name)
 
                 if res:
-                    module.fail_json(
-                        msg="Error unmounting %s: %s" % (name, msg))
+                    module.fail_json(msg="Error unmounting %s: %s" % (name, msg))
 
             if os.path.exists(name):
                 try:
                     os.rmdir(name)
                 except (OSError, IOError) as e:
                     module.fail_json(msg="Error rmdir %s: %s" % (name, to_native(e)))
-    elif state == 'unmounted':
+    elif state == "unmounted":
         if ismount(name) or is_bind_mounted(module, linux_mounts, name):
             if not module.check_mode:
                 res, msg = umount(module, name)
 
                 if res:
-                    module.fail_json(
-                        msg="Error unmounting %s: %s" % (name, msg))
+                    module.fail_json(msg="Error unmounting %s: %s" % (name, msg))
 
             changed = True
-    elif state == 'mounted' or state == 'ephemeral':
+    elif state == "mounted" or state == "ephemeral":
         dirs_created = []
         if not os.path.exists(name) and not module.check_mode:
             try:
                 # Something like mkdir -p but with the possibility to undo.
                 # Based on some copy-paste from the "file" module.
-                curpath = ''
-                for dirname in name.strip('/').split('/'):
-                    curpath = '/'.join([curpath, dirname])
+                curpath = ""
+                for dirname in name.strip("/").split("/"):
+                    curpath = "/".join([curpath, dirname])
                     # Remove leading slash if we're creating a relative path
                     if not os.path.isabs(name):
-                        curpath = curpath.lstrip('/')
+                        curpath = curpath.lstrip("/")
 
-                    b_curpath = to_bytes(curpath, errors='surrogate_or_strict')
+                    b_curpath = to_bytes(curpath, errors="surrogate_or_strict")
                     if not os.path.exists(b_curpath):
                         try:
                             os.mkdir(b_curpath)
@@ -932,40 +924,40 @@ def main():
                                 raise
 
             except (OSError, IOError) as e:
-                module.fail_json(
-                    msg="Error making dir %s: %s" % (name, to_native(e)))
+                module.fail_json(msg="Error making dir %s: %s" % (name, to_native(e)))
 
         # ephemeral: completely ignore fstab
-        if state != 'ephemeral':
+        if state != "ephemeral":
             name, backup_lines, changed = _set_mount_save_old(module, args)
         else:
-            name, backup_lines, changed = args['name'], [], False
+            name, backup_lines, changed = args["name"], [], False
         res = 0
 
-        if (
-                ismount(name) or
-                is_bind_mounted(
-                    module, linux_mounts, name, args['src'], args['fstype'])):
+        if ismount(name) or is_bind_mounted(
+            module, linux_mounts, name, args["src"], args["fstype"]
+        ):
             if changed and not module.check_mode:
                 res, msg = remount(module, args)
                 changed = True
 
             # When 'state' == 'ephemeral', we don't know what is in fstab, and 'changed' is always False
-            if state == 'ephemeral':
+            if state == "ephemeral":
                 # If state == 'ephemeral', check if the mountpoint src == module.params['src']
                 # If it doesn't, fail to prevent unwanted unmount or unwanted mountpoint override
-                if _is_same_mount_src(module, args['src'], args['name'], linux_mounts):
+                if _is_same_mount_src(module, args["src"], args["name"], linux_mounts):
                     changed = True
                     if not module.check_mode:
                         res, msg = remount(module, args)
                 else:
                     module.fail_json(
                         msg=(
-                            'Ephemeral mount point is already mounted with a different '
-                            'source than the specified one. Failing in order to prevent an '
-                            'unwanted unmount or override operation. Try replacing this command with '
+                            "Ephemeral mount point is already mounted with a different "
+                            "source than the specified one. Failing in order to prevent an "
+                            "unwanted unmount or override operation. Try replacing this command with "
                             'a "state: unmounted" followed by a "state: ephemeral", or use '
-                            'a different destination path.'))
+                            "a different destination path."
+                        )
+                    )
 
         else:
             # If not already mounted, mount it
@@ -980,8 +972,8 @@ def main():
             # A non-working fstab entry may break the system at the reboot,
             # so undo all the changes if possible.
             try:
-                if state != 'ephemeral':
-                    write_fstab(module, backup_lines, args['fstab'])
+                if state != "ephemeral":
+                    write_fstab(module, backup_lines, args["fstab"])
             except Exception:
                 pass
 
@@ -992,9 +984,9 @@ def main():
                 pass
 
             module.fail_json(msg="Error mounting %s: %s" % (name, msg))
-    elif state == 'present':
+    elif state == "present":
         name, changed = set_mount(module, args)
-    elif state == 'remounted':
+    elif state == "remounted":
         if not module.check_mode:
             res, msg = remount(module, args)
 
@@ -1003,14 +995,14 @@ def main():
 
         changed = True
     else:
-        module.fail_json(msg='Unexpected position reached')
+        module.fail_json(msg="Unexpected position reached")
 
     # If the managed node is Solaris, convert the boot value type to Boolean
     #  to match the type of return value with the module argument.
-    if platform.system().lower() == 'sunos':
-        args['boot'] = boolean(args['boot'])
+    if platform.system().lower() == "sunos":
+        args["boot"] = boolean(args["boot"])
     module.exit_json(changed=changed, **args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

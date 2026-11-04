@@ -5,11 +5,14 @@
 # Copyright: (c) 2017, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: synchronize
 short_description: A wrapper around rsync to make common tasks in your playbooks quick and easy
@@ -234,9 +237,9 @@ seealso:
 - module: community.windows.win_robocopy
 author:
 - Timothy Appnel (@tima)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Synchronization of src on the control machine to dest on the remote hosts
   ansible.posix.synchronize:
     src: some/relative/path
@@ -361,11 +364,11 @@ EXAMPLES = r'''
         src: /tmp/localpath/
         dest: /tmp/remotepath
         rsync_path: /usr/gnu/bin/rsync
-'''
+"""
 
 
-import os
 import errno
+import os
 
 # TODO(Python2): shlex.quote was added in Python 3.3. This module may run on
 # target hosts with Python 2.7 (e.g., older RHEL systems in CI integration tests).
@@ -376,8 +379,8 @@ except ImportError:
     from pipes import quote as shlex_quote
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.common.text.converters import to_bytes, to_native
-
+from ansible.module_utils.common.text.converters import to_bytes
+from ansible.module_utils.common.text.converters import to_native
 
 client_addr = None
 
@@ -385,11 +388,11 @@ client_addr = None
 def substitute_controller(path):
     global client_addr
     if not client_addr:
-        ssh_env_string = os.environ.get('SSH_CLIENT', None)
+        ssh_env_string = os.environ.get("SSH_CLIENT", None)
         try:
             client_addr, _ = ssh_env_string.split(None, 1)  # pylint: disable=disallowed-name
         except AttributeError:
-            ssh_env_string = os.environ.get('SSH_CONNECTION', None)
+            ssh_env_string = os.environ.get("SSH_CONNECTION", None)
             try:
                 client_addr, _ = ssh_env_string.split(None, 1)  # pylint: disable=disallowed-name
             except AttributeError:
@@ -397,15 +400,15 @@ def substitute_controller(path):
         if not client_addr:
             raise ValueError
 
-    if path.startswith('localhost:'):
-        path = path.replace('localhost', client_addr, 1)
+    if path.startswith("localhost:"):
+        path = path.replace("localhost", client_addr, 1)
     return path
 
 
 def is_rsh_needed(source, dest):
-    if source.startswith('rsync://') or dest.startswith('rsync://'):
+    if source.startswith("rsync://") or dest.startswith("rsync://"):
         return False
-    if ':' in source or ':' in dest:
+    if ":" in source or ":" in dest:
         return True
     return False
 
@@ -413,80 +416,80 @@ def is_rsh_needed(source, dest):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            src=dict(type='path', required=True),
-            dest=dict(type='path', required=True),
-            dest_port=dict(type='int'),
-            delete=dict(type='bool', default=False),
-            private_key=dict(type='path'),
-            rsync_path=dict(type='str'),
-            _local_rsync_path=dict(type='path', default='rsync'),
-            _local_rsync_password=dict(type='str', no_log=True),
-            _substitute_controller=dict(type='bool', default=False),
-            archive=dict(type='bool', default=True),
-            checksum=dict(type='bool', default=False),
-            compress=dict(type='bool', default=True),
-            existing_only=dict(type='bool', default=False),
-            dirs=dict(type='bool', default=False),
-            recursive=dict(type='bool'),
-            links=dict(type='bool'),
-            copy_links=dict(type='bool', default=False),
-            perms=dict(type='bool'),
-            times=dict(type='bool'),
-            owner=dict(type='bool'),
-            group=dict(type='bool'),
-            set_remote_user=dict(type='bool', default=True),
-            rsync_timeout=dict(type='int', default=0),
-            rsync_opts=dict(type='list', default=[], elements='str'),
-            _ssh_args=dict(type='str'),
-            use_ssh_args=dict(type='bool', default=False),
-            ssh_connection_multiplexing=dict(type='bool', default=False),
-            partial=dict(type='bool', default=False),
-            verify_host=dict(type='bool', default=False),
-            delay_updates=dict(type='bool', default=True),
-            mode=dict(type='str', default='push', choices=['pull', 'push']),
-            link_dest=dict(type='list', elements='path'),
+            src=dict(type="path", required=True),
+            dest=dict(type="path", required=True),
+            dest_port=dict(type="int"),
+            delete=dict(type="bool", default=False),
+            private_key=dict(type="path"),
+            rsync_path=dict(type="str"),
+            _local_rsync_path=dict(type="path", default="rsync"),
+            _local_rsync_password=dict(type="str", no_log=True),
+            _substitute_controller=dict(type="bool", default=False),
+            archive=dict(type="bool", default=True),
+            checksum=dict(type="bool", default=False),
+            compress=dict(type="bool", default=True),
+            existing_only=dict(type="bool", default=False),
+            dirs=dict(type="bool", default=False),
+            recursive=dict(type="bool"),
+            links=dict(type="bool"),
+            copy_links=dict(type="bool", default=False),
+            perms=dict(type="bool"),
+            times=dict(type="bool"),
+            owner=dict(type="bool"),
+            group=dict(type="bool"),
+            set_remote_user=dict(type="bool", default=True),
+            rsync_timeout=dict(type="int", default=0),
+            rsync_opts=dict(type="list", default=[], elements="str"),
+            _ssh_args=dict(type="str"),
+            use_ssh_args=dict(type="bool", default=False),
+            ssh_connection_multiplexing=dict(type="bool", default=False),
+            partial=dict(type="bool", default=False),
+            verify_host=dict(type="bool", default=False),
+            delay_updates=dict(type="bool", default=True),
+            mode=dict(type="str", default="push", choices=["pull", "push"]),
+            link_dest=dict(type="list", elements="path"),
         ),
         supports_check_mode=True,
     )
 
-    if module.params['_substitute_controller']:
+    if module.params["_substitute_controller"]:
         try:
-            source = substitute_controller(module.params['src'])
-            dest = substitute_controller(module.params['dest'])
+            source = substitute_controller(module.params["src"])
+            dest = substitute_controller(module.params["dest"])
         except ValueError:
-            module.fail_json(msg='Could not determine controller hostname for rsync to send to')
+            module.fail_json(msg="Could not determine controller hostname for rsync to send to")
     else:
-        source = module.params['src']
-        dest = module.params['dest']
-    dest_port = module.params['dest_port']
-    delete = module.params['delete']
-    private_key = module.params['private_key']
-    rsync_path = module.params['rsync_path']
-    rsync = module.params.get('_local_rsync_path', 'rsync')
-    rsync_password = module.params.get('_local_rsync_password')
-    rsync_timeout = module.params.get('rsync_timeout', 'rsync_timeout')
-    archive = module.params['archive']
-    checksum = module.params['checksum']
-    compress = module.params['compress']
-    existing_only = module.params['existing_only']
-    dirs = module.params['dirs']
-    partial = module.params['partial']
+        source = module.params["src"]
+        dest = module.params["dest"]
+    dest_port = module.params["dest_port"]
+    delete = module.params["delete"]
+    private_key = module.params["private_key"]
+    rsync_path = module.params["rsync_path"]
+    rsync = module.params.get("_local_rsync_path", "rsync")
+    rsync_password = module.params.get("_local_rsync_password")
+    rsync_timeout = module.params.get("rsync_timeout", "rsync_timeout")
+    archive = module.params["archive"]
+    checksum = module.params["checksum"]
+    compress = module.params["compress"]
+    existing_only = module.params["existing_only"]
+    dirs = module.params["dirs"]
+    partial = module.params["partial"]
     # the default of these params depends on the value of archive
-    recursive = module.params['recursive']
-    links = module.params['links']
-    copy_links = module.params['copy_links']
-    perms = module.params['perms']
-    times = module.params['times']
-    owner = module.params['owner']
-    group = module.params['group']
-    rsync_opts = module.params['rsync_opts']
-    ssh_args = module.params['_ssh_args']
-    ssh_connection_multiplexing = module.params['ssh_connection_multiplexing']
-    verify_host = module.params['verify_host']
-    link_dest = module.params['link_dest']
-    delay_updates = module.params['delay_updates']
+    recursive = module.params["recursive"]
+    links = module.params["links"]
+    copy_links = module.params["copy_links"]
+    perms = module.params["perms"]
+    times = module.params["times"]
+    owner = module.params["owner"]
+    group = module.params["group"]
+    rsync_opts = module.params["rsync_opts"]
+    ssh_args = module.params["_ssh_args"]
+    ssh_connection_multiplexing = module.params["ssh_connection_multiplexing"]
+    verify_host = module.params["verify_host"]
+    link_dest = module.params["link_dest"]
+    delay_updates = module.params["delay_updates"]
 
-    if '/' not in rsync:
+    if "/" not in rsync:
         rsync = module.get_bin_path(rsync, required=True)
 
     cmd = [rsync]
@@ -499,157 +502,166 @@ def main():
                 msg="to use rsync connection with passwords, you must install the sshpass program"
             )
         _sshpass_pipe = os.pipe()
-        cmd = ['sshpass', '-d' + to_native(_sshpass_pipe[0], errors='surrogate_or_strict')] + cmd
+        cmd = ["sshpass", "-d" + to_native(_sshpass_pipe[0], errors="surrogate_or_strict")] + cmd
     if delay_updates:
-        cmd.append('--delay-updates')
-        cmd.append('-F')
+        cmd.append("--delay-updates")
+        cmd.append("-F")
     if compress:
-        cmd.append('--compress')
+        cmd.append("--compress")
     if rsync_timeout:
-        cmd.append('--timeout=%s' % rsync_timeout)
+        cmd.append("--timeout=%s" % rsync_timeout)
     if module.check_mode:
-        cmd.append('--dry-run')
+        cmd.append("--dry-run")
     if delete:
-        cmd.append('--delete-after')
+        cmd.append("--delete-after")
     if existing_only:
-        cmd.append('--existing')
+        cmd.append("--existing")
     if checksum:
-        cmd.append('--checksum')
+        cmd.append("--checksum")
     if copy_links:
-        cmd.append('--copy-links')
+        cmd.append("--copy-links")
     if archive:
-        cmd.append('--archive')
+        cmd.append("--archive")
         if recursive is False:
-            cmd.append('--no-recursive')
+            cmd.append("--no-recursive")
         if links is False:
-            cmd.append('--no-links')
+            cmd.append("--no-links")
         if perms is False:
-            cmd.append('--no-perms')
+            cmd.append("--no-perms")
         if times is False:
-            cmd.append('--no-times')
+            cmd.append("--no-times")
         if owner is False:
-            cmd.append('--no-owner')
+            cmd.append("--no-owner")
         if group is False:
-            cmd.append('--no-group')
+            cmd.append("--no-group")
     else:
         if recursive is True:
-            cmd.append('--recursive')
+            cmd.append("--recursive")
         if links is True:
-            cmd.append('--links')
+            cmd.append("--links")
         if perms is True:
-            cmd.append('--perms')
+            cmd.append("--perms")
         if times is True:
-            cmd.append('--times')
+            cmd.append("--times")
         if owner is True:
-            cmd.append('--owner')
+            cmd.append("--owner")
         if group is True:
-            cmd.append('--group')
+            cmd.append("--group")
     if dirs:
-        cmd.append('--dirs')
+        cmd.append("--dirs")
 
-    if source.startswith('rsync://') and dest.startswith('rsync://'):
-        module.fail_json(msg='either src or dest must be a localhost', rc=1)
+    if source.startswith("rsync://") and dest.startswith("rsync://"):
+        module.fail_json(msg="either src or dest must be a localhost", rc=1)
 
     if is_rsh_needed(source, dest):
 
         # https://github.com/ansible/ansible/issues/15907
         has_rsh = False
         for rsync_opt in rsync_opts:
-            if '--rsh' in rsync_opt:
+            if "--rsh" in rsync_opt:
                 has_rsh = True
                 break
 
         # if the user has not supplied an --rsh option go ahead and add ours
         if not has_rsh:
-            ssh_cmd = [module.get_bin_path('ssh', required=True)]
+            ssh_cmd = [module.get_bin_path("ssh", required=True)]
             if not ssh_connection_multiplexing:
-                ssh_cmd.extend(['-S', 'none'])
+                ssh_cmd.extend(["-S", "none"])
             if private_key is not None:
-                ssh_cmd.extend(['-i', private_key])
+                ssh_cmd.extend(["-i", private_key])
             # If the user specified a port value
             # Note:  The action plugin takes care of setting this to a port from
             # inventory if the user didn't specify an explicit dest_port
             if dest_port is not None:
-                ssh_cmd.extend(['-o', 'Port=%s' % dest_port])
+                ssh_cmd.extend(["-o", "Port=%s" % dest_port])
             if not verify_host:
-                ssh_cmd.extend(['-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null'])
-            ssh_cmd_str = ' '.join(shlex_quote(arg) for arg in ssh_cmd)
+                ssh_cmd.extend(
+                    ["-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null"]
+                )
+            ssh_cmd_str = " ".join(shlex_quote(arg) for arg in ssh_cmd)
             if ssh_args:
-                ssh_cmd_str += ' %s' % ssh_args
-            cmd.append('--rsh=%s' % shlex_quote(ssh_cmd_str))
+                ssh_cmd_str += " %s" % ssh_args
+            cmd.append("--rsh=%s" % shlex_quote(ssh_cmd_str))
 
     if rsync_path:
-        cmd.append('--rsync-path=%s' % shlex_quote(rsync_path))
+        cmd.append("--rsync-path=%s" % shlex_quote(rsync_path))
 
     if rsync_opts:
-        if '' in rsync_opts:
-            module.warn('The empty string is present in rsync_opts which will cause rsync to'
-                        ' transfer the current working directory. If this is intended, use "."'
-                        ' instead to get rid of this warning. If this is unintended, check for'
-                        ' problems in your playbook leading to empty string in rsync_opts.')
+        if "" in rsync_opts:
+            module.warn(
+                "The empty string is present in rsync_opts which will cause rsync to"
+                ' transfer the current working directory. If this is intended, use "."'
+                " instead to get rid of this warning. If this is unintended, check for"
+                " problems in your playbook leading to empty string in rsync_opts."
+            )
         cmd.extend(rsync_opts)
 
     if partial:
-        cmd.append('--partial')
+        cmd.append("--partial")
 
     if link_dest:
-        cmd.append('-H')
+        cmd.append("-H")
         # verbose required because rsync does not believe that adding a
         # hardlink is actually a change
-        cmd.append('-vv')
+        cmd.append("-vv")
         for x in link_dest:
             link_path = os.path.abspath(x)
             destination_path = os.path.abspath(os.path.dirname(dest))
             if destination_path.find(link_path) == 0:
-                module.fail_json(msg='Hardlinking into a subdirectory of the source would cause recursion. %s and %s' % (destination_path, dest))
-            cmd.append('--link-dest=%s' % link_path)
+                module.fail_json(
+                    msg="Hardlinking into a subdirectory of the source would cause recursion. %s and %s"
+                    % (destination_path, dest)
+                )
+            cmd.append("--link-dest=%s" % link_path)
 
-    changed_marker = '<<CHANGED>>'
-    cmd.append('--out-format=%s' % shlex_quote(changed_marker + '%i %n%L'))
+    changed_marker = "<<CHANGED>>"
+    cmd.append("--out-format=%s" % shlex_quote(changed_marker + "%i %n%L"))
 
     cmd.append(shlex_quote(source))
     cmd.append(shlex_quote(dest))
-    cmdstr = ' '.join(cmd)
+    cmdstr = " ".join(cmd)
 
     # If we are using password authentication, write the password into the pipe
     if rsync_password:
+
         def _write_password_to_pipe(proc):
             os.close(_sshpass_pipe[0])
             try:
-                os.write(_sshpass_pipe[1], to_bytes(rsync_password) + b'\n')
+                os.write(_sshpass_pipe[1], to_bytes(rsync_password) + b"\n")
             except OSError as exc:
                 # Ignore broken pipe errors if the sshpass process has exited.
                 if exc.errno != errno.EPIPE or proc.poll() is None:
                     raise
 
-        (rc, out, err) = module.run_command(
-            cmdstr, pass_fds=_sshpass_pipe,
-            before_communicate_callback=_write_password_to_pipe)
+        rc, out, err = module.run_command(
+            cmdstr, pass_fds=_sshpass_pipe, before_communicate_callback=_write_password_to_pipe
+        )
     else:
-        (rc, out, err) = module.run_command(cmdstr)
+        rc, out, err = module.run_command(cmdstr)
 
     if rc:
         return module.fail_json(msg=err, rc=rc, cmd=cmdstr)
 
     if link_dest:
         # a leading period indicates no change
-        changed = (changed_marker + '.') not in out
+        changed = (changed_marker + ".") not in out
     else:
         changed = changed_marker in out
 
-    out_clean = out.replace(changed_marker, '')
-    out_lines = out_clean.split('\n')
-    while '' in out_lines:
-        out_lines.remove('')
+    out_clean = out.replace(changed_marker, "")
+    out_lines = out_clean.split("\n")
+    while "" in out_lines:
+        out_lines.remove("")
     if module._diff:
-        diff = {'prepared': out_clean}
-        return module.exit_json(changed=changed, msg=out_clean,
-                                rc=rc, cmd=cmdstr, stdout_lines=out_lines,
-                                diff=diff)
+        diff = {"prepared": out_clean}
+        return module.exit_json(
+            changed=changed, msg=out_clean, rc=rc, cmd=cmdstr, stdout_lines=out_lines, diff=diff
+        )
 
-    return module.exit_json(changed=changed, msg=out_clean,
-                            rc=rc, cmd=cmdstr, stdout_lines=out_lines)
+    return module.exit_json(
+        changed=changed, msg=out_clean, rc=rc, cmd=cmdstr, stdout_lines=out_lines
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

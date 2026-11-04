@@ -3,15 +3,15 @@
 set -o pipefail -eux
 
 declare -a args
-IFS='/:' read -ra args <<< "$1"
+IFS='/:' read -ra args <<<"$1"
 
 ansible_version="${args[0]}"
 script="${args[1]}"
 
 function join {
-    local IFS="$1";
-    shift;
-    echo "$*";
+    local IFS="$1"
+    shift
+    echo "$*"
 }
 
 # Ensure we can write other collections to this dir
@@ -24,7 +24,7 @@ docker images quay.io/ansible/*
 docker ps
 
 for container in $(docker ps --format '{{.Image}} {{.ID}}' | grep -v -e '^drydock/' -e '^quay.io/ansible/azure-pipelines-test-container:' | sed 's/^.* //'); do
-    docker rm -f "${container}" || true  # ignore errors
+    docker rm -f "${container}" || true # ignore errors
 done
 
 docker ps
@@ -36,8 +36,7 @@ fi
 command -v python
 python -V
 
-function retry
-{
+function retry {
     # shellcheck disable=SC2034
     for repetition in 1 2 3; do
         set +e
@@ -66,8 +65,8 @@ export ANSIBLE_COLLECTIONS_PATH="${PWD}/../../../"
 
 # START: HACK install dependencies
 if [ "${ansible_version}" == "2.16" ]; then
-# Note: Since community.general 12.x dropped support for ansible-core 2.16,
-# we need to use stable-11 for ansible-core 2.16.
+    # Note: Since community.general 12.x dropped support for ansible-core 2.16,
+    # we need to use stable-11 for ansible-core 2.16.
     target_branch='stable-11'
 else
     target_branch='main'
@@ -88,7 +87,7 @@ fi
 if [ -n "${COVERAGE:-}" ]; then
     # on-demand coverage reporting triggered by setting the COVERAGE environment variable to a non-empty value
     export COVERAGE="--coverage"
-elif [[ "${COMMIT_MESSAGE}" =~ ci_coverage ]]; then
+elif [[ ${COMMIT_MESSAGE} =~ ci_coverage ]]; then
     # on-demand coverage reporting triggered by having 'ci_coverage' in the latest commit message
     export COVERAGE="--coverage"
 else
@@ -99,7 +98,7 @@ fi
 if [ -n "${COMPLETE:-}" ]; then
     # disable change detection triggered by setting the COMPLETE environment variable to a non-empty value
     export CHANGED=""
-elif [[ "${COMMIT_MESSAGE}" =~ ci_complete ]]; then
+elif [[ ${COMMIT_MESSAGE} =~ ci_complete ]]; then
     # disable change detection triggered by having 'ci_complete' in the latest commit message
     export CHANGED=""
 else
@@ -118,8 +117,7 @@ fi
 # remove empty core/extras module directories from PRs created prior to the repo-merge
 find plugins -type d -empty -print -delete
 
-function cleanup
-{
+function cleanup {
     # for complete on-demand coverage generate a report for all files with no coverage on the "sanity/5" job so we only have one copy
     if [ "${COVERAGE}" == "--coverage" ] && [ "${CHANGED}" == "" ] && [ "${test}" == "sanity/5" ]; then
         stub="--stub"
@@ -131,9 +129,9 @@ function cleanup
 
     if [ -d tests/output/coverage/ ]; then
         if find tests/output/coverage/ -mindepth 1 -name '.*' -prune -o -print -quit | grep -q .; then
-            process_coverage='yes'  # process existing coverage files
+            process_coverage='yes' # process existing coverage files
         elif [ "${stub}" ]; then
-            process_coverage='yes'  # process coverage when stubs are enabled
+            process_coverage='yes' # process coverage when stubs are enabled
         else
             process_coverage=''
         fi
@@ -148,7 +146,7 @@ function cleanup
             ansible-test coverage xml --color --requirements --group-by command --group-by version ${stub:+"$stub"}
             cp -a tests/output/reports/coverage=*.xml "$SHIPPABLE_RESULT_DIR/codecoverage/"
 
-            if ! [[ "${ansible_version}" =~ 2.9 ]]; then
+            if ! [[ ${ansible_version} =~ 2.9 ]]; then
                 # analyze and capture code coverage aggregated by integration test target
                 ansible-test coverage analyze targets generate -v "$SHIPPABLE_RESULT_DIR/testresults/coverage-analyze-targets.json"
             fi
@@ -173,29 +171,29 @@ function cleanup
                         -X gcov \
                         -X fix \
                         -X search \
-                        -X xcode \
-                    || echo "Failed to upload code coverage report to codecov.io: ${file}"
+                        -X xcode ||
+                        echo "Failed to upload code coverage report to codecov.io: ${file}"
                 done
             fi
         fi
     fi
 
-    if [ -d  tests/output/junit/ ]; then
-      cp -aT tests/output/junit/ "$SHIPPABLE_RESULT_DIR/testresults/"
+    if [ -d tests/output/junit/ ]; then
+        cp -aT tests/output/junit/ "$SHIPPABLE_RESULT_DIR/testresults/"
     fi
 
     if [ -d tests/output/data/ ]; then
-      cp -a tests/output/data/ "$SHIPPABLE_RESULT_DIR/testresults/"
+        cp -a tests/output/data/ "$SHIPPABLE_RESULT_DIR/testresults/"
     fi
 
-    if [ -d  tests/output/bot/ ]; then
-      cp -aT tests/output/bot/ "$SHIPPABLE_RESULT_DIR/testresults/"
+    if [ -d tests/output/bot/ ]; then
+        cp -aT tests/output/bot/ "$SHIPPABLE_RESULT_DIR/testresults/"
     fi
 }
 
 if [ "${SHIPPABLE_BUILD_ID:-}" ]; then trap cleanup EXIT; fi
 
-if [[ "${COVERAGE:-}" == "--coverage" ]]; then
+if [[ ${COVERAGE:-} == "--coverage" ]]; then
     timeout=60
 else
     timeout=50

@@ -3,11 +3,14 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
     name: cgroup_perf_recap
     type: aggregate
     requirements:
@@ -125,26 +128,25 @@ DOCUMENTATION = '''
             key: write_files
         type: bool
         default: false
-'''
+"""
 
+from abc import ABCMeta
+from abc import abstractmethod
 import csv
 import datetime
+from functools import partial
 import json
 import os
-import time
 import threading
+import time
 
-from abc import ABCMeta, abstractmethod
-
-from functools import partial
-
-from ansible.module_utils.common.text.converters import to_bytes, to_text
+from ansible.module_utils.common.text.converters import to_bytes
+from ansible.module_utils.common.text.converters import to_text
 from ansible.parsing.ajson import AnsibleJSONEncoder
 from ansible.plugins.callback import CallbackBase
 
-
-RS = '\x1e'  # RECORD SEPARATOR
-LF = '\x0a'  # LINE FEED
+RS = "\x1e"  # RECORD SEPARATOR
+LF = "\x0a"  # LINE FEED
 
 
 def dict_fromkeys(keys, default=None):
@@ -174,6 +176,7 @@ class BaseProf(threading.Thread, metaclass=ABCMeta):
 
 class MemoryProf(BaseProf):
     """Python thread for recording memory usage"""
+
     def __init__(self, path, poll_interval=0.25, obj=None, writer=None):
         super(MemoryProf, self).__init__(path, obj=obj, writer=writer)
         self._poll_interval = poll_interval
@@ -241,29 +244,29 @@ def csv_writer(writer, timestamp, task_name, task_uuid, value):
 
 def json_writer(writer, timestamp, task_name, task_uuid, value):
     data = {
-        'timestamp': timestamp,
-        'task_name': task_name,
-        'task_uuid': task_uuid,
-        'value': value,
+        "timestamp": timestamp,
+        "task_name": task_name,
+        "task_uuid": task_uuid,
+        "value": value,
     }
-    writer.write('%s%s%s' % (RS, json.dumps(data, cls=AnsibleJSONEncoder), LF))
+    writer.write("%s%s%s" % (RS, json.dumps(data, cls=AnsibleJSONEncoder), LF))
 
 
 class CallbackModule(CallbackBase):
     CALLBACK_VERSION = 2.0
-    CALLBACK_TYPE = 'aggregate'
-    CALLBACK_NAME = 'ansible.posix.cgroup_perf_recap'
+    CALLBACK_TYPE = "aggregate"
+    CALLBACK_NAME = "ansible.posix.cgroup_perf_recap"
     CALLBACK_NEEDS_WHITELIST = True
 
     def __init__(self, display=None):
         super(CallbackModule, self).__init__(display)
 
-        self._features = ('memory', 'cpu', 'pids')
+        self._features = ("memory", "cpu", "pids")
 
         self._units = {
-            'memory': 'MB',
-            'cpu': '%',
-            'pids': '',
+            "memory": "MB",
+            "cpu": "%",
+            "pids": "",
         }
 
         self.task_results = dict_fromkeys(self._features, default=list)
@@ -281,10 +284,10 @@ class CallbackModule(CallbackBase):
 
         for feature in self._features:
             data = {
-                b'counter': to_bytes(self._counter),
-                b'task_uuid': to_bytes(task_uuid),
-                b'feature': to_bytes(feature),
-                b'ext': to_bytes(output_format)
+                b"counter": to_bytes(self._counter),
+                b"task_uuid": to_bytes(task_uuid),
+                b"feature": to_bytes(feature),
+                b"ext": to_bytes(output_format),
             }
 
             if self._files.get(feature):
@@ -296,25 +299,27 @@ class CallbackModule(CallbackBase):
             if self.write_files:
                 filename = self._file_name_format % data
 
-                self._files[feature] = open(os.path.join(output_dir, filename), 'w+')
-                if output_format == b'csv':
+                self._files[feature] = open(os.path.join(output_dir, filename), "w+")
+                if output_format == b"csv":
                     self._writers[feature] = partial(csv_writer, csv.writer(self._files[feature]))
-                elif output_format == b'json':
+                elif output_format == b"json":
                     self._writers[feature] = partial(json_writer, self._files[feature])
 
     def set_options(self, task_keys=None, var_options=None, direct=None):
-        super(CallbackModule, self).set_options(task_keys=task_keys, var_options=var_options, direct=direct)
+        super(CallbackModule, self).set_options(
+            task_keys=task_keys, var_options=var_options, direct=direct
+        )
 
-        cpu_poll_interval = self.get_option('cpu_poll_interval')
-        memory_poll_interval = self.get_option('memory_poll_interval')
-        pid_poll_interval = self.get_option('pid_poll_interval')
-        self._display_recap = self.get_option('display_recap')
+        cpu_poll_interval = self.get_option("cpu_poll_interval")
+        memory_poll_interval = self.get_option("memory_poll_interval")
+        pid_poll_interval = self.get_option("pid_poll_interval")
+        self._display_recap = self.get_option("display_recap")
 
-        control_group = to_bytes(self.get_option('control_group'), errors='surrogate_or_strict')
-        self.mem_max_file = b'/sys/fs/cgroup/memory/%s/memory.max_usage_in_bytes' % control_group
-        mem_current_file = b'/sys/fs/cgroup/memory/%s/memory.usage_in_bytes' % control_group
-        cpu_usage_file = b'/sys/fs/cgroup/cpuacct/%s/cpuacct.usage' % control_group
-        pid_current_file = b'/sys/fs/cgroup/pids/%s/pids.current' % control_group
+        control_group = to_bytes(self.get_option("control_group"), errors="surrogate_or_strict")
+        self.mem_max_file = b"/sys/fs/cgroup/memory/%s/memory.max_usage_in_bytes" % control_group
+        mem_current_file = b"/sys/fs/cgroup/memory/%s/memory.usage_in_bytes" % control_group
+        cpu_usage_file = b"/sys/fs/cgroup/cpuacct/%s/cpuacct.usage" % control_group
+        pid_current_file = b"/sys/fs/cgroup/pids/%s/pids.current" % control_group
 
         for path in (self.mem_max_file, mem_current_file, cpu_usage_file, pid_current_file):
             try:
@@ -322,41 +327,43 @@ class CallbackModule(CallbackBase):
                     pass
             except Exception as e:
                 self._display.warning(
-                    u'Cannot open %s for reading (%s). Disabling %s' % (to_text(path), to_text(e), self.CALLBACK_NAME)
+                    "Cannot open %s for reading (%s). Disabling %s"
+                    % (to_text(path), to_text(e), self.CALLBACK_NAME)
                 )
                 self.disabled = True
                 return
 
         try:
-            with open(self.mem_max_file, 'w+') as f:
-                f.write('0')
+            with open(self.mem_max_file, "w+") as f:
+                f.write("0")
         except Exception as e:
             self._display.warning(
-                u'Unable to reset max memory value in %s: %s' % (to_text(self.mem_max_file), to_text(e))
+                "Unable to reset max memory value in %s: %s"
+                % (to_text(self.mem_max_file), to_text(e))
             )
             self.disabled = True
             return
 
         try:
-            with open(cpu_usage_file, 'w+') as f:
-                f.write('0')
+            with open(cpu_usage_file, "w+") as f:
+                f.write("0")
         except Exception as e:
             self._display.warning(
-                u'Unable to reset CPU usage value in %s: %s' % (to_text(cpu_usage_file), to_text(e))
+                "Unable to reset CPU usage value in %s: %s" % (to_text(cpu_usage_file), to_text(e))
             )
             self.disabled = True
             return
 
         self._profiler_map = {
-            'memory': partial(MemoryProf, mem_current_file, poll_interval=memory_poll_interval),
-            'cpu': partial(CpuProf, cpu_usage_file, poll_interval=cpu_poll_interval),
-            'pids': partial(PidsProf, pid_current_file, poll_interval=pid_poll_interval),
+            "memory": partial(MemoryProf, mem_current_file, poll_interval=memory_poll_interval),
+            "cpu": partial(CpuProf, cpu_usage_file, poll_interval=cpu_poll_interval),
+            "pids": partial(PidsProf, pid_current_file, poll_interval=pid_poll_interval),
         }
 
-        self.write_files = self.get_option('write_files')
-        file_per_task = self.get_option('file_per_task')
-        self._output_format = to_bytes(self.get_option('output_format'))
-        output_dir = to_bytes(self.get_option('output_dir'), errors='surrogate_or_strict')
+        self.write_files = self.get_option("write_files")
+        file_per_task = self.get_option("file_per_task")
+        self._output_format = to_bytes(self.get_option("output_format"))
+        output_dir = to_bytes(self.get_option("output_dir"), errors="surrogate_or_strict")
         try:
             output_dir %= to_bytes(datetime.datetime.now().isoformat())
         except TypeError:
@@ -364,15 +371,15 @@ class CallbackModule(CallbackBase):
 
         self._output_dir = output_dir
 
-        file_name_format = to_bytes(self.get_option('file_name_format'))
+        file_name_format = to_bytes(self.get_option("file_name_format"))
 
         if self.write_files:
             if file_per_task:
                 self._file_per_task = True
-                if file_name_format == b'%(feature)s.%(ext)s':
-                    file_name_format = b'%(counter)s-%(task_uuid)s-%(feature)s.%(ext)s'
+                if file_name_format == b"%(feature)s.%(ext)s":
+                    file_name_format = b"%(counter)s-%(task_uuid)s-%(feature)s.%(ext)s"
             else:
-                file_name_format = to_bytes(self.get_option('file_name_format'))
+                file_name_format = to_bytes(self.get_option("file_name_format"))
 
             self._file_name_format = file_name_format
 
@@ -381,7 +388,8 @@ class CallbackModule(CallbackBase):
                     os.mkdir(output_dir)
                 except Exception as e:
                     self._display.warning(
-                        u'Could not create the output directory at %s: %s' % (to_text(output_dir), to_text(e))
+                        "Could not create the output directory at %s: %s"
+                        % (to_text(output_dir), to_text(e))
                     )
                     self.disabled = True
                     return
@@ -423,7 +431,9 @@ class CallbackModule(CallbackBase):
                 self._open_files(task_uuid=obj._uuid)
 
             for feature in self._features:
-                self._profilers[feature] = self._profiler_map[feature](obj=obj, writer=self._writers[feature])
+                self._profilers[feature] = self._profiler_map[feature](
+                    obj=obj, writer=self._writers[feature]
+                )
                 self._profilers[feature].start()
 
             self._counter += 1
@@ -440,23 +450,26 @@ class CallbackModule(CallbackBase):
         with open(self.mem_max_file) as f:
             max_results = int(f.read().strip()) / 1024 / 1024
 
-        self._display.banner('CGROUP PERF RECAP')
-        self._display.display('Memory Execution Maximum: %0.2fMB\n' % max_results)
+        self._display.banner("CGROUP PERF RECAP")
+        self._display.display("Memory Execution Maximum: %0.2fMB\n" % max_results)
         for name, data in self.task_results.items():
-            if name == 'memory':
+            if name == "memory":
                 continue
             try:
                 self._display.display(
-                    '%s Execution Maximum: %0.2f%s\n' % (name, max((t[1] for t in data)), self._units[name])
+                    "%s Execution Maximum: %0.2f%s\n"
+                    % (name, max((t[1] for t in data)), self._units[name])
                 )
             except Exception as e:
-                self._display.display('%s profiling error: no results collected: %s\n' % (name, e))
+                self._display.display("%s profiling error: no results collected: %s\n" % (name, e))
 
-        self._display.display('\n')
+        self._display.display("\n")
 
         for name, data in self.task_results.items():
             if data:
-                self._display.display('%s:\n' % name)
+                self._display.display("%s:\n" % name)
             for task, value in data:
-                self._display.display('%s (%s): %0.2f%s' % (task.get_name(), task._uuid, value, self._units[name]))
-            self._display.display('\n')
+                self._display.display(
+                    "%s (%s): %0.2f%s" % (task.get_name(), task._uuid, value, self._units[name])
+                )
+            self._display.display("\n")

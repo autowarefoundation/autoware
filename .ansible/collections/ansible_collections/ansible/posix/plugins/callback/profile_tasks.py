@@ -6,10 +6,13 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
     name: profile_tasks
     type: aggregate
     short_description: adds time information to tasks
@@ -63,9 +66,9 @@ DOCUMENTATION = '''
           - section: callback_profile_tasks
             key: datetime_format
         version_added: 3.0.0
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 example: >
   To enable, add this to your ansible.cfg file in the defaults block
     [defaults]
@@ -80,15 +83,13 @@ sample output: >
 #    Thursday 11 June 2017  22:50:54 +0100 (0:00:00.558)       0:00:05.880 *********
 #    changed: [localhost]
 #
-'''
+"""
 
 import collections
-
 from datetime import datetime
-
 from functools import reduce
-from ansible.plugins.callback import CallbackBase
 
+from ansible.plugins.callback import CallbackBase
 
 # define start time
 dt0 = dtn = datetime.now().astimezone()
@@ -99,7 +100,19 @@ def secondsToStr(t):
     def rediv(ll, b):
         return list(divmod(ll[0], b)) + ll[1:]
 
-    return "%d:%02d:%02d.%03d" % tuple(reduce(rediv, [[t * 1000, ], 1000, 60, 60]))
+    return "%d:%02d:%02d.%03d" % tuple(
+        reduce(
+            rediv,
+            [
+                [
+                    t * 1000,
+                ],
+                1000,
+                60,
+                60,
+            ],
+        )
+    )
 
 
 def filled(msg, fchar="*"):
@@ -116,8 +129,10 @@ def filled(msg, fchar="*"):
 
 def timestamp(self):
     if self.current is not None:
-        elapsed = (datetime.now().astimezone() - self.stats[self.current]['started']).total_seconds()
-        self.stats[self.current]['elapsed'] += elapsed
+        elapsed = (
+            datetime.now().astimezone() - self.stats[self.current]["started"]
+        ).total_seconds()
+        self.stats[self.current]["elapsed"] += elapsed
 
 
 def tasktime(self):
@@ -127,7 +142,7 @@ def tasktime(self):
     time_elapsed = secondsToStr((cdtn - dtn).total_seconds())
     time_total_elapsed = secondsToStr((cdtn - dt0).total_seconds())
     dtn = cdtn
-    return filled('%s (%s)%s%s' % (datetime_current, time_elapsed, ' ' * 7, time_total_elapsed))
+    return filled("%s (%s)%s%s" % (datetime_current, time_elapsed, " " * 7, time_total_elapsed))
 
 
 class CallbackModule(CallbackBase):
@@ -135,9 +150,10 @@ class CallbackModule(CallbackBase):
     This callback module provides per-task timing, ongoing playbook elapsed time
     and ordered list of top 20 longest running tasks at end.
     """
+
     CALLBACK_VERSION = 2.0
-    CALLBACK_TYPE = 'aggregate'
-    CALLBACK_NAME = 'ansible.posix.profile_tasks'
+    CALLBACK_TYPE = "aggregate"
+    CALLBACK_NAME = "ansible.posix.profile_tasks"
     CALLBACK_NEEDS_WHITELIST = True
 
     def __init__(self):
@@ -153,30 +169,32 @@ class CallbackModule(CallbackBase):
 
     def set_options(self, task_keys=None, var_options=None, direct=None):
 
-        super(CallbackModule, self).set_options(task_keys=task_keys, var_options=var_options, direct=direct)
+        super(CallbackModule, self).set_options(
+            task_keys=task_keys, var_options=var_options, direct=direct
+        )
 
-        self.sort_order = self.get_option('sort_order')
+        self.sort_order = self.get_option("sort_order")
         if self.sort_order is not None:
-            if self.sort_order == 'ascending':
+            if self.sort_order == "ascending":
                 self.sort_order = False
-            elif self.sort_order == 'descending':
+            elif self.sort_order == "descending":
                 self.sort_order = True
-            elif self.sort_order == 'none':
+            elif self.sort_order == "none":
                 self.sort_order = None
 
-        self.summary_only = self.get_option('summary_only')
+        self.summary_only = self.get_option("summary_only")
 
-        self.task_output_limit = self.get_option('output_limit')
+        self.task_output_limit = self.get_option("output_limit")
         if self.task_output_limit is not None:
-            if self.task_output_limit == 'all':
+            if self.task_output_limit == "all":
                 self.task_output_limit = None
             else:
                 self.task_output_limit = int(self.task_output_limit)
 
-        self.datetime_format = self.get_option('datetime_format')
+        self.datetime_format = self.get_option("datetime_format")
         if self.datetime_format is not None:
-            if self.datetime_format == 'iso8601':
-                self.datetime_format = '%Y-%m-%dT%H:%M:%S.%f'
+            if self.datetime_format == "iso8601":
+                self.datetime_format = "%Y-%m-%dT%H:%M:%S.%f"
 
     def _display_tasktime(self):
         if not self.summary_only:
@@ -197,11 +215,11 @@ class CallbackModule(CallbackBase):
         self.current = task._uuid
         dtn = datetime.now().astimezone()
         if self.current not in self.stats:
-            self.stats[self.current] = {'started': dtn, 'elapsed': 0.0, 'name': task.get_name()}
+            self.stats[self.current] = {"started": dtn, "elapsed": 0.0, "name": task.get_name()}
         else:
-            self.stats[self.current]['started'] = dtn
+            self.stats[self.current]["started"] = dtn
         if self._display.verbosity >= 2:
-            self.stats[self.current]['path'] = task.get_path()
+            self.stats[self.current]["path"] = task.get_path()
 
     def v2_playbook_on_task_start(self, task, is_conditional):
         self._record_task(task)
@@ -225,16 +243,20 @@ class CallbackModule(CallbackBase):
         if self.sort_order is not None:
             results = sorted(
                 self.stats.items(),
-                key=lambda x: x[1]['elapsed'],
+                key=lambda x: x[1]["elapsed"],
                 reverse=self.sort_order,
             )
 
         # Display the number of tasks specified or the default of 20
-        results = list(results)[:self.task_output_limit]
+        results = list(results)[: self.task_output_limit]
 
         # Print the timings
         for uuid, result in results:
-            msg = u"{0:-<{2}}{1:->9}".format(result['name'] + u' ', u' {0:.02f}s'.format(result['elapsed']), self._display.columns - 9)
-            if 'path' in result:
-                msg += u"\n{0:-<{1}}".format(result['path'] + u' ', self._display.columns)
+            msg = "{0:-<{2}}{1:->9}".format(
+                result["name"] + " ",
+                " {0:.02f}s".format(result["elapsed"]),
+                self._display.columns - 9,
+            )
+            if "path" in result:
+                msg += "\n{0:-<{1}}".format(result["path"] + " ", self._display.columns)
             self._display.display(msg)

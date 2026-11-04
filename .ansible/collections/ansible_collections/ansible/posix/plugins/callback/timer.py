@@ -2,10 +2,13 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
     name: timer
     type: aggregate
     requirements:
@@ -13,7 +16,7 @@ DOCUMENTATION = '''
     short_description: Adds time to play stats
     description:
         - This callback just adds total play duration to the play stats.
-'''
+"""
 
 from datetime import datetime
 
@@ -24,9 +27,10 @@ class CallbackModule(CallbackBase):
     """
     This callback module tells you how long your plays ran for.
     """
+
     CALLBACK_VERSION = 2.0
-    CALLBACK_TYPE = 'aggregate'
-    CALLBACK_NAME = 'ansible.posix.timer'
+    CALLBACK_TYPE = "aggregate"
+    CALLBACK_NAME = "ansible.posix.timer"
     CALLBACK_NEEDS_WHITELIST = True
 
     def __init__(self):
@@ -48,4 +52,7 @@ class CallbackModule(CallbackBase):
         runtime = end_time - self.start_time
         # Align summary report header with other callback plugin summary
         self._display.banner("PLAYBOOK RECAP")
-        self._display.display("Playbook run took %s days, %s hours, %s minutes, %s seconds\n\r" % (self.days_hours_minutes_seconds(runtime)))
+        self._display.display(
+            "Playbook run took %s days, %s hours, %s minutes, %s seconds\n\r"
+            % (self.days_hours_minutes_seconds(runtime))
+        )

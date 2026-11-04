@@ -3,7 +3,7 @@
 set -o pipefail -eux
 
 declare -a args
-IFS='/:' read -ra args <<< "$1"
+IFS='/:' read -ra args <<<"$1"
 
 cloud="${args[0]}"
 python="${args[1]}"
@@ -15,7 +15,7 @@ stage="${S:-prod}"
 
 changed_all_target="shippable/${cloud}/smoketest/"
 
-if ! ansible-test integration "${changed_all_target}" --list-targets > /dev/null 2>&1; then
+if ! ansible-test integration "${changed_all_target}" --list-targets >/dev/null 2>&1; then
     # no smoketest tests are available for this cloud
     changed_all_target="none"
 fi

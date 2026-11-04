@@ -4,10 +4,13 @@
 # Copyright: (c) 2021, Hideki Saito <saito@fgrep.org>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: firewalld_info
 short_description: Gather information about firewalld
@@ -31,9 +34,9 @@ requirements:
     - python-dbus
 author:
     - Hideki Saito (@saito-hideki)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Gather information about active zones
   ansible.posix.firewalld_info:
     active_zones: true
@@ -50,9 +53,9 @@ EXAMPLES = r'''
       - external
       - internal
   register: result
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 active_zones:
     description:
       - Gather active zones only if turn it C(true).
@@ -207,16 +210,18 @@ firewalld_info:
                             sample:
                               - "rule protocol value=\"icmp\" reject"
                               - "rule priority=\"32767\" reject"
-'''
+"""
 
-from ansible.module_utils.basic import AnsibleModule, missing_required_lib
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.text.converters import to_native
-from ansible_collections.ansible.posix.plugins.module_utils._respawn import respawn_module, HAS_RESPAWN_UTIL
+from ansible_collections.ansible.posix.plugins.module_utils._respawn import HAS_RESPAWN_UTIL
+from ansible_collections.ansible.posix.plugins.module_utils._respawn import respawn_module
 from ansible_collections.ansible.posix.plugins.module_utils.version import StrictVersion
-
 
 try:
     import dbus
+
     HAS_DBUS = True
 except ImportError:
     HAS_DBUS = False
@@ -224,6 +229,7 @@ except ImportError:
 try:
     import firewall.client as fw_client
     import firewall.config as fw_config
+
     HAS_FIREWALLD = True
 except ImportError:
     HAS_FIREWALLD = False
@@ -304,8 +310,8 @@ def get_zone_rich_rules(zone_settings):
 
 def main():
     module_args = dict(
-        active_zones=dict(required=False, type='bool', default=False),
-        zones=dict(required=False, type='list', elements='str'),
+        active_zones=dict(required=False, type="bool", default=False),
+        zones=dict(required=False, type="list", elements="str"),
     )
 
     module = AnsibleModule(
@@ -316,7 +322,7 @@ def main():
     firewalld_info = dict()
     result = dict(
         changed=False,
-        active_zones=module.params['active_zones'],
+        active_zones=module.params["active_zones"],
         collected_zones=list(),
         undefined_zones=list(),
     )
@@ -329,30 +335,33 @@ def main():
         respawn_module("firewall")
 
     if not HAS_DBUS:
-        module.fail_json(msg=missing_required_lib('python-dbus'))
+        module.fail_json(msg=missing_required_lib("python-dbus"))
     if not HAS_FIREWALLD:
-        module.fail_json(msg=missing_required_lib('python-firewall'))
+        module.fail_json(msg=missing_required_lib("python-firewall"))
 
     try:
         client = fw_client.FirewallClient()
 
         # Gather general information of firewalld.
-        firewalld_info['version'] = get_version()
-        firewalld_info['default_zone'] = get_default_zone(client)
+        firewalld_info["version"] = get_version()
+        firewalld_info["default_zone"] = get_default_zone(client)
 
         # Gather information for zones.
         zones_info = dict()
         collect_zones = list()
         ignore_zones = list()
-        if module.params['active_zones']:
+        if module.params["active_zones"]:
             collect_zones = get_active_zones(client)
-        elif module.params['zones']:
+        elif module.params["zones"]:
             all_zones = get_all_zones(client)
-            specified_zones = module.params['zones']
+            specified_zones = module.params["zones"]
             collect_zones = list(set(specified_zones) & set(all_zones))
             ignore_zones = list(set(specified_zones) - set(collect_zones))
             if ignore_zones:
-                module.warn('Please note: zone:(%s) have been ignored in the gathering process.' % ", ".join(ignore_zones))
+                module.warn(
+                    "Please note: zone:(%s) have been ignored in the gathering process."
+                    % ", ".join(ignore_zones)
+                )
         else:
             collect_zones = get_all_zones(client)
 
@@ -361,38 +370,47 @@ def main():
             # 'firewall-cmd --info-zone=<ZONE>' command.
             zone_info = dict()
             zone_settings = get_zone_settings(client, zone)
-            zone_info['target'] = get_zone_target(zone_settings)
-            zone_info['icmp_block_inversion'] = get_zone_icmp_block_inversion(zone_settings)
-            zone_info['interfaces'] = get_zone_interfaces(zone_settings)
-            zone_info['sources'] = get_zone_sources(zone_settings)
-            zone_info['services'] = get_zone_services(zone_settings)
-            zone_info['ports'] = get_zone_ports(zone_settings)
-            zone_info['protocols'] = get_zone_protocols(zone_settings)
-            zone_info['masquerade'] = get_zone_masquerade(zone_settings)
-            zone_info['forward_ports'] = get_zone_forward_ports(zone_settings)
-            zone_info['source_ports'] = get_zone_source_ports(zone_settings)
-            zone_info['icmp_blocks'] = get_zone_icmp_blocks(zone_settings)
-            zone_info['rich_rules'] = get_zone_rich_rules(zone_settings)
+            zone_info["target"] = get_zone_target(zone_settings)
+            zone_info["icmp_block_inversion"] = get_zone_icmp_block_inversion(zone_settings)
+            zone_info["interfaces"] = get_zone_interfaces(zone_settings)
+            zone_info["sources"] = get_zone_sources(zone_settings)
+            zone_info["services"] = get_zone_services(zone_settings)
+            zone_info["ports"] = get_zone_ports(zone_settings)
+            zone_info["protocols"] = get_zone_protocols(zone_settings)
+            zone_info["masquerade"] = get_zone_masquerade(zone_settings)
+            zone_info["forward_ports"] = get_zone_forward_ports(zone_settings)
+            zone_info["source_ports"] = get_zone_source_ports(zone_settings)
+            zone_info["icmp_blocks"] = get_zone_icmp_blocks(zone_settings)
+            zone_info["rich_rules"] = get_zone_rich_rules(zone_settings)
 
             # The 'forward' parameter supports on python-firewall 0.9.0(or later).
-            if StrictVersion(firewalld_info['version']) >= StrictVersion('0.9.0'):
-                zone_info['forward'] = get_zone_forward(zone_settings)
+            if StrictVersion(firewalld_info["version"]) >= StrictVersion("0.9.0"):
+                zone_info["forward"] = get_zone_forward(zone_settings)
 
             zones_info[zone] = zone_info
-        firewalld_info['zones'] = zones_info
+        firewalld_info["zones"] = zones_info
     except AttributeError as e:
-        module.fail_json(msg=('firewalld probably not be running, Or the following method '
-                              'is not supported with your python-firewall version. (Error: %s)') % to_native(e))
+        module.fail_json(
+            msg=(
+                "firewalld probably not be running, Or the following method "
+                "is not supported with your python-firewall version. (Error: %s)"
+            )
+            % to_native(e)
+        )
     except dbus.exceptions.DBusException as e:
-        module.fail_json(msg=('Unable to gather firewalld settings.'
-                              ' You may need to run as the root user or'
-                              ' use become. (Error: %s)' % to_native(e)))
+        module.fail_json(
+            msg=(
+                "Unable to gather firewalld settings."
+                " You may need to run as the root user or"
+                " use become. (Error: %s)" % to_native(e)
+            )
+        )
 
-    result['collected_zones'] = collect_zones
-    result['undefined_zones'] = ignore_zones
-    result['firewalld_info'] = firewalld_info
+    result["collected_zones"] = collect_zones
+    result["undefined_zones"] = ignore_zones
+    result["firewalld_info"] = firewalld_info
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
