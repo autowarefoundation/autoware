@@ -46,12 +46,15 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
 FROM universe-dependencies AS universe-devel
 ARG ROS_DISTRO
 
+# hadolint ignore=SC2086
 RUN --mount=type=bind,source=src,target=/tmp/autoware/src \
     --mount=type=cache,id=ccache-${ROS_DISTRO},target=/home/aw/.ccache,uid=1000,gid=1000,sharing=shared \
     . "/opt/ros/${ROS_DISTRO}/setup.sh" && \
     . /opt/autoware/setup.sh && \
+    core_packages=$(basename -a /opt/autoware/*/share/colcon-core/packages/*) && \
     colcon build \
       --base-paths /tmp/autoware/src \
+      --packages-ignore ${core_packages} \
       --install-base /opt/autoware \
       --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     rm -rf build log
