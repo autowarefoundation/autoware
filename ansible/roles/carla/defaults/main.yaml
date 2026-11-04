@@ -7,11 +7,11 @@ carla__version: "1.0"
 #               one URL and is compared with the server's ETag / Last-Modified / size instead
 #   launcher -- the server launcher, relative to the package's top folder
 carla__packages:
-  # The CARLA 1.0 release (Unreal Engine 5.8). CARLA publishes no checksum, so this one was computed
-  # from the downloaded file.
+  # The CARLA 1.0 release (Unreal Engine 5.8), 13,985,818,522 B. CARLA publishes no checksum, so this
+  # one was computed from the downloaded file.
   "1.0":
     url: https://downloads.carlasim.com/Linux/CARLA_1.0/CARLA_1.0.tar.gz
-    sha256: __SHA256_1_0__
+    sha256: ddc7c5f73359f82199eac533bffea64c1857bbb1d7664055b13359eec77648b0
     launcher: Linux/CarlaUnreal.sh
   # The nightly build of the ue58-dev branch. Not reproducible: re-running the role updates it.
   nightly:
