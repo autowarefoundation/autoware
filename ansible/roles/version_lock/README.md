@@ -200,15 +200,18 @@ none of them:
   version is equally unfrozen there. Transitive Ubuntu dependencies are not
   checked either (only top-level installs are), nor are the packages the ten
   `rosdep install` call sites resolve.
-- **Packages outside the freeze's remit.** `unzip` is installed only by
-  `demo_artifacts`, which is `tags: [never]` and appears in no other playbook,
-  so no normal locked path converges it — while `verify.yaml` asserts every pin
-  whose package is installed regardless of which roles ran. Since `unzip` is a
-  hard `Depends` of `ubuntu-desktop`, pinning it failed a locked
-  `install_dev_env` on any desktop whose `unzip` differed from the pin, with no
-  task in the play able to fix it. It is therefore exempt via `OUT_OF_SCOPE` in
-  `check_pin_completeness.py` rather than pinned, and floats on a
-  `--tags demo_artifacts` run.
+- **Packages outside the freeze's remit.** The opt-in roles install packages
+  that no normal locked path converges, because they are `tags: [never]` and
+  appear in no other playbook — while `verify.yaml` asserts every pin whose
+  package is installed regardless of which roles ran. `unzip`, installed only
+  by `demo_artifacts`, is a hard `Depends` of `ubuntu-desktop`, so pinning it
+  failed a locked `install_dev_env` on any desktop whose `unzip` differed from
+  the pin, with no task in the play able to fix it. The four runtime
+  dependencies of `carla` (`libomp5`, `libsdl2-2.0-0`, `libvulkan1`,
+  `xdg-user-dirs`) sit the same way, and most of them a desktop already
+  carries. They are therefore exempt via `OUT_OF_SCOPE` in
+  `check_pin_completeness.py` rather than pinned, and float on a
+  `--tags demo_artifacts` or `--tags carla` run.
 
 These are known gaps rather than oversights: closing them means changing how
 those roles install, which is out of scope for the lockfile mechanism itself.

@@ -1,0 +1,32 @@
+# Which CARLA to install: a key of carla__packages.
+carla__version: "1.0"
+
+# The packages the role can install.
+#   url      -- the Linux package (.tar.gz)
+#   sha256   -- the checksum the download must match; empty for the nightly, whose file changes under
+#               one URL and is compared with the server's ETag / Last-Modified / size instead
+#   launcher -- the server launcher, relative to the package's top folder
+carla__packages:
+  # The CARLA 1.0 release (Unreal Engine 5.8). CARLA publishes no checksum, so this one was computed
+  # from the downloaded file.
+  "1.0":
+    url: https://downloads.carlasim.com/Linux/CARLA_1.0/CARLA_1.0.tar.gz
+    sha256: __SHA256_1_0__
+    launcher: Linux/CarlaUnreal.sh
+  # The nightly build of the ue58-dev branch. Not reproducible: re-running the role updates it.
+  nightly:
+    url: https://downloads.carlasim.com/Linux/Dev/CARLA_UE5_Latest.tar.gz
+    sha256: ""
+    launcher: Linux/CarlaUnreal.sh
+
+# Each package is unpacked into <root>/<version>, so the release and the nightly can sit side by side.
+carla__install_root: "{{ ansible_env.HOME }}/autoware_simulation/carla"
+carla__install_dir: "{{ carla__install_root }}/{{ carla__version }}"
+
+# Runtime dependencies of the packaged server (from CARLA's Util/Docker/Release.Dockerfile, without
+# xserver-xorg: the server runs headless with -RenderOffScreen, and libsdl2 brings the X client libraries).
+carla__apt_packages:
+  - libomp5
+  - libsdl2-2.0-0
+  - libvulkan1
+  - xdg-user-dirs
