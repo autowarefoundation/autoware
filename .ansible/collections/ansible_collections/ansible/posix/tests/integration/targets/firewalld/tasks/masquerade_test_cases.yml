@@ -1,0 +1,116 @@
+---
+# Test playbook for the firewalld module - masquerade operations
+# (c) 2022, Gregory Furlong <gnfzdz@fzdz.io>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: Masquerade enabled when masquerade is truthy and state is enabled
+  block:
+    - name: Testing enable masquerade
+      ansible.posix.firewalld:
+        zone: trusted
+        masquerade: true
+        permanent: true
+        state: enabled
+      register: result
+
+    - name: Assert masquerade is enabled
+      ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Testing enable masquerade (verify not changed)
+      ansible.posix.firewalld:
+        zone: trusted
+        masquerade: true
+        permanent: true
+        state: enabled
+      register: result
+
+    - name: Assert masquerade is enabled (verify not changed)
+      ansible.builtin.assert:
+        that:
+          - result is not changed
+
+- name: Masquerade disabled when masquerade is falsy and state is enabled
+  block:
+    - name: Testing disable masquerade
+      ansible.posix.firewalld:
+        zone: trusted
+        masquerade: false
+        permanent: true
+        state: enabled
+      register: result
+
+    - name: Assert masquerade is disabled
+      ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Testing disable masquerade (verify not changed)
+      ansible.posix.firewalld:
+        zone: trusted
+        masquerade: false
+        permanent: true
+        state: enabled
+      register: result
+
+    - name: Assert masquerade is disabled (verify not changed)
+      ansible.builtin.assert:
+        that:
+          - result is not changed
+
+- name: Masquerade enabled when masquerade is falsy and state is disabled
+  block:
+    - name: Testing enable masquerade
+      ansible.posix.firewalld:
+        zone: trusted
+        masquerade: false
+        permanent: true
+        state: disabled
+      register: result
+
+    - name: Assert masquerade is enabled
+      ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Testing enable masquerade (verify not changed)
+      ansible.posix.firewalld:
+        zone: trusted
+        masquerade: false
+        permanent: true
+        state: disabled
+      register: result
+
+    - name: Assert masquerade is enabled (verify not changed)
+      ansible.builtin.assert:
+        that:
+          - result is not changed
+
+- name: Masquerade disabled when masquerade is truthy and state is disabled
+  block:
+    - name: Testing disable masquerade
+      ansible.posix.firewalld:
+        zone: trusted
+        masquerade: true
+        permanent: true
+        state: disabled
+      register: result
+
+    - name: Assert masquerade is disabled
+      ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Testing disable masquerade (verify not changed)
+      ansible.posix.firewalld:
+        zone: trusted
+        masquerade: true
+        permanent: true
+        state: disabled
+      register: result
+
+    - name: Assert masquerade is disabled (verify not changed)
+      ansible.builtin.assert:
+        that:
+          - result is not changed

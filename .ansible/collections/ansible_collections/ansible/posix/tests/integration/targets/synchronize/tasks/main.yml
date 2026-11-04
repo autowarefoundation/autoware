@@ -1,0 +1,350 @@
+---
+- name: Install rsync
+  ansible.builtin.package:
+    name: rsync
+  when: ansible_distribution != "MacOSX"
+
+- name: Clean up the working disrectory and files
+  ansible.builtin.file:
+    path: "{{ output_dir }}"
+    state: absent
+
+- name: Create the working directory
+  ansible.builtin.file:
+    path: "{{ output_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Create test new files
+  ansible.builtin.copy:
+    dest: "{{ output_dir }}/{{ item }}"
+    mode: "0644"
+    content: hello world
+  loop:
+    - foo.txt
+    - bar.txt
+
+- name: Synchronize file to new filename
+  ansible.posix.synchronize:
+    src: "{{ output_dir }}/foo.txt"
+    dest: "{{ output_dir }}/foo.result"
+  register: sync_result
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Check that the file was copied over correctly
+  ansible.builtin.assert:
+    that:
+      - "'changed' in sync_result"
+      - sync_result.changed == true
+      - "'cmd' in sync_result"
+      - "'rsync' in sync_result.cmd"
+      - "'msg' in sync_result"
+      - sync_result.msg.startswith('>f+')
+      - "sync_result.msg.endswith('+ foo.txt\n')"
+
+- name: Test that the file was really copied over
+  ansible.builtin.stat:
+    path: "{{ output_dir }}/foo.result"
+  register: stat_result
+
+- name: Test that the file was really copied over
+  ansible.builtin.assert:
+    that:
+      - stat_result.stat.exists == True
+      - stat_result.stat.checksum == '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed'
+
+- name: Test that the file is not copied a second time
+  ansible.posix.synchronize:
+    src: "'{{ output_dir }}/foo.txt'"
+    dest: "'{{ output_dir }}/foo.result'"
+  register: sync_result
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Test that no change occurred
+  ansible.builtin.assert:
+    that:
+      - not sync_result.changed
+
+- name: Cleanup
+  ansible.builtin.file:
+    state: absent
+    path: "{{ output_dir }}/{{ item }}"
+  loop:
+    - foo.result
+    - bar.result
+
+- name: Synchronize using the mode=push param
+  ansible.posix.synchronize:
+    src: "{{ output_dir }}/foo.txt"
+    dest: "{{ output_dir }}/foo.result"
+    mode: push
+  register: sync_result
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Check that the file was copied over correctly mode=push
+  ansible.builtin.assert:
+    that:
+      - "'changed' in sync_result"
+      - sync_result.changed == true
+      - "'cmd' in sync_result"
+      - "'rsync' in sync_result.cmd"
+      - "'msg' in sync_result"
+      - sync_result.msg.startswith('>f+')
+      - "sync_result.msg.endswith('+ foo.txt\n')"
+
+- name: Test that the file was really copied over
+  ansible.builtin.stat:
+    path: "{{ output_dir }}/foo.result"
+  register: stat_result
+
+- name: Ensure file exists and checksum matches
+  ansible.builtin.assert:
+    that:
+      - stat_result.stat.exists == True
+      - stat_result.stat.checksum == '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed'
+
+- name: Test that the file is not copied a second time
+  ansible.posix.synchronize:
+    src: "{{ output_dir }}/foo.txt"
+    dest: "{{ output_dir }}/foo.result"
+    mode: push
+  register: sync_result
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Ensure no change occorred
+  ansible.builtin.assert:
+    that:
+      - sync_result.changed == False
+
+- name: Cleanup
+  ansible.builtin.file:
+    state: absent
+    path: "{{ output_dir }}/{{ item }}"
+  loop:
+    - foo.result
+    - bar.result
+
+- name: Synchronize using the mode=pull param
+  ansible.posix.synchronize:
+    src: "{{ output_dir }}/foo.txt"
+    dest: "{{ output_dir }}/foo.result"
+    mode: pull
+  register: sync_result
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Check that the file was copied over correctly mode=pull
+  ansible.builtin.assert:
+    that:
+      - "'changed' in sync_result"
+      - sync_result.changed == true
+      - "'cmd' in sync_result"
+      - "'rsync' in sync_result.cmd"
+      - "'msg' in sync_result"
+      - sync_result.msg.startswith('>f+')
+      - "sync_result.msg.endswith('+ foo.txt\n')"
+
+- name: Test that the file was really copied over
+  ansible.builtin.stat:
+    path: "{{ output_dir }}/foo.result"
+  register: stat_result
+
+- name: Ensure file exists and checksum matches
+  ansible.builtin.assert:
+    that:
+      - stat_result.stat.exists == True
+      - stat_result.stat.checksum == '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed'
+
+- name: Test that the file is not copied a second time
+  ansible.posix.synchronize:
+    src: "{{ output_dir }}/foo.txt"
+    dest: "{{ output_dir }}/foo.result"
+    mode: pull
+  register: sync_result
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Ensure no change occorred
+  ansible.builtin.assert:
+    that:
+      - sync_result.changed == False
+
+- name: Cleanup
+  ansible.builtin.file:
+    state: absent
+    path: "{{ output_dir }}/{{ item }}"
+  loop:
+    - foo.result
+    - bar.result
+
+- name: Synchronize files using with_items (issue#5965)
+  ansible.posix.synchronize:
+    src: "{{ output_dir }}/{{ item }}"
+    dest: "{{ output_dir }}/{{ item }}.result"
+  with_items:
+    - foo.txt
+    - bar.txt
+  register: sync_result
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Validate syncrhonize with_items
+  ansible.builtin.assert:
+    that:
+      - sync_result.changed
+      - sync_result.msg == 'All items completed'
+      - "'results' in sync_result"
+      - sync_result.results|length == 2
+      - "sync_result.results[0].msg.endswith('+ foo.txt\n')"
+      - "sync_result.results[1].msg.endswith('+ bar.txt\n')"
+
+- name: Cleanup
+  ansible.builtin.file:
+    state: absent
+    path: "{{ output_dir }}/{{ item }}.result"
+  loop:
+    - foo.txt
+    - bar.txt
+
+- name: Synchronize files using rsync_path (issue#7182)
+  ansible.posix.synchronize:
+    src: "{{ output_dir }}/foo.txt"
+    dest: "{{ output_dir }}/foo.rsync_path"
+    rsync_path: sudo rsync
+  register: sync_result
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Validate syncrhonize using rsync_path (issue#7182)
+  ansible.builtin.assert:
+    that:
+      - "'changed' in sync_result"
+      - sync_result.changed == true
+      - "'cmd' in sync_result"
+      - "'rsync' in sync_result.cmd"
+      - "'rsync_path' in sync_result.cmd"
+      - "'msg' in sync_result"
+      - sync_result.msg.startswith('>f+')
+      - "sync_result.msg.endswith('+ foo.txt\n')"
+
+- name: Cleanup
+  ansible.builtin.file:
+    state: absent
+    path: "{{ output_dir }}/{{ item }}"
+  loop:
+    - foo.rsync_path
+
+- name: Add subdirectories for link-dest test
+  ansible.builtin.file:
+    path: "{{ output_dir }}/{{ item }}/"
+    state: directory
+    mode: "0755"
+  loop:
+    - directory_a
+    - directory_b
+
+- name: Copy foo.txt into the first directory
+  ansible.posix.synchronize:
+    src: "{{ output_dir }}/foo.txt"
+    dest: "{{ output_dir }}/{{ item }}/foo.txt"
+  loop:
+    - directory_a
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Synchronize files using link_dest
+  ansible.posix.synchronize:
+    src: "{{ output_dir }}/directory_a/foo.txt"
+    dest: "{{ output_dir }}/directory_b/foo.txt"
+    link_dest:
+      - "{{ output_dir }}/directory_a"
+  register: sync_result
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Get stat information for directory_a
+  ansible.builtin.stat:
+    path: "{{ output_dir }}/directory_a/foo.txt"
+  register: stat_result_a
+
+- name: Get stat information for directory_b
+  ansible.builtin.stat:
+    path: "{{ output_dir }}/directory_b/foo.txt"
+  register: stat_result_b
+
+- name: Ensure file exists and inode matches
+  ansible.builtin.assert:
+    that:
+      - "'changed' in sync_result"
+      - sync_result.changed == true
+      - stat_result_a.stat.inode == stat_result_b.stat.inode
+
+- name: Synchronize files using link_dest that would be recursive
+  ansible.posix.synchronize:
+    src: "{{ output_dir }}/foo.txt"
+    dest: "{{ output_dir }}/foo.result"
+    link_dest:
+      - "{{ output_dir }}"
+  register: sync_result
+  ignore_errors: true
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Ensure no change occorred and failed
+  ansible.builtin.assert:
+    that:
+      - sync_result is not changed
+      - sync_result is failed
+
+- name: Cleanup
+  ansible.builtin.file:
+    state: absent
+    path: "{{ output_dir }}/{{ item }}"
+  loop:
+    - directory_b/foo.txt
+    - directory_a/foo.txt
+    - directory_a
+    - directory_b
+
+- name: Setup - test for source with working dir with spaces in path
+  ansible.builtin.file:
+    state: directory
+    path: "{{ output_dir }}/{{ item }}"
+    mode: "0755"
+  delegate_to: "{{ inventory_hostname }}"
+  loop:
+    - directory a
+    - directory b
+
+- name: Setup - create test new files
+  ansible.builtin.copy:
+    dest: "{{ output_dir }}/directory a/{{ item }}"
+    mode: "0644"
+    content: hello world
+  loop:
+    - foo.txt
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Copy source with spaces in dir path
+  ansible.posix.synchronize:
+    src: "{{ output_dir }}/directory a/foo.txt"
+    dest: "{{ output_dir }}/directory b/"
+  delegate_to: "{{ inventory_hostname }}"
+  register: sync_result
+  ignore_errors: true
+
+- name: Get stat information for directory_b
+  ansible.builtin.stat:
+    path: "{{ output_dir }}/directory b/foo.txt"
+  register: stat_result_b
+
+- name: Ensure file exists and checksum matches
+  ansible.builtin.assert:
+    that:
+      - "'changed' in sync_result"
+      - sync_result.changed == true
+      - stat_result_b.stat.exists == True
+      - stat_result_b.stat.checksum == '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed'
+
+- name: Cleanup
+  ansible.builtin.file:
+    state: absent
+    path: "{{ output_dir }}/{{ item }}"
+  loop:
+    - directory b/foo.txt
+    - directory a/foo.txt
+    - directory a
+    - directory b

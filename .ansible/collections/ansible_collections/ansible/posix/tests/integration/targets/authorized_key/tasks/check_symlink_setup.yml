@@ -1,0 +1,38 @@
+---
+- name: Create testuser for symlink tests
+  ansible.builtin.user:
+    name: testuser
+    create_home: true
+  register: testuser_result
+
+- name: Create symlink target directory
+  ansible.builtin.file:
+    path: /tmp/symlink_test_target
+    state: directory
+    owner: root
+    mode: '0700'
+
+- name: Create a target file owned by root
+  ansible.builtin.copy:
+    dest: /tmp/symlink_test_target/target_file
+    content: "sensitive data"
+    owner: root
+    mode: '0600'
+
+- name: Remove .ssh directory if exists
+  ansible.builtin.file:
+    path: "{{ testuser_result.home }}/.ssh"
+    state: absent
+
+- name: Create .ssh directory
+  ansible.builtin.file:
+    path: "{{ testuser_result.home }}/.ssh"
+    state: directory
+    mode: '0700'
+
+- name: Create symlink from authorized_keys to target file
+  ansible.builtin.file:
+    src: /tmp/symlink_test_target/target_file
+    dest: "{{ testuser_result.home }}/.ssh/authorized_keys"
+    state: link
+...

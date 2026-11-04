@@ -1,0 +1,97 @@
+---
+- name: Firewalld create zone custom
+  ansible.posix.firewalld:
+    zone: custom
+    permanent: true
+    state: present
+  register: result
+
+- name: Assert firewalld custom zone created worked
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Firewalld create zone custom rerun (verify not changed)
+  ansible.posix.firewalld:
+    zone: custom
+    permanent: true
+    state: present
+  register: result
+
+- name: Assert firewalld custom zone created worked (verify not changed)
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+
+- name: Zone forwarding test
+  when: (ansible_distribution == 'RedHat' and ansible_distribution_major_version is version('8', '>='))
+  block:
+    - name: Enable zone forwarding
+      ansible.posix.firewalld:
+        zone: custom
+        forward: true
+        permanent: true
+        state: enabled
+      register: result
+
+    - name: Assert zone forwarding is enabled
+      ansible.builtin.debug:
+        var: result is changed
+
+    - name: Enable zone forwarding (verify not changed)
+      ansible.posix.firewalld:
+        zone: custom
+        forward: true
+        permanent: true
+        state: enabled
+      register: result
+
+    - name: Assert zone forwarding is enabled (verify not changed)
+      ansible.builtin.debug:
+        var: result is not changed
+
+    - name: Disable zone forwarding
+      ansible.posix.firewalld:
+        zone: custom
+        forward: false
+        permanent: true
+        state: enabled
+
+    - name: Assert zone forwarding is disabled
+      ansible.builtin.debug:
+        var: result is changed
+
+    - name: Disable zone forwarding (verify not changed)
+      ansible.posix.firewalld:
+        zone: custom
+        forward: false
+        permanent: true
+        state: enabled
+
+    - name: Assert zone forwarding is disabled (verify not changed)
+      ansible.builtin.debug:
+        var: result is not changed
+
+- name: Firewalld remove zone custom
+  ansible.posix.firewalld:
+    zone: custom
+    permanent: true
+    state: absent
+  register: result
+
+- name: Assert firewalld custom zone removed worked
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Firewalld remove custom zone rerun (verify not changed)
+  ansible.posix.firewalld:
+    zone: custom
+    permanent: true
+    state: absent
+  register: result
+
+- name: Assert firewalld custom zone removed worked (verify not changed)
+  ansible.builtin.assert:
+    that:
+      - result is not changed

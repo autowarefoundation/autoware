@@ -80,6 +80,9 @@ jobs:
           ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml
 
       - name: 🚀 Install dev environment (unlocked, latest versions)
+        env:
+          # Lifts the ros2 role's api.github.com call off the shared unauthenticated rate limit.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           ansible-playbook autoware.dev_env.install_dev_env \

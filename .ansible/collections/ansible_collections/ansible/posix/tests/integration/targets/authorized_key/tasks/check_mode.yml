@@ -1,0 +1,37 @@
+---
+# -------------------------------------------------------------
+# check mode
+
+- name: CHECK MODE | copy an existing file in place with comments
+  ansible.builtin.copy:
+    src: existing_authorized_keys
+    dest: "{{ output_dir | expanduser }}/authorized_keys"
+    mode: "0600"
+
+- name: CHECK MODE | add key in check mode to validate return codes
+  ansible.posix.authorized_key:
+    user: root
+    key: "{{ multiple_key_different_order_2 }}"
+    state: present
+    path: "{{ output_dir | expanduser }}/authorized_keys"
+  check_mode: true
+  register: result
+
+- name: CHECK MODE | assert that authorized_keys return values are consistent
+  ansible.builtin.assert:
+    that:
+      - result.changed == True
+      - '"user" in result'
+      - '"key" in result'
+
+- name: CHECK MODE | recopy authorized_keys to ensure it was not changed
+  ansible.builtin.copy:
+    src: existing_authorized_keys
+    dest: "{{ output_dir | expanduser }}/authorized_keys"
+    mode: "0600"
+  register: result
+
+- name: CHECK MODE | assert that the authorized_keys file was not changed
+  ansible.builtin.assert:
+    that:
+      - result.changed == False

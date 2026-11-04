@@ -1,0 +1,621 @@
+ancestor: null
+releases:
+  1.0.0:
+    changes:
+      bugfixes:
+      - Allow unsetting existing environment vars via environment by specifying a
+        null value (https://github.com/ansible/ansible/pull/68236).
+      - Mount - Handle remount with new options (https://github.com/ansible/ansible/issues/59460).
+      - Profile_tasks - result was a odict_items which is not subscriptable, so the
+        slicing was failing (https://github.com/ansible/ansible/issues/59059).
+      - Revert "mount - Check if src exists before mounted (ansible/ansible#61752)".
+      - Typecast results before use in profile_tasks callback (https://github.com/ansible/ansible/issues/69563).
+      - authorized_keys - Added FIDO2 security keys (https://github.com/ansible-collections/ansible.posix/issues/17).
+      - authorized_keys - fix inconsistent return value for check mode (https://github.com/ansible-collections/ansible.posix/issues/37)
+      - json callback - Fix host result to task references in the resultant JSON output
+        for non-lockstep strategy plugins such as free (https://github.com/ansible/ansible/issues/65931)
+      - mount - fix issues with ismount module_util pathing for Ansible 2.9 (fixes
+        https://github.com/ansible-collections/ansible.posix/issues/21)
+      - patch - fix FQCN usage for action plugin (https://github.com/ansible-collections/ansible.posix/issues/11)
+      - selinux - add missing configuration keys for /etc/selinux/config (https://github.com/ansible-collections/ansible.posix/issues/23)
+      - synchronize - fix FQCN usage for action plugin (https://github.com/ansible-collections/ansible.posix/issues/11)
+      major_changes:
+      - Bootstrap Collection (https://github.com/ansible-collections/ansible.posix/pull/1).
+      minor_changes:
+      - CI should use devel (https://github.com/ansible-collections/ansible.posix/pull/6).
+      - Enable tests for at, patch and synchronize modules (https://github.com/ansible-collections/ansible.posix/pull/5).
+      - Enabled tags in galaxy.yml (https://github.com/ansible-collections/ansible.posix/issues/18).
+      - Migrate hacking/cgroup_perf_recap_graph.py to this collection, since the cgroup_perf_recap
+        callback lives here.
+      - Remove license key from galaxy.yml.
+      - Remove sanity jobs from shippable (https://github.com/ansible-collections/ansible.posix/pull/43).
+      - Removed ANSIBLE_METADATA from all the modules.
+      - Revert "Enable at, patch and synchronize tests (https://github.com/ansible-collections/ansible.posix/pull/5)".
+      - Update EXAMPLES section in modules to use FQCN.
+      - Update README.md (https://github.com/ansible-collections/ansible.posix/pull/4/).
+    fragments:
+    - 11-action-plugins-use-fqcn.yml
+    - 12_migrate_cgroup_perf_recap_graph.yml
+    - 14_mount_option.yml
+    - 15_profile_tasks.yml
+    - 17_authorized_keys.yml
+    - 19_enable_tags.yml
+    - 21-mount-module_util-routing-issue.yml
+    - 23-selinux-doesnt-create-missing-config-keys.yml
+    - 25_ansible_metadata.yml
+    - 26_profile_tasks_doc.yml
+    - 27_update_examples.yml
+    - 33_mount.yml
+    - 35_disable_tests.yml
+    - 37-authorized_keys-inconsistent-check-mode-values.yml
+    - 39_remove_license.yml
+    - 43_remove_shippable.yml
+    - 4_update_readme.yml
+    - 5_enable_tests.yml
+    - 65931-json-callback-non-lockstep-output.yml
+    - 6_test_devel.yml
+    - 7_env.yml
+    - initial_commit.yaml
+    modules:
+    - description: Set and retrieve file ACL information.
+      name: acl
+      namespace: ''
+    - description: Schedule the execution of a command or script file via the at command
+      name: at
+      namespace: ''
+    - description: Adds or removes an SSH authorized key
+      name: authorized_key
+      namespace: ''
+    - description: Control active and configured mount points
+      name: mount
+      namespace: ''
+    - description: Apply patch files using the GNU patch tool
+      name: patch
+      namespace: ''
+    - description: Toggles SELinux booleans
+      name: seboolean
+      namespace: ''
+    - description: Change policy and state of SELinux
+      name: selinux
+      namespace: ''
+    - description: A wrapper around rsync to make common tasks in your playbooks quick
+        and easy
+      name: synchronize
+      namespace: ''
+    - description: Manage entries in sysctl.conf.
+      name: sysctl
+      namespace: ''
+    release_date: '2020-06-19'
+  1.1.0:
+    changes:
+      minor_changes:
+      - firewalld - add firewalld module to ansible.posix collection
+    fragments:
+    - firewalld_migration.yml
+    release_date: '2020-07-15'
+  1.1.1:
+    changes:
+      bugfixes:
+      - Fix synchronize to work with renamed docker and buildah connection plugins.
+      minor_changes:
+      - skippy - fixed the deprecation warning (by date) for skippy callback plugin
+    fragments:
+    - 74_synchronize_docker.yml
+    - skippy_deprecation.yml
+    release_date: '2020-09-02'
+  1.2.0:
+    changes:
+      bugfixes:
+      - at - add AIX support (https://github.com/ansible-collections/ansible.posix/pull/99).
+      - synchronize - add ``community.docker.docker`` to the list of supported transports
+        (https://github.com/ansible-collections/ansible.posix/issues/132).
+      - synchronize - do not prepend PWD when path is in form user@server:path or
+        server:path (https://github.com/ansible-collections/ansible.posix/pull/118).
+      - synchronize - fix for private_key overriding in synchronize module.
+      - sysctl - do not persist sysctl when value is invalid (https://github.com/ansible-collections/ansible.posix/pull/101).
+      minor_changes:
+      - firewalld - bring the ``target`` feature back (https://github.com/ansible-collections/ansible.posix/issues/112).
+      - fix sanity test for various modules.
+      - synchronize - add the ``ssh_connection_multiplexing`` option to allow SSH
+        connection multiplexing (https://github.com/ansible/ansible/issues/24365).
+      release_summary: 'This is the minor release of the ``ansible.posix`` collection.
+
+        This changelog contains all changes to the modules in this collection that
+
+        have been added after the release of ``ansible.posix`` 1.1.0.'
+    fragments:
+    - 1.2.0.yml
+    - 101-sysctl-dont-persist-when-invalid.yml
+    - 118-synchronize_bugfix.yml
+    - 120-synchronize_add_option.yml
+    - 144_add_community_docker_connection_plugin_alias.yml
+    - 82-private-key-override-fix.yml
+    - 99-at_add_aix_support.yml
+    - firewalld_zone_target.yml
+    - misc_fix.yml
+    release_date: '2021-03-08'
+  1.3.0:
+    changes:
+      bugfixes:
+      - Synchronize module not recognizing remote ssh key (https://github.com/ansible-collections/ansible.posix/issues/24).
+      - Synchronize not using quotes around arguments like --out-format (https://github.com/ansible-collections/ansible.posix/issues/190).
+      - at - append line-separator to the end of the ``command`` (https://github.com/ansible-collections/ansible.posix/issues/169).
+      - csh - define ``ECHO`` and ``COMMAND_SEP`` (https://github.com/ansible-collections/ansible.posix/issues/204).
+      - firewalld - enable integration after migration (https://github.com/ansible-collections/ansible.posix/pull/239).
+      - firewalld - ensure idempotency with firewalld 0.9.3 (https://github.com/ansible-collections/ansible.posix/issues/179).
+      - firewalld - fix setting zone target to ``%%REJECT%%`` (https://github.com/ansible-collections/ansible.posix/pull/215).
+      - mount - Handle ``boot`` option on Solaris correctly (https://github.com/ansible-collections/ansible.posix/issues/184).
+      - synchronize - add ``community.podman.podman`` to the list of supported connection
+        plugins (https://github.com/ansible-community/molecule-podman/issues/45).
+      - synchronize - complete podman support for synchronize module.
+      - synchronize - properly quote rsync CLI parameters (https://github.com/ansible-collections/ansible.posix/pull/241).
+      - synchronize - replace removed ``ansible_ssh_user`` by ``ansible_user`` everywhere;
+        do the same for ``ansible_ssh_port`` and ``ansible_ssh_host`` (https://github.com/ansible-collections/ansible.posix/issues/60).
+      - synchronize - use SSH args from SSH connection plugin (https://github.com/ansible-collections/ansible.posix/issues/222).
+      - synchronize - use become_user when invoking rsync on remote with sudo (https://github.com/ansible-collections/ansible.posix/issues/186).
+      - sysctl - modifying conditional check for docker to fix tests being skipped
+        (https://github.com/ansible-collections/ansible.posix/pull/226).
+      minor_changes:
+      - acl - add new alias ``recurse`` for ``recursive`` parameter (https://github.com/ansible-collections/ansible.posix/issues/124).
+      - added 2.11 branch to test matrix, added ignore-2.12.txt.
+      - authorized_key - add ``no_log=False`` in ``argument_spec`` to clear false-positives
+        of ``no-log-needed`` (https://github.com/ansible-collections/ansible.posix/pull/156).
+      - authorized_key - add a list of valid key types (https://github.com/ansible-collections/ansible.posix/issues/134).
+      - mount - Change behavior of ``boot`` option to set ``noauto`` on BSD nodes
+        (https://github.com/ansible-collections/ansible.posix/issues/28).
+      - mount - Change behavior of ``boot`` option to set ``noauto`` on Linux nodes
+        (https://github.com/ansible-collections/ansible.posix/issues/28).
+      - mount - add ``no_log=False`` in ``argument_spec`` to clear false-positives
+        of ``no-log-needed`` (https://github.com/ansible-collections/ansible.posix/pull/156).
+      - mount - returns ``backup_file`` value when a backup fstab is created.
+      - synchronize - add ``delay_updates`` option (https://github.com/ansible-collections/ansible.posix/issues/157).
+      - synchronize - fix typo (https://github.com/ansible-collections/ansible.posix/pull/198).
+      release_summary: 'This is the minor release of the ``ansible.posix`` collection.
+
+        This changelog contains all changes to the modules in this collection that
+
+        have been added after the release of ``ansible.posix`` 1.2.0.'
+    fragments:
+    - 1.3.0.yml
+    - 124_acl.yml
+    - 126_mount_not_returning_backup_file.yml
+    - 134_authorized_key.yml
+    - 156-fix_no-log-needed_false_positives.yml
+    - 159-fix-60-deprecated-ansible_ssh_user.yml
+    - 167-synchronize-add_delay_option.yml
+    - 169_add_lineseparator_to_command.yml
+    - 175_synchronize.yml
+    - 179_firewalld.yml
+    - 181-update_codecov_sh_url.yml
+    - 185_mount_at_boot.yml
+    - 187-fix-synchronize-become-user.yml
+    - 193_firewalld.yml
+    - 196_boot_opt_for_linux.yml
+    - 203_boot_opt_for_bsd.yml
+    - 204_csh_shell.yml
+    - 207-mount_tests.yml
+    - 213_quote_cmd_args.yml
+    - 214-add_firewalld_info_module.yml
+    - 215_fix_REJECT_target_name.yml
+    - 217-restructure_authrized_key_test.yml
+    - 222_synchronize.yml
+    - 226_sysctl_fix_integration_test.yml
+    - 229_add_podman_connection_plugin_to_synchronize.yml
+    - 230_complete_podman_support_for_synchronize.yml
+    - 233-fix-wrong-firewalld-version-info.yml
+    - 241-synchronize-shell-quoting.yml
+    - firewalld_integ_test.yml
+    - firewalld_test.yml
+    - sanity_test_ignore_file.yml
+    - synchronize.yml
+    - test_matrix.yml
+    release_date: '2021-08-11'
+  1.4.0:
+    changes:
+      bugfixes:
+      - Fix for whitespace in source full path causing error ```code 23) at main.c(1330)
+        [sender=3.2.3]``` (https://github.com/ansible-collections/ansible.posix/pull/278)
+      - Include ``PSF-license.txt`` file for ``plugins/module_utils/_version.py``.
+      - Use vendored version of ``distutils.version`` instead of the deprecated Python
+        standard library to address PEP 632 (https://github.com/ansible-collections/ansible.posix/issues/303).
+      - firewalld - Correct usage of queryForwardPort (https://github.com/ansible-collections/ansible.posix/issues/247).
+      - firewalld - Refine the handling of exclusive options (https://github.com/ansible-collections/ansible.posix/issues/255).
+      - mount - add a newline at the end of line in ``fstab`` (https://github.com/ansible-collections/ansible.posix/issues/210).
+      - profile_tasks - Correctly calculate task execution time with serial execution
+        (https://github.com/ansible-collections/ansible.posix/issues/83).
+      - seboolean - add ``python3-libsemanage`` package dependency for RHEL8+ systems.
+      minor_changes:
+      - firewalld - Show warning message that variable type of ``masquerade`` and
+        ``icmp_block_inversion`` will be changed from ``str`` to ``boolean`` in the
+        future release (https://github.com/ansible-collections/ansible.posix/pull/254).
+      - selinux - optionally update kernel boot params when disabling/re-enabling
+        SELinux (https://github.com/ansible-collections/ansible.posix/pull/142).
+      release_summary: 'This is the minor release of the ``ansible.posix`` collection.
+
+        This changelog contains all changes to the modules in this collection that
+
+        have been added after the release of ``ansible.posix`` 1.3.0.'
+    fragments:
+    - 1.4.0.yml
+    - 211_fstab_append_newline.yml
+    - 247_firewalld.yml
+    - 254_variable_warnings.yml
+    - 255_authorized_key_url.yml
+    - 263_profile_tasks_with_serial.yml
+    - 272-copy_ignore_txt.yml
+    - 277_fix_integration_test_on_devel.yml
+    - 282_fix_unit_test_for_synchronize.yml
+    - 287_firewalld_requirements.yml
+    - 288_mounts_options.yml
+    - 297_firewalld_exclusive_options_handling.yml
+    - 299_seboolean_python3.yml
+    - 302_shippable_exit_code.yml
+    - 304_pep632.yml
+    - 346_copy_ignore_txt_for_devel.yml
+    - 347_add_branch_213.yml
+    - 349_follow_new_guidelines.yml
+    - 353_ci_fix_unittest_for_synchronize.yml
+    - disable_selinux_via_kernel_cmdline.yml
+    - psf-license.yml
+    - sanity_fixes.yml
+    - shell_escape_full_path_for_rsync.yml
+    release_date: '2022-05-23'
+  1.5.1:
+    changes:
+      bugfixes:
+      - Removed contentious terminology to match reference documentation in profile_tasks.
+      - firewall - Fixed to output a more complete missing library message.
+      - synchronize - Fixed hosts involved in rsync require the same password
+      minor_changes:
+      - mount - Add ``absent_from_fstab`` state (https://github.com/ansible-collections/ansible.posix/pull/166).
+      - mount - Add ``ephemeral`` value for the ``state`` parameter, that allows to
+        mount a filesystem without altering the ``fstab`` file (https://github.com/ansible-collections/ansible.posix/pull/267).
+      - r4e_rpm_ostree - new module for validating package state on RHEL for Edge
+      - rhel_facts - new facts module to handle RHEL specific facts
+      - rhel_rpm_ostree - new module to handle RHEL rpm-ostree specific package management
+        functionality
+      - rpm_ostree_upgrade - new module to automate rpm-ostree upgrades
+      - rpm_ostree_upgrade - new module to manage upgrades for rpm-ostree based systems
+    fragments:
+    - 166_mount_absent_fstab.yml
+    - 267_mount_ephemeral.yml
+    - 366_update_version_number_for_galaxy.yml
+    - 371_refactoring_ci_process_202206.yml
+    - 373_firewall_fix_missing_library_message.yml
+    - 375_update_azp_container.yml
+    - 380_update_usage_profile_tasks.yml
+    - 386_follow_ci_testing_rules.yml
+    - 389_ci_add_stable_214.yml
+    - 390_hosts_involved_same_password.yml
+    - 393-rpm-ostree.yml
+    - 393_rhel_for_edge.yml
+    - 400-fix-boolean-values-in-docs.yml
+    - 401_document_module_default_values.yml
+    - 407_fix_firewalld_port_test.yml
+    - 409_update_azp_matrix.yml
+    release_date: '2023-01-20'
+  1.5.2:
+    changes:
+      bugfixes:
+      - Fixed a bug where firewalld module fails to create/remove zones when the daemon
+        is stopped
+      - rhel_facts - Call exit_json with all keyword arguments
+      minor_changes:
+      - Add jsonl callback plugin to ansible.posix collection
+      - firewalld - add `protocol` parameter
+      release_summary: 'This is the minor release of the ``ansible.posix`` collection.
+
+        This changelog contains all changes to the modules and plugins
+
+        in this collection that have been added after the release of
+
+        ``ansible.posix`` 1.5.1.'
+    fragments:
+    - 1.5.2.yml
+    - 399_firewalld_create_remove_zone_when_offline.yml
+    - 413-synchronize-seealso.yml
+    - 417-add-protocol-parameter.yml
+    - 419-fix-patch-doc.yml
+    - 425-support_test-sanity-docker-devel.yml
+    - 426-firewalld_info-doc-update.yml
+    - 434-fix-rhel_facts-exit_json.yml
+    - 535-add-jsonl-callback.yml
+    release_date: '2023-04-07'
+  1.5.4:
+    changes:
+      bugfixes:
+      - Fix sysctl integration test failing on newer versions of core. Previously
+        NoneType was allowable, now it fails to convert to a str type.
+      - Support new sanity test for the ansible-core devel branch CI test (https://github.com/ansible-collections/ansible.posix/issues/446).
+      - firewall - Fix issue where adding an interface to a zone would fail when the
+        daemon is offline
+      - firewall - Fix issue where opening a specific port resulted in opening the
+        whole protocol of the specified port
+      - firewalld - Consider value of masquerade and icmp_block_inversion parameters
+        when a boolean like value is passed
+      minor_changes:
+      - json and jsonl - Add the ``ANSIBLE_JSON_INDENT`` parameter
+      - json and jsonl - Add the ``path`` attribute into the play and task output
+    fragments:
+    - 343-fix-profile_tasks-callback-documentation.yml
+    - 402_firewall_fix_offline_interface_add.yml
+    - 404_firewalld_masquerade_icmp_block_inversion_bugfixes.yml
+    - 440-json-add-path-field.yaml
+    - 441-json-add-indent-parameter.yaml
+    - 445_ci_support_stable-215.yml
+    - 448_support_new_sanity_test.yml
+    - 451_firewall_fix_protocol_parameter.yml
+    - 456_sysctl_fix_nonetype.yml
+    release_date: '2023-05-10'
+  1.6.0:
+    changes:
+      bugfixes:
+      - Bugfix in the documentation regarding the path option for authorised_key(https://github.com/ansible-collections/ansible.posix/issues/483).
+      - seboolean - make it work with disabled SELinux
+      - synchronize - maintain proper formatting of the remote paths (https://github.com/ansible-collections/ansible.posix/pull/361).
+      - sysctl - fix sysctl to work properly on symlinks (https://github.com/ansible-collections/ansible.posix/issues/111).
+      major_changes:
+      - Dropping support for Ansible 2.9, ansible-core 2.15 will be minimum required
+        version for this release
+      minor_changes:
+      - Add summary_only parameter to profile_roles and profile_tasks callbacks.
+      - firewalld - add functionality to set forwarding (https://github.com/ansible-collections/ansible.posix/pull/548).
+      - firewalld - added offline flag implementation (https://github.com/ansible-collections/ansible.posix/pull/484)
+      - firewalld - respawn module to use the system python interpreter when the ``firewall``
+        python module is not available for ``ansible_python_interpreter`` (https://github.com/ansible-collections/ansible.posix/pull/460).
+      - firewalld_info - Only warn about ignored zones, when there are zones ignored.
+      - firewalld_info - respawn module to use the system python interpreter when
+        the ``firewall`` python module is not available for ``ansible_python_interpreter``
+        (https://github.com/ansible-collections/ansible.posix/pull/460).
+      - mount - add no_log option for opts parameter (https://github.com/ansible-collections/ansible.posix/pull/563).
+      - seboolean - respawn module to use the system python interpreter when the ``selinux``
+        python module is not available for ``ansible_python_interpreter`` (https://github.com/ansible-collections/ansible.posix/pull/460).
+      - selinux - respawn module to use the system python interpreter when the ``selinux``
+        python module is not available for ``ansible_python_interpreter`` (https://github.com/ansible-collections/ansible.posix/pull/460).
+      release_summary: 'This is the minor release of the ``ansible.posix`` collection.
+
+        This changelog contains all changes to the modules and plugins
+
+        in this collection that have been added after the release of
+
+        ``ansible.posix`` 1.5.4.'
+      removed_features:
+      - skippy - Remove skippy pluglin as it is no longer supported(https://github.com/ansible-collections/ansible.posix/issues/350).
+    fragments:
+    - 1.6.0.yml
+    - 206_fix_sysctl_to_work_on_symlinks.yml
+    - 333_doc_absent_precision.yml
+    - 361_maintain_proper_formating_remote_paths.yml
+    - 421-remove-deprecation-warning.yml
+    - 460-respawn.yaml
+    - 466-tests.yml
+    - 477_ci_update.yml
+    - 484-firewalld-offline.yml
+    - 487_ci_update.yml
+    - 490_doc_authorized_key_path.yml
+    - 496_seboolean-make-it-wrk-with-SELinux-disabled.yaml
+    - 504-firewalld_info-warning.yaml
+    - 508_ci_update.yml
+    - 510_ci_update.yml
+    - 511_profile-callbacks-add-summary-only-parameter.yml
+    - 548_add_foward.yml
+    - 556_remove_skippy_callback.yml
+    - 562_update_core_version.yml
+    - 563_add_no_log_option.yml
+    - dropping-ansible29.yml
+    - test-reqs.yml
+    release_date: '2024-09-11'
+  1.6.1:
+    changes:
+      bugfixes:
+      - acl - Fixed to set ACLs on paths mounted with NFS version 4 correctly (https://github.com/ansible-collections/ansible.posix/issues/240).
+      - mount - Handle ``boot`` option on Linux, NetBSD and OpenBSD correctly (https://github.com/ansible-collections/ansible.posix/issues/364).
+      - skippy - Revert removal of skippy plugin. It will be removed in version 2.0.0
+        (https://github.com/ansible-collections/ansible.posix/issues/573).
+      release_summary: 'This is the bugfix release of the stable version ``ansible.posix``
+        collection.
+
+        This changelog contains all changes to the modules and plugins
+
+        in this collection that have been added after the release of
+
+        ``ansible.posix`` 1.6.1.'
+    fragments:
+    - 1.6.1.yml
+    - 365-boot-linux.yml
+    - 566_bump_version_161.yml
+    - 567_remove_version_added.yml
+    - 570_nfs4_acl.yml
+    - 571_ci_bump_core_version.yml
+    - 572_revert_removal_of_skippy.yml
+    release_date: '2024-10-11'
+  1.6.2:
+    changes:
+      bugfixes:
+      - backport - Drop ansible-core 2.14 and set 2.15 minimum version (https://github.com/ansible-collections/ansible.posix/issues/578).
+      release_summary: 'This is the bugfix release of the stable version ``ansible.posix``
+        collection.
+
+        This changelog contains all changes to the modules and plugins
+
+        in this collection that have been added after the release of
+
+        ``ansible.posix`` 1.6.1.'
+    fragments:
+    - 1.6.2.yml
+    - 580_drop_ansible214.yml
+    release_date: '2024-10-22'
+  2.0.0:
+    changes:
+      breaking_changes:
+      - firewalld - Changed the type of forward and masquerade options from str to
+        bool (https://github.com/ansible-collections/ansible.posix/issues/582).
+      - firewalld - Changed the type of icmp_block_inversion option from str to bool
+        (https://github.com/ansible-collections/ansible.posix/issues/586).
+      bugfixes:
+      - acl - Fixed to set ACLs on paths mounted with NFS version 4 correctly (https://github.com/ansible-collections/ansible.posix/issues/240).
+      - mount - Handle ``boot`` option on Linux, NetBSD and OpenBSD correctly (https://github.com/ansible-collections/ansible.posix/issues/364).
+      - mount - If a comment is appended to a fstab entry, state present creates a
+        double-entry (https://github.com/ansible-collections/ansible.posix/issues/595).
+      minor_changes:
+      - authorized_keys - allow using absolute path to a file as a SSH key(s) source
+        (https://github.com/ansible-collections/ansible.posix/pull/568)
+      - callback plugins - Add recap information to timer, profile_roles and profile_tasks
+        callback outputs (https://github.com/ansible-collections/ansible.posix/pull/387).
+      release_summary: 'This is the major release of the ``ansible.posix`` collection.
+
+        This changelog contains all changes to the modules and plugins
+
+        in this collection that have been added after the release of
+
+        ``ansible.posix`` 1.6.2'
+      removed_features:
+      - skippy - Remove skippy pluglin as it is no longer supported(https://github.com/ansible-collections/ansible.posix/issues/350).
+    fragments:
+    - 2.0.0.yml
+    - 365-boot-linux.yml
+    - 387_callback_output_header.yml
+    - 556_remove_skippy_callback.yml
+    - 566_bump_version_161.yml
+    - 567_remove_version_added.yml
+    - 568_update_authorized_key.yml
+    - 570_nfs4_acl.yml
+    - 571_ci_bump_core_version.yml
+    - 576_bump_version_2.yml
+    - 581_ci_selinux.yml
+    - 584_firewalld_opt_type.yml
+    - 587_update_README.yml
+    - 588_ci_enable_devel.yml
+    - 593_replace_freebsd_version.yml
+    - 597_remove_fstab_comment_on_updating.yml
+    - 598_icmp_block_inversion.yml
+    release_date: '2024-12-04'
+  2.1.0:
+    changes:
+      bugfixes:
+      - ansible.posix.cgroup_perf_recap - fixes json module load path (https://github.com/ansible-collections/ansible.posix/issues/630).
+      minor_changes:
+      - profile_tasks and profile_roles callback plugins - avoid deleted/deprecated
+        callback functions, instead use modern interface that was introduced a longer
+        time ago (https://github.com/ansible-collections/ansible.posix/issues/650).
+      release_summary: 'This is the minor release of the ``ansible.posix`` collection.
+
+        This changelog contains all changes to the modules and plugins
+
+        in the stable-2 branch that have been added after the release of
+
+        ``ansible.posix`` 2.0.0'
+    fragments:
+    - 2.1.0.yml
+    - 631_fixes_module_path.yml
+    - 642_ci_add_rhel10.yml
+    - 650-profile_tasks_roles.yml
+    - 654_ci_bump_core_version.yml
+    release_date: '2025-07-16'
+  2.2.0:
+    changes:
+      bugfixes:
+      - acl - correctly assert needed changes when pointing to a directory and recursive
+        is set to true.
+      - ansible.posix.authorized_key - fixes error on permission denied in authorized_key
+        module (https://github.com/ansible-collections/ansible.posix/issues/462).
+      - firewalld_info - stop returning warnings as return values; this has been deprecated
+        by ansible-core (https://github.com/ansible-collections/ansible.posix/pull/670).
+      - mount - stop returning warnings as return values; this has been deprecated
+        by ansible-core (https://github.com/ansible-collections/ansible.posix/pull/670).
+      - patch - removed use of deprecated ``_AnsibleActionDone`` API (https://github.com/ansible-collections/ansible.posix/pull/687).
+      minor_changes:
+      - acl - fix deprecated ``ansible.module_utils._text`` import (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - authorized_key - fix deprecated ``ansible.module_utils._text`` and ``ansible.module_utils.six``
+        imports (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - cgroup_perf_recap callback - fix deprecated ``ansible.module_utils._text``
+        and ``ansible.module_utils.six`` imports (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - csh shell plugin - fix deprecated ``ansible.module_utils.six`` imports (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - firewalld_info - fix deprecated ``ansible.module_utils._text`` import (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - firewalld_info - use module.warn instead of passing ``warnings`` to ``exit_json``
+        (https://github.com/ansible-collections/ansible.posix/issues/710).
+      - fish shell plugin - fix deprecated ``ansible.module_utils.six`` imports (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - json callback - fix deprecated ``ansible.module_utils._text`` import (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - jsonl callback - fix deprecated ``ansible.module_utils._text`` import (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - mount - fix deprecated ``ansible.module_utils._text`` and ``ansible.module_utils.six``
+        imports (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - patch - fix deprecated ``ansible.module_utils._text`` import (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - profile_roles callback - fix deprecated ``ansible.module_utils.six`` import
+        (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - profile_tasks - Add option to provide a different date/time format (https://github.com/ansible-collections/ansible.posix/issues/279).
+      - profile_tasks callback - fix deprecated ``ansible.module_utils.six`` import
+        (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - removed ANSIBLE_METADATA from remaining plugins.
+      - rhel_rpm_ostree - fix deprecated ``ansible.module_utils._text`` import (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - rpm_ostree_upgrade - fix deprecated ``ansible.module_utils._text`` import
+        (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - seboolean - fix deprecated ``ansible.module_utils._text`` import (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - synchronize - fix deprecated ``ansible.module_utils._text``, ``ansible.module_utils.common._collections_compat``,
+        and ``ansible.module_utils.six`` imports (https://github.com/ansible-collections/ansible.posix/issues/686).
+      - sysctl - fix deprecated ``ansible.module_utils._text`` and ``ansible.module_utils.six``
+        imports (https://github.com/ansible-collections/ansible.posix/issues/686).
+      release_summary: 'This is the minor release of the ``ansible.posix`` collection.
+
+        This changelog contains all changes to the modules and plugins
+
+        in the stable-2 branch that have been added after the release of
+
+        ``ansible.posix`` 2.1.0'
+    fragments:
+    - 2.2.0.yml
+    - 626_profile_tasks_datetime_format.yml
+    - 638_fix_recursive_acl.yml
+    - 639_fix_authorized_key.yml
+    - 660_ci_azp_syntax.yml
+    - 665_update_readme_20250728.yml
+    - 666_azp_update_20250728.yml
+    - 670-deprecations.yml
+    - 673_update_ci_20250805.yml
+    - 682_update_ci_20250929.yml
+    - 686_fix_deprecated_imports.yml
+    - 693_azp_update_20251205.yml
+    - ansible_metadata_removed.yml
+    - firewalld_info_warnings.yml
+    - patch_removed.yml
+    release_date: '2026-05-18'
+  2.2.1:
+    changes:
+      bugfixes:
+      - sysctl - reload sysctl only if the sysctl file is ``/etc/sysctl.conf`` or
+        ``/etc/sysctl.conf.local`` (https://github.com/ansible-collections/ansible.posix/issues/663).
+      release_summary: 'This is the minor release of the ``ansible.posix`` collection.
+
+        This changelog contains all changes to the modules and plugins
+
+        in the stable-2 branch that have been added after the release of
+
+        ``ansible.posix`` 2.2.0'
+      security_fixes:
+      - authorized_key - fix local privilege escalation via symlink-following when
+        running as root (https://github.com/ansible-collections/ansible.posix/issues/759).
+    fragments:
+    - 2.2.1.yml
+    - 643-sysctl-docs.yml
+    - 751_ci_test_container_update.yml
+    - 755_ci_test_container_update.yml
+    - 759_cve_2026_11837.yml
+    - 763_ci_azp_update_devel.yml
+    - freebsd_sysctl.yml
+    release_date: '2026-07-01'
+  2.2.2:
+    changes:
+      bugfixes:
+      - README - Added ``Red Hat Automation Hub`` as correct contact information for
+        Red Hat Ansible Automation Platform subscribers.
+      release_summary: 'This is the minor release of the ``ansible.posix`` collection.
+
+        This changelog contains all changes to the modules and plugins
+
+        in the stable-2 branch that have been added after the release of
+
+        ``ansible.posix`` 2.2.1'
+    fragments:
+    - 2.2.2.yml
+    - 767_remove_unsupported_version_skip.yml
+    - 768_update_support_section.yml
+    release_date: '2026-07-08'

@@ -1,0 +1,368 @@
+---
+# Test code for the sysctl module.
+# (c) 2017, James Tanner <tanner.jc@gmail.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+# NOTE: Testing sysctl inside an unprivileged container means that we cannot
+# apply sysctl, or it will always fail, because of that in most cases (except
+# those when it should fail) we have to use `reload=no`.
+
+- name: Test inside Docker
+  when:
+    - ansible_facts.virtualization_type == 'docker' or ansible_facts.virtualization_type == 'container'
+  block:
+    - name: Set output_dir_test fact
+      ansible.builtin.set_fact:
+        output_dir_test: "{{ output_dir }}/test_sysctl"
+
+    - name: Make sure our testing sub-directory does not exist
+      ansible.builtin.file:
+        path: "{{ output_dir_test }}"
+        state: absent
+
+    - name: Create our testing sub-directory
+      ansible.builtin.file:
+        path: "{{ output_dir_test }}"
+        state: directory
+        mode: "0755"
+
+    ##
+    ## sysctl - file manipulation
+    ##
+
+    - name: Copy the example conf to the test dir
+      ansible.builtin.copy:
+        src: sysctl.conf
+        dest: "{{ output_dir_test }}"
+        mode: "0644"
+
+    - name: Set vm.swappiness to 5
+      ansible.posix.sysctl:
+        name: vm.swappiness
+        value: 5
+        state: present
+        reload: false
+        sysctl_file: "{{ output_dir_test }}/sysctl.conf"
+      register: sysctl_test0
+
+    - name: Debug sysctl_test0
+      ansible.builtin.debug:
+        var: sysctl_test0
+        verbosity: 1
+
+    - name: Get file content
+      ansible.builtin.shell:
+        cmd: set -o pipefail && cat {{ output_dir_test }}/sysctl.conf | egrep -v ^\#
+        executable: /bin/bash
+      changed_when: false
+      register: sysctl_content0
+
+    - name: Debug sysctl_content0
+      ansible.builtin.debug:
+        var: sysctl_content0
+        verbosity: 1
+
+    - name: Set vm.swappiness to 5 again
+      ansible.posix.sysctl:
+        name: vm.swappiness
+        value: 5
+        state: present
+        reload: false
+        sysctl_file: "{{ output_dir_test }}/sysctl.conf"
+      register: sysctl_test1
+
+    - name: Validate results
+      ansible.builtin.assert:
+        that:
+          - sysctl_test0 is changed
+          - sysctl_test1 is not changed
+          - sysctl_content0.stdout_lines[sysctl_content0.stdout_lines.index("vm.swappiness=5")] == "vm.swappiness=5"
+
+    - name: Remove kernel.panic
+      ansible.posix.sysctl:
+        name: kernel.panic
+        value: 2
+        reload: false
+        state: absent
+        sysctl_file: "{{ output_dir_test }}/sysctl.conf"
+      register: sysctl_test2
+
+    - name: Get file content
+      ansible.builtin.shell:
+        cmd: set -o pipefail && cat {{ output_dir_test }}/sysctl.conf | egrep -v ^\#
+        executable: /bin/bash
+      changed_when: false
+      register: sysctl_content2
+
+    - name: Debug sysctl_test2 sysctl_content2
+      ansible.builtin.debug:
+        var: item
+        verbosity: 1
+      with_items:
+        - "{{ sysctl_test2 }}"
+        - "{{ sysctl_content2 }}"
+
+    - name: Validate results for key removal
+      ansible.builtin.assert:
+        that:
+          - sysctl_test2 is changed
+          - "'kernel.panic' not in sysctl_content2.stdout_lines"
+
+    - name: Test remove kernel.panic again
+      ansible.posix.sysctl:
+        name: kernel.panic
+        value: 2
+        state: absent
+        reload: false
+        sysctl_file: "{{ output_dir_test }}/sysctl.conf"
+      register: sysctl_test2_change_test
+
+    - name: Assert that no change was made
+      ansible.builtin.assert:
+        that:
+          - sysctl_test2_change_test is not changed
+
+    - name: Try sysctl with an invalid name
+      ansible.posix.sysctl:
+        name: test.invalid
+        value: 1
+      register: sysctl_test3
+      ignore_errors: true
+
+    - name: Debug sysctl_test3
+      ansible.builtin.debug:
+        var: sysctl_test3
+        verbosity: 1
+
+    - name: Validate results for test 3
+      ansible.builtin.assert:
+        that:
+          - sysctl_test3 is failed
+
+    ##
+    ## sysctl - sysctl_set
+    ##
+
+    - name: Set net.ipv4.ip_forward
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: 1
+        sysctl_set: true
+        reload: false
+      register: sysctl_test3
+
+    - name: Check with sysctl command
+      ansible.builtin.command: sysctl net.ipv4.ip_forward
+      changed_when: false
+      register: sysctl_check3
+
+    - name: Debug sysctl_test3 sysctl_check3
+      ansible.builtin.debug:
+        var: item
+        verbosity: 1
+      with_items:
+        - "{{ sysctl_test3 }}"
+        - "{{ sysctl_check3 }}"
+
+    - name: Validate results for test 3
+      ansible.builtin.assert:
+        that:
+          - sysctl_test3 is changed
+          - sysctl_check3.stdout_lines == ["net.ipv4.ip_forward = 1"]
+
+    - name: Try sysctl with no name
+      ansible.posix.sysctl:
+        name: ""
+        value: 1
+        sysctl_set: true
+      ignore_errors: true
+      register: sysctl_no_name
+
+    - name: Validate nameless results
+      ansible.builtin.assert:
+        that:
+          - sysctl_no_name is failed
+          - sysctl_no_name.msg == 'name cannot be blank'
+
+    - name: Try sysctl with no value
+      ansible.posix.sysctl:
+        name: Foo
+        value:
+        sysctl_set: true
+      ignore_errors: true
+      register: sysctl_no_value
+
+    - name: Validate nameless results
+      ansible.builtin.assert:
+        that:
+          - sysctl_no_value is failed
+          - sysctl_no_value.msg == 'value cannot be None'
+
+    - name: Try sysctl with an invalid name
+      ansible.posix.sysctl:
+        name: test.invalid
+        value: 1
+        sysctl_set: true
+      register: sysctl_test4
+      ignore_errors: true
+
+    - name: Debug sysctl_test4
+      ansible.builtin.debug:
+        var: sysctl_test4
+        verbosity: 1
+
+    - name: Validate results for test 4
+      ansible.builtin.assert:
+        that:
+          - sysctl_test4 is failed
+
+- name: Test on RHEL VMs
+  when:
+    - ansible_facts.virtualization_type != 'docker'
+    - ansible_facts.distribution == 'RedHat'
+  block:
+    # Test reload: yes
+    - name: Set sysctl property using module
+      ansible.posix.sysctl:
+        name: vm.swappiness
+        value: "22"
+        state: present
+        reload: true
+      register: sysctl_set1
+
+    - name: Change sysctl property using command
+      ansible.builtin.command: sysctl vm.swappiness=33
+      changed_when: true
+
+    - name: Set sysctl property using module
+      ansible.posix.sysctl:
+        name: vm.swappiness
+        value: "22"
+        state: present
+        reload: true
+      register: sysctl_set2
+
+    - name: Read /etc/sysctl.conf
+      ansible.builtin.command: egrep -v ^# /etc/sysctl.conf
+      changed_when: false
+      register: sysctl_conf_content
+
+    - name: Get current value of vm.swappiness
+      ansible.builtin.command: sysctl -n vm.swappiness
+      changed_when: false
+      register: sysctl_current_vm_swappiness
+
+    - name: Ensure changes were made appropriately
+      ansible.builtin.assert:
+        that:
+          - sysctl_set1 is changed
+          - sysctl_set2 is changed
+          - "'vm.swappiness=22' in sysctl_conf_content.stdout_lines"
+          - sysctl_current_vm_swappiness.stdout == '22'
+
+    # Test reload: yes in check mode
+    - name: Set the same value using module in check mode
+      ansible.posix.sysctl:
+        name: vm.swappiness
+        value: "22"
+        state: present
+        reload: true
+      check_mode: true
+      register: sysctl_check_mode1
+
+    - name: Set a different value using module in check mode
+      ansible.posix.sysctl:
+        name: vm.swappiness
+        value: "44"
+        state: present
+        reload: true
+      check_mode: true
+      register: sysctl_check_mode2
+
+    - name: Read /etc/sysctl.conf
+      ansible.builtin.command: egrep -v ^# /etc/sysctl.conf
+      changed_when: false
+      register: sysctl_check_mode_conf_content
+
+    - name: Get current value of vm.swappiness
+      ansible.builtin.command: sysctl -n vm.swappiness
+      changed_when: false
+      register: sysctl_check_mode_current_vm_swappiness
+
+    - name: Ensure no changes were made in check mode
+      ansible.builtin.assert:
+        that:
+          - sysctl_check_mode1 is success
+          - sysctl_check_mode2 is changed
+          - "'vm.swappiness=22' in sysctl_check_mode_conf_content.stdout_lines"
+          - sysctl_check_mode_current_vm_swappiness.stdout == '22'
+
+    # Test sysctl: invalid value
+    - name: Set invalid sysctl property using module
+      ansible.posix.sysctl:
+        name: vm.mmap_rnd_bits
+        value: "1024"
+        state: present
+        reload: true
+        sysctl_set: true
+      ignore_errors: true
+      register: sysctl_invalid_set1
+
+    - name: Read /etc/sysctl.conf
+      ansible.builtin.command: cat /etc/sysctl.conf
+      changed_when: false
+      register: sysctl_invalid_conf_content
+
+    - name: Ensure changes were not made
+      ansible.builtin.assert:
+        that:
+          - sysctl_invalid_set1 is failed
+          - "'vm.mmap_rnd_bits' not in sysctl_invalid_conf_content.stdout"
+
+    # Test sysctl: sysctl_file is symlink
+    - name: Create link source
+      ansible.builtin.copy:
+        content: |
+          # Testing Ansible Sysctl module on symlink.
+        dest: /tmp/ansible_sysctl_test.conf
+        mode: "0644"
+
+    - name: Create symlink to the conf file
+      ansible.builtin.file:
+        src: /tmp/ansible_sysctl_test.conf
+        dest: /tmp/ansible_sysctl_test_symlink.conf
+        state: link
+
+    - name: Use sysctl module with symlink sysctl file
+      ansible.posix.sysctl:
+        name: 'kernel.randomize_va_space'
+        value: '1'
+        sysctl_file: /tmp/ansible_sysctl_test_symlink.conf
+        state: present
+        sysctl_set: false
+        reload: false
+
+    - name: Stat sysctl file
+      ansible.builtin.stat:
+        path: /tmp/ansible_sysctl_test_symlink.conf
+      register: stat_result
+
+    - name: Ensure the sysctl file remains a symlink
+      ansible.builtin.assert:
+        that:
+          - stat_result.stat.islnk is defined and stat_result.stat.islnk
+          - stat_result.stat.lnk_source == '/tmp/ansible_sysctl_test.conf'

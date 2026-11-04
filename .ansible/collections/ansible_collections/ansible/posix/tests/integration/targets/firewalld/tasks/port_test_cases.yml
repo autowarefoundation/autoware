@@ -1,0 +1,109 @@
+---
+# Test playbook for the firewalld module - port operations
+# (c) 2017, Adam Miller <admiller@redhat.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: Firewalld port range test permanent enabled
+  ansible.posix.firewalld:
+    port: 5500-6850/tcp
+    permanent: true
+    state: enabled
+  register: result
+
+- name: Assert firewalld port range test permanent enabled worked
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Firewalld port range test permanent enabled rerun (verify not changed)
+  ansible.posix.firewalld:
+    port: 5500-6850/tcp
+    permanent: true
+    state: enabled
+  register: result
+
+- name: Assert firewalld port range test permanent enabled rerun worked (verify not changed)
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+
+- name: Firewalld port test permanent enabled
+  ansible.posix.firewalld:
+    port: 6900/tcp
+    permanent: true
+    state: enabled
+  register: result
+
+- name: Assert firewalld port test permanent enabled worked
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Firewalld port test permanent enabled
+  ansible.posix.firewalld:
+    port: 6900/tcp
+    permanent: true
+    state: enabled
+  register: result
+
+- name: Assert firewalld port test permanent enabled worked
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+
+- name: Firewalld port test disabled
+  ansible.posix.firewalld:
+    port: "{{ item }}"
+    permanent: true
+    state: disabled
+  loop:
+    - 6900/tcp
+    - 5500-6850/tcp
+
+- name: Firewalld port test permanent enabled
+  ansible.posix.firewalld:
+    port: 8081/tcp
+    permanent: true
+    state: enabled
+  register: result
+
+- name: Assert firewalld port test permanent enabled worked
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Firewalld port test permanent enabled rerun (verify not changed)
+  ansible.posix.firewalld:
+    port: 8081/tcp
+    permanent: true
+    state: enabled
+  register: result
+
+- name: Assert firewalld port test permanent enabled rerun worked (verify not changed)
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+
+- name: Firewalld port test permanent disabled
+  ansible.posix.firewalld:
+    port: 8081/tcp
+    permanent: true
+    state: disabled
+  register: result
+
+- name: Assert firewalld port test permanent disabled worked
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Firewalld port test permanent disabled rerun (verify not changed)
+  ansible.posix.firewalld:
+    port: 8081/tcp
+    permanent: true
+    state: disabled
+  register: result
+
+- name: Assert firewalld port test permanent disabled rerun worked (verify not changed)
+  ansible.builtin.assert:
+    that:
+      - result is not changed

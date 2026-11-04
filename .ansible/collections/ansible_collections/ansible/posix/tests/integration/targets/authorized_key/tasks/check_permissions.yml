@@ -1,0 +1,41 @@
+---
+# -------------------------------------------------------------
+# check permissions
+
+- name: Create a file that is not accessible
+  ansible.builtin.file:
+    state: touch
+    path: "{{ output_dir | expanduser }}/file_permissions"
+    owner: root
+    mode: '0000'
+
+- name: Create unprivileged user
+  ansible.builtin.user:
+    name: nopriv
+    create_home: true
+
+- name: Try to delete a key from an unreadable file
+  become: true
+  become_user: nopriv
+  ansible.posix.authorized_key:
+    user: root
+    key: "{{ dss_key_basic }}"
+    state: absent
+    path: "{{ output_dir | expanduser }}/file_permissions"
+  register: result
+  ignore_errors: true
+
+- name: Assert that the key deletion has failed
+  ansible.builtin.assert:
+    that:
+      - result is failed
+
+- name: Remove the file
+  ansible.builtin.file:
+    state: absent
+    path: "{{ output_dir | expanduser }}/file_permissions"
+
+- name: Remove the user
+  ansible.builtin.user:
+    name: nopriv
+    state: absent
