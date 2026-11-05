@@ -18,6 +18,9 @@
     carla__archive: "{{ carla__install_dir }}.tar.gz"
     carla__staging: "{{ carla__install_dir }}.partial"
     carla__pinned: "{{ carla__packages[carla__version | string].sha256 | default('') | length > 0 }}"
+    carla__launchers: >-
+      {{ [carla__packages[carla__version | string].launcher] if carla__packages[carla__version | string].launcher is string
+         else carla__packages[carla__version | string].launcher }}
 
 - name: Install the runtime dependencies of CARLA
   become: true
@@ -38,7 +41,8 @@
 
 - name: Check the launcher of the installed CARLA
   ansible.builtin.stat:
-    path: "{{ carla__install_dir }}/{{ carla__package.launcher }}"
+    path: "{{ carla__install_dir }}/{{ item }}"
+  loop: "{{ carla__launchers }}"
   register: carla__launcher
 
 # A pinned package: the stamp names the checksum the install was unpacked from.
@@ -109,7 +113,7 @@
   ansible.builtin.set_fact:
     carla__needs_install: >-
       {{
-        not carla__launcher.stat.exists
+        carla__launcher.results | selectattr('stat.exists') | list | length == 0
         or (carla__pinned | bool and not carla__pinned_stamp.stat.exists)
         or (not carla__pinned | bool and carla__nightly_changed | bool)
       }}
@@ -160,14 +164,15 @@
 
     - name: Check the launcher of the unpacked package
       ansible.builtin.stat:
-        path: "{{ carla__staging }}/{{ carla__package.launcher }}"
+        path: "{{ carla__staging }}/{{ item }}"
+      loop: "{{ carla__launchers }}"
       register: carla__staged_launcher
 
     - name: Check that the package is a CARLA Linux package
       ansible.builtin.assert:
-        that: carla__staged_launcher.stat.exists
+        that: carla__staged_launcher.results | selectattr('stat.exists') | list | length > 0
         fail_msg: >-
-          {{ carla__package.url }} has no {{ carla__package.launcher }} under its top folder.
+          {{ carla__package.url }} has none of {{ carla__launchers | join(', ') }} under its top folder.
           The role unpacks it with --strip-components=1, so the package must have one top folder.
 
     - name: Stamp the install with its checksum
@@ -206,6 +211,16 @@
         - "{{ carla__archive }}"
         - "{{ carla__staging }}"
 
+- name: Find the launcher of the installed CARLA
+  ansible.builtin.stat:
+    path: "{{ carla__install_dir }}/{{ item }}"
+  loop: "{{ carla__launchers }}"
+  register: carla__final_launcher
+  when: not ansible_check_mode
+
 - name: Show where CARLA is installed
   ansible.builtin.debug:
-    msg: "CARLA {{ carla__version }}: {{ carla__install_dir }}/{{ carla__package.launcher }}"
+    msg: >-
+      CARLA {{ carla__version }}:
+      {{ carla__install_dir }}/{{ (carla__final_launcher.results | selectattr('stat.exists') | map(attribute='item') | first) }}
+  when: not ansible_check_mode

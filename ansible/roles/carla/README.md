@@ -19,13 +19,13 @@ CARLA publishes its Linux server for x86_64 only; the role stops on any other ar
 
 ## Inputs
 
-| Name                  | Default                                  | Description                                                                                     |
-| --------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `carla__version`      | `1.0`                                    | Which package to install: a key of `carla__packages` (`1.0` or `nightly`).                      |
-| `carla__packages`     | `1.0` and `nightly`                      | The packages the role can install, each with its `url`, `sha256` (empty: unpinned), `launcher`. |
-| `carla__install_root` | `~/autoware_simulation/carla`            | Directory that holds one install per version.                                                   |
-| `carla__install_dir`  | `<carla__install_root>/<carla__version>` | Where the package is unpacked.                                                                  |
-| `carla__apt_packages` | `libomp5`, `libsdl2-2.0-0`, ...          | Runtime dependencies of the server, from CARLA's `Util/Docker/Release.Dockerfile`.              |
+| Name                  | Default                                  | Description                                                                                                          |
+| --------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `carla__version`      | `1.0`                                    | Which package to install: a key of `carla__packages` (`1.0` or `nightly`).                                           |
+| `carla__packages`     | `1.0` and `nightly`                      | The packages the role can install, each with its `url`, `sha256` (empty: unpinned), `launcher` (a list: candidates). |
+| `carla__install_root` | `~/autoware_simulation/carla`            | Directory that holds one install per version.                                                                        |
+| `carla__install_dir`  | `<carla__install_root>/<carla__version>` | Where the package is unpacked.                                                                                       |
+| `carla__apt_packages` | `libomp5`, `libsdl2-2.0-0`, ...          | Runtime dependencies of the server, from CARLA's `Util/Docker/Release.Dockerfile`.                                   |
 
 `xserver-xorg`, which the CARLA image also installs, is left out: the server runs headless with `-RenderOffScreen`, and `libsdl2-2.0-0` already brings the X client libraries. Install it yourself to show the server's window on a host without a desktop.
 
@@ -54,5 +54,7 @@ Then start the server:
 ```bash
 ~/autoware_simulation/carla/1.0/Linux/CarlaUnreal.sh -RenderOffScreen -nosound
 ```
+
+The role prints the launcher at the end of the run. A nightly built after [carla-simulator/carla#10158](https://github.com/carla-simulator/carla/pull/10158) (2026-11-03) has it at the top of the package, `~/autoware_simulation/carla/nightly/CarlaUnreal.sh`; an older one under `Linux/`. The role accepts either.
 
 The role installs the server only. The Python client ships in the package, as wheels under `<carla__install_dir>/PythonAPI/carla/dist/`; install it into the environment that talks to CARLA yourself.
