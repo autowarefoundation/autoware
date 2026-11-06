@@ -36,7 +36,7 @@ graph TB
 
 | Image                        | Description                                                                           | Use case                                                   |
 | ---------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `base`                       | ROS base, sudo, pipx, ansible, RMW, user `aw`                                         | Foundation for all other images                            |
+| `base`                       | ROS base, sudo, pipx, ansible, RMW, Python venv, user `aw`                            | Foundation for all other images                            |
 | `core-dependencies`          | Build deps + compiled core packages (except autoware_core and autoware_rviz_plugins)  | CI for autoware_core                                       |
 | `core-devel`                 | Adds autoware_core build on top of core-dependencies                                  | Development and CI for packages depending on autoware_core |
 | `core`                       | Runtime-only: rosdep exec deps + compiled core from core-devel                        | Lightweight core runtime                                   |
@@ -51,6 +51,15 @@ graph TB
 | `universe-devel-cuda`        | Builds all universe sources with CUDA                                                 | Development with GPU                                       |
 | `universe`                   | Runtime image with compiled autoware (no CUDA)                                        | Deployment without GPU                                     |
 | `universe-cuda`              | Runtime image with compiled autoware, built on `core-cuda` instead of `core`          | Deployment with GPU                                        |
+
+### Python virtual environment
+
+All images have a Python venv at `/opt/autoware-venv`, created in `base` with `--system-site-packages`.
+`VIRTUAL_ENV` is set and `/opt/autoware-venv/bin` is first on `PATH`, so `python3`, `pip`, `rosdep` and `colcon` all use the venv.
+`rosdep` and `colcon` in the venv are small launchers that run the apt-installed tools on the venv interpreter.
+Python packages from rosdep pip keys (`*-pip`) are installed into the venv instead of the system Python. `/etc/pip.conf` sets `require-virtualenv = true`, so pip refuses to install outside a venv.
+The venv belongs to root, so only root can install pip keys into it.
+The venv is kept outside `/opt/autoware` so that runtime images do not get the build-time pip packages of the devel images.
 
 ## Pull from GHCR
 
