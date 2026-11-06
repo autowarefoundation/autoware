@@ -1,0 +1,226 @@
+- name: Check that the CARLA package can run on this machine
+  ansible.builtin.assert:
+    that:
+      - ansible_architecture == 'x86_64'
+    fail_msg: >-
+      CARLA publishes its Linux server for x86_64 only, and this machine is {{ ansible_architecture }}.
+      Run the CARLA server on an x86_64 host instead.
+
+- name: Check that carla__version names a known package
+  ansible.builtin.assert:
+    that:
+      - carla__version | string in carla__packages
+    fail_msg: carla__version must be one of {{ carla__packages.keys() | list }}.
+
+- name: Select the CARLA package
+  ansible.builtin.set_fact:
+    carla__package: "{{ carla__packages[carla__version | string] }}"
+    carla__archive: "{{ carla__install_dir }}.tar.gz"
+    carla__staging: "{{ carla__install_dir }}.partial"
+    carla__pinned: "{{ carla__packages[carla__version | string].sha256 | default('') | length > 0 }}"
+    carla__launchers: >-
+      {{ [carla__packages[carla__version | string].launcher] if carla__packages[carla__version | string].launcher is string
+         else carla__packages[carla__version | string].launcher }}
+
+- name: Install the runtime dependencies of CARLA
+  become: true
+  ansible.builtin.apt:
+    name: "{{ carla__apt_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+# A run that stopped halfway leaves these behind, up to ~27 GiB; they are never reused.
+- name: Remove what an interrupted run left behind
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ carla__archive }}"
+    - "{{ carla__staging }}"
+
+- name: Check the launcher of the installed CARLA
+  ansible.builtin.stat:
+    path: "{{ carla__install_dir }}/{{ item }}"
+  loop: "{{ carla__launchers }}"
+  register: carla__launcher
+
+# A pinned package: the stamp names the checksum the install was unpacked from.
+- name: Check the stamp of the installed package
+  ansible.builtin.stat:
+    path: "{{ carla__install_dir }}/.carla-{{ carla__package.sha256 }}"
+  register: carla__pinned_stamp
+  when: carla__pinned | bool
+
+# The nightly: its file changes under one URL, so what was installed (ETag, Last-Modified, size) is
+# recorded and compared with what the server has now. A server that does not answer keeps the install.
+- name: Check the nightly build on the server
+  when: not carla__pinned | bool
+  block:
+    - name: Ask the server about {{ carla__package.url }}
+      ansible.builtin.uri:
+        url: "{{ carla__package.url }}"
+        method: HEAD
+        follow_redirects: safe
+      register: carla__remote
+      failed_when: false
+      check_mode: false
+
+    - name: Check the record of the installed download
+      ansible.builtin.stat:
+        path: "{{ carla__install_dir }}/.carla_download.json"
+      register: carla__record_file
+
+    - name: Read the record of the installed download
+      ansible.builtin.slurp:
+        src: "{{ carla__install_dir }}/.carla_download.json"
+      register: carla__record_content
+      when: carla__record_file.stat.exists
+
+    # Fields of an error response (a 405, say) would never match the server's real ones later.
+    - name: Record what the server has now
+      vars:
+        carla__headers: "{{ carla__remote if carla__remote.status | default(-1) == 200 else {} }}"
+      ansible.builtin.set_fact:
+        carla__source:
+          url: "{{ carla__package.url }}"
+          etag: "{{ carla__headers.etag | default('') }}"
+          last_modified: "{{ carla__headers.last_modified | default('') }}"
+          size: "{{ carla__headers.content_length | default('') }}"
+
+    - name: Compare the installed download with the server's
+      vars:
+        carla__installed: "{{ (carla__record_content.content | b64decode | from_json) if carla__record_file.stat.exists else {} }}"
+      ansible.builtin.set_fact:
+        carla__nightly_changed: >-
+          {{
+            carla__remote.status | default(-1) == 200
+            and not (
+              carla__installed.url | default('') == carla__source.url
+              and (
+                (carla__source.etag != '' and carla__installed.etag | default('') == carla__source.etag)
+                or (
+                  carla__source.etag == ''
+                  and carla__source.last_modified != ''
+                  and carla__installed.last_modified | default('') == carla__source.last_modified
+                  and carla__installed.size | default('') == carla__source.size
+                )
+              )
+            )
+          }}
+
+- name: Decide whether CARLA needs to be downloaded
+  ansible.builtin.set_fact:
+    carla__needs_install: >-
+      {{
+        carla__launcher.results | selectattr('stat.exists') | list | length == 0
+        or (carla__pinned | bool and not carla__pinned_stamp.stat.exists)
+        or (not carla__pinned | bool and carla__nightly_changed | bool)
+      }}
+
+- name: Report the installed CARLA as current
+  ansible.builtin.debug:
+    msg: CARLA {{ carla__version }} at {{ carla__install_dir }} is up to date.
+  when: not carla__needs_install | bool
+
+# Nothing is downloaded or unpacked in check mode, so the steps that follow would have nothing to act on.
+- name: Report that CARLA would be downloaded
+  ansible.builtin.debug:
+    msg: CARLA {{ carla__version }} would be downloaded from {{ carla__package.url }} into {{ carla__install_dir }}.
+  changed_when: true
+  when: carla__needs_install | bool and ansible_check_mode
+
+- name: Download and unpack CARLA
+  when: carla__needs_install | bool and not ansible_check_mode
+  block:
+    - name: Create the staging directory
+      ansible.builtin.file:
+        path: "{{ carla__staging }}"
+        mode: "755"
+        state: directory
+
+    # tmp_dest keeps get_url's temporary copy in the staging directory, which both cleanups remove.
+    - name: Download {{ carla__package.url }}
+      ansible.builtin.get_url:
+        url: "{{ carla__package.url }}"
+        dest: "{{ carla__archive }}"
+        tmp_dest: "{{ carla__staging }}"
+        checksum: "{{ ('sha256:' ~ carla__package.sha256) if carla__pinned | bool else omit }}"
+        mode: "644"
+
+    # The unarchive module lists or diffs the whole archive before it extracts it, which doubles
+    # the time spent on a ~13 GiB package; tar unpacks it in one pass.
+    - name: Unpack the CARLA package
+      ansible.builtin.command:
+        argv:
+          - tar
+          - --extract
+          - --gzip
+          - --file={{ carla__archive }}
+          - --directory={{ carla__staging }}
+          - --strip-components=1
+          - --no-same-owner
+      changed_when: true
+
+    - name: Check the launcher of the unpacked package
+      ansible.builtin.stat:
+        path: "{{ carla__staging }}/{{ item }}"
+      loop: "{{ carla__launchers }}"
+      register: carla__staged_launcher
+
+    - name: Check that the package is a CARLA Linux package
+      ansible.builtin.assert:
+        that: carla__staged_launcher.results | selectattr('stat.exists') | list | length > 0
+        fail_msg: >-
+          {{ carla__package.url }} has none of {{ carla__launchers | join(', ') }} under its top folder.
+          The role unpacks it with --strip-components=1, so the package must have one top folder.
+
+    - name: Stamp the install with its checksum
+      ansible.builtin.copy:
+        content: ""
+        dest: "{{ carla__staging }}/.carla-{{ carla__package.sha256 }}"
+        mode: "644"
+      when: carla__pinned | bool
+
+    - name: Record what was downloaded
+      ansible.builtin.copy:
+        content: "{{ carla__source | to_nice_json }}\n"
+        dest: "{{ carla__staging }}/.carla_download.json"
+        mode: "644"
+      when: not carla__pinned | bool
+
+    - name: Remove the previous install
+      ansible.builtin.file:
+        path: "{{ carla__install_dir }}"
+        state: absent
+
+    - name: Move the new install into place
+      ansible.builtin.command:
+        argv:
+          - mv
+          - "{{ carla__staging }}"
+          - "{{ carla__install_dir }}"
+      changed_when: true
+
+  always:
+    - name: Remove the downloaded archive and the staging directory
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ carla__archive }}"
+        - "{{ carla__staging }}"
+
+- name: Find the launcher of the installed CARLA
+  ansible.builtin.stat:
+    path: "{{ carla__install_dir }}/{{ item }}"
+  loop: "{{ carla__launchers }}"
+  register: carla__final_launcher
+  when: not ansible_check_mode
+
+- name: Show where CARLA is installed
+  ansible.builtin.debug:
+    msg: >-
+      CARLA {{ carla__version }}:
+      {{ carla__install_dir }}/{{ (carla__final_launcher.results | selectattr('stat.exists') | map(attribute='item') | first) }}
+  when: not ansible_check_mode

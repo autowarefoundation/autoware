@@ -76,6 +76,10 @@
     - role: autoware.dev_env.demo_artifacts
       tags: [never, demo_artifacts]
 
+    # CARLA simulator package and its runtime dependencies (opt-in)
+    - role: autoware.dev_env.carla
+      tags: [never, carla]
+
   post_tasks:
     # Runs after every role installs, so it sees the versions apt actually resolved.
     - name: Verify installed versions match the lockfile (locked mode)

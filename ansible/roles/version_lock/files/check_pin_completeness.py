@@ -26,11 +26,23 @@ import apt
 
 KERNEL_COUPLED = re.compile(r"^linux-(headers|image|modules)-")
 
-# unzip is installed by demo_artifacts alone, which is tags: [never] and in no
-# other playbook, so it converges on no normal locked path. It is also a hard
-# Depends of ubuntu-desktop, so pinning it fails a locked install_dev_env on
-# any desktop whose unzip differs from the pin, with no task able to fix it.
-OUT_OF_SCOPE = frozenset({"unzip"})
+# These are installed by opt-in roles alone -- demo_artifacts and carla, both
+# tags: [never] and in no other playbook -- so they converge on no normal
+# locked path, while verify.yaml asserts every pin whose package is installed
+# regardless of which roles ran. All of them but libomp5 are also pulled in by
+# ubuntu-desktop, so pinning them fails a locked install_dev_env on any desktop
+# whose version differs from the pin, with no task in the play able to fix it.
+OUT_OF_SCOPE = frozenset(
+    {
+        # demo_artifacts
+        "unzip",
+        # carla: carla__apt_packages in ansible/roles/carla/defaults/main.yaml
+        "libomp5",
+        "libsdl2-2.0-0",
+        "libvulkan1",
+        "xdg-user-dirs",
+    }
+)
 
 
 def main() -> None:
