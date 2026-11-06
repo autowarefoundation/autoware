@@ -72,6 +72,10 @@
     - role: autoware.dev_env.artifacts
       tags: [universe, artifacts]
 
+    # Workspace-local Python venv (<workspace>/.venv) for rosdep pip keys on PEP 668 systems (opt-in)
+    - role: autoware.dev_env.python_venv
+      tags: [never, python_venv]
+
     # Sample maps and rosbag recordings for demos (opt-in)
     - role: autoware.dev_env.demo_artifacts
       tags: [never, demo_artifacts]

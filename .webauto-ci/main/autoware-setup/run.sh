@@ -12,3 +12,12 @@ ansible-playbook autoware.dev_env.install_dev_env \
     "${ansible_args[@]}" \
     -e WORKSPACE_ROOT="$(pwd)" \
     --skip-tags dev_tools
+
+# Workspace-local Python venv for rosdep pip keys (activated in autoware-build)
+: "${AUTOWARE_PATH:?is not set}"
+sudo mkdir -p "$AUTOWARE_PATH"
+sudo chown "$(whoami)": "$AUTOWARE_PATH"
+ansible-playbook autoware.dev_env.install_dev_env \
+    "${ansible_args[@]}" \
+    --tags python_venv \
+    -e python_venv__workspace_dir="$AUTOWARE_PATH"

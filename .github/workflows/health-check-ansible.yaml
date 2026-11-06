@@ -82,6 +82,21 @@ jobs:
           ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml
           ansible-playbook autoware.dev_env.install_dev_env --skip-tags artifacts -v
 
+      - name: 🐍 Set up workspace Python venv via ansible
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          ansible-playbook autoware.dev_env.install_dev_env --tags python_venv -v
+          test -f .venv/COLCON_IGNORE
+          # shellcheck disable=SC1091
+          . .venv/bin/activate
+          test "$(command -v rosdep)" = "$PWD/.venv/bin/rosdep"
+          test "$(command -v colcon)" = "$PWD/.venv/bin/colcon"
+          rosdep --version
+          # colcon extensions installed from apt must be visible from the venv
+          colcon --help | grep -q mixin
+          # the tools and their dependencies must come from apt, not from PyPI
+          .venv/bin/python3 -c 'import catkin_pkg, colcon_core, pytest, rosdep2; bad = [m.__name__ for m in (catkin_pkg, colcon_core, pytest, rosdep2) if not m.__file__.startswith("/usr/lib/python3/")]; assert not bad, bad'
+
       - name: 📊 Report installation disk footprint
         run: |
           df -h
