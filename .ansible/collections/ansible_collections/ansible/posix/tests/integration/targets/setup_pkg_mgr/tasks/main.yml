@@ -1,0 +1,19 @@
+---
+####################################################################
+# WARNING: These are designed specifically for Ansible tests       #
+# and should not be used as examples of how to write Ansible roles #
+####################################################################
+
+- name: Set pkg_mgr and ansible_pkg_mgr on FreeBSD
+  ansible.builtin.set_fact:
+    pkg_mgr: community.general.pkgng
+    ansible_pkg_mgr: community.general.pkgng
+    cacheable: true
+  when: ansible_os_family == "FreeBSD"
+
+- name: Set pkg_mgr and ansible_pkg_mgr on Suse
+  ansible.builtin.set_fact:
+    pkg_mgr: community.general.zypper
+    ansible_pkg_mgr: community.general.zypper
+    cacheable: true
+  when: ansible_os_family == "Suse"

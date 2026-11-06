@@ -1,0 +1,48 @@
+---
+# test code for the authorized_key module
+# - (c) 2014, James Cammarata <jcammarata@ansible.com>
+# - (c) 2021, Hideki Saito <saito@fgrep.org>
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: Setup for testing environment
+  ansible.builtin.import_tasks: setup_steps.yml
+
+- name: Test for multiple keys handling
+  ansible.builtin.import_tasks: multiple_keys.yml
+
+- name: Test for ssh-dss key handling
+  ansible.builtin.import_tasks: ssh_dss.yml
+
+- name: Test for check mode
+  ansible.builtin.import_tasks: check_mode.yml
+
+- name: Test for the management of comments with key
+  ansible.builtin.import_tasks: comments.yml
+
+- name: Test for specifying key as a path
+  ansible.builtin.import_tasks: check_path.yml
+
+- name: Test for permission denied files
+  ansible.builtin.import_tasks: check_permissions.yml
+
+- name: CVE-2026-11837 Setup for symlink tests
+  ansible.builtin.import_tasks: check_symlink_setup.yml
+
+- name: CVE-2026-11837 Test for symlink tests
+  ansible.builtin.import_tasks: check_symlink.yml
+
+- name: CVE-2026-11837 Cleanup symlink test
+  ansible.builtin.import_tasks: check_symlink_cleanup.yml

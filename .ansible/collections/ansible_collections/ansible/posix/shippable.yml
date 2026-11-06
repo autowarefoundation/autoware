@@ -1,0 +1,73 @@
+---
+language: python
+
+env:
+  matrix:
+    - T=none
+
+matrix:
+  exclude:
+    - env: T=none
+  include:
+    - env: T=2.9/osx/10.11/1
+    - env: T=2.9/rhel/7.6/1
+    - env: T=2.9/rhel/8.1/1
+    - env: T=2.9/freebsd/11.1/1
+    - env: T=2.9/freebsd/12.0/1
+    - env: T=2.9/linux/centos6/1
+    - env: T=2.9/linux/centos7/1
+    #    - env: T=2.9/linux/centos8/1
+    - env: T=2.9/linux/fedora30/1
+    - env: T=2.9/linux/fedora31/1
+    - env: T=2.9/linux/opensuse15py2/1
+    - env: T=2.9/linux/opensuse15/1
+    - env: T=2.9/linux/ubuntu1604/1
+    - env: T=2.9/linux/ubuntu1804/1
+    #    - env: T=2.10/aix/7.2/1
+    - env: T=2.10/osx/10.11/1
+    - env: T=2.10/rhel/7.6/1
+    - env: T=2.10/rhel/8.2/1
+    - env: T=2.10/freebsd/11.1/1
+    - env: T=2.10/freebsd/12.1/1
+    - env: T=2.10/linux/centos6/1
+    - env: T=2.10/linux/centos7/1
+    #    - env: T=2.10/linux/centos8/1
+    - env: T=2.10/linux/fedora30/1
+    - env: T=2.10/linux/fedora31/1
+    - env: T=2.10/linux/opensuse15py2/1
+    - env: T=2.10/linux/opensuse15/1
+    - env: T=2.10/linux/ubuntu1604/1
+    - env: T=2.10/linux/ubuntu1804/1
+    #    - env: T=devel/aix/7.2/1
+    - env: T=devel/osx/10.11/1
+    - env: T=devel/rhel/7.6/1
+    - env: T=devel/rhel/8.1/1
+    - env: T=devel/freebsd/11.1/1
+    - env: T=devel/freebsd/12.1/1
+    - env: T=devel/linux/centos6/1
+    - env: T=devel/linux/centos7/1
+    #    - env: T=devel/linux/centos8/1
+    - env: T=devel/linux/fedora30/1
+    - env: T=devel/linux/fedora31/1
+    - env: T=devel/linux/opensuse15py2/1
+    - env: T=devel/linux/opensuse15/1
+    - env: T=devel/linux/ubuntu1604/1
+    - env: T=devel/linux/ubuntu1804/1
+
+branches:
+  except:
+    - "*-patch-*"
+    - revert-*-*
+
+build:
+  ci:
+    - tests/utils/shippable/timing.sh tests/utils/shippable/shippable.sh $T
+
+integrations:
+  notifications:
+    - integrationName: email
+      type: email
+      on_success: never
+      on_failure: never
+      on_start: never
+      on_pull_request: never

@@ -1,0 +1,64 @@
+---
+# Test playbook for the firewalld module - port operations
+# (c) 2017, Adam Miller <admiller@redhat.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: Firewalld port forward test permanent enabled
+  ansible.posix.firewalld:
+    port_forward:
+      - port: 8080
+        proto: tcp
+        toport: 8081
+    permanent: true
+    state: enabled
+  register: result
+
+- name: Assert firewalld port test permanent enabled worked
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Firewalld port test permanent enabled rerun (verify not changed)
+  ansible.posix.firewalld:
+    port_forward:
+      - port: 8080
+        proto: tcp
+        toport: 8081
+    permanent: true
+    state: enabled
+  register: result
+
+- name: Assert firewalld port test permanent enabled rerun worked (verify not changed)
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+
+- name: Firewalld port test permanent disabled
+  ansible.posix.firewalld:
+    port_forward:
+      - port: 8080
+        proto: tcp
+        toport: 8081
+    permanent: true
+    state: disabled
+  register: result
+
+- name: Assert firewalld port test permanent disabled worked
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Firewalld port test permanent disabled rerun (verify not changed)
+  ansible.posix.firewalld:
+    port_forward:
+      - port: 8080
+        proto: tcp
+        toport: 8081
+    permanent: true
+    state: disabled
+  register: result
+
+- name: Assert firewalld port test permanent disabled rerun worked (verify not changed)
+  ansible.builtin.assert:
+    that:
+      - result is not changed
