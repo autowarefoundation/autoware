@@ -32,7 +32,21 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
     pipx \
     bash-completion \
     iproute2 \
-    gosu
+    gosu \
+    python3-rosdep \
+    python3-venv
+
+# One venv for all images, outside /opt/autoware so that runtime images do not get the pip packages of the devel images.
+# The launchers run the apt rosdep and colcon on the venv interpreter. pip.conf blocks pip installs outside a venv.
+ENV VIRTUAL_ENV=/opt/autoware-venv
+RUN python3 -m venv --system-site-packages "${VIRTUAL_ENV}" && \
+    printf '#!%s/bin/python3\nimport sys\nfrom rosdep2.main import rosdep_main\nsys.exit(rosdep_main())\n' \
+      "${VIRTUAL_ENV}" >"${VIRTUAL_ENV}/bin/rosdep" && \
+    printf '#!%s/bin/python3\nimport sys\nfrom colcon_core.command import main\nsys.exit(main())\n' \
+      "${VIRTUAL_ENV}" >"${VIRTUAL_ENV}/bin/colcon" && \
+    chmod 755 "${VIRTUAL_ENV}/bin/rosdep" "${VIRTUAL_ENV}/bin/colcon" && \
+    printf '[global]\nrequire-virtualenv = true\n' >/etc/pip.conf
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 
 # Remove default ubuntu user (present since 24.04, occupies UID 1000)
 RUN userdel -r ubuntu 2>/dev/null || true && \

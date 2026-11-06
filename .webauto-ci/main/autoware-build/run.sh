@@ -8,7 +8,7 @@
 : "${CCACHE_SIZE:=1G}"
 : "${PARALLEL_WORKERS:=4}"
 
-sudo mkdir "$AUTOWARE_PATH"
+sudo mkdir -p "$AUTOWARE_PATH"
 sudo chown "$(whoami)": "$AUTOWARE_PATH"
 cd "$WEBAUTO_CI_SOURCE_PATH"
 cp -r src .webauto-ci.* "$AUTOWARE_PATH"
@@ -23,17 +23,20 @@ if [ -n "$CCACHE_DIR" ]; then
     ccache -M "$CCACHE_SIZE"
 fi
 
-# install xmlschema<4.0.0 before rosdep install as workaround for scenario_simulator_v2
-sudo pip3 install xmlschema==3.4.5
-
 sudo -E apt-get -y update
 
 # shellcheck disable=SC2012
 ROS_DISTRO=$(ls -1 /opt/ros | head -1)
 # shellcheck disable=SC1090
 source "/opt/ros/$ROS_DISTRO/setup.bash"
+# Use rosdep and colcon from the workspace venv created in autoware-setup, so that rosdep pip keys
+# are installed into the venv. `--as-root pip:false` keeps pip from running via sudo (system pip).
+# shellcheck disable=SC1091
+source "$AUTOWARE_PATH/.venv/bin/activate"
+# install xmlschema<4.0.0 before rosdep install as workaround for scenario_simulator_v2
+pip install xmlschema==3.4.5
 rosdep update
-rosdep install -y --from-paths src --ignore-src --rosdistro "$ROS_DISTRO"
+rosdep install -y --from-paths src --ignore-src --rosdistro "$ROS_DISTRO" --as-root pip:false
 
 [[ $WEBAUTO_CI_DEBUG_BUILD == "true" ]] && build_type="RelWithDebInfo" || build_type="Release"
 
