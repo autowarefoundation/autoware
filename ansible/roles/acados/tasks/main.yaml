@@ -54,6 +54,14 @@
 
 # ---------- Python virtual environment ----------
 
+- name: Install python3-venv
+  become: true
+  ansible.builtin.apt:
+    name: python3-venv
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
 - name: Create acados Python virtual environment
   become: true
   ansible.builtin.command:
