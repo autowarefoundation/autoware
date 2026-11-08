@@ -81,7 +81,7 @@ The generated C code is then compiled as part of your normal CMake target, no Py
 - A C compiler (gcc/clang)
 - `make`
 - `git`
-- `python3` with `venv` module (`python3-venv` on Ubuntu)
+- `python3` (the role installs `python3-venv`)
 
 ## Idempotency
 
