@@ -1,0 +1,16 @@
+# Root directory of the Autoware workspace. Defaults to the directory ansible-playbook is run from.
+python_venv__workspace_dir: "{{ lookup('env', 'PWD') }}"
+# The virtual environment is created inside the workspace so that each workspace (Autoware version) has its own.
+python_venv__venv_dir: "{{ python_venv__workspace_dir }}/.venv"
+# Set to true to make pip refuse installs outside a virtual environment, for the whole host (/etc/pip.conf).
+python_venv__require_virtualenv: false
+# apt-installed Python tools that must run on the venv interpreter. The role writes a launcher for each one.
+# - rosdep: its pip installer only works under PEP 668 when it runs inside a venv.
+# - colcon: ament_python executables get the shebang of the interpreter that built them.
+python_venv__tools:
+  - executable: rosdep
+    module: rosdep2.main
+    function: rosdep_main
+  - executable: colcon
+    module: colcon_core.command
+    function: main

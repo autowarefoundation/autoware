@@ -1,0 +1,99 @@
+- name: Install python3-venv
+  become: true
+  ansible.builtin.apt:
+    name:
+      - python3-pip
+      - python3-venv
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Check that the Autoware workspace exists
+  ansible.builtin.stat:
+    path: "{{ python_venv__workspace_dir }}"
+    follow: true
+  register: python_venv__workspace_stat
+
+- name: Fail if the Autoware workspace does not exist
+  ansible.builtin.fail:
+    msg: >-
+      Autoware workspace '{{ python_venv__workspace_dir }}' does not exist.
+      Run the playbook from the workspace root or set python_venv__workspace_dir.
+  when: not (python_venv__workspace_stat.stat.isdir | default(false))
+
+- name: Fail if the virtual environment path has a space
+  ansible.builtin.fail:
+    msg: >-
+      The venv path '{{ python_venv__venv_dir }}' has a space. Linux cannot run a shebang line with a space,
+      so colcon-built Python executables cannot start. Use a workspace path without spaces.
+  when: "' ' in python_venv__venv_dir"
+
+# --system-site-packages keeps the apt-installed ROS 2 Python packages (rclpy, colcon extensions, ...) visible.
+- name: Create the Python virtual environment in {{ python_venv__venv_dir }}
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -m
+      - venv
+      - --system-site-packages
+      - "{{ python_venv__venv_dir }}"
+    creates: "{{ python_venv__venv_dir }}/bin/activate"
+
+- name: Prevent colcon from searching packages in the virtual environment
+  ansible.builtin.copy:
+    content: ""
+    dest: "{{ python_venv__venv_dir }}/COLCON_IGNORE"
+    mode: "0644"
+
+# rosdep and colcon come from apt. Each launcher runs the apt module on the venv interpreter, so nothing comes from PyPI.
+- name: Run the apt-installed Python tools on the venv interpreter
+  ansible.builtin.copy:
+    dest: "{{ python_venv__venv_dir }}/bin/{{ item.executable }}"
+    mode: "0755"
+    content: |
+      #!{{ python_venv__venv_dir }}/bin/python3
+      import sys
+      from {{ item.module }} import {{ item.function }}
+      sys.exit({{ item.function }}())
+  loop: "{{ python_venv__tools }}"
+  loop_control:
+    label: "{{ item.executable }}"
+
+- name: Read the pip setting that refuses installs outside a virtual environment
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -m
+      - pip
+      - config
+      - --global
+      - get
+      - global.require-virtualenv
+  register: python_venv__require_virtualenv_get
+  changed_when: false
+  failed_when: false
+  when: python_venv__require_virtualenv
+
+- name: Make pip refuse installs outside a virtual environment
+  become: true
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -m
+      - pip
+      - config
+      - --global
+      - set
+      - global.require-virtualenv
+      - "true"
+  changed_when: true
+  when:
+    - python_venv__require_virtualenv
+    - python_venv__require_virtualenv_get.stdout != "true"
+
+- name: Show how to use the virtual environment
+  ansible.builtin.debug:
+    msg:
+      - "Activate the virtual environment before running rosdep and colcon:"
+      - source {{ python_venv__venv_dir | quote }}/bin/activate
+      - rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO --as-root pip:false

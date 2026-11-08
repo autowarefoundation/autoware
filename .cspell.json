@@ -10,6 +10,7 @@
     "selectattr",
     "selstate",
     "showmanual",
+    "virtualenv",
     "xmfcx"
   ]
 }
