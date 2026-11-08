@@ -18,12 +18,15 @@ runs:
       run: |
         free_gb=$(( $(df --output=avail -B1 / | tail -1) / 1000000000 ))
         if [ "$free_gb" -ge "$MIN_FREE_GB" ]; then
-          echo "needed=false" >> "$GITHUB_OUTPUT"
-          echo "${free_gb} GB free, ${MIN_FREE_GB} GB required: skipping the cleanup"
+          needed=false
+          message="${free_gb} GB free on /, at least ${MIN_FREE_GB} GB: skipping the cleanup"
         else
-          echo "needed=true" >> "$GITHUB_OUTPUT"
-          echo "${free_gb} GB free, ${MIN_FREE_GB} GB required: running the cleanup"
+          needed=true
+          message="${free_gb} GB free on /, less than ${MIN_FREE_GB} GB: running the cleanup"
         fi
+        echo "needed=${needed}" >> "$GITHUB_OUTPUT"
+        echo "${message}"
+        echo "🧹 Free disk space: ${message}" >> "$GITHUB_STEP_SUMMARY"
 
     - name: Install sudo
       if: steps.check.outputs.needed == 'true'
