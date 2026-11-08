@@ -1,10 +1,32 @@
 name: free-disk-space
-description: ""
+description: Free disk space on the runner, only when the root filesystem has less than min-free-gb free
+
+inputs:
+  min-free-gb:
+    description: Skip the cleanup when the root filesystem has at least this many GB (decimal) free
+    required: false
+    default: "60"
 
 runs:
   using: composite
   steps:
+    - name: Check free disk space
+      id: check
+      shell: bash
+      env:
+        MIN_FREE_GB: ${{ inputs.min-free-gb }}
+      run: |
+        free_gb=$(( $(df --output=avail -B1 / | tail -1) / 1000000000 ))
+        if [ "$free_gb" -ge "$MIN_FREE_GB" ]; then
+          echo "needed=false" >> "$GITHUB_OUTPUT"
+          echo "${free_gb} GB free, ${MIN_FREE_GB} GB required: skipping the cleanup"
+        else
+          echo "needed=true" >> "$GITHUB_OUTPUT"
+          echo "${free_gb} GB free, ${MIN_FREE_GB} GB required: running the cleanup"
+        fi
+
     - name: Install sudo
+      if: steps.check.outputs.needed == 'true'
       run: |
         if ! (command -v sudo >/dev/null 2>&1); then
             apt-get -y update
@@ -13,6 +35,7 @@ runs:
       shell: bash
 
     - name: Free Disk Space (Ubuntu)
+      if: steps.check.outputs.needed == 'true'
       uses: jlumbroso/free-disk-space@main
       with:
         # this might remove tools that are actually needed,
