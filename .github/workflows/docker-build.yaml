@@ -362,7 +362,7 @@ jobs:
             echo ""
             echo "| | Free |"
             echo "|-|------|"
-            echo "| 🟢 Pre-build (after cleanup) | ${disk_before_gb} GB |"
+            echo "| 🟢 Pre-build | ${disk_before_gb} GB |"
             echo "| 🔴 Post-build | ${disk_after_gb} GB |"
             echo "| 📊 Δ | ${disk_delta_gb} GB |"
           } >> "$GITHUB_STEP_SUMMARY"
