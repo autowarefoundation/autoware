@@ -53,8 +53,13 @@ variable "USE_REGISTRY_CONTEXTS" {
   default = false
 }
 
-// IMPORTANT: The first element must always be the plain name-distro-platform tag
-// because ctx() uses tags(name)[0] to construct docker-image:// references.
+// JSON map from a target name to the digest of the image that an earlier job of
+// the same CI run pushed. ctx() reads the image by digest, not by tag, because
+// another run can push the same tag at the same time.
+variable "CONTEXT_DIGESTS" {
+  default = "{}"
+}
+
 function "tags" {
   params = [name]
   result = compact(concat(
@@ -66,11 +71,12 @@ function "tags" {
   ))
 }
 
-// Returns "docker-image://..." when USE_REGISTRY_CONTEXTS is true (CI),
-// or "target:..." when false (local builds).
+// Returns "docker-image://<registry>@<digest>" when USE_REGISTRY_CONTEXTS is
+// true (CI), or "target:..." when false (local builds). A missing digest
+// fails the bake.
 function "ctx" {
   params = [name]
-  result = USE_REGISTRY_CONTEXTS ? "docker-image://${tags(name)[0]}" : "target:${name}"
+  result = USE_REGISTRY_CONTEXTS ? "docker-image://${REGISTRY}@${lookup(jsondecode(CONTEXT_DIGESTS), name, "")}" : "target:${name}"
 }
 
 group "default" {

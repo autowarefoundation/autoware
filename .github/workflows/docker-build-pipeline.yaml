@@ -35,6 +35,7 @@ jobs:
     needs: build-base
     uses: ./.github/workflows/docker-build.yaml
     with:
+      context-digests: ${{ needs.build-base.outputs.digests }}
       bake-group: ci-core
       platform: ${{ inputs.platform }}
       ros-distro: ${{ inputs.ros-distro }}
@@ -47,6 +48,7 @@ jobs:
     needs: build-core
     uses: ./.github/workflows/docker-build.yaml
     with:
+      context-digests: ${{ needs.build-core.outputs.digests }}
       bake-group: ci-universe
       platform: ${{ inputs.platform }}
       ros-distro: ${{ inputs.ros-distro }}
@@ -58,6 +60,7 @@ jobs:
     needs: build-base
     uses: ./.github/workflows/docker-build.yaml
     with:
+      context-digests: ${{ needs.build-base.outputs.digests }}
       bake-group: ci-base-cuda
       platform: ${{ inputs.platform }}
       ros-distro: ${{ inputs.ros-distro }}
@@ -69,6 +72,7 @@ jobs:
     needs: build-base-cuda
     uses: ./.github/workflows/docker-build.yaml
     with:
+      context-digests: ${{ needs.build-base-cuda.outputs.digests }}
       bake-group: ci-core-cuda
       platform: ${{ inputs.platform }}
       ros-distro: ${{ inputs.ros-distro }}
@@ -81,6 +85,7 @@ jobs:
     needs: build-core-cuda
     uses: ./.github/workflows/docker-build.yaml
     with:
+      context-digests: ${{ needs.build-core-cuda.outputs.digests }}
       bake-group: ci-universe-cuda
       platform: ${{ inputs.platform }}
       ros-distro: ${{ inputs.ros-distro }}

@@ -65,10 +65,20 @@ on:
         description: Max allowed size (GB) for restored BuildKit cache mounts; cache is dropped and purged if exceeded
         type: number
         default: 6
+      context-digests:
+        description: JSON map from a target name to the digest of its image, from the `digests` output of an earlier job of the same run
+        type: string
+        default: "{}"
+    outputs:
+      digests:
+        description: JSON map from each target of the bake group to the digest of its pushed image
+        value: ${{ jobs.build.outputs.digests }}
 jobs:
   build:
     name: ${{ inputs.bake-group }}
     runs-on: ${{ inputs.platform == 'amd64' && inputs.runner-amd64 || inputs.runner-arm64 }}
+    outputs:
+      digests: ${{ steps.digests.outputs.digests }}
     permissions:
       contents: read
       packages: write
@@ -240,6 +250,7 @@ jobs:
           TAG_VERSION: ${{ steps.meta.outputs.version }}
           TAG_REF: ${{ steps.meta.outputs.ref }}
           USE_REGISTRY_CONTEXTS: ${{ inputs.bake-group != 'ci-base' }}
+          CONTEXT_DIGESTS: ${{ inputs.context-digests }}
           # Without this, BAKE_METADATA exceeds 128 KiB on multi-target
           # groups and the summary step fails to start bash (E2BIG).
           BUILDX_METADATA_PROVENANCE: disabled
@@ -255,6 +266,20 @@ jobs:
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-${{ steps.meta.outputs.ref_name }}
             *.cache-from=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-main
             *.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}-buildcache:${{ inputs.bake-group }}-${{ inputs.ros-distro }}-${{ inputs.platform }}-${{ steps.meta.outputs.ref_name }},mode=max,ignore-error=true
+
+      - name: 🔖 Export image digests
+        id: digests
+        env:
+          BAKE_METADATA: ${{ steps.bake.outputs.metadata }}
+        run: |
+          digests=$(echo "${BAKE_METADATA}" | jq -c '
+            to_entries
+            | map(select(.value."containerimage.digest"?))
+            | map({key: .key, value: .value."containerimage.digest"})
+            | from_entries
+          ')
+          echo "digests=${digests}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Image digests: ${digests}"
 
       - name: 📊 Build summary
         if: always()
