@@ -1,0 +1,88 @@
+---
+# Test playbook for the firewalld module - interface operations
+# (c) 2022, Gregory Furlong <gnfzdz@fzdz.io>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: Validate adding interface
+  block:
+    - name: Add lo interface to trusted zone
+      ansible.posix.firewalld:
+        interface: lo
+        zone: trusted
+        permanent: true
+        state: enabled
+      register: result
+
+    - name: Assert lo was added to trusted zone
+      ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Add lo interface to trusted zone (verify not changed)
+      ansible.posix.firewalld:
+        interface: lo
+        zone: trusted
+        permanent: true
+        state: enabled
+      register: result
+
+    - name: Assert lo was added to trusted zone (verify not changed)
+      ansible.builtin.assert:
+        that:
+          - result is not changed
+
+- name: Validate moving interfaces
+  block:
+    - name: Move lo interface from trusted zone to internal zone
+      ansible.posix.firewalld:
+        interface: lo
+        zone: internal
+        permanent: true
+        state: enabled
+      register: result
+
+    - name: Assert lo was moved from trusted zone to internal zone
+      ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Move lo interface from trusted zone to internal zone (verify not changed)
+      ansible.posix.firewalld:
+        interface: lo
+        zone: internal
+        permanent: true
+        state: enabled
+      register: result
+
+    - name: Assert lo was moved from trusted zone to internal zone (verify not changed)
+      ansible.builtin.assert:
+        that:
+          - result is not changed
+
+- name: Validate removing interface
+  block:
+    - name: Remove lo interface from internal zone
+      ansible.posix.firewalld:
+        interface: lo
+        zone: internal
+        permanent: true
+        state: disabled
+      register: result
+
+    - name: Assert lo interface was removed from internal zone
+      ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Remove lo interface from internal zone (verify not changed)
+      ansible.posix.firewalld:
+        interface: lo
+        zone: internal
+        permanent: true
+        state: disabled
+      register: result
+
+    - name: Assert lo interface was removed from internal zone (verify not changed)
+      ansible.builtin.assert:
+        that:
+          - result is not changed

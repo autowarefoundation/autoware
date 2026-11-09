@@ -1,0 +1,50 @@
+---
+# Test playbook for the firewalld module
+# (c) 2017, Adam Miller <admiller@redhat.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: Ensure /run/firewalld exists
+  ansible.builtin.file:
+    path: /run/firewalld
+    state: directory
+    mode: "0755"
+
+# firewalld service operation test cases
+- name: Include service test cases for firewalld module
+  ansible.builtin.include_tasks: service_test_cases.yml
+
+# firewalld protocol operation test cases
+- name: Include protocol test cases for firewalld module
+  ansible.builtin.include_tasks: protocol_test_cases.yml
+
+# firewalld port operation test cases
+- name: Include port test cases for firewalld module
+  ansible.builtin.include_tasks: port_test_cases.yml
+
+# firewalld source operation test cases
+- name: Include source test cases for firewalld module
+  ansible.builtin.include_tasks: source_test_cases.yml
+
+# firewalld zone operation test cases
+- name: Include zone test cases for firewalld module
+  ansible.builtin.include_tasks: zone_test_cases.yml
+
+# firewalld zone target operation test cases
+- name: Include zone target test cases for firewalld module
+  ansible.builtin.include_tasks: zone_target_test_cases.yml
+
+# firewalld port forwarding operation test cases
+- name: Include port forward target test cases for firewalld module
+  ansible.builtin.include_tasks: port_forward_test_cases.yml
+
+# firewalld masquerade operation test cases
+- name: Include masquerade target test cases for firewalld module
+  ansible.builtin.include_tasks: masquerade_test_cases.yml
+
+# firewalld icmp block inversion operation test cases
+- name: Include icmp block inversion target test cases for firewalld module
+  ansible.builtin.include_tasks: icmp_block_inversion_test_cases.yml
+
+# firewalld interface operation test cases
+- name: Include interface target test cases for firewalld module
+  ansible.builtin.include_tasks: interface_test_cases.yml

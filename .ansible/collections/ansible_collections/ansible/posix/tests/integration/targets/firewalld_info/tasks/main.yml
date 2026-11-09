@@ -1,0 +1,53 @@
+---
+# Test playbook for the firewalld_info module
+# (c) 2021, Hideki Saito <saito@fgrep.org>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+# This test is based on the integration test playbook for firewalld module.
+- name: Run firewalld tests
+  when:
+    - ansible_facts.os_family == "RedHat" and ansible_facts.distribution_major_version is version('7', '>=')
+    - not (ansible_distribution == "Ubuntu" and ansible_distribution_version is version('14.04', '=='))
+    # Firewalld package on OpenSUSE (15+) require Python 3, so we skip on OpenSUSE running py2 on these newer distros
+    - not (ansible_os_family == "Suse" and ansible_distribution_major_version|int != 42 and ansible_python.version.major != 3)
+  block:
+    - name: Ensure firewalld is installed
+      ansible.builtin.package:
+        name: firewalld
+        state: present
+    # This doesn't work for CentOS 6 because firewalld doesn't exist in CentOS6
+
+    - name: Check to make sure the firewalld python module is available.
+      ansible.builtin.command: "{{ ansible_python.executable }} -c 'import firewall'"
+      changed_when: false
+      register: check_output_firewall
+      ignore_errors: true
+
+    - name: Check to make sure the dbus python module is available.
+      ansible.builtin.command: "{{ ansible_python.executable }} -c 'import dbus'"
+      changed_when: false
+      register: check_output_dbus
+      ignore_errors: true
+
+    - name: Test Online Operations
+      block:
+        - name: Start firewalld
+          ansible.builtin.service:
+            name: firewalld
+            state: started
+
+        - name: Import test tasks from run_tests_in_started.yml
+          ansible.builtin.import_tasks: run_tests_in_started.yml
+
+    - name: Test Offline Operations
+      when:
+        - check_output_firewall.rc == 0
+        - check_output_dbus.rc == 0
+      block:
+        - name: Stop firewalld
+          ansible.builtin.service:
+            name: firewalld
+            state: stopped
+
+        - name: Import test tasks from run_tests_in_stopped.yml
+          ansible.builtin.import_tasks: run_tests_in_stopped.yml

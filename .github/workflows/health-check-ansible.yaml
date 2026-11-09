@@ -76,6 +76,9 @@ jobs:
           echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
       - name: 🔧 Install dev environment via ansible
+        env:
+          # Lifts the ros2 role's api.github.com call off the shared unauthenticated rate limit.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           bash ansible/scripts/install-ansible.sh
           export PATH="$HOME/.local/bin:$PATH"

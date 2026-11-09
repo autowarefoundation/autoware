@@ -18,10 +18,11 @@ $ apt-cache policy | grep universe
 
 ## Inputs
 
-| Name                   | Required | Description                                      |
-| ---------------------- | -------- | ------------------------------------------------ |
-| rosdistro              | true     | The ROS distro.                                  |
-| ros2_installation_type | false    | The installation type (`desktop` or `ros-base`). |
+| Name                   | Required | Description                                                                                                                                        |
+| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| rosdistro              | true     | The ROS distro.                                                                                                                                    |
+| ros2_installation_type | false    | The installation type (`desktop` or `ros-base`).                                                                                                   |
+| ros2_github_token      | false    | Token for the api.github.com call that resolves the latest `ros-apt-source` release; defaults to `$GITHUB_TOKEN`, and empty means unauthenticated. |
 
 ## Manual Installation
 

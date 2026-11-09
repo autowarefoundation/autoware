@@ -1,0 +1,41 @@
+---
+# Test playbook for the firewalld_info module
+# (c) 2021, Hideki Saito <saito@fgrep.org>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: Ensure firewalld_info without options
+  ansible.posix.firewalld_info:
+  register: result
+  ignore_errors: true
+
+- name: Assert firewalld_info fails if firewalld is not running.
+  ansible.builtin.assert:
+    that:
+      - result.failed
+      - "'firewalld probably not be running,' in result.msg"
+
+- name: Ensure firewalld_info with active_zones
+  ansible.posix.firewalld_info:
+    active_zones: true
+  register: result
+  ignore_errors: true
+
+- name: Assert firewalld_info with active_zones fails if firewalld is not running.
+  ansible.builtin.assert:
+    that:
+      - result.failed
+      - "'firewalld probably not be running,' in result.msg"
+
+- name: Ensure firewalld_zones with zone list
+  ansible.posix.firewalld_info:
+    zones:
+      - public
+      - invalid_zone
+  register: result
+  ignore_errors: true
+
+- name: Assert firewalld_info with zones list fails if firewalld is not running.
+  ansible.builtin.assert:
+    that:
+      - result.failed
+      - "'firewalld probably not be running,' in result.msg"

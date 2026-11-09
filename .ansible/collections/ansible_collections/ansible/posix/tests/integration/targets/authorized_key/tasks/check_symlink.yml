@@ -1,0 +1,22 @@
+---
+#
+# Check: keysfile is symlink and follow=false
+#
+- name: Try to add key with keysfile as symlink
+  ansible.posix.authorized_key:
+    user: testuser
+    key: "{{ rsa_key_basic }}"
+    state: present
+    manage_dir: false
+    follow: false
+
+- name: Assert target file ownership unchanged
+  ansible.builtin.stat:
+    path: /tmp/symlink_test_target/target_file
+  register: target_file_stat
+
+- name: Verify target file is still owned by root
+  ansible.builtin.assert:
+    that:
+      - target_file_stat.stat.uid == 0
+...

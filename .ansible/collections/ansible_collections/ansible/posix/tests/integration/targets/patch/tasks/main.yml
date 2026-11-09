@@ -1,0 +1,147 @@
+---
+- name: Ensure idempotency installed
+  ansible.builtin.package:
+    name: patch
+  when: ansible_distribution != "MacOSX"
+
+- name: Create a directory for the result
+  ansible.builtin.file:
+    dest: "{{ output_dir }}/patch"
+    state: directory
+    mode: "0755"
+  register: result
+
+- name: Assert the directory was created
+  ansible.builtin.assert:
+    that:
+      - result.state == 'directory'
+
+- name: Copy the origin file
+  ansible.builtin.copy:
+    src: ./origin.txt
+    dest: "{{ output_dir }}/patch/workfile.txt"
+    mode: "0644"
+  register: result
+
+- name: Patch the origin file in check mode
+  check_mode: true
+  register: result
+  ansible.posix.patch:
+    src: result.patch
+    dest: "{{ output_dir }}/patch/workfile.txt"
+
+- name: Verify patch the origin file in check mode
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Patch the origin file
+  register: result
+  ansible.posix.patch:
+    src: result.patch
+    dest: "{{ output_dir }}/patch/workfile.txt"
+
+- name: Verify patch the origin file
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Test patch the origin file idempotency
+  register: result
+  ansible.posix.patch:
+    src: result.patch
+    dest: "{{ output_dir }}/patch/workfile.txt"
+- name: Verify test patch the origin file idempotency
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+
+- name: Verify the resulted file matches expectations
+  ansible.builtin.copy:
+    src: ./result.txt
+    dest: "{{ output_dir }}/patch/workfile.txt"
+    mode: "0644"
+  register: result
+  failed_when: result is changed
+
+- name: Patch the workfile file in check mode state absent
+  check_mode: true
+  register: result
+  ansible.posix.patch:
+    src: result.patch
+    dest: "{{ output_dir }}/patch/workfile.txt"
+    state: absent
+
+- name: Verify patch the workfile file in check mode state absent
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Patch the workfile file state absent
+  register: result
+  ansible.posix.patch:
+    src: result.patch
+    dest: "{{ output_dir }}/patch/workfile.txt"
+    state: absent
+
+- name: Verify patch the workfile file state absent
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Patch the workfile file state absent idempotency
+  register: result
+  ansible.posix.patch:
+    src: result.patch
+    dest: "{{ output_dir }}/patch/workfile.txt"
+    state: absent
+
+- name: Verify patch the workfile file state absent idempotency
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+
+- name: Verify the resulted file matches expectations
+  ansible.builtin.copy:
+    src: ./origin.txt
+    dest: "{{ output_dir }}/patch/workfile.txt"
+    mode: "0644"
+  register: result
+  failed_when: result is changed
+
+- name: Copy the origin file whitespace
+  ansible.builtin.copy:
+    src: ./origin.txt
+    dest: "{{ output_dir }}/patch/workfile_whitespace.txt"
+    mode: "0644"
+  register: result
+
+- name: Patch the origin file
+  register: result
+  ansible.posix.patch:
+    src: result_whitespace.patch
+    dest: "{{ output_dir }}/patch/workfile_whitespace.txt"
+    ignore_whitespace: true
+- name: Verify patch the origin file
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Test patch the origin file idempotency
+  register: result
+  ansible.posix.patch:
+    src: result_whitespace.patch
+    dest: "{{ output_dir }}/patch/workfile_whitespace.txt"
+    ignore_whitespace: true
+- name: Verify test patch the origin file idempotency
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+
+- name: Verify the resulted file matches expectations
+  ansible.builtin.copy:
+    src: ./result_whitespace.txt
+    dest: "{{ output_dir }}/patch/workfile_whitespace.txt"
+    mode: "0644"
+  register: result
+  failed_when: result is changed

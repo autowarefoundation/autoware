@@ -1,0 +1,32 @@
+---
+- name: Create key file for test
+  ansible.builtin.copy:
+    dest: "{{ key_path }}"
+    content: "{{ rsa_key_basic }}"
+    mode: "0600"
+
+- name: Add key using path
+  ansible.posix.authorized_key:
+    user: root
+    key: file://{{ key_path }}
+    state: present
+    path: "{{ output_dir | expanduser }}/authorized_keys"
+  register: result
+
+- name: Assert that the key was added
+  ansible.builtin.assert:
+    that:
+      - result.changed == true
+
+- name: Add key using path again
+  ansible.posix.authorized_key:
+    user: root
+    key: file://{{ key_path }}
+    state: present
+    path: "{{ output_dir | expanduser }}/authorized_keys"
+  register: result
+
+- name: Assert that no changes were applied
+  ansible.builtin.assert:
+    that:
+      - result.changed == false
