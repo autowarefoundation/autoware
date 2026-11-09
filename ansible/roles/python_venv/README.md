@@ -80,7 +80,6 @@ printf '#!%s/bin/python3\nimport sys\nfrom colcon_core.command import main\nsys.
 chmod 755 .venv/bin/rosdep .venv/bin/colcon
 ```
 
-## Docker images and Web.Auto CI
+## Docker images
 
-- Docker images create the same kind of venv at `/opt/autoware-venv` in `docker/base.Dockerfile` and put it first on `PATH` (see [docker/README.md](../../../docker/README.md)).
-- Web.Auto CI creates `$AUTOWARE_PATH/.venv` with this role in `.webauto-ci/main/autoware-setup/run.sh` and activates it in `.webauto-ci/main/autoware-build/run.sh`.
+Docker images create the same kind of venv at `/opt/autoware-venv` in `docker/base.Dockerfile` and put it first on `PATH` (see [docker/README.md](../../../docker/README.md)).
