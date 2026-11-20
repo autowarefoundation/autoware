@@ -1,0 +1,8 @@
+download_url: https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/ansible-posix-2.2.2.tar.gz
+format_version: 1.0.0
+name: posix
+namespace: ansible
+server: https://galaxy.ansible.com/api/
+signatures: []
+version: 2.2.2
+version_url: /api/content/published/v3/plugin/ansible/content/published/collections/index/ansible/posix/versions/2.2.2/

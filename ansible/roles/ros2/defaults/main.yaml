@@ -1,1 +1,12 @@
 ros2_installation_type: desktop
+
+# Token for the api.github.com call that resolves the latest ros-apt-source release.
+# Unauthenticated, api.github.com allows 60 requests an hour per source address, and CI runners
+# share their egress addresses, so that call fails intermittently with "API rate limit exceeded"
+# and takes the whole play down. A token raises the limit to 1000 an hour for the repository
+# (a workflow's GITHUB_TOKEN) or 5000 for a user (a PAT).
+# Empty means the request is unauthenticated, as it always was. Set it to '' to force that, for
+# instance when GITHUB_TOKEN is in the environment but expired, which would otherwise fail the
+# request with 401 rather than fall back. The task is not no_log, so that a 401 or 403 stays
+# readable; -v does not print module arguments, but -vvv does, so avoid it with a real token.
+ros2_github_token: "{{ lookup('ansible.builtin.env', 'GITHUB_TOKEN') }}"

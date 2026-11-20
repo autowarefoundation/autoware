@@ -1,0 +1,88 @@
+---
+# Test playbook for the firewalld module - source operations
+# (c) 2019, Hideki Saito <saito@fgrep.org>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: Firewalld source test permanent enabled
+  ansible.posix.firewalld:
+    source: 192.0.2.0/24
+    zone: internal
+    permanent: true
+    state: enabled
+  register: result
+
+- name: Assert firewalld source test permanent enabled worked
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Firewalld source test permanent enabled rerun (verify not changed)
+  ansible.posix.firewalld:
+    source: 192.0.2.0/24
+    zone: internal
+    permanent: true
+    state: enabled
+  register: result
+
+- name: Assert firewalld source test permanent enabled rerun worked (verify not changed)
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+
+- name: Firewalld source test permanent disabled
+  ansible.posix.firewalld:
+    source: 192.0.2.0/24
+    zone: internal
+    permanent: true
+    state: disabled
+  register: result
+
+- name: Assert firewalld source test permanent disabled worked
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Firewalld source test permanent disabled rerun (verify not changed)
+  ansible.posix.firewalld:
+    source: 192.0.2.0/24
+    zone: internal
+    permanent: true
+    state: disabled
+  register: result
+
+- name: Assert firewalld source test permanent disabled rerun worked (verify not changed)
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+
+- name: Firewalld source test permanent enabled is exclusive (verify exclusive error)
+  ansible.posix.firewalld:
+    source: 192.0.2.0/24
+    port: 8081/tcp
+    zone: internal
+    permanent: true
+    state: enabled
+  register: result
+  ignore_errors: true
+
+- name: Assert firewalld source test permanent enabled is exclusive (verify exclusive error)
+  ansible.builtin.assert:
+    that:
+      - result is not changed
+      - >
+        result.msg == 'parameters are mutually exclusive:
+        icmp_block|icmp_block_inversion|service|protocol|port|port_forward|rich_rule|interface|forward|masquerade|source|target'
