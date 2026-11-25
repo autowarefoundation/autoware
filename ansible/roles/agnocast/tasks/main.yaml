@@ -90,7 +90,7 @@
     dest: /etc/apt/sources.list.d/agnocast.sources
     content: |
       Types: deb
-      URIs: http://ppa.launchpad.net/t4-system-software/agnocast/ubuntu
+      URIs: https://ppa.launchpadcontent.net/t4-system-software/agnocast/ubuntu
       Suites: {{ ansible_distribution_release }}
       Components: main
       Signed-By: /etc/apt/keyrings/agnocast-ppa.gpg
