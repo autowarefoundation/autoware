@@ -1,12 +1,21 @@
 - name: Download and install ros-apt-source package (rolling repo, default mode)
   when: not (use_locked_versions | default(false) | bool)
   block:
+    # Authenticated when ros2_github_token is set, to stay off the shared unauthenticated rate
+    # limit that makes this call fail intermittently in CI. See the role's defaults.
     - name: Get latest release information of ros-apt-source package
       ansible.builtin.uri:
         url: https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest
         method: GET
         return_content: true
+        headers: >-
+          {{ {'Authorization': 'Bearer ' ~ ros2_github_token} if ros2_github_token | length > 0 else {} }}
       register: ros2__ros_apt_release_info
+      # Covers a transient network error or a 5xx. It does not rescue a spent rate limit, which
+      # only resets on the hour; the token is what keeps that from happening.
+      until: ros2__ros_apt_release_info.status | default(0) == 200
+      retries: 3
+      delay: 5
 
     - name: Extract latest version of ros-apt-source package
       ansible.builtin.set_fact:

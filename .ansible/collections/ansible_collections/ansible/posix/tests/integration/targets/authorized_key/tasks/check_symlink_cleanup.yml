@@ -1,0 +1,12 @@
+---
+- name: Remove testuser
+  ansible.builtin.user:
+    name: testuser
+    state: absent
+    remove: true
+
+- name: Remove symlink target directory
+  ansible.builtin.file:
+    path: /tmp/symlink_test_target
+    state: absent
+...

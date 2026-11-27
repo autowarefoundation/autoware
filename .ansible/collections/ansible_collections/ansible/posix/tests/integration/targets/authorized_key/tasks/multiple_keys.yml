@@ -1,0 +1,97 @@
+---
+# -------------------------------------------------------------
+# multiple keys
+
+- name: Add multiple keys
+  ansible.posix.authorized_key:
+    user: root
+    key: "{{ multiple_key_base }}"
+    state: present
+    path: "{{ output_dir | expanduser }}/authorized_keys"
+  register: result
+
+- name: Assert that the key was added
+  ansible.builtin.assert:
+    that:
+      - result.changed == True
+      - result.key == multiple_key_base
+      - result.key_options == None
+
+- name: Add multiple keys different order
+  ansible.posix.authorized_key:
+    user: root
+    key: "{{ multiple_key_different_order }}"
+    state: present
+    path: "{{ output_dir | expanduser }}/authorized_keys"
+  register: result
+
+- name: Assert that the key was added
+  ansible.builtin.assert:
+    that:
+      - result.changed == True
+      - result.key == multiple_key_different_order
+      - result.key_options == None
+
+- name: Add multiple keys exclusive
+  ansible.posix.authorized_key:
+    user: root
+    key: "{{ multiple_key_exclusive }}"
+    state: present
+    path: "{{ output_dir | expanduser }}/authorized_keys"
+    exclusive: true
+  register: result
+
+- name: Assert that the key was added
+  ansible.builtin.assert:
+    that:
+      - result.changed == True
+      - result.key == multiple_key_exclusive
+      - result.key_options == None
+
+- name: Add multiple keys in different calls
+  ansible.posix.authorized_key:
+    user: root
+    key: ecdsa-sha2-nistp521 ECDSA_DATA 4@testing
+    state: present
+    path: "{{ output_dir | expanduser }}/authorized_keys"
+  register: result
+
+- name: Add multiple keys in different calls
+  ansible.posix.authorized_key:
+    user: root
+    key: ssh-rsa DATA_BASIC 1@testing
+    state: present
+    path: "{{ output_dir | expanduser }}/authorized_keys"
+  register: result
+
+- name: Get the file content
+  ansible.builtin.command: /bin/cat "{{ output_dir | expanduser }}/authorized_keys"
+  changed_when: false
+  register: multiple_keys_at_a_time
+
+- name: Assert that the key was added
+  ansible.builtin.assert:
+    that:
+      - result.changed == false
+      - multiple_keys_at_a_time.stdout  == multiple_key_exclusive.strip()
+
+- name: Add multiple keys comment
+  ansible.posix.authorized_key:
+    user: root
+    key: "{{ multiple_keys_comments }}"
+    state: present
+    path: "{{ output_dir | expanduser }}/authorized_keys"
+    exclusive: true
+  register: result
+
+- name: Get the file content
+  ansible.builtin.command: /bin/cat "{{ output_dir | expanduser }}/authorized_keys"
+  changed_when: false
+  register: multiple_keys_comments
+
+- name: Assert that the keys exist and comment only lines were not added
+  ansible.builtin.assert:
+    that:
+      - result.changed == False
+      - multiple_keys_comments.stdout == multiple_key_exclusive.strip()
+      - result.key_options == None

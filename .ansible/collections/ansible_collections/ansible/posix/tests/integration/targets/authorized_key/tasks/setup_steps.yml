@@ -1,0 +1,63 @@
+---
+# -------------------------------------------------------------
+# Setup steps
+- name: Clean up the working directory and files
+  ansible.builtin.file:
+    path: "{{ output_dir }}"
+    state: absent
+
+- name: Create the working directory
+  ansible.builtin.file:
+    path: "{{ output_dir }}"
+    state: directory
+    mode: "0744"
+
+- name: Copy an existing file in place with comments
+  ansible.builtin.copy:
+    src: existing_authorized_keys
+    dest: "{{ output_dir | expanduser }}/authorized_keys"
+    mode: "0600"
+
+- name: Add multiple keys different order
+  ansible.posix.authorized_key:
+    user: root
+    key: "{{ multiple_key_different_order_2 }}"
+    state: present
+    path: "{{ output_dir | expanduser }}/authorized_keys"
+  register: result
+
+- name: Get the file content
+  ansible.builtin.command: /bin/cat "{{ output_dir | expanduser }}/authorized_keys"
+  changed_when: false
+  register: multiple_keys_existing
+
+- name: Assert that the key was added and comments and ordering preserved
+  ansible.builtin.assert:
+    that:
+      - result.changed == True
+      - '"# I like candy" in multiple_keys_existing.stdout'
+      - '"# I like candy" in multiple_keys_existing.stdout_lines[0]'
+      - '"ssh-rsa DATA_BASIC 1@testing" in multiple_keys_existing.stdout'
+      # The specific index is a little fragile, but I want to verify the line shows up
+      # as the 3rd line in the new entries after the existing entries and comments are preserved
+      - '"ssh-rsa DATA_BASIC 1@testing" in multiple_keys_existing.stdout_lines[7]'
+
+# start afresh
+
+- name: Remove file foo.txt
+  ansible.builtin.file:
+    path: "{{ output_dir | expanduser }}/authorized_keys"
+    state: absent
+
+- name: Touch the authorized_keys file
+  ansible.builtin.file:
+    dest: "{{ output_dir }}/authorized_keys"
+    state: touch
+    mode: "0600"
+  register: result
+
+- name: Assert that the authorized_keys file was created
+  ansible.builtin.assert:
+    that:
+      - result.changed == True
+      - result.state == "file"

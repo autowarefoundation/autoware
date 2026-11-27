@@ -1,0 +1,23 @@
+---
+# (c) 2017, Martin Krizek <mkrizek@redhat.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: Test ACL
+  vars:
+    test_user: ansible_user
+    test_group: ansible_group
+    test_file: "{{ output_dir }}/ansible file"
+    test_dir: "{{ output_dir }}/ansible_dir/with some space"
+    test_recursive_dir: "{{ output_dir }}/recursive_dir"
+  block:
+    - name: Include tests task file
+      ansible.builtin.include_tasks: acl.yml
+      when: ansible_system == 'Linux' # TODO enable acls mount option on FreeBSD to test it there too
+  always:
+    - name: Delete created directory and file
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "{{ test_dir }}"
+        - "{{ test_file }}"

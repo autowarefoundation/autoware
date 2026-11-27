@@ -1,0 +1,14 @@
+---
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2024, Ansible Project
+
+skip_list:
+  - fqcn[deep]  # This rule produces false positives for files in tests/unit/plugins/action/fixtures/
+  - sanity[cannot-ignore]  # This rule is skipped to keep backward compatibility with Python 2
+
+exclude_paths:
+  - changelogs/
+  - .github/
+  - tests/
+  - meta/
